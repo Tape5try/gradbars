@@ -1,0 +1,46 @@
+% Compile from the repository root: xelatex -output-directory=build examples/theme-gallery.tex
+\documentclass[11pt]{article}
+\usepackage[paperwidth=180mm,paperheight=205mm,margin=16mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,booktabs,array}
+\usepackage{gradbars}
+\pagestyle{empty}
+\renewcommand{\familydefault}{\sfdefault}
+\setlength{\parindent}{0pt}
+\begin{document}
+{\small\color{gradbarsBlue}\bfseries GRADBARS / 03 \quad THEME GALLERY}\par
+\vspace{5mm}
+{\LARGE\bfseries Seven themes and nine built-in colors. One interface.}\par
+\vspace{3mm}
+{\color{gradbarsInk}Choose a style that suits the document.}\par
+\vspace{7mm}
+\gradbarssetup{width=34mm,label width=3.8em,unit={\%},precision=0}
+\renewcommand{\arraystretch}{1.75}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lll@{}}
+\toprule
+\textbf{Theme} & \textbf{Preview} & \textbf{Character}\\
+\midrule
+\texttt{blue}  & \gradbar[theme=blue]{72}  & Blue gradient\\
+\texttt{teal}  & \gradbar[theme=teal]{72}  & Teal gradient\\
+\texttt{solid} & \gradbar[theme=solid]{72} & Flat color\\
+\texttt{gray}  & \gradbar[theme=gray]{72}  & Monochrome\\
+\bottomrule
+\end{tabular*}\par
+\vspace{7mm}
+{\large\bfseries Designed for small spaces.}\par
+\vspace{4mm}
+\begin{tabular}{@{}ll@{}}
+Outside label & \gradbar{64}\\[3mm]
+Inside label & \gradbar[label=inside,height=2.5ex,right color=white]{64}\\[3mm]
+Custom text & \gradbar[theme=teal,text={8 / 10},max=10]{8}\\[3mm]
+No label & \gradbar[theme=gray,label=none]{64}
+\end{tabular}\par
+\vspace{6mm}
+{\small Inline, too: the completion rate is
+\gradbar[width=16mm,label width=3em,height=1.2ex]{64}
+in this example.}\par
+\vspace{5mm}
+{\footnotesize\color{gradbarsInk}
+All examples use illustrative data. Labels retain the document font;
+bar width, height, spacing and precision are configurable.}
+\end{document}

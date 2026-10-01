@@ -1,0 +1,383 @@
+\NeedsTeXFormat{LaTeX2e}[2020/10/01]
+\ProvidesPackage{gradbars}[2026/10/02 v3.1.0 Inline data bars for LaTeX]
+\RequirePackage{tikz}
+\RequirePackage{xparse}
+\RequirePackage{expl3}
+\usetikzlibrary{shadings}
+
+\definecolor{gradbarsBlue}{HTML}{2563EB}
+\definecolor{gradbarsBlueLight}{HTML}{93C5FD}
+\definecolor{gradbarsTeal}{HTML}{0F766E}
+\definecolor{gradbarsTealLight}{HTML}{5EEAD4}
+\definecolor{gradbarsInk}{HTML}{243247}
+\definecolor{gradbarsTrack}{HTML}{EDF2F7}
+% Public built-in palette, using the original RGB values.
+\definecolor{lightgreen}{RGB}{144,238,144}
+\definecolor{lightyellow}{RGB}{255,255,224}
+\definecolor{lightblue}{RGB}{173,216,230}
+\definecolor{lightred}{RGB}{255,160,122}
+\definecolor{rose}{RGB}{255,102,204}
+\definecolor{skyblue}{RGB}{135,206,235}
+\definecolor{gold}{RGB}{255,215,0}
+\definecolor{lavender}{RGB}{230,230,250}
+\definecolor{peach}{RGB}{255,218,185}
+\newif\ifgradbars@valid
+\newif\ifgradbars@gradient
+\def\gradbars@width{24mm}
+\def\gradbars@height{1.5ex}
+\def\gradbars@max{100}
+\def\gradbars@min{0}
+\def\gradbars@rounded{0pt}
+\def\gradbars@target{}
+\def\gradbars@targetcolor{gradbarsInk}
+\def\gradbars@negativecolor{lightred}
+\def\gradbars@thresholds{}
+\def\gradbars@thresholdcolors{lightred,gold,lightgreen}
+\def\gradbars@errorminus{}
+\def\gradbars@errorplus{}
+\def\gradbars@errorcolor{gradbarsInk}
+\newif\ifgradbars@error
+\newsavebox\gradbars@labelbox
+\def\gradbars@precision{1}
+\def\gradbars@unit{}
+\def\gradbars@text{}
+\def\gradbars@label{outside}
+\def\gradbars@format{value}
+\def\gradbars@overflow{clip}
+\def\gradbars@gap{.6em}
+\def\gradbars@labelwidth{4.5em}
+\def\gradbars@font{\relax}
+\pgfkeys{/gradbars/.is family,/gradbars,
+  width/.store in=\gradbars@width,
+  height/.store in=\gradbars@height,
+  max/.store in=\gradbars@max,
+  min/.store in=\gradbars@min,
+  rounded/.store in=\gradbars@rounded,
+  target/.store in=\gradbars@target,
+  target color/.store in=\gradbars@targetcolor,
+  negative color/.store in=\gradbars@negativecolor,
+  thresholds/.store in=\gradbars@thresholds,
+  threshold colors/.store in=\gradbars@thresholdcolors,
+  error/.style={error minus=#1,error plus=#1},
+  error minus/.store in=\gradbars@errorminus,
+  error plus/.store in=\gradbars@errorplus,
+  error color/.store in=\gradbars@errorcolor,
+  precision/.store in=\gradbars@precision,
+  unit/.store in=\gradbars@unit,
+  text/.store in=\gradbars@text,
+  label gap/.store in=\gradbars@gap,
+  label width/.store in=\gradbars@labelwidth,
+  font/.store in=\gradbars@font,
+  left color/.store in=\gradbars@left,
+  right color/.store in=\gradbars@right,
+  track color/.store in=\gradbars@track,
+  text color/.store in=\gradbars@textcolor,
+  color/.style={fill=solid,left color=#1},
+  fill/.is choice,
+  fill/gradient/.code=\gradbars@gradienttrue,
+  fill/solid/.code=\gradbars@gradientfalse,
+  label/.is choice,
+  label/outside/.code=\def\gradbars@label{outside},
+  label/inside/.code=\def\gradbars@label{inside},
+  label/none/.code=\def\gradbars@label{none},
+  label/end/.code=\def\gradbars@label{end},
+  value format/.is choice,
+  value format/value/.code=\def\gradbars@format{value},
+  value format/percent/.code=\def\gradbars@format{percent},
+  overflow/.is choice,
+  overflow/clip/.code=\def\gradbars@overflow{clip},
+  overflow/error/.code=\def\gradbars@overflow{error},
+  theme/.is choice,
+  theme/blue/.style={fill=gradient,left color=gradbarsBlue,
+    right color=gradbarsBlueLight,track color=gradbarsTrack,text color=gradbarsInk},
+  theme/teal/.style={fill=gradient,left color=gradbarsTeal,
+    right color=gradbarsTealLight,track color=gradbarsTrack,text color=gradbarsInk},
+  theme/solid/.style={fill=solid,left color=gradbarsBlue,
+    right color=gradbarsBlue,track color=gradbarsTrack,text color=gradbarsInk},
+  theme/gray/.style={fill=solid,left color=black!65,
+    right color=black!65,track color=black!8,text color=black},
+  theme/lbyellow/.style={fill=gradient,left color=lightblue!90,
+    right color=lightyellow!60,track color=gradbarsTrack,text color=gradbarsInk},
+  theme/viblue/.style={fill=gradient,left color=violet!20,
+    right color=lightblue!70,track color=gradbarsTrack,text color=gradbarsInk},
+  theme/cyblu/.style={fill=gradient,left color=cyan,
+    right color=blue!20,track color=gradbarsTrack,text color=gradbarsInk},
+}
+\pgfkeys{/gradbars,theme=blue}
+\NewDocumentCommand\gradbarssetup{m}{\pgfkeys{/gradbars,#1}}
+
+% Validate before drawing; floating point arithmetic also supports large counts.
+\ExplSyntaxOn
+\cs_new_protected:Npn \gradbarsCheckNumber #1#2
+  {
+    \tl_set:Nx \l_tmpa_tl {#1}
+    \tl_trim_spaces:N \l_tmpa_tl
+    \regex_match:nVTF { \A [\+\-]? ( \d+ (\.\d*)? | \.\d+ ) \Z }
+      \l_tmpa_tl { }
+      {
+        \gradbars@validfalse
+        \PackageError{gradbars}{Invalid~#2:~expected~a~decimal~number}
+          {Use~0,~86.5,~or~125000.~Expressions~are~not~accepted.}
+      }
+  }
+
+\cs_new_protected:Npn \gradbarsFail #1
+  {\gradbars@validfalse \PackageError{gradbars}{#1}{Check~the~gradbars~options~and~data.}}
+\cs_new_protected:Npn \gradbarsRange #1#2
+  {
+    \fp_compare:nT {#2 < \gradbars@min || #2 > \gradbars@max}
+      {
+        \str_if_eq:eeTF {\gradbars@overflow}{error}
+          {\gradbarsFail{#1~exceeds~range}}
+          {\PackageWarning{gradbars}{#1~exceeds~range;~bar~clipped,~label~unchanged}}
+      }
+  }
+\cs_new:Npn \gradbarsPosition #1
+  {\fp_eval:n {(max(\gradbars@min,min(\gradbars@max,#1))-\gradbars@min)/
+    (\gradbars@max-\gradbars@min)}}
+\clist_new:N \l__gradbars_thresholds_clist
+\clist_new:N \l__gradbars_colors_clist
+\cs_new_protected:Npn \gradbarsValidate
+  {
+    \gradbarsCheckNumber{\gradbars@value}{value}
+    \gradbarsCheckNumber{\gradbars@min}{min}
+    \gradbarsCheckNumber{\gradbars@max}{max}
+    \tl_set:Nx \l_tmpa_tl {\gradbars@precision}
+    \regex_match:nVTF {\A [0-6] \Z} \l_tmpa_tl { }
+      {\gradbarsFail{Precision~must~be~an~integer~from~0~to~6}}
+    \ifgradbars@valid
+      \fp_compare:nNnF {\gradbars@max} > {0}
+        {\gradbarsFail{Max~must~be~greater~than~zero}}
+      \fp_compare:nNnT {\gradbars@min} > {0}
+        {\gradbarsFail{Min~must~be~zero~or~negative}}
+      \fp_compare:nNnT {\gradbars@min} = {0}
+        {\fp_compare:nNnT {\gradbars@value} < {0}
+          {\gradbarsFail{Negative~values~require~a~negative~min}}}
+      \str_if_eq:eeT {\gradbars@format}{percent}
+        {\fp_compare:nNnT {\gradbars@min} < {0}
+          {\gradbarsFail{Percent~format~requires~min=0}}}
+    \fi
+    \tl_if_empty:oF {\gradbars@target}
+      {\gradbarsCheckNumber{\gradbars@target}{target}}
+    \gradbars@errorfalse
+    \tl_if_empty:oF {\gradbars@errorminus}{\gradbars@errortrue}
+    \tl_if_empty:oF {\gradbars@errorplus}{\gradbars@errortrue}
+    \ifgradbars@error
+      \tl_if_empty:oT {\gradbars@errorminus}{\def\gradbars@errorminus{0}}
+      \tl_if_empty:oT {\gradbars@errorplus}{\def\gradbars@errorplus{0}}
+      \gradbarsCheckNumber{\gradbars@errorminus}{error~minus}
+      \gradbarsCheckNumber{\gradbars@errorplus}{error~plus}
+    \fi
+    \clist_set:Nx \l__gradbars_thresholds_clist {\gradbars@thresholds}
+    \clist_set:Nx \l__gradbars_colors_clist {\gradbars@thresholdcolors}
+    \clist_if_empty:NF \l__gradbars_thresholds_clist
+      {
+        \int_compare:nNnF {\clist_count:N \l__gradbars_thresholds_clist} = {2}
+          {\gradbarsFail{Thresholds~must~contain~two~values}}
+        \int_compare:nNnF {\clist_count:N \l__gradbars_colors_clist} = {3}
+          {\gradbarsFail{Threshold~colors~must~contain~three~colors}}
+        \clist_map_inline:Nn \l__gradbars_thresholds_clist
+          {\gradbarsCheckNumber{##1}{threshold}}
+      }
+    \ifgradbars@valid
+      \gradbarsRange{Value}{\gradbars@value}
+      \tl_if_empty:oF {\gradbars@target}
+        {
+          \fp_compare:nT {\gradbars@target < \gradbars@min || \gradbars@target > \gradbars@max}
+            {\gradbarsFail{Target~must~lie~within~range}}
+          \cs_set:Npx \gradbars@targetpos {\gradbarsPosition{\gradbars@target}}
+        }
+      \ifgradbars@error
+        \fp_compare:nT {\gradbars@errorminus<0 || \gradbars@errorplus<0}
+          {\gradbarsFail{Error~magnitudes~must~be~nonnegative}}
+        \gradbarsRange{Error~lower~endpoint}{\gradbars@value-\gradbars@errorminus}
+        \gradbarsRange{Error~upper~endpoint}{\gradbars@value+\gradbars@errorplus}
+        \cs_set:Npx \gradbars@errorlo
+          {\gradbarsPosition{\gradbars@value-\gradbars@errorminus}}
+        \cs_set:Npx \gradbars@errorhi
+          {\gradbarsPosition{\gradbars@value+\gradbars@errorplus}}
+      \fi
+      \cs_set:Npx \gradbars@zero {\gradbarsPosition{0}}
+      \cs_set:Npx \gradbars@end {\gradbarsPosition{\gradbars@value}}
+      \cs_set:Npx \gradbars@start {\fp_eval:n {min(\gradbars@zero,\gradbars@end)}}
+      \cs_set:Npx \gradbars@stop {\fp_eval:n {max(\gradbars@zero,\gradbars@end)}}
+      \fp_compare:nNnT {\gradbars@value} < {0}
+        {\gradbars@gradientfalse \let\gradbars@left\gradbars@negativecolor}
+      \clist_if_empty:NF \l__gradbars_thresholds_clist
+        {
+          \fp_compare:nNnF {\clist_item:Nn \l__gradbars_thresholds_clist {1}}
+            < {\clist_item:Nn \l__gradbars_thresholds_clist {2}}
+            {\gradbarsFail{Thresholds~must~be~strictly~increasing}}
+          \int_set:Nn \l_tmpa_int {1}
+          \fp_compare:nNnF {\gradbars@value}
+            < {\clist_item:Nn \l__gradbars_thresholds_clist {1}}
+            {\int_set:Nn \l_tmpa_int {2}}
+          \fp_compare:nNnF {\gradbars@value}
+            < {\clist_item:Nn \l__gradbars_thresholds_clist {2}}
+            {\int_set:Nn \l_tmpa_int {3}}
+          \cs_set:Npx \gradbars@left
+            {\clist_item:Nn \l__gradbars_colors_clist {\l_tmpa_int}}
+          \gradbars@gradientfalse
+        }
+      \str_if_eq:eeTF {\gradbars@format}{percent}
+        {\cs_set:Npx \gradbars@number
+          {\fp_eval:n {round(100*\gradbars@value/\gradbars@max,\gradbars@precision)}}}
+        {\cs_set:Npx \gradbars@number
+          {\fp_eval:n {round(\gradbars@value,\gradbars@precision)}}}
+    \fi
+  }
+\ExplSyntaxOff
+
+\def\gradbars@labelcontent{%
+  \ifx\gradbars@text\@empty
+    \pgfmathprintnumber[verbatim,fixed,fixed zerofill,precision=\gradbars@precision,
+      1000 sep={\,}]{\gradbars@number}%
+    \def\gradbars@temp{percent}%
+    \ifx\gradbars@format\gradbars@temp\%\else\gradbars@unit\fi
+  \else\gradbars@text\fi
+}
+
+\def\gradbars@draw{%
+  \pgfmathsetlengthmacro\gradbars@xzero{\gradbars@zero*(\gradbars@width)}%
+  \pgfmathsetlengthmacro\gradbars@xend{\gradbars@end*(\gradbars@width)}%
+  \pgfmathsetlengthmacro\gradbars@xstart{\gradbars@start*(\gradbars@width)}%
+  \pgfmathsetlengthmacro\gradbars@xstop{\gradbars@stop*(\gradbars@width)}%
+  \pgfmathsetlengthmacro\gradbars@radius{min(\gradbars@rounded,.5*(\gradbars@height),.5*(\gradbars@width))}%
+  \path[rounded corners=\gradbars@radius,fill=\gradbars@track,draw=none]
+    (0,0) rectangle (\gradbars@width,\gradbars@height);
+  \ifdim\gradbars@xstop>\gradbars@xstart
+    \pgfmathsetlengthmacro\gradbars@fillradius{min(\gradbars@radius,.5*(\gradbars@xstop-\gradbars@xstart))}%
+    \begin{scope}
+      \clip[rounded corners=\gradbars@radius]
+        (0,0) rectangle (\gradbars@width,\gradbars@height);
+      \ifgradbars@gradient
+        \path[rounded corners=\gradbars@fillradius,shade,
+          left color=\gradbars@left,right color=\gradbars@right]
+          (\gradbars@xstart,0) rectangle (\gradbars@xstop,\gradbars@height);
+      \else
+        \path[rounded corners=\gradbars@fillradius,fill=\gradbars@left,draw=none]
+          (\gradbars@xstart,0) rectangle (\gradbars@xstop,\gradbars@height);
+      \fi
+    \end{scope}
+  \fi
+  \ifdim\gradbars@xzero>0pt
+    \draw[gradbarsInk!65,line width=.35pt]
+      (\gradbars@xzero,0)--(\gradbars@xzero,\gradbars@height);
+  \fi
+  \ifx\gradbars@target\@empty\else
+    \pgfmathsetlengthmacro\gradbars@xtarget{\gradbars@targetpos*(\gradbars@width)}%
+    \draw[draw=\gradbars@targetcolor,line width=.6pt]
+      ([yshift=-1pt]\gradbars@xtarget,0)--
+      ([yshift=1pt]\gradbars@xtarget,\gradbars@height);
+  \fi
+  \ifgradbars@error
+    \pgfmathsetlengthmacro\gradbars@xlo{\gradbars@errorlo*(\gradbars@width)}%
+    \pgfmathsetlengthmacro\gradbars@xhi{\gradbars@errorhi*(\gradbars@width)}%
+    \draw[draw=\gradbars@errorcolor,line width=.5pt]
+      ([yshift=.5*\gradbars@height]\gradbars@xlo,0)--
+      ([yshift=.5*\gradbars@height]\gradbars@xhi,0);
+    \foreach \gradbars@cap in {\gradbars@xlo,\gradbars@xhi}{
+      \draw[draw=\gradbars@errorcolor,line width=.5pt]
+        ([yshift=.2*\gradbars@height]\gradbars@cap,0)--
+        ([yshift=.8*\gradbars@height]\gradbars@cap,0);
+    }
+  \fi
+  \def\gradbars@temp{outside}%
+  \ifx\gradbars@label\gradbars@temp
+    \node[anchor=west,inner sep=0pt,outer sep=0pt,
+      text=\gradbars@textcolor,font=\gradbars@font]
+      at ([xshift=\gradbars@gap,yshift=.5*\gradbars@height]\gradbars@width,0)
+      {\makebox[\gradbars@labelwidth][r]{\gradbars@labelcontent}};
+  \else
+    \def\gradbars@temp{inside}%
+    \ifx\gradbars@label\gradbars@temp
+      \node[anchor=east,inner sep=0pt,outer sep=0pt,
+        text=\gradbars@textcolor,font=\gradbars@font]
+        at ([xshift=-.35em,yshift=.5*\gradbars@height]\gradbars@width,0)
+        {\gradbars@labelcontent};
+    \else
+      \def\gradbars@temp{end}%
+      \ifx\gradbars@label\gradbars@temp
+        \sbox\gradbars@labelbox{\pgfinterruptpicture
+          \gradbars@font\gradbars@labelcontent\endpgfinterruptpicture}%
+        \pgfmathsetlengthmacro\gradbars@labelx{max(.5*\wd\gradbars@labelbox,
+          min(\gradbars@xend,\gradbars@width-.5*\wd\gradbars@labelbox))}%
+        \node[anchor=south,inner sep=0pt,outer sep=0pt,text=\gradbars@textcolor]
+          at ([yshift=2pt]\gradbars@labelx,\gradbars@height)
+          {\usebox\gradbars@labelbox};
+      \fi
+    \fi
+  \fi
+}
+\def\gradbars@render{%
+  \gradbars@validtrue
+  \gradbarsValidate
+  \ifdim\gradbars@rounded<0pt
+    \gradbars@validfalse
+    \PackageError{gradbars}{Rounded radius must be nonnegative}{Use rounded=2pt.}%
+  \fi
+  \ifdim\gradbars@width>0pt\else
+    \gradbars@validfalse
+    \PackageError{gradbars}{Width must be positive}{Use a length such as 24mm.}%
+  \fi
+  \ifdim\gradbars@height>0pt\else
+    \gradbars@validfalse
+    \PackageError{gradbars}{Height must be positive}{Use a length such as 1.5ex.}%
+  \fi
+  \ifgradbars@valid
+    \iftikz@inside@picture
+      \begin{scope}\gradbars@draw\end{scope}%
+    \else
+      \tikz[baseline={([yshift=-.5ex]0,{.5*\gradbars@height})}]{\gradbars@draw}%
+    \fi
+  \fi
+}
+\NewDocumentCommand\gradbar{O{} m}{%
+  \leavevmode\begingroup
+    \pgfkeys{/gradbars,#1}%
+    \def\gradbars@value{#2}%
+    \gradbars@render
+  \endgroup
+}
+
+% Deprecated v2 API. Raw-percent labels and argument order are retained.
+\providecommand\barwidth{2}
+\providecommand\barheight{0.5}
+\providecommand\thescale{100}
+\providecommand\setscale[1]{\renewcommand\thescale{#1}}
+\NewDocumentCommand\shadebar{O{black} O{white} m}{%
+  \begingroup
+    \def\gradbars@legacycolor{#1}%
+    \ifx\gradbars@legacycolor\@empty\def\gradbars@legacycolor{black}\fi
+    \gradbar[width=\barwidth cm,height=\barheight cm,max=\thescale,
+      left color=\gradbars@legacycolor,right color=#2,fill=gradient,
+      label=inside,value format=value,unit={\%},precision=1,text={#3\%}]{#3}%
+  \endgroup
+}
+\NewDocumentCommand\gbar{m O{white} m m}{%
+  \begingroup\renewcommand\thescale{#3}\shadebar[#1][#2]{#4}\endgroup
+}
+\newcommand\cbl[2]{\gbar{cyan!70!blue}[cyan!20]{#1}{#2}}
+\newcommand\cborange[2]{\gbar{orange!70!black}[orange!15]{#1}{#2}}
+\newcommand\cbhot[2]{\gbar{red!60!orange}[yellow!30]{#1}{#2}}
+\definecolor{gradbarsLegacyLightBlue}{RGB}{173,216,230}
+\definecolor{gradbarsLegacyLightYellow}{RGB}{255,255,224}
+\definecolor{gradbarsLegacyLightGreen}{RGB}{144,238,144}
+\definecolor{gradbarsLegacyLightRed}{RGB}{255,160,122}
+\definecolor{gradbarsLegacyMint}{RGB}{152,255,152}
+\newcommand\lbcyan[2]{\gbar{gradbarsLegacyLightBlue}[cyan!70]{#1}{#2}}
+\newcommand\lbyellow[2]{\gbar{gradbarsLegacyLightBlue!90}[gradbarsLegacyLightYellow!60]{#1}{#2}}
+\newcommand\viblue[2]{\gbar{violet!20}[gradbarsLegacyLightBlue!70]{#1}{#2}}
+\newcommand\grcy[2]{\gbar{green!70!cyan}[cyan!30]{#1}{#2}}
+\newcommand\magpink[2]{\gbar{magenta!70}[pink!40]{#1}{#2}}
+\newcommand\blupur[2]{\gbar{blue!60!purple}[purple!30]{#1}{#2}}
+\newcommand\mintgr[2]{\gbar{gradbarsLegacyMint}[green!30]{#1}{#2}}
+\newcommand\cyblu[2]{\gbar{cyan}[blue!20]{#1}{#2}}
+\newcommand\blkgray[2]{\gbar{black!80}[gray!50]{#1}{#2}}
+\newcommand\lyblue[2]{\gbar{gradbarsLegacyLightYellow!60}[gradbarsLegacyLightBlue!70]{#1}{#2}}
+\newcommand\lgblue[2]{\gbar{gradbarsLegacyLightGreen}[gradbarsLegacyLightBlue!70]{#1}{#2}}
+\newcommand\lrblue[2]{\gbar{gradbarsLegacyLightRed}[gradbarsLegacyLightBlue!70]{#1}{#2}}
+\newcommand\rorcyan[2]{\gbar{red!10!orange}[cyan!40]{#1}{#2}}
+\newcommand\dglg[2]{\gbar{green!70!black}[green!25]{#1}{#2}}
+\newcommand\gyrd[2]{\gbar{gray!60!black}[red!60!gray]{#1}{#2}}
+\endinput

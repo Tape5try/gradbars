@@ -1,0 +1,664 @@
+% !TeX program = xelatex
+% Compile twice from the repository root:
+% xelatex -interaction=nonstopmode -halt-on-error -output-directory=build docs/gradbars-manual.tex
+\documentclass[10pt,a4paper,fontset=fandol]{ctexart}
+\usepackage[margin=18mm,top=19mm,bottom=20mm,headheight=15pt]{geometry}
+\usepackage{gradbars}
+\usepackage{booktabs,array,tabularx,amsmath}
+\usepackage{tcolorbox}
+\tcbuselibrary{listings,skins}
+\usepackage{fancyhdr}
+\usepackage[colorlinks=true,linkcolor=gradbarsBlue,urlcolor=gradbarsTeal,
+  pdftitle={gradbars 宏包手册},pdfauthor={gradbars contributors}]{hyperref}
+\definecolor{manualCode}{HTML}{EEEEFF}
+\definecolor{manualResult}{HTML}{FAFAE6}
+\definecolor{manualLine}{HTML}{DCE3ED}
+\definecolor{manualMuted}{HTML}{64748B}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\setcounter{tocdepth}{1}
+\renewcommand{\arraystretch}{1.3}
+\ctexset{
+  section={format=\Large\bfseries\color{gradbarsInk},beforeskip=0pt,afterskip=10pt},
+  subsection={format=\normalsize\bfseries\color{gradbarsInk},beforeskip=12pt,afterskip=4pt}
+}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\sffamily\color{manualMuted}gradbars\quad 宏包手册}
+\fancyhead[R]{\small\sffamily\color{manualMuted}v3.1.0}
+\fancyfoot[L]{\footnotesize\color{manualMuted}效果与源码对照 \enspace / \enspace XeLaTeX}
+\fancyfoot[R]{\small\thepage}
+\renewcommand{\headrulewidth}{.3pt}
+\newcommand{\key}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\note}[1]{\begin{tcolorbox}[colback=gradbarsTrack,colframe=gradbarsTrack,
+  boxrule=0pt,arc=0pt,left=3mm,right=3mm,top=2mm,bottom=2mm]
+  \small #1\end{tcolorbox}}
+\lstdefinestyle{manual}{
+  language=[LaTeX]TeX,
+  basicstyle=\ttfamily\fontsize{8}{10.6}\selectfont,
+  texcsstyle=*\color{blue!70!black},
+  keywordstyle=\color{green!40!black},
+  commentstyle=\color{manualMuted},
+  moretexcs={gradbar,gradbarssetup,toprule,midrule,bottomrule,arraystretch},
+  morekeywords={theme,max,width,height,label,precision,unit,text,blue,teal,solid,gray,percent},
+  columns=fullflexible,keepspaces=true,showstringspaces=false,
+  breaklines=true,breakatwhitespace=false,tabsize=2,
+  aboveskip=0pt,belowskip=0pt
+}
+\newtcblisting{example}[2][]{
+  enhanced,skin=bicolor,listing engine=listings,text side listing,
+  listing options={style=manual},
+  title={#2},fonttitle=\small\bfseries,
+  coltitle=gradbarsInk,colbacktitle=gradbarsTrack,
+  colback=manualResult,colbacklower=manualCode,colframe=manualLine,
+  boxrule=.3pt,arc=0pt,lefthand width=49mm,sidebyside gap=5mm,
+  left=3mm,right=3mm,top=3mm,bottom=3mm,
+  before skip=8pt,after skip=8pt,
+  sidebyside align=top,
+  before upper={\small\setlength{\parskip}{5pt}},
+  #1
+}
+\newtcblisting{codeonly}{
+  listing only,listing engine=listings,listing options={style=manual},
+  colback=manualCode,colframe=manualCode,boxrule=0pt,arc=0pt,
+  left=3mm,right=3mm,top=2mm,bottom=2mm
+}
+\begin{document}
+\thispagestyle{empty}
+{\small\sffamily\color{gradbarsBlue}THE GRADBARS PACKAGE \hfill VERSION 3.1.0}
+\vspace{13mm}
+
+{\fontsize{42}{46}\selectfont\sffamily\bfseries gradbars}\par
+\vspace{2mm}
+{\LARGE\bfseries 宏包手册}\par
+{\large\color{manualMuted}在 \LaTeX{} 表格与正文中绘制轻量数据条}
+\vspace{8mm}
+
+\begin{example}{一行命令，数值与图形同时呈现}
+\gradbar{86.5}
+
+\gradbar[theme=teal]{72.4}
+
+\gradbar[theme=gray]{54.2}
+\end{example}
+
+本手册把安装说明、完整参数、主题示例以及三个应用案例集中在同一文档中。
+浅黄色区域展示实际排版效果，浅紫色区域展示生成该效果的源码。
+源码中的空行用于区分示例，无需额外编写换行命令。
+示例框内的效果与源码来自同一段代码，避免两者脱节。
+
+\note{默认情况下，标签显示原始数值；非负范围内，条长表示数值与最大值的比例。
+例如 \key{max=200}、数值为 50 时，条长为四分之一，标签仍为 50.0。}
+
+\vspace{3mm}
+\begingroup
+\setlength{\parskip}{0pt}
+\hypersetup{linkcolor=gradbarsInk}
+\small\tableofcontents
+\endgroup
+\vfill
+{\small\color{manualMuted}2026 年 10 月 2 日 \quad · \quad MIT 许可证\par
+适用于 gradbars 3.1.0。示例数据仅用于演示，不代表真实实验结果。}
+
+\clearpage
+\section{安装与快速开始}
+\subsection{安装宏包}
+把 \key{gradbars.sty} 放在主文档旁边，导言区写入
+\key{\usepackage{gradbars}} 即可。无需手动创建 \key{tikzpicture}，
+也无需开启 shell escape。宏包依赖 TikZ、xparse 和 expl3，不强制加载 ctex。
+中文文档可自行使用 ctexart；本手册使用 XeLaTeX 编译。
+
+\subsection{最小完整文档}
+将下面代码保存为一个 \key{.tex} 文件，和宏包放在同一目录即可编译。
+\begin{codeonly}
+\documentclass{article}
+\usepackage{gradbars}
+\begin{document}
+\gradbarssetup{max=100, width=24mm, precision=1}
+\gradbar{72.4}
+
+\gradbar{92.7}
+\end{document}
+\end{codeonly}
+
+\subsection{两个核心命令}
+\key{\gradbarssetup{参数列表}} 设置当前作用域的默认值；
+\key{\gradbar[参数列表]{数值}} 绘制一个数据条，其中可选参数只覆盖本次绘制。
+数值与最大值使用十进制数字，不接受逗号、单位或计算表达式。
+
+\begin{example}{示例 1：统一设置与单次覆盖}
+\gradbarssetup{width=23mm,
+  max=100,precision=1,theme=blue}
+\gradbar{72.4}
+
+\gradbar[theme=teal]{92.7}
+
+\gradbar{81.6}
+\end{example}
+
+\subsection{作用域}
+设置遵循普通 TeX 分组规则。在导言区调用会影响整篇文档；
+在一对花括号中调用只影响该组。表格单元格也有自己的分组，
+因此整列共用的设置应放在表格环境之前。
+
+\begin{example}{示例 2：局部设置不会泄漏}
+{\gradbarssetup{theme=gray,max=10}
+ \gradbar{8}}
+
+\gradbar{80}
+\end{example}
+
+\clearpage
+\section{数值语义与边界}
+默认范围为非负数据，条形从零开始，长度遵循
+\[
+  L=W\min\!\left(1,\frac{v}{M}\right),
+  \qquad v\geq 0,\quad M>0,
+\]
+其中 $v$ 是输入值，$M$ 是 \key{max}，$W$ 是 \key{width}。
+标签的舍入与格式不改变条长。
+
+\begin{example}{示例 3：原始数值、单位与计算占比}
+\gradbar[max=200]{50}
+
+\gradbar[max=200,
+  unit={\,ms}]{50}
+
+\gradbar[max=200,
+  value format=percent]{50}
+\end{example}
+
+\key{unit} 只添加后缀，不换算数值。
+\key{value format=percent} 才计算 $100v/M$，自动添加百分号，并忽略 \key{unit}。
+如果原始数据已经是 86.5 这样的百分数，应使用 \key{max=100,unit={\%}}。
+
+\begin{example}{示例 4：已有百分数与自定义标签}
+\gradbar[unit={\%}]{86.5}
+
+\gradbar[max=10,
+  text={8 / 10}]{8}
+
+\gradbar[max=10,
+  text={},precision=0]{8}
+\end{example}
+
+\begin{example}{示例 5：零值和超出最大值}
+\gradbar{0}
+
+\gradbar{100}
+
+\gradbar[max=100,
+  value format=percent]{125}
+\end{example}
+
+零值只有空轨道，不会被强制画出最短长度。很小的正值也不会人为放大；
+实际可见精度受 TeX 长度分辨率限制。
+超出最大值时默认发出警告，并截断彩色区域，标签仍显示真实值。
+
+\note{\key{overflow=error} 会把越界改成明确报错。
+默认范围不接受负数；需要双向条时设置负的 min。非数字、零或负的最大值同样会报错。}
+
+\clearpage
+\section{基础主题与颜色}
+\key{theme} 一次设置填充方式、渐变两端、轨道和文字颜色。
+主题参数之后仍可逐项覆盖颜色；同一选项列表从左向右执行。
+
+\begin{example}{示例 6：四种内置主题}
+\gradbar[theme=blue]{72}
+
+\gradbar[theme=teal]{72}
+
+\gradbar[theme=solid]{72}
+
+\gradbar[theme=gray]{72}
+\end{example}
+
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+\textbf{主题} & \textbf{特征}\\
+\midrule
+\key{blue} & 默认蓝色渐变，适合通用表格。\\
+\key{teal} & 青绿色渐变，适合区分另一组指标。\\
+\key{solid} & 蓝色纯色填充，减少渐变带来的视觉干扰。\\
+\key{gray} & 灰度填充，适合黑白输出；仍应保留数值标签。\\
+\bottomrule
+\end{tabularx}
+
+\begin{example}{示例 7：自定义渐变与轨道}
+\gradbar[
+  theme=blue,
+  left color=violet!80!blue,
+  right color=violet!20,
+  track color=violet!5
+]{68}
+
+\gradbar[
+  theme=teal,
+  fill=solid,
+  left color=orange!85!black,
+  track color=orange!10
+]{68}
+\end{example}
+
+\subsection{颜色参数}
+\key{left color} 是渐变起点，也决定纯色填充的颜色；
+\key{right color} 仅在 \key{fill=gradient} 时生效。
+\key{track color} 控制空轨道，\key{text color} 控制标签。
+颜色可使用 xcolor 的混色表达式。
+
+\note{不要只靠颜色传递关键含义。并列指标应在列标题中写明名称和单位，
+并保留可读的数值。内部标签不会自动调整对比度，需根据背景选择文字颜色。}
+
+
+\clearpage
+\section{内置渐变与单色}
+除前页的四种基础主题外，还提供三组渐变预设。名称沿用原宏包的配色简称，
+通过统一的 \key{theme} 参数调用，不需要重复指定两端颜色。
+
+\begin{example}{新增内置渐变：lbyellow、viblue、cyblu}
+\gradbar[theme=lbyellow]{100}
+
+\gradbar[theme=viblue]{100}
+
+\gradbar[theme=cyblu]{100}
+\end{example}
+
+\key{lbyellow} 为浅蓝至浅黄，\key{viblue} 为浅紫至浅蓝，
+\key{cyblu} 为青色至浅蓝。它们与原有同名快捷命令采用相同的配色公式。
+
+\subsection{九种内置颜色}
+下列颜色可直接交给 \key{color} 使用，无需自行定义。
+\key{color} 设置纯色填充；如果需要渐变，可将相同名称用于
+\key{left color} 或 \key{right color}。
+
+\begin{example}{新增内置单色：直接使用颜色名称}
+\gradbar[color=lightgreen]{80}
+
+\gradbar[color=lightyellow]{100}
+
+\gradbar[color=lightblue]{100}
+
+\gradbar[color=lightred]{100}
+
+\gradbar[color=rose]{50}
+
+\gradbar[color=skyblue]{100}
+
+\gradbar[color=gold]{100}
+
+\gradbar[color=lavender]{100}
+
+\gradbar[color=peach]{100}
+\end{example}
+
+\note{参数按顺序执行。\key{theme=blue,color=rose} 最终使用玫红纯色；
+\key{color=rose,theme=blue} 则恢复蓝色渐变。颜色名称不带反斜杠：
+使用 \key{color=lightblue}，而不是把颜色名称当作命令。}
+
+\clearpage
+\section{标签、尺寸与正文内嵌}
+\begin{example}{示例 8：标签位置}
+\gradbar[label=outside]{64}
+
+\gradbar[label=inside,
+  height=2.5ex,
+  right color=white]{64}
+
+\gradbar[label=none]{64}
+\end{example}
+
+外部标签采用固定宽度、右对齐的槽位，以保持同列对齐。
+内部标签位于整条轨道右端附近，不跟随彩色条的末端移动。
+\key{label=none} 则只显示轨道和填充。
+
+\begin{example}{示例 9：单位、精度和字体}
+\gradbar[max=5000,
+  width=18mm,label width=6em,
+  precision=0,unit={\,ms}]{1250}
+
+\gradbar[width=18mm,
+  precision=2,
+  font={\small\bfseries}]{86.537}
+\end{example}
+
+\begin{example}{示例 10：宽度与高度}
+\gradbar[width=18mm,
+  height=1ex]{70}
+
+\gradbar[width=26mm,
+  height=2ex]{70}
+
+\gradbar[width=26mm,
+  label gap=1em,
+  label width=3em]{70}
+\end{example}
+
+\key{width} 只指定轨道宽度。带外部标签时，总宽度约为轨道宽度、
+\key{label gap} 和 \key{label width} 三者之和。
+这些长度支持 mm、pt、em、ex 等单位。
+
+\begin{example}{示例 11：直接放入正文}
+Completion:
+\gradbar[width=15mm,
+  height=1.2ex,
+  label width=3em,
+  unit={\%},precision=0]{64}
+
+The task is progressing.
+\end{example}
+
+\note{标签默认沿用周围文字的字体。普通表格行高仍由表格本身控制；
+需要更宽松的行距时设置 \key{\arraystretch}。宏包不会修改整张表格的行距。}
+
+\clearpage
+\section{完整案例：模型对比}
+这张表使用两个独立的列范围：准确率最大值为 100，延迟最大值为 50。
+条越长只表示数值越大；准确率通常越高越好，延迟通常越低越好。
+在下面的宽幅案例中，效果放在上方、源码放在下方，避免缩小表格字体。
+
+\begin{example}[text and listing,sidebyside=false]{示例 12：准确率与延迟}
+\begingroup
+\gradbarssetup{
+  width=27mm, height=1.5ex,
+  label width=3.6em, precision=1
+}
+\renewcommand{\arraystretch}{1.65}
+\begin{tabular}{@{}lcc@{}}
+  \toprule
+  Model & Accuracy (\%) & Latency (ms) \\
+  \midrule
+  Baseline
+    & \gradbar{72.4}
+    & \gradbar[theme=teal,max=50]{18.2} \\
+  Compact
+    & \gradbar{81.6}
+    & \gradbar[theme=teal,max=50]{12.5} \\
+  Transformer
+    & \gradbar{89.3}
+    & \gradbar[theme=teal,max=50]{42.8} \\
+  \textbf{Proposed}
+    & \gradbar{92.7}
+    & \gradbar[theme=teal,max=50]{24.1} \\
+  \bottomrule
+\end{tabular}
+\endgroup
+\end{example}
+
+\subsection{嵌入自己的论文}
+在主文档导言区加载 \key{booktabs} 和 \key{gradbars}，然后复制上述代码即可。
+需要标题和交叉引用时，再在外层使用普通 \key{table} 环境、
+\key{\caption} 和 \key{\label}。
+同一列应保持相同的最大值、轨道宽度和标签槽宽。
+
+\clearpage
+\section{完整案例：数据集概览}
+下面将同一组数据分别显示为样本数和总量占比。两列分母都为 125000；
+标签格式不同，但相同数据的彩色条长度保持一致。
+
+\begin{example}[text and listing,sidebyside=false]{示例 13：样本量与占比}
+\begingroup
+\gradbarssetup{
+  max=125000, width=29mm,
+  label width=4.8em, precision=0
+}
+\renewcommand{\arraystretch}{1.65}
+\begin{tabular}{@{}lcc@{}}
+  \toprule
+  Split & Samples & Share of total \\
+  \midrule
+  Training
+    & \gradbar[theme=solid]{87500}
+    & \gradbar[theme=teal,
+        value format=percent,precision=1]{87500} \\
+  Validation
+    & \gradbar[theme=solid]{18750}
+    & \gradbar[theme=teal,
+        value format=percent,precision=1]{18750} \\
+  Test
+    & \gradbar[theme=solid]{18750}
+    & \gradbar[theme=teal,
+        value format=percent,precision=1]{18750} \\
+  Unassigned
+    & \gradbar[theme=solid]{0}
+    & \gradbar[theme=teal,
+        value format=percent,precision=1]{0} \\
+  \bottomrule
+\end{tabular}
+\endgroup
+\end{example}
+
+\note{本例演示较大数值与真实零值。样本数中的分组空白仅用于可读性，
+输入仍必须写成 \key{87500}，不能在数值参数中加入逗号或单位。}
+
+\clearpage
+\section{完整案例：主题与标签总览}
+这个案例把四种主题、三种标签位置、自定义标签和正文用法放在一起，
+可直接复制到文档中比较效果。
+
+\begin{example}[text and listing,sidebyside=false]{示例 14：主题与布局速查}
+\begingroup
+\gradbarssetup{
+  width=30mm, label width=3.8em,
+  unit={\%}, precision=0
+}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{@{}ll@{}}
+  \toprule
+  Style & Preview \\
+  \midrule
+  Blue    & \gradbar[theme=blue]{72} \\
+  Teal    & \gradbar[theme=teal]{72} \\
+  Solid   & \gradbar[theme=solid]{72} \\
+  Gray    & \gradbar[theme=gray]{72} \\
+  Inside  & \gradbar[label=inside,
+              height=2.5ex,right color=white]{64} \\
+  Custom  & \gradbar[theme=teal,max=10,
+              text={8 / 10}]{8} \\
+  No label & \gradbar[theme=gray,label=none]{64} \\
+  \bottomrule
+\end{tabular}
+
+Completion:
+\gradbar[width=16mm,label width=3em]{64}.
+\endgroup
+\end{example}
+
+\subsection{如何选用}
+为一组指标选择稳定的样式即可，不必为每个数值选择不同的颜色。
+需要黑白输出时选择灰度；需要减少视觉装饰时选择纯色。
+精确比较依靠数值标签，彩色条提供快速浏览的线索。
+
+
+\clearpage
+\section{圆角、目标线与条尾标签}
+\begin{example}{示例 15：圆角与真实长度}
+\gradbar[rounded=2pt]{72}
+
+\gradbar[rounded=10pt]{1}
+
+\gradbar[rounded=10pt]{0}
+\end{example}
+
+\key{rounded} 为圆角半径，默认 \key{0pt}。实际半径会被限制在轨道高度和
+彩色条宽度允许的范围内。小数值不被放大，零值仍只显示空轨道。
+
+\begin{example}{示例 16：目标线}
+\gradbar[target=80]{72}
+
+\gradbar[target=80,
+  target color=red!70!black]{92}
+\end{example}
+
+\key{target} 使用与输入值相同的单位，不是相对位置。目标线必须位于
+\key{min} 到 \key{max} 之间，越界会报错。
+默认不绘制目标线；\key{target={}} 可清除局部或继承的目标设置。
+
+\begin{example}{示例 17：标签跟随彩色条末端}
+\gradbar[label=end]{15}
+
+\gradbar[label=end]{72}
+
+\gradbar[label=end]{100}
+\end{example}
+
+\key{label=end} 把标签放在彩色条末端上方。靠近左右边界时，
+会在轨道范围内向内调整标签位置，避免常规数值标签越界。
+因此它会增加行高，但不为外部标签槽预留水平空间。
+
+\note{很长的自定义标签可能比轨道本身还宽；此时应增大 \key{width}，
+或改用 \key{label=outside} 并设置足够的 \key{label width}。
+上方标签不改变正文中的轨道基线。}
+
+\clearpage
+\section{条件配色}
+\key{thresholds} 接受两个严格递增的阈值，\key{threshold colors}
+接受三个颜色。颜色选择基于原始输入值，不基于四舍五入后的标签，
+也不基于截断后的条长。
+
+\begin{example}{示例 18：低、中、高三段配色}
+\gradbarssetup{
+  thresholds={60,80},
+  threshold colors={
+    lightred,gold,lightgreen
+  }
+}
+\gradbar{59}
+
+\gradbar{60}
+
+\gradbar{79}
+
+\gradbar{80}
+
+\gradbar{92}
+\end{example}
+
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+\textbf{条件} & \textbf{本例颜色}\\
+\midrule
+$v<60$ & lightred\\
+$60\leq v<80$ & gold\\
+$v\geq80$ & lightgreen\\
+\bottomrule
+\end{tabularx}
+
+\begin{example}{示例 19：与目标和圆角叠加}
+\gradbar[
+  width=30mm,
+  thresholds={60,80},
+  rounded=2pt,
+  target=80,
+  label=end
+]{72}
+\end{example}
+
+\note{启用条件配色后，所选颜色采用纯色填充，并优先于主题或
+\key{negative color}。默认三色为 lightred、gold、lightgreen。
+用 \key{thresholds={}} 关闭。阈值代表什么、数值越高是否越好，
+应在表格标题或注释中说明。}
+
+\clearpage
+\section{正负双向条与误差标记}
+\key{min} 默认是零。设置负的下限后，零线位于
+$W(-\mathrm{min})/(\mathrm{max}-\mathrm{min})$，
+负值向左、正值向右。非对称范围的零线不在轨道中心。
+上限必须为正，下限必须不大于零。
+
+\begin{example}{示例 20：共用零线的双向条}
+\gradbarssetup{
+  min=-50,max=50,
+  width=30mm,
+  negative color=lightred
+}
+\gradbar{-30}
+
+\gradbar{0}
+
+\gradbar{30}
+\end{example}
+
+负值默认使用 \key{negative color=lightred} 的纯色；
+正值使用所选主题。跨零范围不接受 \key{value format=percent}，
+避免把位置比例当作有意义的百分比；百分数变化可直接使用 \key{unit}。
+
+\begin{example}{示例 21：对称与非对称误差}
+\gradbar[error=5]{72}
+
+\gradbar[error minus=4,
+  error plus=9]{72}
+
+\gradbar[min=-50,max=50,
+  error minus=8,error plus=12]{-5}
+\end{example}
+
+\key{error=e} 表示区间 $[v-e,v+e]$；
+\key{error minus} 和 \key{error plus} 分别指定非负的上下误差幅度，
+不是区间端点。只指定一侧时，另一侧默认为零。
+误差单位与数据相同，\key{error color} 控制线色；
+\key{error={}} 清除两侧误差。误差含义由用户说明，宏包不计算置信区间。
+
+\begin{example}{示例 22：组合效果}
+\gradbar[
+  min=-50,max=50,width=30mm,
+  rounded=2pt,target=20,
+  error=5,label=end
+]{-25}
+\end{example}
+
+\note{数值及误差端点超出范围时，默认发出警告并截断显示，
+原始标签保持不变。截断的误差端点不代表真实端点。
+严谨的区间图建议使用 \key{overflow=error}，或扩大范围以显示完整误差。}
+
+\clearpage
+\section{参数速查与兼容说明}
+\begingroup\small
+\begin{tabularx}{\linewidth}{@{}p{31mm}p{25mm}X@{}}
+\toprule
+\textbf{参数} & \textbf{默认值} & \textbf{含义与可选值}\\
+\midrule
+\key{min} & \key{0} & 范围下限，必须为零或负值。\\
+\key{max} & \key{100} & 范围上限，必须为正值。\\
+\key{width} & \key{24mm} & 正的轨道宽度，不含外部标签。\\
+\key{height} & \key{1.5ex} & 正的轨道高度。\\
+\key{theme} & \key{blue} & blue、teal、solid、gray、lbyellow、viblue、cyblu。\\
+\key{label} & \key{outside} & outside、inside、none、end。\\
+\key{label width} & \key{4.5em} & 外部标签固定槽宽。\\
+\key{label gap} & \key{.6em} & 轨道与外部标签之间的间隔。\\
+\key{precision} & \key{1} & 0--6 的整数；保留末尾零。\\
+\key{value format} & \key{value} & 原始数值 value 或计算占比 percent。\\
+\key{unit} & 空 & 原始数值的后缀；占比模式忽略此项。\\
+\key{text} & 空 & 覆盖整个标签；空值恢复自动格式。\\
+\key{overflow} & \key{clip} & clip 警告并截断，或 error 报错。\\
+\key{color} & 未指定 & 指定单色，并切换为纯色填充。\\
+\key{fill} & 由主题指定 & gradient 或 solid。\\
+\key{left color} & 由主题指定 & 渐变起点，或纯色填充的颜色。\\
+\key{right color} & 由主题指定 & 渐变终点。\\
+\key{track color} & 由主题指定 & 空轨道颜色。\\
+\key{text color} & 由主题指定 & 标签文字颜色。\\
+\key{font} & 沿用周围字体 & 标签字体声明。\\
+\bottomrule
+\end{tabularx}
+\endgroup
+
+\subsection{从 v2 迁移}
+旧的 \key{\gbar}、\key{\shadebar}、\key{\setscale} 和 18 个配色快捷命令仍保留。
+旧接口的参数顺序与“原始值加百分号”标签继续兼容；
+新文档建议改用语义明确的 \key{\gradbar}。
+
+\begin{codeonly}
+% Old:
+\gbar{blue}[white]{100}{70}
+% New:
+\gradbar[left color=blue,right color=white,unit={\%}]{70}
+\end{codeonly}
+
+渲染并非逐像素兼容：新版增加空轨道，零值不再强制最短条长，并校验越界。
+旧的命名节点 \key{(a)} 不再创建。本版恢复了九种内置颜色名称；
+其余旧颜色名称若在文档中使用，需要自行定义。中文支持由主文档配置。
+
+\subsection{已知边界}
+本版不提供堆叠条、CSV 导入或自动列最大值。
+不要把绘图命令直接放入 siunitx 的数值型 S 列或 PDF 书签。
+本项目目前以 XeLaTeX 作为使用、编译和测试入口。图形尚未生成专用的无障碍 PDF 语义标签。
+\end{document}

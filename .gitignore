@@ -1,0 +1,13 @@
+build/
+__pycache__/
+*.aux
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.toc
+*.listing
+# Superseded local manual exports
+docs/gradbars-manual.pdf
+docs/gradbars-manual-xelatex.pdf

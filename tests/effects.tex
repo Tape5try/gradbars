@@ -1,0 +1,21 @@
+\documentclass{article}
+\usepackage{gradbars}
+\pagestyle{empty}
+\begin{document}
+ROUND: \gradbar[rounded=3pt]{72}\par
+TINY: \gradbar[rounded=50pt]{.1}\par
+ZERO: \gradbar[rounded=50pt]{0}\par
+TARGET: \gradbar[target=80]{72}\par
+LOW: \gradbar[thresholds={60,80}]{59}\par
+EQUAL: \gradbar[thresholds={60,80}]{60}\par
+HIGH: \gradbar[thresholds={60,80}]{80}\par
+END: \gradbar[label=end]{100}\par
+ENDZERO: \gradbar[label=end]{0}\par
+NEGATIVE: \gradbar[min=-100,max=100,label=end]{-35}\par
+POSITIVE: \gradbar[min=-100,max=100]{35}\par
+ASYMMETRIC: \gradbar[min=-20,max=80]{-10}\par
+ERROR: \gradbar[error=5,target=80]{72}\par
+INTERVAL: \gradbar[min=-50,max=50,error minus=8,error plus=12]{-5}\par
+COMBINED: \gradbar[min=-50,max=50,rounded=2pt,target=20,
+  thresholds={-10,10},error=5,label=end]{-25}\par
+\end{document}

@@ -1,0 +1,44 @@
+\documentclass{article}
+\usepackage{booktabs,array}
+\usepackage{gradbars}
+\begin{document}
+\gradbar{0} \gradbar{0.1}
+
+\gradbar{100}
+
+\gradbar[max=200]{50} \gradbar[max=200,value format=percent]{50}
+
+\gradbar[max=125000,precision=0]{87500}
+
+\gradbar[theme=teal,unit={\,ms},label width=5em]{10.25}
+
+\gradbar[theme=solid,label=inside]{70}
+\gradbar[theme=gray,label=none]{70}
+\gradbar[text={8 / 10},max=10]{8}
+
+{\gradbarssetup{theme=teal,max=10}\gradbar{8}} \gradbar{80}
+
+\begin{tabular}{lc}
+\toprule
+Default & \gradbar{50}\\
+Small & {\small\gradbar{50}}\\
+Large & {\large\gradbar{50}}\\
+\bottomrule
+\end{tabular}
+
+\begin{tikzpicture}\gbar{blue}[white]{100}{45.5}\end{tikzpicture}
+\cbl{100}{70}
+\lbcyan{100}{70}
+
+% Added built-in gradient presets.
+\gradbar[theme=lbyellow]{100}
+
+\gradbar[theme=viblue]{100}
+
+\gradbar[theme=cyblu]{100}
+
+% Public color names work without user definitions.
+\foreach \barcolor in {lightgreen,lightyellow,lightblue,lightred,rose,skyblue,gold,lavender,peach}{%
+  \gradbar[color=\barcolor]{80}\par
+}
+\end{document}
