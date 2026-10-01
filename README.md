@@ -5,7 +5,7 @@
 Add a bar directly to a table cell or a line of text with one command.
 Seven themes and nine built-in colors, shared column scales, explicit units, and no external graphics.
 
-[中文说明](README.zh-CN.md) · [Illustrated manual (Chinese PDF)](docs/gradbars-manual-v3.1.pdf) · [API reference](docs/api.md) · [Migration from v2](docs/migration.md)
+[中文说明](README.zh-CN.md) · [Illustrated manual (Chinese PDF)](gradbars-manual-v0.0.1.pdf) · [API reference](docs/api.md)
 
 ![Model comparison table made with gradbars](docs/images/model-comparison.png)
 
@@ -80,7 +80,7 @@ Built-in solid color usage: `\gradbar[color=lightblue]{80}`.
 `lightgreen`, `lightyellow`, `lightblue`, `lightred`, `rose`, `skyblue`, `gold`, `lavender`, `peach`.
 
 
-## New effects in v3.1
+## Effects in v0.0.1
 
 ```latex
 \gradbar[rounded=2pt]{72}
@@ -94,7 +94,7 @@ Built-in solid color usage: `\gradbar[color=lightblue]{80}`.
 
 ## Three complete examples
 
-The [13-page illustrated manual](docs/gradbars-manual-v3.1.pdf) brings all three
+The [13-page illustrated manual](gradbars-manual-v0.0.1.pdf) brings all three
 applications and 22 numbered examples into one document. Short examples put the
 output beside highlighted source; full tables put the output above the source.
 Both views are generated from the same code. The editable source is
@@ -104,43 +104,13 @@ To rebuild the Chinese manual, install the Chinese language collection, includin
 ctex and Fandol fonts, and run XeLaTeX twice from the repository root:
 
 ~~~sh
-xelatex -interaction=nonstopmode -halt-on-error -output-directory=build docs/gradbars-manual.tex
-xelatex -interaction=nonstopmode -halt-on-error -output-directory=build docs/gradbars-manual.tex
+xelatex -interaction=nonstopmode -halt-on-error -jobname=gradbars-manual-v0.0.1 docs/gradbars-manual.tex
+xelatex -interaction=nonstopmode -halt-on-error -jobname=gradbars-manual-v0.0.1 docs/gradbars-manual.tex
 ~~~
 
 All data in the examples are illustrative.
 
-| Source | What it demonstrates | PDF |
-| --- | --- | --- |
-| [Model comparison](examples/model-comparison.tex) | Accuracy and latency with different column maxima | [Preview](examples/pdf/model-comparison.pdf) |
-| [Dataset profile](examples/dataset-profile.tex) | Large counts, computed percentages, and zero | [Preview](examples/pdf/dataset-profile.pdf) |
-| [Theme gallery](examples/theme-gallery.tex) | All themes, label positions, and inline use | [Preview](examples/pdf/theme-gallery.pdf) |
-
-![Dataset counts and percentage shares](docs/images/dataset-profile.png)
-
-Compile from the repository root after creating `build/`:
-
-```sh
-xelatex -interaction=nonstopmode -halt-on-error -output-directory=build examples/model-comparison.tex
-```
-
-Alternatively, copy `gradbars.sty` and an example into the same folder.
-Examples additionally use `geometry`, `lmodern`, `booktabs`, and `array`.
-The package loads TikZ, `xparse`, and `expl3`; it does not load `ctex`.
-
-## Development
-
-The test runner uses only Python's standard library and an installed TeX engine.
-Install Poppler for PDF text assertions.
-
-```sh
-python tests/run.py --engine xelatex --require-pdf-text
-```
-
-Tests compile examples, check fixed widths and local configuration, exercise
-invalid input, and verify labels extracted from the resulting PDF.
-Generated files stay under `build/<engine>/`.
-GitHub Actions is configured to run these checks on pushes and pull requests.
+All examples and source are included in the manual. The compiled PDF is saved in the repository root. GitHub Actions builds the manual on pushes and pull requests.
 
 The scope is compact data bars, including signed values, targets and error intervals.
 CSV ingestion, automatic column maxima, stacking, and accessible tagged chart descriptions are not implemented. Use a dedicated plotting package for full chart axes.

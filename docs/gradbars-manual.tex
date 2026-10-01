@@ -1,6 +1,6 @@
 % !TeX program = xelatex
 % Compile twice from the repository root:
-% xelatex -interaction=nonstopmode -halt-on-error -output-directory=build docs/gradbars-manual.tex
+% xelatex -interaction=nonstopmode -halt-on-error -jobname=gradbars-manual-v0.0.1 docs/gradbars-manual.tex
 \documentclass[10pt,a4paper,fontset=fandol]{ctexart}
 \usepackage[margin=18mm,top=19mm,bottom=20mm,headheight=15pt]{geometry}
 \usepackage{gradbars}
@@ -25,7 +25,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\small\sffamily\color{manualMuted}gradbars\quad 宏包手册}
-\fancyhead[R]{\small\sffamily\color{manualMuted}v3.1.0}
+\fancyhead[R]{\small\sffamily\color{manualMuted}v0.0.1}
 \fancyfoot[L]{\footnotesize\color{manualMuted}效果与源码对照 \enspace / \enspace XeLaTeX}
 \fancyfoot[R]{\small\thepage}
 \renewcommand{\headrulewidth}{.3pt}
@@ -65,7 +65,7 @@
 }
 \begin{document}
 \thispagestyle{empty}
-{\small\sffamily\color{gradbarsBlue}THE GRADBARS PACKAGE \hfill VERSION 3.1.0}
+{\small\sffamily\color{gradbarsBlue}THE GRADBARS PACKAGE \hfill VERSION 0.0.1}
 \vspace{13mm}
 
 {\fontsize{42}{46}\selectfont\sffamily\bfseries gradbars}\par
@@ -98,7 +98,7 @@
 \endgroup
 \vfill
 {\small\color{manualMuted}2026 年 10 月 2 日 \quad · \quad MIT 许可证\par
-适用于 gradbars 3.1.0。示例数据仅用于演示，不代表真实实验结果。}
+适用于 gradbars 0.0.1。示例数据仅用于演示，不代表真实实验结果。}
 
 \clearpage
 \section{安装与快速开始}
@@ -199,11 +199,13 @@
 默认范围不接受负数；需要双向条时设置负的 min。非数字、零或负的最大值同样会报错。}
 
 \clearpage
-\section{基础主题与颜色}
+\section{主题与内置颜色}
 \key{theme} 一次设置填充方式、渐变两端、轨道和文字颜色。
 主题参数之后仍可逐项覆盖颜色；同一选项列表从左向右执行。
+示例 6 集中展示 16 种内置配色，包括四种基础主题、三种渐变预设和九种单色。
+渐变预设通过 \key{theme} 调用，内置颜色通过 \key{color} 设置纯色填充。
 
-\begin{example}{示例 6：四种内置主题}
+\begin{example}[before upper={\fontsize{9}{10.6}\selectfont\setlength{\parskip}{13.8pt}}]{示例 6：内置主题与颜色}
 \gradbar[theme=blue]{72}
 
 \gradbar[theme=teal]{72}
@@ -211,18 +213,61 @@
 \gradbar[theme=solid]{72}
 
 \gradbar[theme=gray]{72}
+
+\gradbar[theme=lbyellow]{72}
+
+\gradbar[theme=viblue]{72}
+
+\gradbar[theme=cyblu]{72}
+
+\gradbar[color=lightgreen]{72}
+
+\gradbar[color=lightyellow]{72}
+
+\gradbar[color=lightblue]{72}
+
+\gradbar[color=lightred]{72}
+
+\gradbar[color=rose]{72}
+
+\gradbar[color=skyblue]{72}
+
+\gradbar[color=gold]{72}
+
+\gradbar[color=lavender]{72}
+
+\gradbar[color=peach]{72}
 \end{example}
 
+\clearpage
+\begingroup
+\small
+\renewcommand{\arraystretch}{1.15}
 \begin{tabularx}{\linewidth}{@{}lX@{}}
 \toprule
-\textbf{主题} & \textbf{特征}\\
+\textbf{主题或颜色} & \textbf{特征与适用场景}\\
 \midrule
 \key{blue} & 默认蓝色渐变，适合通用表格。\\
 \key{teal} & 青绿色渐变，适合区分另一组指标。\\
 \key{solid} & 蓝色纯色填充，减少渐变带来的视觉干扰。\\
 \key{gray} & 灰度填充，适合黑白输出；仍应保留数值标签。\\
+\midrule
+\key{lbyellow} & 浅蓝至浅黄渐变，适合浅色背景下的柔和展示。\\
+\key{viblue} & 浅紫至浅蓝渐变，适合低饱和度的对比表格。\\
+\key{cyblu} & 青色至浅蓝渐变，适合突出一组重点指标。\\
+\midrule
+\key{lightgreen} & 浅绿纯色，适合展示完成度或达标指标。\\
+\key{lightyellow} & 浅黄纯色，适合轻量提示；浅色背景下应保留深色标签。\\
+\key{lightblue} & 浅蓝纯色，适合通用数据和大面积表格。\\
+\key{lightred} & 浅红纯色，适合标出需要关注的指标。\\
+\key{rose} & 玫红纯色，适合强调重点数据或区分对照组。\\
+\key{skyblue} & 天蓝纯色，适合清晰呈现进度和比例。\\
+\key{gold} & 金黄纯色，适合突出关键结果或优选方案。\\
+\key{lavender} & 淡紫纯色，适合柔和区分不同类别。\\
+\key{peach} & 蜜桃纯色，适合暖色风格的辅助指标。\\
 \bottomrule
 \end{tabularx}
+\endgroup
 
 \begin{example}{示例 7：自定义渐变与轨道}
 \gradbar[
@@ -241,6 +286,12 @@
 \end{example}
 
 \subsection{颜色参数}
+内置配色无需自行定义。主题和渐变预设使用 \key{theme}；单色使用 \key{color}。
+单色名称也可用于 \key{left color} 或 \key{right color}，名称不带反斜杠。
+
+\key{theme=blue,color=rose} 使用玫红纯色；
+\key{color=rose,theme=blue} 则恢复蓝色渐变。
+
 \key{left color} 是渐变起点，也决定纯色填充的颜色；
 \key{right color} 仅在 \key{fill=gradient} 时生效。
 \key{track color} 控制空轨道，\key{text color} 控制标签。
@@ -249,51 +300,6 @@
 \note{不要只靠颜色传递关键含义。并列指标应在列标题中写明名称和单位，
 并保留可读的数值。内部标签不会自动调整对比度，需根据背景选择文字颜色。}
 
-
-\clearpage
-\section{内置渐变与单色}
-除前页的四种基础主题外，还提供三组渐变预设。名称沿用原宏包的配色简称，
-通过统一的 \key{theme} 参数调用，不需要重复指定两端颜色。
-
-\begin{example}{新增内置渐变：lbyellow、viblue、cyblu}
-\gradbar[theme=lbyellow]{100}
-
-\gradbar[theme=viblue]{100}
-
-\gradbar[theme=cyblu]{100}
-\end{example}
-
-\key{lbyellow} 为浅蓝至浅黄，\key{viblue} 为浅紫至浅蓝，
-\key{cyblu} 为青色至浅蓝。它们与原有同名快捷命令采用相同的配色公式。
-
-\subsection{九种内置颜色}
-下列颜色可直接交给 \key{color} 使用，无需自行定义。
-\key{color} 设置纯色填充；如果需要渐变，可将相同名称用于
-\key{left color} 或 \key{right color}。
-
-\begin{example}{新增内置单色：直接使用颜色名称}
-\gradbar[color=lightgreen]{80}
-
-\gradbar[color=lightyellow]{100}
-
-\gradbar[color=lightblue]{100}
-
-\gradbar[color=lightred]{100}
-
-\gradbar[color=rose]{50}
-
-\gradbar[color=skyblue]{100}
-
-\gradbar[color=gold]{100}
-
-\gradbar[color=lavender]{100}
-
-\gradbar[color=peach]{100}
-\end{example}
-
-\note{参数按顺序执行。\key{theme=blue,color=rose} 最终使用玫红纯色；
-\key{color=rose,theme=blue} 则恢复蓝色渐变。颜色名称不带反斜杠：
-使用 \key{color=lightblue}，而不是把颜色名称当作命令。}
 
 \clearpage
 \section{标签、尺寸与正文内嵌}
@@ -611,7 +617,7 @@ $W(-\mathrm{min})/(\mathrm{max}-\mathrm{min})$，
 严谨的区间图建议使用 \key{overflow=error}，或扩大范围以显示完整误差。}
 
 \clearpage
-\section{参数速查与兼容说明}
+\section{参数速查与使用限制}
 \begingroup\small
 \begin{tabularx}{\linewidth}{@{}p{31mm}p{25mm}X@{}}
 \toprule
@@ -640,22 +646,6 @@ $W(-\mathrm{min})/(\mathrm{max}-\mathrm{min})$，
 \bottomrule
 \end{tabularx}
 \endgroup
-
-\subsection{从 v2 迁移}
-旧的 \key{\gbar}、\key{\shadebar}、\key{\setscale} 和 18 个配色快捷命令仍保留。
-旧接口的参数顺序与“原始值加百分号”标签继续兼容；
-新文档建议改用语义明确的 \key{\gradbar}。
-
-\begin{codeonly}
-% Old:
-\gbar{blue}[white]{100}{70}
-% New:
-\gradbar[left color=blue,right color=white,unit={\%}]{70}
-\end{codeonly}
-
-渲染并非逐像素兼容：新版增加空轨道，零值不再强制最短条长，并校验越界。
-旧的命名节点 \key{(a)} 不再创建。本版恢复了九种内置颜色名称；
-其余旧颜色名称若在文档中使用，需要自行定义。中文支持由主文档配置。
 
 \subsection{已知边界}
 本版不提供堆叠条、CSV 导入或自动列最大值。

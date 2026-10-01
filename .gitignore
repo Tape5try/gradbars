@@ -1,4 +1,5 @@
 build/
+examples/
 __pycache__/
 *.aux
 *.log
@@ -9,5 +10,4 @@ __pycache__/
 *.toc
 *.listing
 # Superseded local manual exports
-docs/gradbars-manual.pdf
-docs/gradbars-manual-xelatex.pdf
+docs

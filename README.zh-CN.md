@@ -5,7 +5,7 @@
 适合论文中的模型对比、数据集统计和报告中的进度展示。支持正文内嵌、
 七种主题与九种内置颜色、统一列范围和明确的数值语义。
 
-[English](README.md) · [图文宏包手册 PDF](docs/gradbars-manual-v3.1.pdf) · [完整参数说明](docs/api.md) · [旧版迁移](docs/migration.md)
+[English](README.md) · [图文宏包手册 PDF](gradbars-manual-v0.0.1.pdf) · [完整参数说明](docs/api.md)
 
 ![模型对比表格](docs/images/model-comparison.png)
 
@@ -89,7 +89,7 @@ Proposed & \gradbar{92.7} \\
 `lightgreen`, `lightyellow`, `lightblue`, `lightred`, `rose`, `skyblue`, `gold`, `lavender`, `peach`.
 
 
-## 六种新效果（v3.1）
+## 六种效果（v0.0.1）
 
 ```latex
 \gradbar[rounded=2pt]{72}
@@ -103,50 +103,22 @@ Proposed & \gradbar{92.7} \\
 
 ## 三个完整示例
 
-优先阅读 [13 页图文宏包手册](docs/gradbars-manual-v3.1.pdf)：22 个编号示例、
-三个完整应用案例、目录、参数速查与迁移说明均集中在一个文档中。
+优先阅读 [13 页图文宏包手册](gradbars-manual-v0.0.1.pdf)：22 个编号示例、
+三个完整应用案例、目录、参数速查与使用限制均集中在一个文档中。
 短示例采用左右对照，完整表格采用“上侧效果、下侧源码”；效果与高亮源码
 由同一段代码生成。[手册源码](docs/gradbars-manual.tex) 可继续编辑。
 
-安装包含 ctex 和 Fandol 字体的中文 TeX 支持后，在仓库根目录创建 build
-文件夹并用 XeLaTeX 编译两次，以生成完整目录：
+安装包含 ctex 和 Fandol 字体的中文 TeX 支持后，在仓库根目录用 XeLaTeX 编译两次，以生成完整目录：
 
 ~~~sh
-xelatex -interaction=nonstopmode -halt-on-error -output-directory=build docs/gradbars-manual.tex
-xelatex -interaction=nonstopmode -halt-on-error -output-directory=build docs/gradbars-manual.tex
+xelatex -interaction=nonstopmode -halt-on-error -jobname=gradbars-manual-v0.0.1 docs/gradbars-manual.tex
+xelatex -interaction=nonstopmode -halt-on-error -jobname=gradbars-manual-v0.0.1 docs/gradbars-manual.tex
 ~~~
 
 示例数据均为演示数据，不代表真实实验结论。
 
-| 示例 | 内容 | PDF |
-| --- | --- | --- |
-| [模型对比](examples/model-comparison.tex) | 准确率、延迟、同列统一范围 | [查看](examples/pdf/model-comparison.pdf) |
-| [数据集概览](examples/dataset-profile.tex) | 大数值、占比计算、零值 | [查看](examples/pdf/dataset-profile.pdf) |
-| [主题展示](examples/theme-gallery.tex) | 七种主题与九种内置颜色、标签位置、正文内嵌 | [查看](examples/pdf/theme-gallery.pdf) |
+完整示例与源码均收录在手册中。编译后的 `gradbars-manual-v0.0.1.pdf` 直接保存在仓库根目录。GitHub Actions 会在推送和拉取请求时编译手册。
 
-![数据集数量与占比](docs/images/dataset-profile.png)
-
-在仓库根目录创建 `build` 文件夹，然后运行：
-
-```sh
-xelatex -interaction=nonstopmode -halt-on-error -output-directory=build examples/model-comparison.tex
-```
-
-也可以将宏包和任意示例复制到同一文件夹编译。示例额外使用
-`geometry`、`lmodern`、`booktabs`、`array`。
-
-## 测试与开发
-
-安装 TeX、Python，以及用于 PDF 文本校验的 Poppler 后运行：
-
-```sh
-python tests/run.py --engine xelatex --require-pdf-text
-```
-
-测试覆盖完整示例、固定宽度、配置作用域、错误输入和实际 PDF 标签。
-仓库包含 GitHub Actions 配置；推送后会运行相同检查。
-
-本版支持正负数据条、目标线和误差区间，暂不提供自动列范围、CSV 导入、堆叠条或图表语义的无障碍 PDF 标记。旧接口仍有兼容入口，
-具体差异见[迁移说明](docs/migration.md)。
+本版支持正负数据条、目标线和误差区间，暂不提供自动列范围、CSV 导入、堆叠条或图表语义的无障碍 PDF 标记。
 
 代码采用 [MIT 许可证](LICENSE)。

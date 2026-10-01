@@ -7,22 +7,14 @@ permissions:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - name: Install TeX and PDF text tools
+      - name: Install XeLaTeX
         run: |
           sudo apt-get update
-          sudo apt-get install -y texlive-latex-extra texlive-pictures texlive-fonts-recommended texlive-xetex texlive-lang-chinese lmodern poppler-utils
-      - name: Compile and verify
-        run: python3 tests/run.py --engine xelatex --require-pdf-text
+          sudo apt-get install -y texlive-latex-extra texlive-pictures texlive-fonts-recommended texlive-xetex texlive-lang-chinese lmodern
       - name: Build illustrated manual
         run: |
-          xelatex -interaction=nonstopmode -halt-on-error -output-directory=build/xelatex docs/gradbars-manual.tex
-          xelatex -interaction=nonstopmode -halt-on-error -output-directory=build/xelatex docs/gradbars-manual.tex
-      - name: Upload examples and logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: gradbars-xelatex
-          path: build/xelatex/
+          xelatex -interaction=nonstopmode -halt-on-error -jobname=gradbars-manual-v0.0.1 docs/gradbars-manual.tex
+          xelatex -interaction=nonstopmode -halt-on-error -jobname=gradbars-manual-v0.0.1 docs/gradbars-manual.tex

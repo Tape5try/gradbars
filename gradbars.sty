@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}[2020/10/01]
-\ProvidesPackage{gradbars}[2026/10/02 v3.1.0 Inline data bars for LaTeX]
+\ProvidesPackage{gradbars}[2026/10/02 v0.0.1 Inline data bars for LaTeX]
 \RequirePackage{tikz}
 \RequirePackage{xparse}
 \RequirePackage{expl3}
@@ -11,7 +11,7 @@
 \definecolor{gradbarsTealLight}{HTML}{5EEAD4}
 \definecolor{gradbarsInk}{HTML}{243247}
 \definecolor{gradbarsTrack}{HTML}{EDF2F7}
-% Public built-in palette, using the original RGB values.
+% Public built-in palette.
 \definecolor{lightgreen}{RGB}{144,238,144}
 \definecolor{lightyellow}{RGB}{255,255,224}
 \definecolor{lightblue}{RGB}{173,216,230}
@@ -325,7 +325,7 @@
     \PackageError{gradbars}{Height must be positive}{Use a length such as 1.5ex.}%
   \fi
   \ifgradbars@valid
-    \iftikz@inside@picture
+    \ifpgfpicture
       \begin{scope}\gradbars@draw\end{scope}%
     \else
       \tikz[baseline={([yshift=-.5ex]0,{.5*\gradbars@height})}]{\gradbars@draw}%
@@ -335,49 +335,23 @@
 \NewDocumentCommand\gradbar{O{} m}{%
   \leavevmode\begingroup
     \pgfkeys{/gradbars,#1}%
+    % Resolve font-relative dimensions in the surrounding text font.
+    \ifpgfpicture
+      \pgfinterruptpicture
+      \font@name
+      \edef\gradbars@resolved{%
+        \noexpand\endpgfinterruptpicture
+        \def\noexpand\gradbars@width{\the\dimexpr\gradbars@width\relax}%
+        \def\noexpand\gradbars@height{\the\dimexpr\gradbars@height\relax}%
+        \def\noexpand\gradbars@rounded{\the\dimexpr\gradbars@rounded\relax}%
+        \def\noexpand\gradbars@gap{\the\dimexpr\gradbars@gap\relax}%
+        \def\noexpand\gradbars@labelwidth{\the\dimexpr\gradbars@labelwidth\relax}%
+      }%
+      \gradbars@resolved
+    \fi
     \def\gradbars@value{#2}%
     \gradbars@render
   \endgroup
 }
 
-% Deprecated v2 API. Raw-percent labels and argument order are retained.
-\providecommand\barwidth{2}
-\providecommand\barheight{0.5}
-\providecommand\thescale{100}
-\providecommand\setscale[1]{\renewcommand\thescale{#1}}
-\NewDocumentCommand\shadebar{O{black} O{white} m}{%
-  \begingroup
-    \def\gradbars@legacycolor{#1}%
-    \ifx\gradbars@legacycolor\@empty\def\gradbars@legacycolor{black}\fi
-    \gradbar[width=\barwidth cm,height=\barheight cm,max=\thescale,
-      left color=\gradbars@legacycolor,right color=#2,fill=gradient,
-      label=inside,value format=value,unit={\%},precision=1,text={#3\%}]{#3}%
-  \endgroup
-}
-\NewDocumentCommand\gbar{m O{white} m m}{%
-  \begingroup\renewcommand\thescale{#3}\shadebar[#1][#2]{#4}\endgroup
-}
-\newcommand\cbl[2]{\gbar{cyan!70!blue}[cyan!20]{#1}{#2}}
-\newcommand\cborange[2]{\gbar{orange!70!black}[orange!15]{#1}{#2}}
-\newcommand\cbhot[2]{\gbar{red!60!orange}[yellow!30]{#1}{#2}}
-\definecolor{gradbarsLegacyLightBlue}{RGB}{173,216,230}
-\definecolor{gradbarsLegacyLightYellow}{RGB}{255,255,224}
-\definecolor{gradbarsLegacyLightGreen}{RGB}{144,238,144}
-\definecolor{gradbarsLegacyLightRed}{RGB}{255,160,122}
-\definecolor{gradbarsLegacyMint}{RGB}{152,255,152}
-\newcommand\lbcyan[2]{\gbar{gradbarsLegacyLightBlue}[cyan!70]{#1}{#2}}
-\newcommand\lbyellow[2]{\gbar{gradbarsLegacyLightBlue!90}[gradbarsLegacyLightYellow!60]{#1}{#2}}
-\newcommand\viblue[2]{\gbar{violet!20}[gradbarsLegacyLightBlue!70]{#1}{#2}}
-\newcommand\grcy[2]{\gbar{green!70!cyan}[cyan!30]{#1}{#2}}
-\newcommand\magpink[2]{\gbar{magenta!70}[pink!40]{#1}{#2}}
-\newcommand\blupur[2]{\gbar{blue!60!purple}[purple!30]{#1}{#2}}
-\newcommand\mintgr[2]{\gbar{gradbarsLegacyMint}[green!30]{#1}{#2}}
-\newcommand\cyblu[2]{\gbar{cyan}[blue!20]{#1}{#2}}
-\newcommand\blkgray[2]{\gbar{black!80}[gray!50]{#1}{#2}}
-\newcommand\lyblue[2]{\gbar{gradbarsLegacyLightYellow!60}[gradbarsLegacyLightBlue!70]{#1}{#2}}
-\newcommand\lgblue[2]{\gbar{gradbarsLegacyLightGreen}[gradbarsLegacyLightBlue!70]{#1}{#2}}
-\newcommand\lrblue[2]{\gbar{gradbarsLegacyLightRed}[gradbarsLegacyLightBlue!70]{#1}{#2}}
-\newcommand\rorcyan[2]{\gbar{red!10!orange}[cyan!40]{#1}{#2}}
-\newcommand\dglg[2]{\gbar{green!70!black}[green!25]{#1}{#2}}
-\newcommand\gyrd[2]{\gbar{gray!60!black}[red!60!gray]{#1}{#2}}
 \endinput
