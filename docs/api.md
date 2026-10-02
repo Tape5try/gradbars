@@ -14,7 +14,8 @@ Keys apply left to right: put `theme` before individual color overrides.
 
 Numbers must be decimal literals (signed values require a negative min), or macros expanding to them.
 Examples: `0`, `.5`, `+12`, `125000`, `86.50`. Expressions, scientific notation,
-commas, units inside numbers, and missing values are not accepted.
+commas and units inside numbers are not accepted. Empty input and uppercase `NA`
+are missing values for `\gradbar`; all other nonnumeric input is an error.
 Use decimal points and put units in `unit`. Floating point arithmetic has finite
 precision. TeX's dimension resolution limits the smallest drawable bar.
 
@@ -116,8 +117,7 @@ Invalid options produce a package error and no bar if compilation continues.
 
 ## XeLaTeX workflow
 
-Use XeLaTeX for documents, examples, the manual, and regression tests.
-The current test runner and GitHub Actions target XeLaTeX only.
+Use XeLaTeX. GitHub Actions builds the manual; all examples are included in it.
 
 ## Built-in colors
 
@@ -125,3 +125,58 @@ The current test runner and GitHub Actions target XeLaTeX only.
 `gold`, `lavender`, and `peach` are public xcolor names defined by this package.
 Use `color=rose` for a solid fill, or use them as gradient endpoints.
 Keys apply left to right; a later theme resets its fill and colors.
+
+
+## Named styles
+
+`\gradbarsstyle{name}{keys}` defines or replaces a named style in the current
+TeX scope. `style=name` applies it to `\gradbar`, `\gradstack`, or setup.
+Keys apply in order; later keys override the style. Styles can reference other
+styles, resolved when used. Unknown names and nesting beyond 32 levels error.
+
+## Missing values
+
+`\gradbar{NA}` and `\gradbar{}` show an empty track and `missing text` (default `--`).
+Leading/trailing whitespace is ignored and macros may expand to these tokens.
+Missing data is distinct from numeric zero; arbitrary text still errors.
+There is no fill, error whisker, unit, or percent suffix. Target and band references
+remain visible. `text` overrides the missing label; `label=none` hides it.
+All scale and option validation still applies.
+
+## Number formatting
+
+`number format=fixed` (default) prints fixed decimals and thin-space grouping.
+`grouped` uses comma thousands separators. `scientific` prints a mantissa and
+power of ten without first rounding a tiny input to zero. `precision=0..6` sets
+decimal places, or mantissa decimal places for scientific output.
+`value format` still chooses original values or computed percentages;
+formatting never changes geometry. Input remains decimal notation.
+
+## Reference bands
+
+`band={lo,hi}` draws a reference background behind the fill, extending 2pt above
+and below the track. It is not a computed uncertainty interval. Endpoints must
+be strictly increasing and within the scale, including signed scales.
+Out-of-range bands error regardless of overflow policy. `band={}` disables it.
+`band color=gold` and `band opacity=0.3` are defaults; opacity must be in [0,1].
+
+## Stacked bars
+
+`\gradstack[keys]{a,b,c}` accumulates nonnegative decimal segments from zero
+against the shared `max` (default 100). It does not normalize by the sum.
+Empty/missing/negative segments and empty lists are errors. Zero segments take
+no width but still consume a palette index. The label is the sum, or sum/max
+in percent mode. A total above max follows overflow policy, retaining the true
+total label and clipping each segment at the right edge.
+
+`stack colors={gradbarsBlue,gradbarsTeal,gold}` is the default palette. Colors
+cycle if fewer than segments; an empty palette errors. All segments use solid
+fills; themes still set track and text colors. `color`, `fill`, and gradient
+endpoints do not override segment colors. Rounded corners apply to the whole
+filled stack, not internal boundaries. Target, band, sizing, styles, labels,
+units and number formats are shared with gradbar.
+
+Stacks require min=0 and reject thresholds and error whiskers. Clear inherited
+options with `min=0,thresholds={},error={}` if needed. Negative/missing segments
+are never silently converted to zero. Segment labels and legends are manual;
+state category names and values in table columns as in manual example 28.

@@ -11,3 +11,7 @@ Initial public version.
 - Signed bars and symmetric/asymmetric error whiskers.
 - Illustrated Chinese manual, bilingual READMEs, and three complete examples.
 - GitHub Actions builds the XeLaTeX manual.
+
+- Named styles, explicit missing values, and scientific/grouped number labels.
+- Reference bands and nonnegative stacked bars with shared scales.
+- Six additional illustrated examples in the single manual.

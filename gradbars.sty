@@ -47,7 +47,26 @@
 \def\gradbars@gap{.6em}
 \def\gradbars@labelwidth{4.5em}
 \def\gradbars@font{\relax}
+\newif\ifgradbars@missing
+\newif\ifgradbars@stack
+\newcount\gradbars@styledepth
+\def\gradbars@missingtext{--}
+\def\gradbars@numberformat{fixed}
+\def\gradbars@band{}
+\def\gradbars@bandcolor{gold}
+\def\gradbars@bandopacity{0.3}
+\def\gradbars@stackcolors{gradbarsBlue,gradbarsTeal,gold}
 \pgfkeys{/gradbars/.is family,/gradbars,
+  style/.code={\gradbarsUseStyle{#1}},
+  missing text/.store in=\gradbars@missingtext,
+  number format/.is choice,
+  number format/fixed/.code=\def\gradbars@numberformat{fixed},
+  number format/grouped/.code=\def\gradbars@numberformat{grouped},
+  number format/scientific/.code=\def\gradbars@numberformat{scientific},
+  band/.store in=\gradbars@band,
+  band color/.store in=\gradbars@bandcolor,
+  band opacity/.store in=\gradbars@bandopacity,
+  stack colors/.store in=\gradbars@stackcolors,
   width/.store in=\gradbars@width,
   height/.store in=\gradbars@height,
   max/.store in=\gradbars@max,
@@ -105,6 +124,19 @@
 }
 \pgfkeys{/gradbars,theme=blue}
 \NewDocumentCommand\gradbarssetup{m}{\pgfkeys{/gradbars,#1}}
+% Style definitions follow ordinary TeX grouping, like setup.
+\NewDocumentCommand\gradbarsstyle{m m}{%
+  \expandafter\def\csname gradbars@style@#1\endcsname{#2}}
+\def\gradbarsUseStyle#1{%
+  \ifcsname gradbars@style@#1\endcsname
+    \ifnum\gradbars@styledepth<32
+      \advance\gradbars@styledepth by 1
+      \expandafter\let\expandafter\gradbars@styleoptions\csname gradbars@style@#1\endcsname
+      \expandafter\pgfkeysalso\expandafter{\gradbars@styleoptions}%
+      \advance\gradbars@styledepth by -1
+    \else\PackageError{gradbars}{Style nesting exceeds 32 levels}{Check for recursive styles.}\fi
+  \else\PackageError{gradbars}{Unknown style: #1}{Define it with gradbarsstyle first.}\fi
+}
 
 % Validate before drawing; floating point arithmetic also supports large counts.
 \ExplSyntaxOn
@@ -139,6 +171,12 @@
 \clist_new:N \l__gradbars_colors_clist
 \cs_new_protected:Npn \gradbarsValidate
   {
+    \gradbars@missingfalse
+    \tl_set:Nx \l_tmpa_tl {\gradbars@value}
+    \tl_trim_spaces:N \l_tmpa_tl
+    \tl_if_empty:NT \l_tmpa_tl {\gradbars@missingtrue}
+    \str_if_eq:VnT \l_tmpa_tl {NA} {\gradbars@missingtrue}
+    \ifgradbars@missing \def\gradbars@value{0}\fi
     \gradbarsCheckNumber{\gradbars@value}{value}
     \gradbarsCheckNumber{\gradbars@min}{min}
     \gradbarsCheckNumber{\gradbars@max}{max}
@@ -190,12 +228,14 @@
       \ifgradbars@error
         \fp_compare:nT {\gradbars@errorminus<0 || \gradbars@errorplus<0}
           {\gradbarsFail{Error~magnitudes~must~be~nonnegative}}
+        \ifgradbars@missing\else
         \gradbarsRange{Error~lower~endpoint}{\gradbars@value-\gradbars@errorminus}
         \gradbarsRange{Error~upper~endpoint}{\gradbars@value+\gradbars@errorplus}
         \cs_set:Npx \gradbars@errorlo
           {\gradbarsPosition{\gradbars@value-\gradbars@errorminus}}
         \cs_set:Npx \gradbars@errorhi
           {\gradbarsPosition{\gradbars@value+\gradbars@errorplus}}
+        \fi
       \fi
       \cs_set:Npx \gradbars@zero {\gradbarsPosition{0}}
       \cs_set:Npx \gradbars@end {\gradbarsPosition{\gradbars@value}}
@@ -221,19 +261,123 @@
         }
       \str_if_eq:eeTF {\gradbars@format}{percent}
         {\cs_set:Npx \gradbars@number
-          {\fp_eval:n {round(100*\gradbars@value/\gradbars@max,\gradbars@precision)}}}
+          {\fp_eval:n {100*\gradbars@value/\gradbars@max}}}
         {\cs_set:Npx \gradbars@number
-          {\fp_eval:n {round(\gradbars@value,\gradbars@precision)}}}
+          {\fp_eval:n {\gradbars@value}}}
     \fi
+  }
+\clist_new:N \l__gradbars_band_clist
+\clist_new:N \l__gradbars_stack_clist
+\clist_new:N \l__gradbars_stackcolors_clist
+\fp_new:N \l__gradbars_sum_fp
+\fp_new:N \l__gradbars_before_fp
+\cs_new_protected:Npn \gradbarsValidateExtras
+  {
+    \clist_set:Nx \l__gradbars_band_clist {\gradbars@band}
+    \clist_if_empty:NF \l__gradbars_band_clist
+      {
+        \tl_set:Nx \l_tmpa_tl {\gradbars@band}
+        \regex_match:nVT {\A\s*,|,\s*,|,\s*\Z} \l_tmpa_tl
+          {\gradbarsFail{Band~must~contain~two~endpoints}}
+        \int_compare:nNnF {\clist_count:N \l__gradbars_band_clist} = {2}
+          {\gradbarsFail{Band~must~contain~two~endpoints}}
+        \clist_map_inline:Nn \l__gradbars_band_clist
+          {\gradbarsCheckNumber{##1}{band~endpoint}}
+        \gradbarsCheckNumber{\gradbars@bandopacity}{band~opacity}
+        \ifgradbars@valid
+          \cs_set:Npx \gradbars@bandlo {\clist_item:Nn \l__gradbars_band_clist {1}}
+          \cs_set:Npx \gradbars@bandhi {\clist_item:Nn \l__gradbars_band_clist {2}}
+          \fp_compare:nF {\gradbars@min <= \gradbars@bandlo < \gradbars@bandhi <= \gradbars@max}
+            {\gradbarsFail{Band~must~be~increasing~and~within~range}}
+          \fp_compare:nF {0 <= \gradbars@bandopacity <= 1}
+            {\gradbarsFail{Band~opacity~must~be~between~zero~and~one}}
+        \fi
+      }
+    \ifgradbars@stack
+      \ifgradbars@valid
+        \fp_compare:nNnF {\gradbars@min} = {0}
+          {\gradbarsFail{Stacked~bars~require~min=0}}
+      \fi
+      \tl_if_empty:oF {\gradbars@thresholds}
+        {\gradbarsFail{Stacked~bars~do~not~support~thresholds}}
+      \ifgradbars@error \gradbarsFail{Stacked~bars~do~not~support~error~whiskers}\fi
+      \clist_set:Nx \l__gradbars_stackcolors_clist {\gradbars@stackcolors}
+      \clist_if_empty:NT \l__gradbars_stackcolors_clist
+        {\gradbarsFail{Stack~colors~must~not~be~empty}}
+    \fi
+  }
+\cs_new_protected:Npn \gradbarsDrawBand
+  {
+    \clist_if_empty:NF \l__gradbars_band_clist
+      {
+        \pgfmathsetlengthmacro\gradbars@bandxlo{\gradbarsPosition{\gradbars@bandlo}*(\gradbars@width)}
+        \pgfmathsetlengthmacro\gradbars@bandxhi{\gradbarsPosition{\gradbars@bandhi}*(\gradbars@width)}
+        \path[fill=\gradbars@bandcolor,fill~opacity=\gradbars@bandopacity,draw=none]
+          (\gradbars@bandxlo,-2pt) rectangle ([yshift=2pt]\gradbars@bandxhi,\gradbars@height);
+      }
+  }
+\cs_new_protected:Npn \gradbarsParseStack #1
+  {
+    \tl_set:Nx \l_tmpa_tl {#1}
+    % Empty elements are invalid, not silently dropped by clist normalization.
+    \regex_match:nVTF {\A\s*\Z|\A\s*,|,\s*,|,\s*\Z} \l_tmpa_tl
+      {\gradbarsFail{Stack~requires~a~nonempty~list~of~numbers}} { }
+    \clist_set:Nx \l__gradbars_stack_clist {#1}
+    \fp_zero:N \l__gradbars_sum_fp
+    \clist_map_inline:Nn \l__gradbars_stack_clist
+      {
+        \gradbarsCheckNumber{##1}{stack~segment}
+        \ifgradbars@valid
+          \fp_compare:nNnTF {##1} < {0}
+            {\gradbarsFail{Stack~segments~must~be~nonnegative}}
+            {\fp_add:Nn \l__gradbars_sum_fp {##1}}
+        \fi
+      }
+    \cs_set:Npx \gradbars@total {\fp_to_decimal:N \l__gradbars_sum_fp}
+  }
+\cs_new_protected:Npn \gradbarsDrawStack
+  {
+    \fp_zero:N \l__gradbars_sum_fp
+    \int_zero:N \l_tmpa_int
+    \clist_map_inline:Nn \l__gradbars_stack_clist
+      {
+        \fp_set_eq:NN \l__gradbars_before_fp \l__gradbars_sum_fp
+        \fp_add:Nn \l__gradbars_sum_fp {##1}
+        \int_incr:N \l_tmpa_int
+        \cs_set:Npx \gradbars@segmentcolor
+          {\clist_item:Nn \l__gradbars_stackcolors_clist
+            {1+\int_mod:nn {\l_tmpa_int-1}{\clist_count:N \l__gradbars_stackcolors_clist}}}
+        \pgfmathsetlengthmacro\gradbars@segmentlo
+          {\gradbarsPosition{\l__gradbars_before_fp}*(\gradbars@width)}
+        \pgfmathsetlengthmacro\gradbars@segmenthi
+          {\gradbarsPosition{\l__gradbars_sum_fp}*(\gradbars@width)}
+        \ifdim\gradbars@segmenthi>\gradbars@segmentlo
+          \path[fill=\gradbars@segmentcolor,draw=none]
+            (\gradbars@segmentlo,0) rectangle (\gradbars@segmenthi,\gradbars@height);
+        \fi
+      }
   }
 \ExplSyntaxOff
 
 \def\gradbars@labelcontent{%
   \ifx\gradbars@text\@empty
-    \pgfmathprintnumber[verbatim,fixed,fixed zerofill,precision=\gradbars@precision,
-      1000 sep={\,}]{\gradbars@number}%
-    \def\gradbars@temp{percent}%
-    \ifx\gradbars@format\gradbars@temp\%\else\gradbars@unit\fi
+    \ifgradbars@missing\gradbars@missingtext\else
+      \begingroup
+      \def\gradbars@temp{scientific}%
+      \ifx\gradbars@numberformat\gradbars@temp
+        \pgfmathprintnumber[sci,sci zerofill,precision=\gradbars@precision]{\gradbars@number}%
+      \else
+        \def\gradbars@temp{grouped}%
+        \ifx\gradbars@numberformat\gradbars@temp
+          \pgfmathprintnumber[fixed,fixed zerofill,precision=\gradbars@precision,1000 sep={\mathord{,}}]{\gradbars@number}%
+        \else
+          \pgfmathprintnumber[fixed,fixed zerofill,precision=\gradbars@precision,1000 sep={\,}]{\gradbars@number}%
+        \fi
+      \fi
+      \def\gradbars@temp{percent}%
+      \ifx\gradbars@format\gradbars@temp\%\else\gradbars@unit\fi
+      \endgroup
+    \fi
   \else\gradbars@text\fi
 }
 
@@ -245,19 +389,24 @@
   \pgfmathsetlengthmacro\gradbars@radius{min(\gradbars@rounded,.5*(\gradbars@height),.5*(\gradbars@width))}%
   \path[rounded corners=\gradbars@radius,fill=\gradbars@track,draw=none]
     (0,0) rectangle (\gradbars@width,\gradbars@height);
+  \gradbarsDrawBand
   \ifdim\gradbars@xstop>\gradbars@xstart
     \pgfmathsetlengthmacro\gradbars@fillradius{min(\gradbars@radius,.5*(\gradbars@xstop-\gradbars@xstart))}%
     \begin{scope}
       \clip[rounded corners=\gradbars@radius]
         (0,0) rectangle (\gradbars@width,\gradbars@height);
-      \ifgradbars@gradient
+      \ifgradbars@stack
+        \clip[rounded corners=\gradbars@fillradius]
+          (\gradbars@xstart,0) rectangle (\gradbars@xstop,\gradbars@height);
+        \gradbarsDrawStack
+      \else\ifgradbars@gradient
         \path[rounded corners=\gradbars@fillradius,shade,
           left color=\gradbars@left,right color=\gradbars@right]
           (\gradbars@xstart,0) rectangle (\gradbars@xstop,\gradbars@height);
       \else
         \path[rounded corners=\gradbars@fillradius,fill=\gradbars@left,draw=none]
           (\gradbars@xstart,0) rectangle (\gradbars@xstop,\gradbars@height);
-      \fi
+      \fi\fi
     \end{scope}
   \fi
   \ifdim\gradbars@xzero>0pt
@@ -270,7 +419,7 @@
       ([yshift=-1pt]\gradbars@xtarget,0)--
       ([yshift=1pt]\gradbars@xtarget,\gradbars@height);
   \fi
-  \ifgradbars@error
+  \ifgradbars@missing\else\ifgradbars@error
     \pgfmathsetlengthmacro\gradbars@xlo{\gradbars@errorlo*(\gradbars@width)}%
     \pgfmathsetlengthmacro\gradbars@xhi{\gradbars@errorhi*(\gradbars@width)}%
     \draw[draw=\gradbars@errorcolor,line width=.5pt]
@@ -281,7 +430,7 @@
         ([yshift=.2*\gradbars@height]\gradbars@cap,0)--
         ([yshift=.8*\gradbars@height]\gradbars@cap,0);
     }
-  \fi
+  \fi\fi
   \def\gradbars@temp{outside}%
   \ifx\gradbars@label\gradbars@temp
     \node[anchor=west,inner sep=0pt,outer sep=0pt,
@@ -312,6 +461,7 @@
 \def\gradbars@render{%
   \gradbars@validtrue
   \gradbarsValidate
+  \gradbarsValidateExtras
   \ifdim\gradbars@rounded<0pt
     \gradbars@validfalse
     \PackageError{gradbars}{Rounded radius must be nonnegative}{Use rounded=2pt.}%
@@ -351,6 +501,16 @@
     \fi
     \def\gradbars@value{#2}%
     \gradbars@render
+  \endgroup
+}
+\NewDocumentCommand\gradstack{O{} m}{%
+  \leavevmode\begingroup
+    \gradbars@validtrue
+    \gradbarsParseStack{#2}%
+    \ifgradbars@valid
+      \gradbars@stacktrue
+      \gradbar[#1]{\gradbars@total}%
+    \fi
   \endgroup
 }
 

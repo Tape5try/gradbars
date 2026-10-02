@@ -1,6 +1,6 @@
 % !TeX program = xelatex
 % Compile twice from the repository root:
-% xelatex -interaction=nonstopmode -halt-on-error -jobname=gradbars-manual-v0.0.1 docs/gradbars-manual.tex
+% xelatex -interaction=nonstopmode -halt-on-error "-jobname=gradbars-manual-v0.0.1" docs/gradbars-manual.tex
 \documentclass[10pt,a4paper,fontset=fandol]{ctexart}
 \usepackage[margin=18mm,top=19mm,bottom=20mm,headheight=15pt]{geometry}
 \usepackage{gradbars}
@@ -39,7 +39,7 @@
   texcsstyle=*\color{blue!70!black},
   keywordstyle=\color{green!40!black},
   commentstyle=\color{manualMuted},
-  moretexcs={gradbar,gradbarssetup,toprule,midrule,bottomrule,arraystretch},
+  moretexcs={gradbar,gradstack,gradbarsstyle,gradbarssetup,toprule,midrule,bottomrule,arraystretch},
   morekeywords={theme,max,width,height,label,precision,unit,text,blue,teal,solid,gray,percent},
   columns=fullflexible,keepspaces=true,showstringspaces=false,
   breaklines=true,breakatwhitespace=false,tabsize=2,
@@ -94,6 +94,9 @@
 \begingroup
 \setlength{\parskip}{0pt}
 \hypersetup{linkcolor=gradbarsInk}
+\makeatletter
+\renewcommand*{\l@section}[2]{\@dottedtocline{1}{0pt}{2em}{\bfseries #1}{#2}}
+\makeatother
 \small\tableofcontents
 \endgroup
 \vfill
@@ -617,6 +620,124 @@ $W(-\mathrm{min})/(\mathrm{max}-\mathrm{min})$，
 严谨的区间图建议使用 \key{overflow=error}，或扩大范围以显示完整误差。}
 
 \clearpage
+\section{命名样式与缺失值}
+\key{\gradbarsstyle{名称}{参数}} 定义可复用的配置；使用 \key{style=名称} 调用。
+样式可以引用已定义的样式，后面的参数覆盖前面的设置。
+定义和调用均遵循普通 TeX 分组，不会改变其他单元格。
+
+\begin{example}{示例 23：定义并复用样式}
+\gradbarsstyle{accuracy}{
+  max=100,theme=teal,
+  rounded=2pt,precision=1,
+  unit={\%}
+}
+\gradbar[style=accuracy]{92.7}
+
+\gradbar[style=accuracy,
+  target=95]{94.2}
+\end{example}
+
+样式在当前作用域内可以重新定义。未知名称会报错；循环引用会触发嵌套深度限制。
+
+\begin{example}{示例 24：零值与缺失值}
+\gradbar{0}
+
+\gradbar{NA}
+
+\gradbar[missing text={N/A}]{}
+\end{example}
+
+空参数或大写 \key{NA} 表示缺失值，忽略首尾空格。
+零值显示数值零；缺失值只显示轨道和缺失标签，默认标签为短横线。
+宏包不会把其他文字或拼写错误自动当成缺失值。
+
+\note{缺失值不绘制数值填充和误差线，也不附加单位或百分号。
+目标线和区间背景仍保留，表示这一列的参考尺度。
+\key{text} 可以覆盖缺失标签，\key{label=none} 可以隐藏它。}
+
+\clearpage
+\section{数字格式与区间背景}
+\key{value format} 决定显示原值还是计算占比；
+\key{number format} 决定数字的排版形式，不改变条长。
+\key{fixed} 为默认定点格式，千位使用细空格；\key{grouped} 使用逗号分组；
+\key{scientific} 使用科学计数法。\key{precision} 指定小数位数，科学计数法中指尾数的小数位数。
+
+\begin{example}{示例 25：分组数字与科学计数法}
+\gradbar[max=200000,
+  number format=grouped,
+  precision=0]{125000}
+
+\gradbar[max=1,
+  number format=scientific,
+  precision=2]{0.00001234}
+\end{example}
+
+科学计数法只用于输出，输入仍使用十进制数。
+极小数不会先按定点精度四舍五入成零；标签较长时应增大 \key{label width}。
+
+\begin{example}{示例 26：参考区间与目标线}
+\gradbar[band={60,80},
+  band color=lightgreen,
+  target=70]{75}
+
+\gradbar[min=-50,max=50,
+  band={-10,15},
+  band color=skyblue,
+  band opacity=0.4]{-25}
+\end{example}
+
+\key{band={下限,上限}} 使用与数据相同的单位，要求两个端点严格递增且位于量程内。
+背景在轨道上下各延伸 2pt，填充经过区间时仍可看见参考范围。
+\key{band color} 默认为 gold，\key{band opacity} 默认为 0.3，取值为 0 到 1。
+使用 \key{band={}} 清除区间。
+
+\note{区间背景表示人为给定的参考范围，不代表统计误差。
+误差区间仍使用 \key{error}；参考区间的越界端点会直接报错，不自动截断。}
+
+\clearpage
+\section{堆叠条}
+\key{\gradstack[参数]{数值列表}} 按顺序累加非负数据。
+所有段共用 \key{max}，默认 100；不会自动把总量归一化成满条。
+标签显示各段之和，也可以用 \key{value format=percent} 显示总量占上限的比例。
+
+\begin{example}{示例 27：三段组成与未填满的轨道}
+\gradstack[
+  stack colors={skyblue,rose,gold},
+  rounded=2pt,
+  target=90
+]{30,25,15}
+
+\gradstack[max=200,
+  value format=percent,
+  stack colors={skyblue,rose,gold}
+]{30,25,15}
+\end{example}
+
+第一条的三段长度分别占轨道的 30\%、25\%、15\%，总量为 70；
+第二条沿用相同原始数据，上限改为 200，总量占比为 35\%。
+\key{stack colors} 依次指定段颜色；颜色少于段数时循环使用。
+零段不占宽度，但仍保留其颜色序号。所有段均为零时只显示空轨道。
+
+\begin{example}[text and listing,sidebyside=false]{示例 28：表格中的堆叠组成}
+\gradbarsstyle{composition}{
+  width=42mm,precision=0,rounded=2pt,
+  stack colors={skyblue,rose,gold}
+}
+\begin{tabular}{@{}lccc l@{}}
+  \toprule
+  Plan & A & B & C & Total / 100 \\
+  \midrule
+  Alpha & 30 & 25 & 15 & \gradstack[style=composition]{30,25,15} \\
+  Beta  & 20 & 35 & 35 & \gradstack[style=composition]{20,35,35} \\
+  \bottomrule
+\end{tabular}
+\end{example}
+
+\note{堆叠条要求 \key{min=0}，不接受负数、缺失段、空列表、条件配色或误差线。
+目标线、区间背景、圆角、数字格式和标签位置可以组合使用。
+总量越界时默认警告并从右侧截断，标签保留真实总量；\key{overflow=error} 改为报错。}
+
+\clearpage
 \section{参数速查与使用限制}
 \begingroup\small
 \begin{tabularx}{\linewidth}{@{}p{31mm}p{25mm}X@{}}
@@ -643,12 +764,19 @@ $W(-\mathrm{min})/(\mathrm{max}-\mathrm{min})$，
 \key{track color} & 由主题指定 & 空轨道颜色。\\
 \key{text color} & 由主题指定 & 标签文字颜色。\\
 \key{font} & 沿用周围字体 & 标签字体声明。\\
+\key{style} & 未指定 & 应用已定义的命名样式。\\
+\key{missing text} & \key{--} & 空参数或 NA 的显示标签。\\
+\key{number format} & \key{fixed} & fixed、grouped 或 scientific。\\
+\key{band} & 空 & 范围内严格递增的两个参考端点。\\
+\key{band color} & \key{gold} & 区间背景颜色。\\
+\key{band opacity} & \key{0.3} & 区间透明度，范围为 0 到 1。\\
+\key{stack colors} & 蓝、青绿、金黄 & 堆叠条分段颜色列表，可循环使用。\\
 \bottomrule
 \end{tabularx}
 \endgroup
 
 \subsection{已知边界}
-本版不提供堆叠条、CSV 导入或自动列最大值。
+本版不提供 CSV 导入、自动列最大值或正负混合堆叠。
 不要把绘图命令直接放入 siunitx 的数值型 S 列或 PDF 书签。
 本项目目前以 XeLaTeX 作为使用、编译和测试入口。图形尚未生成专用的无障碍 PDF 语义标签。
 \end{document}
