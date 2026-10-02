@@ -1,10 +1,10 @@
 \NeedsTeXFormat{LaTeX2e}[2020/10/01]
-\ProvidesPackage{gradbars}[2026/10/02 v0.0.2 Inline data bars for LaTeX]
+\ProvidesPackage{gradbars}[2026/10/03 v0.0.3 Inline data bars for LaTeX]
 \RequirePackage{tikz}
 \RequirePackage{xparse}
 \RequirePackage{expl3}
 \RequirePackage{collcell}
-\usetikzlibrary{shadings}
+\usetikzlibrary{shadings,patterns}
 
 \definecolor{gradbarsBlue}{HTML}{2563EB}
 \definecolor{gradbarsBlueLight}{HTML}{93C5FD}
@@ -258,7 +258,8 @@
             < {\clist_item:Nn \l__gradbars_thresholds_clist {2}}
             {\int_set:Nn \l_tmpa_int {3}}
           \cs_set:Npx \gradbars@left
-            {\clist_item:Nn \l__gradbars_colors_clist {\l_tmpa_int}}
+            {\clist_item:Nn \l__gradbars_colors_clist
+              {\str_if_eq:eeTF {\gradbars@better}{lower}{4-\l_tmpa_int}{\l_tmpa_int}}}
           \gradbars@gradientfalse
         }
       \str_if_eq:eeTF {\gradbars@format}{percent}
@@ -297,8 +298,13 @@
       }
     \ifgradbars@stack
       \ifgradbars@valid
-        \fp_compare:nNnF {\gradbars@min} = {0}
-          {\gradbarsFail{Stacked~bars~require~min=0}}
+        \gradbarsRange{Positive~stack~total}{\gradbars@positive}
+        \gradbarsRange{Negative~stack~total}{\gradbars@negative}
+        \fp_compare:nNnT {\gradbars@negative} < {0}
+          {\fp_compare:nNnT {\gradbars@min} = {0}
+             {\gradbarsFail{Negative~stack~requires~a~negative~min}}}
+        \cs_set:Npx \gradbars@start {\gradbarsPosition{\gradbars@negative}}
+        \cs_set:Npx \gradbars@stop {\gradbarsPosition{\gradbars@positive}}
       \fi
       \tl_if_empty:oF {\gradbars@thresholds}
         {\gradbarsFail{Stacked~bars~do~not~support~thresholds}}
@@ -326,36 +332,45 @@
       {\gradbarsFail{Stack~requires~a~nonempty~list~of~numbers}} { }
     \clist_set:Nx \l__gradbars_stack_clist {#1}
     \fp_zero:N \l__gradbars_sum_fp
+    \fp_zero:N \l__gradbars_positive_fp
+    \fp_zero:N \l__gradbars_negative_fp
     \clist_map_inline:Nn \l__gradbars_stack_clist
       {
         \gradbarsCheckNumber{##1}{stack~segment}
         \ifgradbars@valid
+          \fp_add:Nn \l__gradbars_sum_fp {##1}
           \fp_compare:nNnTF {##1} < {0}
-            {\gradbarsFail{Stack~segments~must~be~nonnegative}}
-            {\fp_add:Nn \l__gradbars_sum_fp {##1}}
+            {\fp_add:Nn \l__gradbars_negative_fp {##1}}
+            {\fp_add:Nn \l__gradbars_positive_fp {##1}}
         \fi
       }
     \cs_set:Npx \gradbars@total {\fp_to_decimal:N \l__gradbars_sum_fp}
+    \cs_set:Npx \gradbars@positive {\fp_to_decimal:N \l__gradbars_positive_fp}
+    \cs_set:Npx \gradbars@negative {\fp_to_decimal:N \l__gradbars_negative_fp}
+    \cs_set:Npx \gradbars@gross {\fp_eval:n {\gradbars@positive-\gradbars@negative}}
   }
 \cs_new_protected:Npn \gradbarsDrawStack
   {
-    \fp_zero:N \l__gradbars_sum_fp
+    \gradbarsStackReset
     \int_zero:N \l_tmpa_int
     \clist_map_inline:Nn \l__gradbars_stack_clist
       {
-        \fp_set_eq:NN \l__gradbars_before_fp \l__gradbars_sum_fp
-        \fp_add:Nn \l__gradbars_sum_fp {##1}
+        \gradbarsStackStep{##1}
         \int_incr:N \l_tmpa_int
-        \cs_set:Npx \gradbars@segmentcolor
-          {\clist_item:Nn \l__gradbars_stackcolors_clist
-            {1+\int_mod:nn {\l_tmpa_int-1}{\clist_count:N \l__gradbars_stackcolors_clist}}}
+        \gradbarsCategoryColor{\l_tmpa_int}
         \pgfmathsetlengthmacro\gradbars@segmentlo
           {\gradbarsPosition{\l__gradbars_before_fp}*(\gradbars@width)}
         \pgfmathsetlengthmacro\gradbars@segmenthi
           {\gradbarsPosition{\l__gradbars_sum_fp}*(\gradbars@width)}
         \ifdim\gradbars@segmenthi>\gradbars@segmentlo\relax
-          \path[fill=\gradbars@segmentcolor,draw=none]
-            (\gradbars@segmentlo,0) rectangle (\gradbars@segmenthi,\gradbars@height);
+          \ifgradbars@outline
+            \draw[draw=\gradbars@segmentcolor,line~width=\gradbars@outlinewidth]
+              (\gradbars@segmentlo,0) rectangle (\gradbars@segmenthi,\gradbars@height);
+          \else
+            \path[fill=\gradbars@segmentcolor,draw=none]
+              (\gradbars@segmentlo,0) rectangle (\gradbars@segmenthi,\gradbars@height);
+            \gradbarsPatternRect{\l_tmpa_int}{\gradbars@segmentlo}{0}{\gradbars@segmenthi}{\gradbars@height}
+          \fi
         \fi
       }
   }
@@ -384,37 +399,22 @@
 }
 
 \def\gradbars@draw{%
+  \tikzset{gradbars label background/.style={}}%
+  \ifgradbars@print
+    \tikzset{gradbars label background/.style={fill=white,inner sep=1pt}}%
+  \fi
   \pgfmathsetlengthmacro\gradbars@xzero{\gradbars@zero*(\gradbars@width)}%
   \pgfmathsetlengthmacro\gradbars@xend{\gradbars@end*(\gradbars@width)}%
   \pgfmathsetlengthmacro\gradbars@xstart{\gradbars@start*(\gradbars@width)}%
   \pgfmathsetlengthmacro\gradbars@xstop{\gradbars@stop*(\gradbars@width)}%
   \pgfmathsetlengthmacro\gradbars@radius{min(\gradbars@rounded,.5*(\gradbars@height),.5*(\gradbars@width))}%
-  \path[rounded corners=\gradbars@radius,fill=\gradbars@track,draw=none]
-    (0,0) rectangle (\gradbars@width,\gradbars@height);
+  \gradbarsDrawTrack
   \gradbarsDrawBand
-  \ifdim\gradbars@xstop>\gradbars@xstart\relax
-    \pgfmathsetlengthmacro\gradbars@fillradius{min(\gradbars@radius,.5*(\gradbars@xstop-\gradbars@xstart))}%
-    \begin{scope}
-      \clip[rounded corners=\gradbars@radius]
-        (0,0) rectangle (\gradbars@width,\gradbars@height);
-      \ifgradbars@stack
-        \clip[rounded corners=\gradbars@fillradius]
-          (\gradbars@xstart,0) rectangle (\gradbars@xstop,\gradbars@height);
-        \gradbarsDrawStack
-      \else\ifgradbars@gradient
-        \path[rounded corners=\gradbars@fillradius,shade,
-          left color=\gradbars@left,right color=\gradbars@right]
-          (\gradbars@xstart,0) rectangle (\gradbars@xstop,\gradbars@height);
-      \else
-        \path[rounded corners=\gradbars@fillradius,fill=\gradbars@left,draw=none]
-          (\gradbars@xstart,0) rectangle (\gradbars@xstop,\gradbars@height);
-      \fi\fi
-    \end{scope}
-  \fi
-  \ifdim\gradbars@xzero>0pt
+  \gradbarsDrawShape
+  \ifgradbars@spark\else\ifdim\gradbars@xzero>0pt
     \draw[gradbarsInk!65,line width=.35pt]
       (\gradbars@xzero,0)--(\gradbars@xzero,\gradbars@height);
-  \fi
+  \fi\fi
   \ifx\gradbars@target\@empty\else
     \pgfmathsetlengthmacro\gradbars@xtarget{\gradbars@targetpos*(\gradbars@width)}%
     \draw[draw=\gradbars@targetcolor,line width=.6pt]
@@ -439,9 +439,12 @@
     \ifgradbars@legend\gradbarsDrawLegend\fi
   \fi
   \gradbarsDrawMainLabel
+  \path[use as bounding box] (0,-\gradbars@rowpadding)
+    rectangle (\gradbars@width,{\gradbars@height+\gradbars@rowpadding});
 }
 \def\gradbars@render{%
   \gradbars@validtrue
+  \gradbarsResolveShapeLengths
   \gradbarsValidate
   \gradbarsValidateExtras
   \ifdim\gradbars@rounded<0pt
@@ -602,6 +605,7 @@
   {
     \pgfmathsetlengthmacro\gradbars@segmentmid{.5*(\gradbars@segmentlo+\gradbars@segmenthi)}
     \gradbars@fittrue
+    \ifgradbars@outline\gradbars@fitfalse\fi
     \ifdim\dimexpr\wd\gradbars@segmentbox+4pt\relax>\dimexpr\gradbars@segmenthi-\gradbars@segmentlo\relax
       \gradbars@fitfalse\fi
     \ifdim\dimexpr\ht\gradbars@segmentbox+\dp\gradbars@segmentbox+2pt\relax>\gradbars@height\relax
@@ -616,6 +620,7 @@
       \str_if_eq:eeT {\gradbars@segmenttextcolor}{auto}{\gradbarsContrast{\gradbars@segmentcolor}}
       \gradbarsMeasure\gradbars@segmentbox\gradbars@segmentfont{\color{\gradbars@labelcolor}\gradbars@segmentcontent}
       \node[inner~sep=0pt,outer~sep=0pt,text=\gradbars@labelcolor]
+        [gradbars~label~background]
         at (\gradbars@segmentmid,.5*\gradbars@height){\usebox\gradbars@segmentbox};
     \else
       \pgfmathsetlengthmacro\gradbars@labelx
@@ -659,19 +664,16 @@
   {
     \str_if_eq:eeF {\gradbars@segmentlabels}{none}
       {
-        \fp_zero:N \l__gradbars_sum_fp
+        \gradbarsStackReset
         \int_zero:N \l__gradbars_index_int
         \clist_map_inline:Nn \l__gradbars_stack_clist
           {
             \int_incr:N \l__gradbars_index_int
-            \fp_set_eq:NN \l__gradbars_before_fp \l__gradbars_sum_fp
-            \fp_add:Nn \l__gradbars_sum_fp {##1}
+            \gradbarsStackStep{##1}
             \pgfmathsetlengthmacro\gradbars@segmentlo{\gradbarsPosition{\l__gradbars_before_fp}*(\gradbars@width)}
             \pgfmathsetlengthmacro\gradbars@segmenthi{\gradbarsPosition{\l__gradbars_sum_fp}*(\gradbars@width)}
             \ifdim\gradbars@segmenthi>\gradbars@segmentlo\relax
-              \cs_set:Npx \gradbars@segmentcolor
-                {\clist_item:Nn \l__gradbars_stackcolors_clist
-                 {1+\int_mod:nn {\l__gradbars_index_int-1}{\clist_count:N \l__gradbars_stackcolors_clist}}}
+              \gradbarsCategoryColor{\l__gradbars_index_int}
               \def\gradbars@segmentcontent
               {\def\gradbars@text{}\def\gradbars@unit{}\def\gradbars@format{value}
                 \cs_set:Npx \gradbars@number {\fp_eval:n {##1}}
@@ -679,7 +681,7 @@
                   {{percent}{\def\gradbars@format{percent}}
                    {name~percent}{\def\gradbars@format{percent}}}
                 \str_if_eq:eeT {\gradbars@format}{percent}
-                  {\cs_set:Npx \gradbars@number {\fp_eval:n {100*##1/\gradbars@total}}}
+                  {\cs_set:Npx \gradbars@number {\fp_eval:n {100*abs(##1)/\gradbars@gross}}}
                 \tl_clear:N \l_tmpb_tl
                 \str_case_e:nn {\gradbars@segmentlabels}
                   {{name}{\tl_set:Nn \l_tmpb_tl {name}}
@@ -688,7 +690,7 @@
                 \tl_if_empty:NF \l_tmpb_tl
                     {\clist_item:Nn \l__gradbars_names_clist {\l__gradbars_index_int}}
                    \str_if_eq:VnT \l_tmpb_tl {both}{:\space}
-                   \str_if_eq:VnF \l_tmpb_tl {name}{\gradbars@labelcontent}}
+                   \str_if_eq:VnF \l_tmpb_tl {name}{\gradbarsSingleLabel}}
               \gradbarsMeasure\gradbars@segmentbox\gradbars@segmentfont{\gradbars@segmentcontent}
               \gradbarsPlaceSegment
             \fi
@@ -702,13 +704,18 @@
     \clist_map_inline:Nn \l__gradbars_names_clist
       {
         \int_incr:N \l__gradbars_index_int
-        \cs_set:Npx \gradbars@segmentcolor
-          {\clist_item:Nn \l__gradbars_stackcolors_clist
-            {1+\int_mod:nn {\l__gradbars_index_int-1}{\clist_count:N \l__gradbars_stackcolors_clist}}}
+        \gradbarsCategoryColor{\l__gradbars_index_int}
         \gradbarsMeasure\gradbars@segmentbox\gradbars@font
           {\parbox[t]{\dimexpr\gradbars@width-14pt\relax}{\raggedright\strut ##1\strut}}
-        \path[fill=\gradbars@segmentcolor,draw=none]
-          (0,-\dim_use:N \l_tmpa_dim) rectangle (8pt,-\dim_eval:n {\l_tmpa_dim+6pt});
+        \ifgradbars@outline
+          \draw[draw=\gradbars@segmentcolor,line~width=\gradbars@outlinewidth]
+            (0,-\dim_use:N \l_tmpa_dim) rectangle (8pt,-\dim_eval:n {\l_tmpa_dim+6pt});
+        \else
+          \path[fill=\gradbars@segmentcolor,draw=none]
+            (0,-\dim_use:N \l_tmpa_dim) rectangle (8pt,-\dim_eval:n {\l_tmpa_dim+6pt});
+          \gradbarsPatternRect{\l__gradbars_index_int}{0}{-\dim_use:N \l_tmpa_dim}
+            {8pt}{-\dim_eval:n {\l_tmpa_dim+6pt}}
+        \fi
         \node[anchor=north~west,inner~sep=0pt,outer~sep=0pt,text=gradbarsInk]
           at (14pt,-\dim_use:N \l_tmpa_dim){\usebox\gradbars@segmentbox};
         \dim_add:Nn \l_tmpa_dim {\ht\gradbars@segmentbox+\dp\gradbars@segmentbox+4pt}
@@ -739,9 +746,8 @@
                \pgfmathsetlengthmacro\gradbars@segmenthi{\gradbarsPosition{\l__gradbars_sum_fp}*(\gradbars@width)}
                \dim_compare:nNnT {\gradbars@labelx} < {\gradbars@segmenthi}
                {
-                 \cs_set:Npx \gradbars@background
-                   {\clist_item:Nn \l__gradbars_stackcolors_clist
-                    {1+\int_mod:nn {\l__gradbars_index_int-1}{\clist_count:N \l__gradbars_stackcolors_clist}}}
+                 \gradbarsCategoryColor{\l__gradbars_index_int}
+                 \let\gradbars@background\gradbars@segmentcolor
                  \clist_map_break:
                }}
           \fi
@@ -771,6 +777,20 @@
         \str_case_e:nn {\gradbars@placement}
           {{inside}{\gradbars@insidetrue}{center}{\gradbars@insidetrue}}
         \ifgradbars@inside
+          \str_if_eq:eeF {\gradbars@shape}{bar}
+            {\def\gradbars@placement{outside}\gradbars@insidefalse}
+          \ifgradbars@stack
+            \fp_compare:nNnT {\gradbars@negative} < {0}
+              {\def\gradbars@placement{outside}\gradbars@insidefalse}
+          \fi
+          \ifgradbars@compare \def\gradbars@placement{outside}\gradbars@insidefalse\fi
+          \ifgradbars@outline \def\gradbars@placement{outside}\gradbars@insidefalse\fi
+          \ifgradbars@rangemode
+            \tl_if_empty:oF {\gradbars@rangepoint}
+              {\def\gradbars@placement{outside}\gradbars@insidefalse}
+          \fi
+        \fi
+        \ifgradbars@inside
           \str_if_eq:eeF {\gradbars@labeloverflow}{allow}
             {\ifdim\dimexpr\ht\gradbars@labelbox+\dp\gradbars@labelbox+2pt\relax>\gradbars@height\relax
                \def\gradbars@placement{outside}\gradbars@insidefalse\fi}
@@ -795,6 +815,7 @@
         \gradbarsMeasure\gradbars@labelbox\gradbars@font{\color{\gradbars@labelcolor}\gradbars@labelcontent}
         \ifgradbars@inside
           \node[inner~sep=0pt,outer~sep=0pt,text=\gradbars@labelcolor]
+            [gradbars~label~background]
             at (\gradbars@labelx,.5*\gradbars@height){\usebox\gradbars@labelbox};
         \else
           \str_if_eq:eeTF {\gradbars@placement}{end}
@@ -818,6 +839,7 @@
     \edef\gradbars@next{\endgroup
       \def\noexpand\gradbars@width{\the\dimexpr\gradbars@width\relax}}%
   \gradbars@next
+  \gradbarsResolveShapeLengths
   \gradbarsStandaloneLegend
   \endgroup}
 \ExplSyntaxOn
@@ -828,6 +850,7 @@
     \clist_set:No \l__gradbars_stackcolors_clist {\gradbars@stackcolors}
     \clist_if_empty:NT \l__gradbars_names_clist {\gradbarsFail{Legend~names~must~not~be~empty}}
     \clist_if_empty:NT \l__gradbars_stackcolors_clist {\gradbarsFail{Stack~colors~must~not~be~empty}}
+    \gradbarsValidatePatterns
     \ifdim\gradbars@width>14pt\else\gradbarsFail{Legend~width~must~exceed~14pt}\fi
     \ifgradbars@valid
       \ifpgfpicture \gradbarsDrawLegend
@@ -848,4 +871,811 @@
   }
 \ExplSyntaxOff
 
+% Data import, print patterns and metric direction (v0.0.2).
+\def\gradbars@better{higher}
+\def\gradbars@pattern{none}
+\def\gradbars@patterncolor{black}
+\def\gradbars@stackpatterns{none}
+\newif\ifgradbars@print
+\pgfkeys{/gradbars,
+  print labels/.is if=gradbars@print,
+  better/.is choice,
+  better/higher/.code=\def\gradbars@better{higher},
+  better/lower/.code=\def\gradbars@better{lower},
+  pattern/.store in=\gradbars@pattern,
+  pattern color/.store in=\gradbars@patterncolor,
+  stack patterns/.store in=\gradbars@stackpatterns,
+  print/.style={outline=false,print labels=true,theme=gray,color=white,track color=black!8,
+    negative color=white,text color=black,segment text color=black,
+    pattern=diagonal,pattern color=black,
+    stack colors={white},stack patterns={diagonal,dots,crosshatch},
+    threshold colors={black!10,black!25,black!45}}
+}
+\ExplSyntaxOn
+\prop_const_from_keyval:Nn \c__gradbars_patterns_prop
+  {none=none,diagonal=north~east~lines,reverse=north~west~lines,
+   dots=dots,crosshatch=crosshatch,horizontal=horizontal~lines,vertical=vertical~lines}
+\clist_new:N \l__gradbars_patterns_clist
+\tl_new:N \l__gradbars_pattern_tl
+\cs_new_protected:Npn \gradbarsPatternRect #1#2#3#4#5
+  {
+    \int_compare:nNnTF {#1} = {0}
+      {\tl_set:No \l__gradbars_pattern_tl {\gradbars@pattern}}
+      {\clist_set:No \l__gradbars_patterns_clist {\gradbars@stackpatterns}
+       \tl_set:Nx \l__gradbars_pattern_tl
+         {\clist_item:Nn \l__gradbars_patterns_clist
+           {1+\int_mod:nn {#1-1}{\clist_count:N \l__gradbars_patterns_clist}}}}
+    \gradbarsCategoryPattern{#1}
+    \prop_get:NVNTF \c__gradbars_patterns_prop \l__gradbars_pattern_tl \l__gradbars_pattern_tl
+      {\tl_if_eq:NnF \l__gradbars_pattern_tl {none}
+        {\path[pattern=\l__gradbars_pattern_tl,pattern~color=\gradbars@patterncolor,draw=none]
+          (#2,#3) rectangle (#4,#5);}}
+      {\gradbarsFail{Unknown~pattern}}
+  }
+\cs_new_eq:NN \gradbarsValidateBeforePatterns \gradbarsValidateExtras
+\cs_set_protected:Npn \gradbarsValidateExtras
+  {
+    \gradbarsValidateBeforePatterns
+    \gradbarsValidatePatterns
+  }
+\cs_new_protected:Npn \gradbarsValidatePatterns
+  {
+    \clist_set:No \l__gradbars_patterns_clist {\gradbars@stackpatterns}
+    \clist_if_empty:NT \l__gradbars_patterns_clist {\gradbarsFail{Stack~patterns~must~not~be~empty}}
+    \clist_put_left:No \l__gradbars_patterns_clist {\gradbars@pattern}
+    \clist_map_inline:Nn \l__gradbars_patterns_clist
+      {\prop_if_in:NnF \c__gradbars_patterns_prop {##1}{\gradbarsFail{Unknown~pattern:~##1}}}
+  }
+
+% CSV is read as character data; fields are never executed as TeX.
+\ior_new:N \l__gradbars_csv_ior
+\prop_new:N \l__gradbars_csv_prop
+\seq_new:N \l__gradbars_csv_fields_seq
+\tl_new:N \l__gradbars_csv_field_tl
+\tl_new:N \l__gradbars_csv_line_tl
+\tl_new:N \l__gradbars_csv_value_tl
+\tl_new:N \l__gradbars_csv_table_tl
+\clist_new:N \l__gradbars_csv_missing_clist
+\int_new:N \l__gradbars_csv_state_int
+\int_new:N \l__gradbars_csv_row_int
+\int_new:N \l__gradbars_csv_col_int
+\int_new:N \l__gradbars_csv_width_int
+\fp_new:N \l__gradbars_csv_min_fp
+\fp_new:N \l__gradbars_csv_max_fp
+\keys_define:nn {gradbars/csv}
+  {missing .clist_set:N=\l__gradbars_csv_missing_clist}
+\cs_generate_variant:Nn \prop_put:Nnn {Nxn,Nxx,NVx}
+\cs_generate_variant:Nn \prop_get:NnN {cxN}
+\cs_generate_variant:Nn \prop_if_in:NnTF {cxTF}
+\cs_new_protected:Npn \gradbarsCSVField
+  {\tl_trim_spaces:N \l__gradbars_csv_field_tl
+   \seq_put_right:NV \l__gradbars_csv_fields_seq \l__gradbars_csv_field_tl
+   \tl_clear:N \l__gradbars_csv_field_tl
+   \int_zero:N \l__gradbars_csv_state_int}
+\cs_new_protected:Npn \gradbarsCSVParse #1
+  {
+    \seq_clear:N \l__gradbars_csv_fields_seq
+    \tl_clear:N \l__gradbars_csv_field_tl
+    \int_zero:N \l__gradbars_csv_state_int
+    % states: 0=unquoted, 1=quoted, 2=closing quote, 3=trailing space.
+    \str_map_inline:nn {#1}
+      {
+        \int_case:nn {\l__gradbars_csv_state_int}
+          {
+            {0}{\str_case:nnF {##1}
+              {{,}{\gradbarsCSVField}
+               {"}{\tl_if_blank:VTF \l__gradbars_csv_field_tl
+                    {\tl_clear:N \l__gradbars_csv_field_tl\int_set:Nn \l__gradbars_csv_state_int {1}}
+                    {\gradbarsFail{Quote~inside~unquoted~CSV~field}}}}
+              {\tl_put_right:Nn \l__gradbars_csv_field_tl {##1}}}
+            {1}{\str_if_eq:nnTF {##1}{"}
+              {\int_set:Nn \l__gradbars_csv_state_int {2}}
+              {\tl_put_right:Nn \l__gradbars_csv_field_tl {##1}}}
+            {2}{\str_case:nnF {##1}
+              {{"}{\tl_put_right:Nn \l__gradbars_csv_field_tl {"}\int_set:Nn \l__gradbars_csv_state_int {1}}
+               {,}{\gradbarsCSVField}}
+              {\str_if_eq:nnTF {##1}{~}
+                {\int_set:Nn \l__gradbars_csv_state_int {3}}
+                {\gradbarsFail{Unexpected~text~after~CSV~quote}}}}
+            {3}{\str_if_eq:nnTF {##1}{,}{\gradbarsCSVField}
+              {\str_if_eq:nnF {##1}{~}{\gradbarsFail{Unexpected~text~after~CSV~quote}}}}
+          }
+      }
+    \int_compare:nNnT {\l__gradbars_csv_state_int} = {1}
+      {\gradbarsFail{Unclosed~CSV~quote;~multiline~fields~are~not~supported}}
+    \gradbarsCSVField
+  }
+\cs_new_protected:Npn \gradbarsCSVLine #1
+  {
+    \tl_set:Nn \l__gradbars_csv_line_tl {#1}
+    \regex_replace_once:nnN {\A\x{FEFF}} {} \l__gradbars_csv_line_tl
+    \tl_if_blank:VF \l__gradbars_csv_line_tl
+      {
+        \exp_args:NV \gradbarsCSVParse \l__gradbars_csv_line_tl
+        \int_compare:nNnTF {\l__gradbars_csv_row_int} = {0}
+          {
+            \int_set:Nn \l__gradbars_csv_width_int {\seq_count:N \l__gradbars_csv_fields_seq}
+            \int_zero:N \l__gradbars_csv_col_int
+            \seq_map_inline:Nn \l__gradbars_csv_fields_seq
+              {\int_incr:N \l__gradbars_csv_col_int
+               \tl_if_blank:nT {##1}{\gradbarsFail{CSV~header~must~not~be~empty}}
+               \prop_if_in:NnT \l__gradbars_csv_prop {col/##1}{\gradbarsFail{Duplicate~CSV~header:~##1}}
+               \prop_put:Nnx \l__gradbars_csv_prop {col/##1}{\int_use:N \l__gradbars_csv_col_int}}
+          }
+          {
+            \int_compare:nNnF {\seq_count:N \l__gradbars_csv_fields_seq} = {\l__gradbars_csv_width_int}
+              {\gradbarsFail{CSV~row~has~wrong~field~count}}
+            \int_zero:N \l__gradbars_csv_col_int
+            \seq_map_inline:Nn \l__gradbars_csv_fields_seq
+              {\int_incr:N \l__gradbars_csv_col_int
+               \prop_put:Nxn \l__gradbars_csv_prop
+                 {row/\int_use:N \l__gradbars_csv_row_int/\int_use:N \l__gradbars_csv_col_int}{##1}}
+          }
+        \int_incr:N \l__gradbars_csv_row_int
+      }
+  }
+\NewDocumentCommand\gradbarsloadcsv{O{} m m}
+  {
+    \gradbars@validtrue
+    \regex_match:nnF {\A[A-Za-z][A-Za-z0-9_\-]*\Z}{#2}
+      {\gradbarsFail{CSV~dataset~name~must~start~with~an~ASCII~letter}}
+    \clist_set:Nn \l__gradbars_csv_missing_clist {NA,N/A,null}
+    \keys_set:nn {gradbars/csv}{#1}
+    \prop_clear:N \l__gradbars_csv_prop
+    \int_zero:N \l__gradbars_csv_row_int
+    \file_if_exist:nTF {#3}
+      {\ior_open:Nn \l__gradbars_csv_ior {#3}
+       \ior_str_map_inline:Nn \l__gradbars_csv_ior {\gradbarsCSVLine{##1}}
+       \ior_close:N \l__gradbars_csv_ior}
+      {\gradbarsFail{CSV~file~not~found:~#3}}
+    \int_compare:nNnF {\l__gradbars_csv_row_int} > {0}{\gradbarsFail{CSV~requires~a~header}}
+    \ifgradbars@valid
+      \prop_put:Nnx \l__gradbars_csv_prop {rows}{\int_eval:n {\l__gradbars_csv_row_int-1}}
+      \prop_put:NnV \l__gradbars_csv_prop {missing}\l__gradbars_csv_missing_clist
+      \prop_if_exist:cF {l__gradbars_csv_#2_prop}{\prop_new:c {l__gradbars_csv_#2_prop}}
+      \prop_set_eq:cN {l__gradbars_csv_#2_prop}\l__gradbars_csv_prop
+    \fi
+  }
+\cs_new_protected:Npn \gradbarsCSVColumn #1#2
+  {
+    \gradbars@validtrue
+    \prop_if_exist:cTF {l__gradbars_csv_#1_prop}
+      {\prop_if_in:cxTF {l__gradbars_csv_#1_prop}{col/\tl_to_str:n {#2}}
+        {\prop_get:cxN {l__gradbars_csv_#1_prop}{col/\tl_to_str:n {#2}}\l_tmpa_tl
+         \int_set:Nn \l__gradbars_csv_col_int {\l_tmpa_tl}}
+        {\gradbarsFail{Unknown~CSV~column:~#2}}}
+      {\gradbarsFail{Unknown~CSV~dataset:~#1}}
+  }
+\cs_new_protected:Npn \gradbarsCSVGet #1#2#3
+  {
+    \gradbarsCSVColumn{#1}{#3}
+    \regex_match:nnF {\A[1-9][0-9]*\Z}{#2}{\gradbarsFail{CSV~row~must~be~a~positive~integer}}
+    \ifgradbars@valid
+      \prop_if_in:cxTF {l__gradbars_csv_#1_prop}{row/#2/\int_use:N \l__gradbars_csv_col_int}
+        {\prop_get:cxN {l__gradbars_csv_#1_prop}{row/#2/\int_use:N \l__gradbars_csv_col_int}\l__gradbars_csv_value_tl}
+        {\gradbarsFail{CSV~row~out~of~range}}
+    \fi
+  }
+\cs_new_protected:Npn \gradbarsCSVNumber #1
+  {
+    \prop_get:cnN {l__gradbars_csv_#1_prop}{missing}\l_tmpa_tl
+    \clist_set:NV \l__gradbars_csv_missing_clist \l_tmpa_tl
+    \bool_set_false:N \l_tmpa_bool
+    \tl_if_blank:VT \l__gradbars_csv_value_tl {\bool_set_true:N \l_tmpa_bool}
+    \clist_map_inline:Nn \l__gradbars_csv_missing_clist
+      {\str_if_eq:eeT {\l__gradbars_csv_value_tl}{\tl_to_str:n {##1}}{\bool_set_true:N \l_tmpa_bool}}
+    \bool_if:NTF \l_tmpa_bool
+      {\tl_set:Nn \l__gradbars_csv_value_tl {NA}}
+      {\gradbarsCheckNumber{\l__gradbars_csv_value_tl}{CSV~numeric~cell}}
+  }
+\NewDocumentCommand\gradbarscsvcell{m m m}
+  {\group_begin:\gradbarsCSVGet{#1}{#2}{#3}
+   \ifgradbars@valid\tl_use:N \l__gradbars_csv_value_tl\fi\group_end:}
+\NewDocumentCommand\gradbarcsv{O{} m m m}
+  {\group_begin:\gradbarsCSVGet{#2}{#3}{#4}
+   \ifgradbars@valid\gradbarsCSVNumber{#2}
+     \ifgradbars@valid\gradbar[#1]{\l__gradbars_csv_value_tl}\fi\fi\group_end:}
+\cs_new_protected:Npn \gradbarsCSVRange #1#2
+  {
+    \gradbarsCSVColumn{#1}{#2}
+    \fp_zero:N \l__gradbars_csv_min_fp
+    \fp_zero:N \l__gradbars_csv_max_fp
+    \ifgradbars@valid
+      \int_step_inline:nn {\prop_item:cn {l__gradbars_csv_#1_prop}{rows}}
+        {\prop_get:cxN {l__gradbars_csv_#1_prop}{row/##1/\int_use:N \l__gradbars_csv_col_int}\l__gradbars_csv_value_tl
+         \gradbarsCSVNumber{#1}
+         \ifgradbars@valid
+           \str_if_eq:VnF \l__gradbars_csv_value_tl {NA}
+             {\fp_set:Nn \l__gradbars_csv_min_fp {min(\l__gradbars_csv_min_fp,\l__gradbars_csv_value_tl)}
+              \fp_set:Nn \l__gradbars_csv_max_fp {max(\l__gradbars_csv_max_fp,\l__gradbars_csv_value_tl)}}
+         \fi}
+      % Keep a positive upper limit even for all-zero/all-missing/negative columns.
+      \fp_compare:nNnT {\l__gradbars_csv_max_fp} = {0}{\fp_set:Nn \l__gradbars_csv_max_fp {1}}
+    \fi
+  }
+\NewDocumentCommand\gradbarscsvstyle{m m m}
+  {\gradbarsCSVRange{#2}{#3}
+   \ifgradbars@valid
+     \cs_set:cpx {gradbars@style@#1}
+       {min=\fp_to_decimal:N \l__gradbars_csv_min_fp,max=\fp_to_decimal:N \l__gradbars_csv_max_fp}
+   \fi}
+\NewDocumentCommand\gradbarscsvtable{O{} m m m}
+  {
+    \group_begin:
+    \gradbarsCSVRange{#2}{#4}
+    \ifgradbars@valid
+      \tl_set:Nx \l__gradbars_csv_table_tl
+        {\exp_not:N \gradbarssetup{min=\fp_to_decimal:N \l__gradbars_csv_min_fp,
+          max=\fp_to_decimal:N \l__gradbars_csv_max_fp}
+         \exp_not:N \begin{tabular}{@{}ll@{}}\exp_not:N \hline
+         \tl_to_str:n {#3}&\tl_to_str:n {#4}\exp_not:N \\\exp_not:N \hline}
+      \int_step_inline:nn {\prop_item:cn {l__gradbars_csv_#2_prop}{rows}}
+        {\gradbarsCSVGet{#2}{##1}{#3}
+         \ifgradbars@valid
+           \tl_put_right:Nx \l__gradbars_csv_table_tl
+             {\exp_not:V \l__gradbars_csv_value_tl &
+              \exp_not:N \gradbarcsv[\exp_not:n {#1}]{#2}{##1}{\exp_not:n {#4}}\exp_not:N \\}
+         \fi}
+      \tl_put_right:Nn \l__gradbars_csv_table_tl {\hline\end{tabular}}
+      \ifgradbars@valid\tl_use:N \l__gradbars_csv_table_tl\fi
+    \fi
+    \group_end:
+  }
+\ExplSyntaxOff
+
+% Compact comparison shapes and reusable visual presets, v0.0.2.
+\newif\ifgradbars@compare
+\newif\ifgradbars@rangemode
+\newif\ifgradbars@referencemissing
+\newif\ifgradbars@rangemissing
+\newif\ifgradbars@outline
+\def\gradbars@shape{bar}
+\def\gradbars@reference{0}
+\def\gradbars@comparecolor{black!20}
+\def\gradbars@compareratio{.45}
+\def\gradbars@rangelo{0}
+\def\gradbars@rangehi{0}
+\def\gradbars@rangepoint{}
+\def\gradbars@markersize{2pt}
+\def\gradbars@stemwidth{.6pt}
+\def\gradbars@outlinewidth{.4pt}
+\def\gradbars@rowpadding{0pt}
+\pgfkeys{/gradbars,
+  shape/.is choice,
+  shape/bar/.code=\def\gradbars@shape{bar},
+  shape/lollipop/.code=\def\gradbars@shape{lollipop},
+  compare color/.store in=\gradbars@comparecolor,
+  compare ratio/.store in=\gradbars@compareratio,
+  range point/.store in=\gradbars@rangepoint,
+  marker size/.store in=\gradbars@markersize,
+  stem width/.store in=\gradbars@stemwidth,
+  outline/.is if=gradbars@outline,outline/.default=true,
+  outline width/.store in=\gradbars@outlinewidth,
+  row padding/.store in=\gradbars@rowpadding,
+  preset/.is choice,
+  preset/paper/.style={theme=solid,shape=bar,outline=false,
+    height=5pt,rounded=0pt,track color=black!4,label=outside,
+    font=\small,label gap=.35em,row padding=.5pt,pattern=none,stack patterns={none},print labels=false},
+  preset/report/.style={theme=solid,shape=bar,outline=false,
+    height=12pt,rounded=3pt,track color=black!6,label=outside,
+    font=\normalsize,label gap=.6em,row padding=2pt,target color=gradbarsInk,
+    threshold colors={lightred,gold,lightgreen},pattern=none,stack patterns={none},print labels=false},
+  preset/presentation/.style={theme=solid,shape=bar,outline=false,
+    height=18pt,rounded=2pt,label=auto,text color=auto,
+    font=\large,label gap=.7em,row padding=4pt,track color=black!10,
+    pattern=none,stack patterns={none},print labels=false},
+  preset/outline/.style={theme=gray,shape=bar,outline=true,
+    height=7pt,rounded=0pt,track color=white,left color=black!80,
+    compare color=black!35,label=outside,font=\small,
+    outline width=.35pt,stem width=.4pt,label gap=.4em,row padding=1pt,
+    pattern=none,stack patterns={none},print labels=false}
+}
+\def\gradbarsResolveShapeLengths{%
+  \begingroup\font@name
+  \edef\gradbars@next{\endgroup
+    \def\noexpand\gradbars@markersize{\the\dimexpr\gradbars@markersize\relax}%
+    \def\noexpand\gradbars@stemwidth{\the\dimexpr\gradbars@stemwidth\relax}%
+    \def\noexpand\gradbars@outlinewidth{\the\dimexpr\gradbars@outlinewidth\relax}%
+    \def\noexpand\gradbars@rowpadding{\the\dimexpr\gradbars@rowpadding\relax}}%
+  \gradbars@next}
+\NewDocumentCommand\gradcompare{O{} m m}{%
+  \begingroup\gradbars@comparetrue
+    \def\gradbars@reference{#2}%
+    \gradbar[shape=bar,#1]{#3}%
+  \endgroup}
+\NewDocumentCommand\gradrange{O{} m m}{%
+  \begingroup\gradbars@rangemodetrue
+    \def\gradbars@rangelo{#2}\def\gradbars@rangehi{#3}%
+    \gradbar[shape=bar,#1]{#3}%
+  \endgroup}
+\ExplSyntaxOn
+\cs_new_eq:NN \gradbarsValidateBeforeShapes \gradbarsValidateExtras
+\cs_set_protected:Npn \gradbarsValidateExtras
+  {
+    \gradbarsValidateBeforeShapes
+    \clist_map_inline:nn {markersize,stemwidth,outlinewidth}
+      {\dim_compare:nNnF {\use:c {gradbars@##1}} > {0pt}
+        {\gradbarsFail{Marker~and~line~sizes~must~be~positive}}}
+    \dim_compare:nNnT {\gradbars@rowpadding} < {0pt}
+      {\gradbarsFail{Row~padding~must~be~nonnegative}}
+    \ifgradbars@stack
+      \str_if_eq:eeF {\gradbars@shape}{bar}{\gradbarsFail{Stacked~bars~require~shape=bar}}
+    \fi
+    \ifgradbars@compare
+      \str_case_e:nnF {\gradbars@shape}{{bar}{}{dumbbell}{}}
+        {\gradbarsFail{Comparison~requires~shape=bar~or~dumbbell}}
+      \gradbarsCheckNumber{\gradbars@compareratio}{compare~ratio}
+      \gradbars@referencemissingfalse
+      \tl_set:Nx \l_tmpa_tl {\gradbars@reference}\tl_trim_spaces:N \l_tmpa_tl
+      \tl_if_empty:NT \l_tmpa_tl {\gradbars@referencemissingtrue}
+      \str_if_eq:VnT \l_tmpa_tl {NA}{\gradbars@referencemissingtrue}
+      \ifgradbars@referencemissing\else\gradbarsCheckNumber{\gradbars@reference}{reference}\fi
+      \ifgradbars@valid
+        \fp_compare:nF {0<\gradbars@compareratio<1}{\gradbarsFail{Compare~ratio~must~lie~strictly~between~0~and~1}}
+        \ifgradbars@referencemissing\else
+          \fp_compare:nNnT {\gradbars@min} = {0}
+            {\fp_compare:nNnT {\gradbars@reference} < {0}
+              {\gradbarsFail{Negative~reference~requires~a~negative~min}}}
+          \gradbarsRange{Reference}{\gradbars@reference}
+        \fi
+      \fi
+    \fi
+    \ifgradbars@rangemode
+      \str_if_eq:eeF {\gradbars@shape}{bar}{\gradbarsFail{Range~requires~shape=bar}}
+      \ifgradbars@error\gradbarsFail{Range~bars~do~not~accept~error~whiskers}\fi
+      \clist_if_empty:NF \l__gradbars_thresholds_clist
+        {\gradbarsFail{Range~bars~do~not~accept~thresholds}}
+      \gradbars@rangemissingfalse
+      \tl_set:Nx \l_tmpa_tl {\gradbars@rangelo}\tl_trim_spaces:N \l_tmpa_tl
+      \tl_if_empty:NT \l_tmpa_tl {\gradbars@rangemissingtrue}
+      \str_if_eq:VnT \l_tmpa_tl {NA}{\gradbars@rangemissingtrue}
+      \ifgradbars@rangemissing
+        \ifgradbars@missing\else\gradbarsFail{Both~range~endpoints~must~be~present~or~missing}\fi
+      \else
+        \ifgradbars@missing\gradbarsFail{Both~range~endpoints~must~be~present~or~missing}\fi
+        \gradbarsCheckNumber{\gradbars@rangelo}{range~lower~endpoint}
+      \fi
+      \tl_if_empty:oF {\gradbars@rangepoint}{\gradbarsCheckNumber{\gradbars@rangepoint}{range~point}}
+      \ifgradbars@valid
+        \ifgradbars@missing
+          \tl_if_empty:oF {\gradbars@rangepoint}{\gradbarsFail{Missing~range~cannot~have~a~point}}
+        \else
+          \fp_compare:nNnT {\gradbars@rangelo} > {\gradbars@rangehi}
+            {\gradbarsFail{Range~lower~endpoint~must~not~exceed~upper}}
+          \fp_compare:nNnT {\gradbars@min} = {0}
+            {\fp_compare:nNnT {\gradbars@rangelo} < {0}
+              {\gradbarsFail{Negative~range~requires~a~negative~min}}}
+          \gradbarsRange{Range~lower~endpoint}{\gradbars@rangelo}
+          \tl_if_empty:oF {\gradbars@rangepoint}
+            {\fp_compare:nF {\gradbars@rangelo<=\gradbars@rangepoint<=\gradbars@rangehi}
+              {\gradbarsFail{Range~point~must~lie~between~endpoints}}}
+          \cs_set:Npx \gradbars@start {\gradbarsPosition{\gradbars@rangelo}}
+          \cs_set:Npx \gradbars@stop {\gradbarsPosition{\gradbars@rangehi}}
+        \fi
+      \fi
+    \else
+      \tl_if_empty:oF {\gradbars@rangepoint}{\gradbarsFail{Range~point~requires~gradrange}}
+    \fi
+  }
+% Format each endpoint independently using the ordinary number formatter.
+\cs_new_eq:NN \gradbarsSingleLabel \gradbars@labelcontent
+\cs_new_protected:Npn \gradbarsFormatEndpoint #1
+  {\group_begin:\gradbars@missingfalse\def\gradbars@text{}
+   \cs_set:Npx \gradbars@number {\fp_eval:n {#1}}
+   \str_if_eq:eeT {\gradbars@format}{percent}
+     {\cs_set:Npx \gradbars@number {\fp_eval:n {100*(#1)/\gradbars@max}}}
+   \gradbarsSingleLabel\group_end:}
+\cs_set_protected:Npn \gradbars@labelcontent
+  {
+    \tl_if_empty:oTF {\gradbars@text}
+      {\ifgradbars@compare
+         \gradbarsSingleLabel\,/\,
+         \ifgradbars@referencemissing\gradbars@missingtext
+         \else\gradbarsFormatEndpoint{\gradbars@reference}\fi
+       \else\ifgradbars@rangemode
+         \ifgradbars@missing\gradbars@missingtext
+         \else[\gradbarsFormatEndpoint{\gradbars@rangelo},\,
+               \gradbarsFormatEndpoint{\gradbars@rangehi}]\fi
+       \else\gradbarsSingleLabel\fi\fi}
+      {\gradbars@text}
+  }
+\cs_new_protected:Npn \gradbarsDrawTrack
+  {
+    \str_if_eq:eeTF {\gradbars@shape}{lollipop}
+      {\draw[draw=\gradbars@track,line~width=\gradbars@stemwidth]
+        (0,.5*\gradbars@height)--(\gradbars@width,.5*\gradbars@height);}
+      {\ifgradbars@outline
+        \path[rounded~corners=\gradbars@radius,fill=\gradbars@track,
+          draw=gradbarsInk!35,line~width=\gradbars@outlinewidth]
+          (0,0) rectangle (\gradbars@width,\gradbars@height);
+       \else
+        \path[rounded~corners=\gradbars@radius,fill=\gradbars@track,draw=none]
+          (0,0) rectangle (\gradbars@width,\gradbars@height);
+       \fi}
+  }
+\cs_new_protected:Npn \gradbarsDrawDot #1
+  {
+    \pgfmathsetlengthmacro\gradbars@dotradius{min(\gradbars@markersize,.5*\gradbars@height)}
+    \ifgradbars@outline
+      \path[fill=white,draw=\gradbars@left,line~width=\gradbars@stemwidth]
+        (#1,.5*\gradbars@height) circle[radius=\gradbars@dotradius];
+    \else
+      \path[fill=\gradbars@left,draw=none]
+        (#1,.5*\gradbars@height) circle[radius=\gradbars@dotradius];
+    \fi
+  }
+\cs_new_protected:Npn \gradbarsDrawShape
+  {
+    \str_if_eq:eeTF {\gradbars@shape}{lollipop}
+      {\ifgradbars@missing\else
+         \draw[draw=\gradbars@left,line~width=\gradbars@stemwidth]
+           (\gradbars@xzero,.5*\gradbars@height)--(\gradbars@xend,.5*\gradbars@height);
+         \gradbarsDrawDot{\gradbars@xend}
+       \fi}
+      {
+        \ifgradbars@compare
+          \ifgradbars@referencemissing\else
+            \pgfmathsetlengthmacro\gradbars@xref{\gradbarsPosition{\gradbars@reference}*(\gradbars@width)}
+            \ifgradbars@outline
+              \draw[draw=\gradbars@comparecolor,line~width=\gradbars@outlinewidth]
+                (\gradbars@xzero,0) rectangle (\gradbars@xref,\gradbars@height);
+            \else
+              \path[rounded~corners=\gradbars@radius,fill=\gradbars@comparecolor,draw=none]
+                (\gradbars@xzero,0) rectangle (\gradbars@xref,\gradbars@height);
+            \fi
+          \fi
+          \begin{scope}[yshift={.5*(1-\gradbars@compareratio)*\gradbars@height}]
+            \pgfmathsetlengthmacro\gradbars@height{\gradbars@compareratio*\gradbars@height}
+            \pgfmathsetlengthmacro\gradbars@radius{min(\gradbars@radius,.5*\gradbars@height)}
+            \gradbarsDrawBarBody
+          \end{scope}
+        \else
+          \gradbarsDrawBarBody
+          \ifgradbars@rangemode\ifgradbars@missing\else
+            \draw[draw=\gradbars@left,line~width=\gradbars@stemwidth]
+              (\gradbars@xstart,0)--(\gradbars@xstart,\gradbars@height)
+              (\gradbars@xstop,0)--(\gradbars@xstop,\gradbars@height);
+            \tl_if_empty:oF {\gradbars@rangepoint}
+              {\pgfmathsetlengthmacro\gradbars@xpoint{\gradbarsPosition{\gradbars@rangepoint}*(\gradbars@width)}
+               \pgfmathsetlengthmacro\gradbars@dotradius{min(\gradbars@markersize,.5*\gradbars@height)}
+               \path[fill=white,draw=gradbarsInk,line~width=\gradbars@stemwidth]
+                 (\gradbars@xpoint,.5*\gradbars@height) circle[radius=\gradbars@dotradius];}
+          \fi\fi
+        \fi
+      }
+  }
+\ExplSyntaxOff
+\def\gradbarsDrawBarBody{%
+  \ifdim\gradbars@xstop>\gradbars@xstart\relax
+    \pgfmathsetlengthmacro\gradbars@fillradius{min(\gradbars@radius,.5*(\gradbars@xstop-\gradbars@xstart))}%
+    \begin{scope}
+      \clip[rounded corners=\gradbars@radius]
+        (0,0) rectangle (\gradbars@width,\gradbars@height);
+      \ifgradbars@stack
+        \clip[rounded corners=\gradbars@fillradius]
+          (\gradbars@xstart,0) rectangle (\gradbars@xstop,\gradbars@height);
+        \gradbarsDrawStack
+      \else\ifgradbars@outline
+        \draw[rounded corners=\gradbars@fillradius,draw=\gradbars@left,line width=\gradbars@outlinewidth]
+          (\gradbars@xstart,0) rectangle (\gradbars@xstop,\gradbars@height);
+      \else\ifgradbars@gradient
+        \path[rounded corners=\gradbars@fillradius,shade,
+          left color=\gradbars@left,right color=\gradbars@right]
+          (\gradbars@xstart,0) rectangle (\gradbars@xstop,\gradbars@height);
+      \else
+        \path[rounded corners=\gradbars@fillradius,fill=\gradbars@left,draw=none]
+          (\gradbars@xstart,0) rectangle (\gradbars@xstop,\gradbars@height);
+      \fi\fi\fi
+      \ifgradbars@stack\else\ifgradbars@outline\else
+        \clip[rounded corners=\gradbars@fillradius]
+          (\gradbars@xstart,0) rectangle (\gradbars@xstop,\gradbars@height);
+        \gradbarsPatternRect{0}{\gradbars@xstart}{0}{\gradbars@xstop}{\gradbars@height}
+      \fi
+      \fi
+    \end{scope}
+  \fi
+}
+
+% v0.0.3: comparison, signed compositions, series and semantic palettes.
+\definecolor{gradbarsOrange}{HTML}{D55E00}
+\definecolor{gradbarsPurple}{HTML}{AA4499}
+\definecolor{gradbarsCyan}{HTML}{56B4E9}
+\definecolor{gradbarsGreen}{HTML}{009E73}
+\def\gradbars@comparelabel{values}
+\def\gradbars@stacktotals{net}
+\def\gradbars@qualitytarget{}
+\def\gradbars@qualityrange{}
+\def\gradbars@sparkrange{auto}
+\def\gradbars@sparkpoints{extrema}
+\def\gradbars@sparkhigh{gradbarsTeal}
+\def\gradbars@sparklow{gradbarsOrange}
+\newif\ifgradbars@spark
+\pgfkeys{/gradbars,
+  shape/dumbbell/.code=\def\gradbars@shape{dumbbell},
+  shape/sparkline/.code=\def\gradbars@shape{sparkline},
+  compare label/.is choice,
+  compare label/values/.code=\def\gradbars@comparelabel{values},
+  compare label/delta/.code=\def\gradbars@comparelabel{delta},
+  stack totals/.is choice,
+  stack totals/net/.code=\def\gradbars@stacktotals{net},
+  stack totals/separate/.code=\def\gradbars@stacktotals{separate},
+  better/target/.code=\def\gradbars@better{target},
+  better/interval/.code=\def\gradbars@better{interval},
+  quality target/.store in=\gradbars@qualitytarget,
+  quality range/.store in=\gradbars@qualityrange,
+  spark range/.is choice,
+  spark range/auto/.code=\def\gradbars@sparkrange{auto},
+  spark range/fixed/.code=\def\gradbars@sparkrange{fixed},
+  spark points/.is choice,
+  spark points/extrema/.code=\def\gradbars@sparkpoints{extrema},
+  spark points/all/.code=\def\gradbars@sparkpoints{all},
+  spark points/last/.code=\def\gradbars@sparkpoints{last},
+  spark points/none/.code=\def\gradbars@sparkpoints{none},
+  spark high color/.store in=\gradbars@sparkhigh,
+  spark low color/.store in=\gradbars@sparklow,
+  palette/.is choice,
+  palette/categorical/.style={stack colors={gradbarsBlue,gradbarsOrange,gradbarsGreen,gradbarsPurple,gradbarsCyan,gold},
+    stack patterns={none},compare color=gradbarsOrange,negative color=gradbarsOrange},
+  palette/sequential/.style={stack colors={gradbarsBlue!20,gradbarsBlue!40,gradbarsBlue!60,gradbarsBlue!80,gradbarsBlue},
+    stack patterns={none}},
+  palette/diverging/.style={stack colors={gradbarsOrange!85,gradbarsOrange!40,black!12,gradbarsTeal!40,gradbarsTeal!85},
+    threshold colors={gradbarsOrange,gold,gradbarsTeal},negative color=gradbarsOrange,
+    compare color=gradbarsOrange,left color=gradbarsTeal,right color=gradbarsTeal!35,stack patterns={none}},
+  palette/mono/.style={print,stack colors={white,black!10,black!20},
+    stack patterns={diagonal,dots,crosshatch},compare color=black!45,
+    spark high color=black,spark low color=black},
+}
+\NewDocumentCommand\graddumbbell{O{} m m}{%
+  \gradcompare[#1,shape=dumbbell]{#2}{#3}}
+\ExplSyntaxOn
+\fp_new:N \l__gradbars_positive_fp
+\fp_new:N \l__gradbars_negative_fp
+\cs_new_protected:Npn \gradbarsStackReset
+  {\fp_zero:N \l__gradbars_positive_fp\fp_zero:N \l__gradbars_negative_fp}
+\cs_new_protected:Npn \gradbarsStackStep #1
+  {
+    \fp_compare:nNnTF {#1} < {0}
+      {\fp_set_eq:NN \l__gradbars_sum_fp \l__gradbars_negative_fp
+       \fp_add:Nn \l__gradbars_negative_fp {#1}
+       \fp_set_eq:NN \l__gradbars_before_fp \l__gradbars_negative_fp}
+      {\fp_set_eq:NN \l__gradbars_before_fp \l__gradbars_positive_fp
+       \fp_add:Nn \l__gradbars_positive_fp {#1}
+       \fp_set_eq:NN \l__gradbars_sum_fp \l__gradbars_positive_fp}
+  }
+% Category identity is scoped and keyed by literal names, independent of order.
+\prop_new:N \l__gradbars_category_colors_prop
+\prop_new:N \l__gradbars_category_patterns_prop
+\NewDocumentCommand\gradbarscategory{m m m}
+  {
+    \tl_if_blank:nTF {#1}{\gradbarsFail{Category~name~must~not~be~empty}}
+      {\prop_if_in:NnTF \c__gradbars_patterns_prop {#3}
+        {\prop_put:Nnn \l__gradbars_category_colors_prop {#1}{#2}
+         \prop_put:Nnn \l__gradbars_category_patterns_prop {#1}{#3}}
+        {\gradbarsFail{Unknown~category~pattern}}}
+  }
+\cs_new_protected:Npn \gradbarsCategoryColor #1
+  {
+    \cs_set:Npx \gradbars@segmentcolor
+      {\clist_item:Nn \l__gradbars_stackcolors_clist
+        {1+\int_mod:nn {#1-1}{\clist_count:N \l__gradbars_stackcolors_clist}}}
+    \tl_set:Nx \l_tmpa_tl {\clist_item:Nn \l__gradbars_names_clist {#1}}
+    \ifgradbars@print\else
+      \prop_get:NVNT \l__gradbars_category_colors_prop \l_tmpa_tl \l_tmpb_tl
+        {\cs_set:Npx \gradbars@segmentcolor {\exp_not:V \l_tmpb_tl}}
+    \fi
+  }
+\cs_new_protected:Npn \gradbarsCategoryPattern #1
+  {
+    \int_compare:nNnT {#1} > {0}
+      {\tl_set:Nx \l_tmpa_tl {\clist_item:Nn \l__gradbars_names_clist {#1}}
+       \prop_get:NVNT \l__gradbars_category_patterns_prop \l_tmpa_tl \l_tmpb_tl
+         {\tl_set_eq:NN \l__gradbars_pattern_tl \l_tmpb_tl}}
+  }
+\fp_new:N \l__gradbars_distance_fp
+\clist_new:N \l__gradbars_quality_clist
+\cs_new_protected:Npn \gradbarsQuality
+  {
+    \str_case_e:nn {\gradbars@better}
+      {{target}{\gradbarsCheckNumber{\gradbars@qualitytarget}{quality~target}}
+       {interval}{\clist_set:Nx \l__gradbars_quality_clist {\gradbars@qualityrange}
+         \tl_set:Nx \l_tmpa_tl {\gradbars@qualityrange}
+         \regex_match:nVT {\A\s*,|,\s*,|,\s*\Z} \l_tmpa_tl
+           {\gradbarsFail{Quality~range~requires~two~endpoints}}
+         \int_compare:nNnF {\clist_count:N \l__gradbars_quality_clist} = {2}
+           {\gradbarsFail{Quality~range~requires~two~endpoints}}
+         \clist_map_inline:Nn \l__gradbars_quality_clist
+           {\gradbarsCheckNumber{##1}{quality~endpoint}}}}
+    \clist_if_empty:NT \l__gradbars_thresholds_clist
+      {\gradbarsFail{Target~and~interval~quality~require~distance~thresholds}}
+    \ifgradbars@stack\gradbarsFail{Stack~does~not~support~quality~evaluation}\fi
+    \ifgradbars@rangemode\gradbarsFail{Range~does~not~support~quality~evaluation}\fi
+    \ifgradbars@valid
+      \fp_compare:nNnT {\clist_item:Nn \l__gradbars_thresholds_clist {1}} < {0}
+        {\gradbarsFail{Distance~thresholds~must~be~nonnegative}}
+      \str_if_eq:eeTF {\gradbars@better}{target}
+        {\fp_set:Nn \l__gradbars_distance_fp {abs(\gradbars@value-\gradbars@qualitytarget)}}
+        {\fp_compare:nNnT {\clist_item:Nn \l__gradbars_quality_clist {1}}
+           > {\clist_item:Nn \l__gradbars_quality_clist {2}}
+           {\gradbarsFail{Quality~range~must~be~ordered}}
+         \fp_set:Nn \l__gradbars_distance_fp
+           {max(0,\clist_item:Nn \l__gradbars_quality_clist {1}-\gradbars@value,
+             \gradbars@value-\clist_item:Nn \l__gradbars_quality_clist {2})}}
+      \int_set:Nn \l_tmpa_int {1}
+      \fp_compare:nT {\l__gradbars_distance_fp <= \clist_item:Nn \l__gradbars_thresholds_clist {2}}
+        {\int_set:Nn \l_tmpa_int {2}}
+      \fp_compare:nT {\l__gradbars_distance_fp <= \clist_item:Nn \l__gradbars_thresholds_clist {1}}
+        {\int_set:Nn \l_tmpa_int {3}}
+      \cs_set:Npx \gradbars@left {\clist_item:Nn \l__gradbars_colors_clist {\l_tmpa_int}}
+      \gradbars@gradientfalse
+    \fi
+  }
+\cs_new_eq:NN \gradbarsValidateBeforeThree \gradbarsValidateExtras
+\cs_set_protected:Npn \gradbarsValidateExtras
+  {
+    \gradbarsValidateBeforeThree
+    \str_case_e:nn {\gradbars@better}{{target}{\gradbarsQuality}{interval}{\gradbarsQuality}}
+    \str_if_eq:eeT {\gradbars@shape}{dumbbell}
+      {\ifgradbars@compare\else\gradbarsFail{Dumbbell~requires~graddumbbell}\fi}
+    \str_if_eq:eeT {\gradbars@shape}{sparkline}
+      {\ifgradbars@spark\else\gradbarsFail{Sparkline~requires~gradspark}\fi}
+    \ifgradbars@spark
+      \str_if_eq:eeF {\gradbars@shape}{sparkline}{\gradbarsFail{Spark~requires~shape=sparkline}}
+      \ifgradbars@error\gradbarsFail{Spark~does~not~support~error~whiskers}\fi
+      \tl_if_empty:oF {\gradbars@target}{\gradbarsFail{Spark~does~not~support~bar~targets}}
+      \tl_if_empty:oF {\gradbars@band}{\gradbarsFail{Spark~does~not~support~bar~bands}}
+      \tl_if_empty:oF {\gradbars@thresholds}{\gradbarsFail{Spark~does~not~support~thresholds}}
+      \gradbarsValidateSpark
+    \fi
+  }
+\cs_new_eq:NN \gradbarsLabelBeforeThree \gradbars@labelcontent
+\cs_set_protected:Npn \gradbars@labelcontent
+  {
+    \tl_if_empty:oTF {\gradbars@text}
+      {\ifgradbars@compare
+        \str_if_eq:eeTF {\gradbars@comparelabel}{delta}
+          {\ifgradbars@missing\gradbars@missingtext\else
+             \ifgradbars@referencemissing\gradbars@missingtext\else
+               $\Delta$\,\gradbarsFormatEndpoint{\gradbars@value-\gradbars@reference}\fi\fi}
+          {\gradbarsLabelBeforeThree}
+       \else\ifgradbars@stack
+         \str_if_eq:eeTF {\gradbars@stacktotals}{separate}
+           {+\gradbarsFormatEndpoint{\gradbars@positive}\,/\,\gradbarsFormatEndpoint{\gradbars@negative}}
+           {\gradbarsLabelBeforeThree}
+       \else\gradbarsLabelBeforeThree\fi\fi}
+      {\gradbars@text}
+  }
+\cs_new_eq:NN \gradbarsShapeBeforeThree \gradbarsDrawShape
+\cs_set_protected:Npn \gradbarsDrawShape
+  {
+    \str_case_e:nnF {\gradbars@shape}
+      {{dumbbell}{\gradbarsDrawDumbbell}{sparkline}{\gradbarsDrawSpark}}
+      {\gradbarsShapeBeforeThree}
+  }
+\cs_new_protected:Npn \gradbarsDrawDumbbell
+  {
+    \gradbarsMarkerBounds
+    \ifgradbars@referencemissing\else
+      \pgfmathsetlengthmacro\gradbars@xref{\gradbarsPosition{\gradbars@reference}*\gradbars@width}
+      \ifgradbars@missing\else
+        \draw[draw=\gradbars@left,line~width=\gradbars@stemwidth]
+          (\gradbars@xref,.5*\gradbars@height)--(\gradbars@xend,.5*\gradbars@height);
+      \fi
+      \group_begin:\let\gradbars@left\gradbars@comparecolor
+        \gradbars@outlinetrue\gradbarsDrawDot{\gradbars@xref}\group_end:
+    \fi
+    \ifgradbars@missing\else\gradbarsDrawDot{\gradbars@xend}\fi
+  }
+\seq_new:N \l__gradbars_series_seq
+\seq_new:N \l__gradbars_series_clean_seq
+\fp_new:N \l__gradbars_series_min_fp
+\fp_new:N \l__gradbars_series_max_fp
+\fp_new:N \l__gradbars_series_low_fp
+\fp_new:N \l__gradbars_series_high_fp
+\bool_new:N \l__gradbars_series_any_bool
+\bool_new:N \l__gradbars_series_prev_bool
+\bool_new:N \l__gradbars_series_mark_bool
+\int_new:N \l__gradbars_series_index_int
+\cs_new_protected:Npn \gradbarsParseSpark #1
+  {
+    \fp_zero:N \l__gradbars_series_min_fp
+    \fp_zero:N \l__gradbars_series_max_fp
+    \seq_set_split:Nnn \l__gradbars_series_seq {,}{#1}
+    \seq_clear:N \l__gradbars_series_clean_seq
+    \bool_set_false:N \l__gradbars_series_any_bool
+    \seq_map_inline:Nn \l__gradbars_series_seq
+      {\tl_set:Nx \l_tmpa_tl {##1}\tl_trim_spaces:N \l_tmpa_tl
+       \tl_if_empty:NT \l_tmpa_tl {\tl_set:Nn \l_tmpa_tl {NA}}
+       \str_if_eq:VnF \l_tmpa_tl {NA}
+         {\gradbarsCheckNumber{\l_tmpa_tl}{spark~observation}
+          \ifgradbars@valid
+            \bool_if:NTF \l__gradbars_series_any_bool
+              {\fp_set:Nn \l__gradbars_series_min_fp {min(\l__gradbars_series_min_fp,\l_tmpa_tl)}
+               \fp_set:Nn \l__gradbars_series_max_fp {max(\l__gradbars_series_max_fp,\l_tmpa_tl)}}
+              {\fp_set:Nn \l__gradbars_series_min_fp {\l_tmpa_tl}
+               \fp_set:Nn \l__gradbars_series_max_fp {\l_tmpa_tl}
+               \bool_set_true:N \l__gradbars_series_any_bool}
+          \fi}
+       \seq_put_right:NV \l__gradbars_series_clean_seq \l_tmpa_tl}
+    \seq_set_eq:NN \l__gradbars_series_seq \l__gradbars_series_clean_seq
+    \cs_set:Npx \gradbars@sparklast {\seq_item:Nn \l__gradbars_series_seq {-1}}
+  }
+\NewDocumentCommand\gradspark{O{} m}
+  {\group_begin:\gradbars@validtrue\gradbarsParseSpark{#2}
+   \ifgradbars@valid
+     \gradbars@sparktrue
+     \gradbar[height=4ex,#1,shape=sparkline]{\gradbars@sparklast}
+   \fi\group_end:}
+\cs_new_protected:Npn \gradbarsValidateSpark
+  {
+    \str_if_eq:eeTF {\gradbars@sparkrange}{fixed}
+      {\fp_set:Nn \l__gradbars_series_low_fp {\gradbars@min}
+       \fp_set:Nn \l__gradbars_series_high_fp {\gradbars@max}
+       \seq_map_inline:Nn \l__gradbars_series_seq
+         {\str_if_eq:nnF {##1}{NA}{\gradbarsRange{Spark~observation}{##1}}}}
+      {\fp_set_eq:NN \l__gradbars_series_low_fp \l__gradbars_series_min_fp
+       \fp_set_eq:NN \l__gradbars_series_high_fp \l__gradbars_series_max_fp}
+  }
+\cs_new_protected:Npn \gradbarsDrawSpark
+  {
+    \gradbarsMarkerBounds
+    \bool_set_false:N \l__gradbars_series_prev_bool
+    \int_zero:N \l__gradbars_series_index_int
+    \seq_map_inline:Nn \l__gradbars_series_seq
+      {\int_incr:N \l__gradbars_series_index_int
+       \str_if_eq:nnTF {##1}{NA}
+         {\bool_set_false:N \l__gradbars_series_prev_bool}
+         {\pgfmathsetlengthmacro\gradbars@sparkx
+            {\fp_eval:n {\seq_count:N \l__gradbars_series_seq=1 ? .5 :
+              (\l__gradbars_series_index_int-1)/max(1,\seq_count:N \l__gradbars_series_seq-1)}*\gradbars@width}
+          \fp_compare:nNnTF {\l__gradbars_series_low_fp} = {\l__gradbars_series_high_fp}
+            {\pgfmathsetlengthmacro\gradbars@sparky{.5*\gradbars@height}}
+            {\pgfmathsetlengthmacro\gradbars@sparky
+              {\fp_eval:n {max(0,min(1,(##1-\l__gradbars_series_low_fp)/
+                (\l__gradbars_series_high_fp-\l__gradbars_series_low_fp)))}*\gradbars@height}}
+          \bool_if:NT \l__gradbars_series_prev_bool
+            {\draw[draw=\gradbars@left,line~width=\gradbars@stemwidth]
+              (\gradbars@sparkprevx,\gradbars@sparkprevy)--(\gradbars@sparkx,\gradbars@sparky);}
+          \bool_set_false:N \l__gradbars_series_mark_bool
+          \let\gradbars@pointcolor\gradbars@left
+          \str_case_e:nn {\gradbars@sparkpoints}
+            {{all}{\bool_set_true:N \l__gradbars_series_mark_bool}
+             {extrema}{\fp_compare:nNnT {##1} = {\l__gradbars_series_min_fp}
+                {\bool_set_true:N \l__gradbars_series_mark_bool\let\gradbars@pointcolor\gradbars@sparklow}
+               \fp_compare:nNnT {##1} = {\l__gradbars_series_max_fp}
+                {\bool_set_true:N \l__gradbars_series_mark_bool\let\gradbars@pointcolor\gradbars@sparkhigh}}}
+          \str_if_eq:eeF {\gradbars@sparkpoints}{none}
+            {\int_compare:nNnT {\l__gradbars_series_index_int} = {\seq_count:N \l__gradbars_series_seq}
+               {\bool_set_true:N \l__gradbars_series_mark_bool}}
+          \bool_if:NT \l__gradbars_series_mark_bool
+            {\path[fill=\gradbars@pointcolor,draw=none]
+               (\gradbars@sparkx,\gradbars@sparky) circle[radius=\gradbars@markersize];}
+          \let\gradbars@sparkprevx\gradbars@sparkx\let\gradbars@sparkprevy\gradbars@sparky
+          \bool_set_true:N \l__gradbars_series_prev_bool}}
+  }
+% Auto series scaling applies to the y axis; it must not inherit bar clipping.
+\cs_new_eq:NN \gradbarsValidateBeforeSpark \gradbarsValidate
+\cs_set_protected:Npn \gradbarsValidate
+  {
+    \ifgradbars@spark
+      \str_if_eq:eeT {\gradbars@sparkrange}{auto}
+        {\cs_set:Npx \gradbars@min {\fp_eval:n {min(0,\l__gradbars_series_min_fp)}}
+         \cs_set:Npx \gradbars@max {\fp_eval:n {max(1,\l__gradbars_series_max_fp)}}
+         \str_if_eq:eeT {\gradbars@format}{percent}
+           {\gradbarsFail{Auto~spark~range~does~not~support~percent~format}}}
+      \str_if_eq:eeF {\gradbars@label}{none}{\def\gradbars@label{outside}}
+    \fi
+    \let\gradbars@sparkbasecolor\gradbars@left
+    \gradbarsValidateBeforeSpark
+    \ifgradbars@spark\let\gradbars@left\gradbars@sparkbasecolor\fi
+  }
+\cs_new_protected:Npn \gradbarsMarkerBounds
+  {\path
+     (-\gradbars@markersize,-\gradbars@markersize) rectangle
+     ([xshift=\gradbars@markersize,yshift=\gradbars@markersize]\gradbars@width,\gradbars@height);}
+\cs_new_eq:NN \gradbarsTrackBeforeThree \gradbarsDrawTrack
+\cs_set_protected:Npn \gradbarsDrawTrack
+  {\group_begin:
+   \str_if_eq:eeT {\gradbars@shape}{dumbbell}{\def\gradbars@shape{lollipop}}
+   \gradbarsTrackBeforeThree\group_end:}
+\ExplSyntaxOff
 \endinput

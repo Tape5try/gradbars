@@ -1,227 +1,149 @@
 # gradbars
 
-**Compact data bars for LaTeX tables and inline text.**
+**Compact data graphics inside ordinary LaTeX tables.**
 
-Add a data bar directly to a table cell or a line of text, with consistent scales,
-labels, and reference markers. Built on TikZ, gradbars provides a focused interface
-for model comparisons, dataset summaries, and progress reports.
+**v0.0.3 · XeLaTeX · MIT**
 
-**v0.0.2 · XeLaTeX · MIT**
+[中文说明](README.zh-CN.md) · [Illustrated manual source](docs/gradbars-manual.tex) · [API reference](docs/api.md) · [Release notes](docs/releases/v0.0.3.md)
 
-[中文说明](README.zh-CN.md) · [Illustrated manual (Chinese PDF)](gradbars-manual-v0.0.2.pdf) · [API reference](docs/api.md)
+![gradbars: comparisons, signed contributions, trends and quality rules](docs/images/overview-v0.0.3.svg)
 
-![Model comparison table made with gradbars](docs/images/model-comparison.png)
+Use a consistent scale, keep real numbers visible, and add a small graphic directly
+to a table cell. No `tikzpicture` wrapper or shell escape is required.
 
-## Why gradbars?
+## New in v0.0.3
 
-- **Use ordinary table cells.** Write `\gradbar{72}`, or define a numeric column
-  with `\gradbarscolumn{G}{...}` and enter only numbers in its cells.
-- **Keep data and display separate.** Raw values determine geometry; labels can
-  show values, computed percentages, custom text, or scientific notation.
-- **Make comparisons consistent.** Reuse named styles, explicit column ranges,
-  bar widths, and fixed outside label slots.
-- **Add context in the same cell.** Combine targets, reference bands, conditional
-  colors, signed bars, and error whiskers; use `\gradstack` for nonnegative compositions.
-- **Label compositions automatically.** Add segment names, percentages and shared legends;
-  small labels move outside, while automatic text colors adapt to dark or light fills.
-- **Start from documented examples.** The single manual contains 37 examples with
-  both rendered output and source, including the built-in palette of 16 choices:
-  seven themes and nine solid colors.
+- **Dumbbell comparisons:** hollow reference points, filled current points, optional current-minus-reference labels.
+- **Signed stacks:** accumulate positive and negative contributions independently; show the net or both subtotals.
+- **Sparklines:** equally spaced observations, gaps for missing values, extrema and last-point markers, automatic or shared fixed ranges.
+- **Target and interval quality:** evaluate distance from a goal or acceptable interval without changing data geometry.
+- **Semantic palettes:** categorical, sequential, diverging and monochrome schemes; named categories keep their colors and patterns when reordered.
+- **One reorganized manual:** 56 numbered output/source examples, six application tables, four real layout cases and an interface index.
 
-gradbars packages established visualization techniques into a reusable table-oriented
-interface. It does not claim to introduce new chart types or replace a general plotting system.
+Existing bars, lollipops, layered comparisons, floating intervals, error whiskers,
+CSV input, numeric table columns and named styles remain available.
 
 ## Quick start
 
-Copy `gradbars.sty` next to your main `.tex` file. Compile with XeLaTeX using a recent TeX installation
-with TikZ. No shell escape, Python, or Chinese typesetting package is needed.
-For Overleaf, upload the `.sty`, paste the example below into a `.tex` document,
-and select XeLaTeX as the compiler.
-The package is not yet distributed through CTAN.
+Copy `gradbars.sty` next to your main `.tex` file and select **XeLaTeX**.
+The package uses TikZ, xparse, expl3 and collcell, available in standard TeX installations.
+Chinese fonts are needed only for the Chinese manual, not for the package.
 
 ```latex
 \documentclass{article}
-\usepackage{booktabs}
-\usepackage{gradbars}
+\usepackage{booktabs,gradbars}
 \begin{document}
-\gradbarssetup{width=24mm,max=100,precision=1,theme=blue}
-\begin{tabular}{lc}
+\gradbarssetup{width=35mm,precision=0}
+\begin{tabular}{ll}
 \toprule
-Model & Accuracy (\%) \\
+View & Data \\
 \midrule
-Baseline & \gradbar{72.4} \\
-Proposed & \gradbar{92.7} \\
+Single value & \gradbar{72} \\
+Current / reference & \graddumbbell{58}{76} \\
+Positive / negative & \gradstack[min=-50,stack totals=separate]{60,-20,15,-10} \\
+Trend / last value & \gradspark[spark range=fixed,min=0,max=100]{25,45,NA,60,80} \\
 \bottomrule
 \end{tabular}
 \end{document}
 ```
 
-No `tikzpicture` wrapper is needed. `\gradbarssetup{...}` sets defaults in the
-current TeX scope; `\gradbar[...]{value}` overrides them for one bar.
+## Choose a graphic
 
-## Numbers mean what they say
+| Need | Command or option |
+| --- | --- |
+| One magnitude or signed change | `\gradbar[min=-50,max=100]{value}` |
+| Compact stem and endpoint | `\gradbar[shape=lollipop]{value}` |
+| Wide reference behind a narrow current bar | `\gradcompare{reference}{current}` |
+| Two positions and their difference | `\graddumbbell[compare label=delta]{before}{after}` |
+| Known lower and upper endpoints | `\gradrange[range point=50]{35}{75}` |
+| Additive contributions | `\gradstack[min=-60]{60,-25,20,-15}` |
+| Equally spaced time-series shape | `\gradspark{25,40,NA,60,80}` |
+| A point estimate with uncertainty distances | `\gradbar[error minus=5,error plus=8]{60}` |
 
-By default the scale is 0 to `max`. Set a negative `min` for signed bars; the fill extends from zero to the value.
-Use the same maximum, width, and label slot for every bar in a comparison column.
-Greater length means a larger value, not necessarily better performance.
+## Preserve data meaning
 
-```latex
-\gradbar[max=200]{50}                       % quarter full, label 50.0
-\gradbar[max=200,unit={\,ms}]{50}            % quarter full, label 50.0 ms
-\gradbar[max=200,value format=percent]{50}   % quarter full, label 25.0%
-\gradbar[max=100,unit={\%}]{86.5}            % data already in percent: 86.5%
-\gradbar[max=10,text={8 / 10}]{8}            % custom label, unchanged geometry
-```
+- Bars share explicit `min`, `max` and `width`. Zero stays at zero; negative values require a negative minimum.
+- `unit` appends text. `value format=percent` computes value/max only for nonnegative ranges. Formatting never changes geometry.
+- Empty input or `NA` denotes missing data. A missing spark observation breaks the line and retains its horizontal position.
+- Signed stacks accumulate from zero independently on each side. The default total is the algebraic sum; `stack totals=separate` shows positive / negative subtotals.
+- Stack segment percentages use `abs(segment) / sum(abs(segments))`. They are shares of absolute activity, not of the net balance. Stacks do not automatically normalize to full width.
+- Auto-scaled sparklines compare shapes. Use `spark range=fixed` with the same `min`, `max`, `width` and `height` to compare levels across rows.
+- Overflow warns and clips the drawing while retaining raw labels; use `overflow=error` for strict checking.
 
-- `unit` only appends a suffix; it does not transform the data.
-- `value format=percent` computes `100 * value / max` and adds `%`. It ignores `unit`.
-- `text` overrides the entire label; `text={}` restores automatic formatting.
-- Zero shows only the empty track. Small positive values are never inflated.
-- Empty input or uppercase `NA` means missing data, distinct from zero; other
-  nonnumeric input is an error.
-- Values above `max` warn and clip the bar, while retaining the real label.
-  Use `overflow=error` for strict validation.
-- Negative values require a negative `min`. The maximum must be positive.
-- Percent format is only allowed with `min=0`; use a literal unit for signed changes.
-
-## 16 built-in palette choices
-
-Use `theme` for seven themes and gradient presets, and `color` for nine solid colors.
-
-| Theme | Appearance | Example |
-| --- | --- | --- |
-| `blue` | Blue gradient; default | `\gradbar[theme=blue]{72}` |
-| `teal` | Teal gradient | `\gradbar[theme=teal]{72}` |
-| `solid` | Flat blue | `\gradbar[theme=solid]{72}` |
-| `gray` | Monochrome | `\gradbar[theme=gray]{72}` |
-
-![Seven themes and nine built-in colors and label placements](docs/images/theme-gallery.png)
-
-Labels can sit `outside` or `inside` the track, above the endpoint with `label=end`,
-or be hidden with `label=none`.
-Outside labels use a right-aligned slot that expands for long content by default.
-Set a common `label width` large enough for every value to keep a column aligned.
-`label=auto` chooses an inside or outside placement; `text color=auto` selects black or white.
-
-Additional gradients: `theme=lbyellow`, `theme=viblue`, `theme=cyblu`.
-Built-in solid color usage: `\gradbar[color=lightblue]{80}`.
-`lightgreen`, `lightyellow`, `lightblue`, `lightred`, `rose`, `skyblue`, `gold`, `lavender`, `peach`.
-
-
-## Effects in v0.0.2
+## Express quality separately
 
 ```latex
-\gradbar[rounded=2pt]{72}
-\gradbar[target=80]{72}
-\gradbar[thresholds={60,80},threshold colors={lightred,gold,lightgreen}]{72}
-\gradbar[label=end]{72}
-\gradbar[min=-50,max=50]{-25}
-\gradbar[error minus=4,error plus=9]{72}
+% Within 5 of the goal is good; within 15 is intermediate.
+\gradbar[better=target,quality target=50,
+  thresholds={5,15},target=50,palette=diverging]{52}
+
+% Inside [40,60] is good; no more than 10 away is intermediate.
+\gradbar[better=interval,quality range={40,60},
+  thresholds={0,10},band={40,60},palette=diverging]{68}
 ```
 
+`threshold colors` always lists bad, intermediate, good. In target/interval modes,
+thresholds are nonnegative distances with inclusive upper boundaries.
+`quality target` / `quality range` evaluate data; `target` / `band` draw references.
+`better=higher|lower` remains available for monotonic metrics.
 
-## Styles, missing data, formats, bands and stacks
+## Reuse appearance and category identity
 
 ```latex
-\gradbarsstyle{score}{max=100,theme=teal,rounded=2pt}
-\gradbar[style=score]{72}
-\gradbar[missing text={N/A}]{NA}
-\gradbar[max=200000,number format=grouped,precision=0]{125000}
-\gradbar[max=1,number format=scientific,precision=2]{0.00001234}
-\gradbar[band={60,80},target=70]{75}
-\gradstack[stack colors={skyblue,rose,gold}]{30,25,15}
+\gradbarsstyle{paperrow}{preset=paper,width=40mm,max=100,precision=1}
+\gradbar[style=paperrow]{82.5}
+
+\gradbarscategory{Compute}{gradbarsBlue}{diagonal}
+\gradbarscategory{Storage}{gradbarsOrange}{dots}
+\gradstack[stack names={Compute,Storage}]{60,30}
+\gradstack[stack names={Storage,Compute}]{30,60}
+\gradbarslegend{Compute,Storage}
 ```
 
-Styles follow TeX grouping and support per-bar overrides. `missing text` changes
-the missing-data label. Number formatting changes labels without changing bar lengths.
-Bands use data units and must lie within the scale.
+Four layout presets: `paper`, `report`, `presentation`, `outline`.
+Four group palettes: `categorical`, `sequential`, `diverging`, `mono`.
+Seven themes and nine original solid colors remain available.
+Unregistered categories use cyclic position-based palettes; registered names preserve
+their assigned color and pattern. In print/mono mode category colors use the grayscale
+palette, while registered patterns remain. Legends use the same mapping as segments.
 
-Stacks use nonnegative raw segment values; the default maximum is 100. For example,
-`{30,25,15}` fills 70% of the default track and labels the total as `70.0`.
-Stacks do not automatically normalize to 100%, and reject missing or negative segments.
-See the [API reference](docs/api.md) for validation rules and option combinations.
-
-## New in v0.0.2
+## CSV and existing tables
 
 ```latex
-% Declare in the preamble, then use G in tabular or longtable.
-\gradbarscolumn{G}{max=100,width=30mm,precision=0}
-% A row can now be: Model A & 82 \\
-
-\gradstack[width=70mm,height=16pt,precision=0,
-  stack names={Train,Validation,Test},
-  segment labels=name percent,legend=true]{80,2,18}
-
-\gradbar[theme=solid,width=40mm,height=15pt,
-  label=auto,text color=auto]{86}
+\gradbarsloadcsv{results}{results.csv}
+\gradbarscsvstyle{shared}{results}{Score}
+\gradbarcsv[style=shared]{results}{1}{Score}
+\gradbarscolumn{G}{style=shared}
 ```
 
-Use `\multicolumn{1}{c}{Score}` for text headers in numeric columns.
-Stack segment percentages use the sum of the raw segments; the total's percentage
-uses the scale maximum. Automatic collision handling is local to each bar.
-The manual explains label overflow, row heights, common column scales, and missing versus zero values.
+CSV fields are read as character data, not executed as TeX. Named columns, quoted commas,
+custom missing tokens and shared column ranges are supported. See the manual for complete tables.
 
-## How it relates to other packages
+## Documentation and building
 
-These tools overlap in capability. The distinction is the intended workflow,
-not whether another package can produce a similar picture.
+The [single Chinese manual](docs/gradbars-manual.tex) is organized into quick start,
+graphic selection, data interfaces, appearance, complete layouts, and reference.
+It contains 56 numbered examples, including before/after evaluation, a monochrome
+contribution ledger and a monthly trend summary. All example data are illustrative.
 
-| Package | Main focus | Where gradbars fits |
-| --- | --- | --- |
-| [progressbar](https://ctan.org/pkg/progressbar) | Configurable bars representing a share between 0 and 1 | Accept raw data with explicit ranges, formatted labels, and reference markers |
-| [bchart](https://ctan.org/pkg/bchart) | Simple horizontal bar charts in a chart environment | Place individual bars directly in existing table cells or prose |
-| [sparklines](https://ctan.org/pkg/sparklines) | Compact, wordlike graphics | Focus on value bars, composition, and reference markers within a cell |
-| [databar / datatool](https://dickimaw-books.com/latex/admin/html/databar.shtml) | Generate bar charts from database data | Draw supplied values in an existing table; no database or CSV ingestion layer |
-| [pgfplots](https://ctan.org/pkg/pgfplots) | General plotting with axes, bar and stacked plots, and error bars | Offer a focused interface for compact cell-level bars; use pgfplots for full plots |
+To generate the versioned PDF in the repository root:
 
-For simple progress indicators, `progressbar` may already be enough. For full axes
-or varied plot types, consider `pgfplots`. Choose gradbars when the table is the
-main document structure and each cell needs a compact, consistently configured data bar.
-
-## One manual, output and source together
-
-The [illustrated manual](gradbars-manual-v0.0.2.pdf) brings 37 numbered examples,
-a selection guide and an FAQ into one document. It includes three application tables
-and four real layouts: a two-column article, a multi-page longtable, grayscale output,
-and a Beamer slide. Short examples put output beside highlighted source; larger
-examples use output above source. The real layouts include compiled previews and
-their complete source. The editable source is
-[gradbars-manual.tex](docs/gradbars-manual.tex).
-
-To rebuild all layouts and the Chinese manual, install XeLaTeX with the LaTeX extra
-and Chinese language collections (including ctex and Fandol), then run:
-
-~~~sh
+```sh
 python scripts/build_manual.py
-~~~
+```
 
-Python is only a convenience for rebuilding the documentation; the package itself
-does not require it. The script builds each real layout twice before the manual.
-For manual text edits with unchanged layout sources, the included layout PDFs let
-you compile directly from the repository root:
+The script uses XeLaTeX to rebuild the four layout previews and then the manual twice.
+It requires ctex/Fandol and the LaTeX extra packages; Python is only a documentation-build helper.
+The editable manual is the current v0.0.3 reference; an older PDF is not a substitute for it.
 
-~~~sh
-xelatex -interaction=nonstopmode -halt-on-error "-jobname=gradbars-manual-v0.0.2" docs/gradbars-manual.tex
-xelatex -interaction=nonstopmode -halt-on-error "-jobname=gradbars-manual-v0.0.2" docs/gradbars-manual.tex
-~~~
+## Scope and limits
 
-All data in the examples are illustrative.
+- XeLaTeX is the supported engine. This is a table-oriented interface, not a full plotting system.
+- CSV accepts single-line comma-separated fields; automatic CSV tables do not paginate.
+- Stacks reject missing segments, conditional thresholds and error whiskers.
+- Sparklines use equally spaced observations; they do not parse dates or draw bar targets, error whiskers or reference bands.
+- Fixed scales require `min <= 0` and `max > 0`; auto spark ranges can be positive, negative or constant.
+- Label avoidance is local to a graphic. Allow room for long external labels and legends.
+- Accessible tagged chart descriptions and tabularray-specific column handling are not implemented.
 
-All examples and source are included in the manual. The compiled PDF is saved in the repository root. GitHub Actions builds the manual on pushes and pull requests.
-
-## Current scope
-
-- The supported workflow is XeLaTeX; the package uses TikZ, `xparse`, `expl3`, and `collcell` (including array).
-- Column ranges are explicit. CSV ingestion and automatic column maxima are not implemented.
-- Stacks require `min=0` and nonnegative segments. They do not support error whiskers
-  or conditional thresholds; signed values remain available with `\gradbar`.
-- Label avoidance is local to one bar. Long outside labels may still need a wider
-  table column; automatic black/white text estimates the background at the label center.
-- Numeric columns are demonstrated with tabular and longtable; tabularray-specific
-  column handling has not been validated.
-- Accessible tagged chart descriptions are not generated.
-
-## License
-
-MIT. See [LICENSE](LICENSE). Contributions and small reproducible bug reports
-are welcome. Include your engine, TeX distribution, and log when reporting issues.
+MIT licensed. Bug reports should include a minimal `.tex` example, engine and log.

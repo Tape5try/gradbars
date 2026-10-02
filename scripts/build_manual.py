@@ -37,8 +37,16 @@ def main():
         compile_tex(ROOT / "docs" / "layouts" / f"{name}.tex", BUILD)
         shutil.copy2(BUILD / f"{name}.pdf", ROOT / "docs" / "layouts" / f"{name}.pdf")
     print(f"Building manual v{version}...", flush=True)
-    compile_tex(ROOT / "docs" / "gradbars-manual.tex", ROOT,
+    manual_build = ROOT / "build" / "manual"
+    manual_build.mkdir(parents=True, exist_ok=True)
+    compile_tex(ROOT / "docs" / "gradbars-manual.tex", manual_build,
                 f"gradbars-manual-v{version}")
+    try:
+        shutil.copy2(manual_build / f"gradbars-manual-v{version}.pdf",
+                     ROOT / f"gradbars-manual-v{version}.pdf")
+    except PermissionError:
+        raise SystemExit("Manual compiled successfully. Close the root PDF in its viewer "
+                         f"before replacing it. New PDF: {manual_build / f'gradbars-manual-v{version}.pdf'}")
     print(ROOT / f"gradbars-manual-v{version}.pdf")
 
 

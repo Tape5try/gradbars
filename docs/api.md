@@ -163,23 +163,11 @@ Out-of-range bands error regardless of overflow policy. `band={}` disables it.
 
 ## Stacked bars
 
-`\gradstack[keys]{a,b,c}` accumulates nonnegative decimal segments from zero
-against the shared `max` (default 100). It does not normalize by the sum.
-Empty/missing/negative segments and empty lists are errors. Zero segments take
-no width but still consume a palette index. The label is the sum, or sum/max
-in percent mode. A total above max follows overflow policy, retaining the true
-total label and clipping each segment at the right edge.
+`\gradstack[keys]{a,b,c}` accumulates positives to the right and negatives to the left of zero. Negative segments require an explicit negative `min`. Positive and negative subtotals independently follow the overflow policy. Missing segments and empty lists are errors. Zero segments consume a palette index without visible width.
 
-`stack colors={gradbarsBlue,gradbarsTeal,gold}` is the default palette. Colors
-cycle if fewer than segments; an empty palette errors. All segments use solid
-fills; themes still set track and text colors. `color`, `fill`, and gradient
-endpoints do not override segment colors. Rounded corners apply to the whole
-filled stack, not internal boundaries. Target, band, sizing, styles, labels,
-units and number formats are shared with gradbar.
+The default label is the algebraic sum (net). `stack totals=separate` shows positive / negative subtotals. Stacks do not normalize to full width. Segment percentages use `100*abs(segment)/sum(abs(segments))`; positive-only behavior is unchanged. A zero net does not erase nonzero contributions. Total percent formatting still requires `min=0`.
 
-Stacks require min=0 and reject thresholds and error whiskers. Clear inherited
-options with `min=0,thresholds={},error={}` if needed. Negative/missing segments
-are never silently converted to zero.
+`stack colors={gradbarsBlue,gradbarsTeal,gold}` is the default cyclic palette. Stacks use solid fills or textures; rounded corners apply to the combined visible extent. Target, band, dimensions, number formatting and names are shared with ordinary bars. Stacks reject thresholds and error whiskers. Registered category names override position-based colors except in print mode.
 
 ## Stack names, labels and legends (v0.0.2)
 
@@ -198,12 +186,12 @@ are never silently converted to zero.
 \gradbarslegend[stack colors={skyblue,rose,gold}]{Train,Validation,Test}
 ```
 
-Segment percentages use the **raw sum of segments**, including clipped portions.
+Segment percentages use the **sum of absolute raw segment values**, including clipped portions.
 The total's `value format=percent` still uses **max**. For `{20,30}` and `max=200`,
 segments display 40% and 60%, the total displays 25%, and the track is quarter filled.
 Segment values use the configured precision and number format, without the total's
 unit suffix. Zero or fully clipped segments have no segment labels but keep their
-palette indices and legend entries. A zero total produces no segment percentages.
+palette indices and legend entries. An all-zero stack produces no segment percentages; a zero net with nonzero contributions still has percentages.
 
 Labels that do not fit their visible segment move above the track with leader lines.
 Overlapping external label boxes are placed on successive levels. A target crossing
@@ -254,3 +242,133 @@ Column definitions follow array's scoping; define reusable columns in the preamb
 This does not scan the column, infer maxima, or implement an siunitx S column.
 The manual exercises tabular and multi-page longtable, including Beamer tables.
 The tabularray column machinery has not been validated.
+
+## CSV input (included in v0.0.2)
+
+```latex
+\gradbarsloadcsv[missing={NA,N/A,null,--}]{results}{results.csv}
+\gradbarscsvtable[width=40mm,precision=1]{results}{Model}{Score}
+\gradbarscsvstyle{latency}{results}{Latency}
+\gradbarcsv[style=latency,unit={\,ms}]{results}{1}{Latency}
+\gradbarscsvcell{results}{1}{Model}
+```
+
+| Command | Behavior |
+| --- | --- |
+| `\gradbarsloadcsv[missing={...}]{dataset}{file}` | Read a UTF-8 CSV into the current TeX scope; reloading replaces the dataset locally |
+| `\gradbarscsvcell{dataset}{row}{column}` | Print the raw text field, without interpreting TeX commands or mapping missing tokens |
+| `\gradbarcsv[bar options]{dataset}{row}{column}` | Read, validate and draw a numeric field; regular bar range defaults apply |
+| `\gradbarscsvstyle{style}{dataset}{column}` | Define/replace a named style containing the column's computed `min` and `max` |
+| `\gradbarscsvtable[bar options]{dataset}{text column}{numeric column}` | Draw a two-column tabular in file order, using the numeric column's shared range |
+
+Dataset names must start with an ASCII letter and contain only ASCII letters,
+digits, `_` or `-`. Column names are exact and case sensitive; row numbers are
+positive integer literals, starting at 1 after the header. Unknown datasets,
+columns and row numbers are errors. Data and computed styles obey TeX grouping.
+Reload data and recompute styles after editing the file, normally on recompilation.
+
+The reader accepts comma-separated fields, quoted commas, doubled quotes inside
+quoted fields, optional initial UTF-8 BOM, and blank lines. Leading/trailing field
+whitespace is trimmed, including within quoted fields. The first nonblank line is
+the header; names must be nonempty and unique, and all data rows must match its width.
+Unclosed quotes, quotes inside unquoted fields, and text following a closing quote
+are errors. Multiline fields and alternate separators are not supported. This is
+a deliberately bounded CSV reader, not a full spreadsheet/database interpreter.
+The file is read as character data; its backslashes, percent signs and other TeX
+syntax do not execute. Do not use CSV cells to inject formatting commands.
+
+Empty numeric fields always mean missing. Default missing tokens are `NA`, `N/A`,
+and `null`, case sensitive; the `missing` option **replaces** that list.
+Only numeric operations apply the mapping. Valid numbers follow `\gradbar`'s decimal
+literal rules; arbitrary text, formulas, units and scientific-notation input error.
+Zero remains an observation. CSV input does not change `\gradbar`'s own missing tokens.
+
+Auto ranges use `min(0, smallest valid value)` and `max(0, largest valid value)`;
+if the computed maximum is zero, it becomes 1. Missing fields are ignored.
+Thus all-zero/all-missing/header-only columns use [0,1], and all-negative columns
+use [minimum,1]. This keeps the upper limit positive as required by the bar API.
+Ranges cover the whole column, even if only some rows are subsequently displayed.
+Explicit table options are applied after the computed range and can override it.
+Fix ranges explicitly when comparing different files or runs.
+
+The generated table does not paginate or sort. For longtable, custom headers or
+multiple metrics, use the cell/bar commands in your own table layout. Imported
+columns are not automatically bound to a `\gradbarscolumn` definition.
+
+## Print patterns (included in v0.0.2)
+
+| Key | Default | Meaning |
+| --- | --- | --- |
+| `pattern` | `none` | `none`, `diagonal`, `reverse`, `dots`, `crosshatch`, `horizontal`, `vertical` |
+| `pattern color` | `black` | Color of overlaid pattern strokes/dots |
+| `stack patterns` | `{none}` | Per-segment pattern names; cycle like stack colors |
+| `print` | not applied | Apply the monochrome preset described below |
+| `print labels` | `false` | Add a small white background behind inside labels; enabled by `print` |
+
+```latex
+\gradbar[print,pattern=dots,height=16pt,label=auto]{72}
+\gradstack[print,stack names={Train,Validation,Test},
+  height=17pt,segment labels=percent,legend=true]{60,25,15}
+\gradbarslegend[print]{Train,Validation,Test}
+```
+
+Patterns overlay existing fills and follow clipping/rounded boundaries. Single
+bars use `pattern`; stacked bars and legends use `stack patterns`. Zero segments
+consume a pattern index. Lists must be nonempty and contain known pattern names.
+The preset `print` sets a gray theme, white fill, light-gray track, black text and
+pattern color, white negative fill, diagonal single bars, and a cyclic diagonal/
+dots/crosshatch stack palette over white segments. It also sets threshold colors
+to light/medium/darker gray and enables white inside-label backgrounds.
+Explicit options after the preset can override its settings; it does not erase
+targets, thresholds or number formatting. Use the same style on bars and shared
+legends. Names and values should remain present; patterns alone do not express
+statistical or ordinal meaning. Pattern spacing follows TikZ's built-in patterns.
+
+## Metric direction (included in v0.0.2)
+
+`better=higher` is the default and preserves earlier threshold behavior.
+`better=lower` reverses threshold **color indices**, without changing bar lengths,
+raw values, labels, scale, targets or errors. It has no effect without `thresholds`.
+
+For ascending thresholds `{a,b}`, bins remain `v<a`, `a<=v<b`, and `v>=b`.
+`threshold colors={bad,neutral,good}` always lists quality from bad to good:
+higher uses indices 1/2/3; lower uses 3/2/1. Equality still enters the right bin.
+For latency, `{70,100}` with lower means below 70 is good, [70,100) is neutral,
+and 100 or more is bad. Thresholds still override sign-based fill colors.
+Stacks do not support thresholds, so this does not rate individual segments.
+
+
+## v0.0.3 comparison, trend and semantic styling
+
+| Entry | Meaning |
+| --- | --- |
+| `\graddumbbell[options]{reference}{current}` | Hollow reference point, filled current point; line only if both exist |
+| `compare label=values|delta` | Default values show current / reference; delta shows current minus reference; also applies to gradcompare |
+| `stack totals=net|separate` | Default net; separate shows positive / negative subtotals |
+| `\gradspark[options]{list}` | Equally spaced decimal observations; empty fields and NA preserve missing positions |
+| `spark range=auto|fixed` | Default auto uses each series' extrema; fixed uses min/max |
+| `spark points=extrema|all|last|none` | Default extrema includes tied extrema and the last position if present |
+| `spark high color`, `spark low color` | Defaults gradbarsTeal, gradbarsOrange; a constant series uses the high color |
+| `better=target|interval` | Evaluate distance to a goal or acceptable closed interval |
+| `quality target` | Required decimal goal for target mode; default empty |
+| `quality range={lo,hi}` | Required ordered endpoints for interval mode; default empty |
+| `palette=categorical|sequential|diverging|mono` | Group colors and textures; no palette applied by default |
+| `\gradbarscategory{name}{color}{pattern}` | Scoped literal-name mapping used by segments and legends |
+
+Dumbbells share bar scales, target/error markers, number formatting, missing values and overflow policies. Error whiskers refer to the current value. Equal endpoints overlap. Missing either endpoint suppresses the connector and makes a delta label missing. Internal labels move outside. `compare color`, `marker size` and `stem width` control reference point, point radius and connector width.
+
+Sparklines default to height=4ex. Auto range is per row; fixed scales require min<=0 and max>0. Constant auto series sit at mid-height; a singleton sits at the horizontal midpoint; all-missing input draws only the track and missing label. The last label reflects the last *position*, not the last nonmissing observation. All markers use `marker size`; line width is `stem width`. In extrema mode low/high markers use their own colors; a non-extreme last point uses the line color. Missing observations break paths. Auto range rejects computed percent labels. Target, band, thresholds and error whiskers are unsupported. Labels are outside; area patterns and rounded fill styles do not apply to the line.
+
+For target mode, distance is abs(value-goal). For interval mode, distance is max(0,lo-value,value-hi). Both require two nonnegative increasing thresholds: d<=t1 is good, t1<d<=t2 intermediate, otherwise bad. `threshold colors` remains ordered bad/intermediate/good. Evaluation changes color, never geometry or labels. `quality target/range` do not implicitly draw `target/band`. These modes do not apply to stacks, floating intervals or series.
+
+Categorical has six colors; sequential has five blue levels; diverging has five orange/neutral/teal levels and sets quality/negative/reference colors. They select colors by segment order, not value. Mono applies print settings and cycles three gray colors and diagonal/dots/crosshatch. Registered categories override cyclic color and texture by `stack names`; unregistered names fall back to position. Print/mono replaces registered colors with gray while preserving their patterns. Declarations follow grouping; the same names work in standalone legends. Color/pattern lists cycle, so distinct names or textures are needed beyond the palette length.
+
+## Visual presets and v0.0.2 shapes
+
+`\gradcompare[options]{reference}{current}` draws a full-height reference layer and a centered current layer. `compare ratio=.45` must lie strictly between 0 and 1; `compare color=black!20` sets the reference color. Missing layers are independent.
+
+`\gradrange[options]{lower}{upper}` draws only the given interval, with optional `range point` inside the original endpoints. Equal endpoints draw a cap, not an inflated bar. Both endpoints must be present or both missing. Ranges reject error whiskers and quality thresholds; default labels show the endpoint pair.
+
+`shape=lollipop` on gradbar draws a stem and point. Zero draws a point; missing data does not. `marker size=2pt`, `stem width=.6pt`, `outline width=.4pt` must be positive; `row padding=0pt` must be nonnegative.
+
+`preset=paper|report|presentation|outline` applies thin academic, rounded report, large presentation or hollow outline settings. Presets do not invent ranges, target values or thresholds. Later keys override earlier settings. `outline=true` also works for stacks and legends; segment labels move outside. `print` clears outline mode. Group palettes set color/texture roles rather than row dimensions.

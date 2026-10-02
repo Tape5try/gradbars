@@ -1,0 +1,6 @@
+Model,Score,Latency
+Baseline,72.4,125
+"Compact, tuned",81.6,88
+"Model ""Plus""",92.7,61
+Pending,N/A,null
+Zero,0,0
