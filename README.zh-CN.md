@@ -5,19 +5,20 @@
 直接在单元格或正文中添加数据条，统一配置尺度、标签与参考标记。
 gradbars 基于 TikZ，适合论文中的模型对比、数据集统计和报告中的进度展示。
 
-**v0.0.1 · XeLaTeX · MIT**
+**v0.0.2 · XeLaTeX · MIT**
 
-[English](README.md) · [图文宏包手册 PDF](gradbars-manual-v0.0.1.pdf) · [完整参数说明](docs/api.md)
+[English](README.md) · [图文宏包手册 PDF](gradbars-manual-v0.0.2.pdf) · [完整参数说明](docs/api.md)
 
 ![模型对比表格](docs/images/model-comparison.png)
 
 ## 为什么使用 gradbars？
 
-- **直接放进普通单元格。** 用 `\gradbar{72}` 绘制，无需自行搭建坐标轴或逐个套上 `tikzpicture`。
+- **直接放进普通单元格。** 用 `\gradbar{72}` 绘制，或用 `\gradbarscolumn{G}{...}` 定义数值列，单元格只填数字。
 - **分开处理数据与显示。** 原始数值决定条长，标签可以显示原值、计算占比、自定义文字或科学计数法。
 - **保持同列比较一致。** 复用命名样式，明确设置范围、条宽与外部标签槽宽。
 - **在单元格中补充参照。** 组合目标线、区间背景、条件配色、正负条和误差线；用 `\gradstack` 展示非负数据组成。
-- **从完整示例开始。** 一本手册收录 28 个效果／源码示例，并展示 16 种内置配色：七种主题和九种单色。
+- **自动说明数据组成。** 支持分段名称、占比与共享图例；小段标签自动外移，段内文字自动选择黑白。
+- **从完整示例开始。** 一本手册收录 37 个效果／源码示例，并展示 16 种内置配色：七种主题和九种单色。
 
 gradbars 将已有的可视化方法整理为面向表格的统一接口，不宣称首创这些图形，也不以替代通用绘图系统为目标。
 
@@ -81,7 +82,7 @@ Proposed & \gradbar{92.7} \\
 - **正负双向条**：通过负的 `min` 启用；默认范围不接受负数。最大值必须为正。
 - **双向条标签**：不使用计算占比模式；百分数变化可用 `unit` 添加单位。
 - **小数位数**：`precision=0` 至 `6`；默认保留一位小数。
-- **标签对齐**：默认在轨道外右对齐，固定槽宽；较长单位可增大 `label width`。
+- **标签对齐**：默认在轨道外右对齐，长标签可扩展槽宽；整列对齐时统一设置足够大的 `label width`。
 
 ## 16 种内置配色
 
@@ -97,6 +98,7 @@ Proposed & \gradbar{92.7} \\
 | `theme=gray` | 灰度 |
 
 `label=outside`、`label=inside`、`label=end`、`label=none` 分别表示外部、内部、条尾上方和隐藏标签。
+`label=auto` 自动选择内部或外部位置；`text color=auto` 根据背景选择黑字或白字。
 颜色与字体也可以覆盖。内部标签需要搭配有足够对比度的文字和背景颜色。
 
 新增渐变：`theme=lbyellow`、`theme=viblue`、`theme=cyblu`。
@@ -104,7 +106,7 @@ Proposed & \gradbar{92.7} \\
 `lightgreen`, `lightyellow`, `lightblue`, `lightred`, `rose`, `skyblue`, `gold`, `lavender`, `peach`.
 
 
-## 六种效果（v0.0.1）
+## 六种效果（v0.0.2）
 
 ```latex
 \gradbar[rounded=2pt]{72}
@@ -134,6 +136,25 @@ Proposed & \gradbar{92.7} \\
 堆叠条使用非负的原始分段数据，上限默认 100。例如 `{30,25,15}` 占默认轨道的 70%，总量标签为 `70.0`。
 它不会自动归一化为满条，也不接受缺失段或负数段。完整校验规则与参数组合见[接口说明](docs/api.md)。
 
+## v0.0.2 新增功能
+
+```latex
+% 在导言区定义，随后可在 tabular 或 longtable 中使用 G 列。
+\gradbarscolumn{G}{max=100,width=30mm,precision=0}
+% 数据行只需写：Model A & 82 \\
+
+\gradstack[width=70mm,height=16pt,precision=0,
+  stack names={Train,Validation,Test},
+  segment labels=name percent,legend=true]{80,2,18}
+
+\gradbar[theme=solid,width=40mm,height=15pt,
+  label=auto,text color=auto]{86}
+```
+
+数值列的文本表头使用 `\multicolumn{1}{c}{Score}`。
+分段百分比以原始分段总和为分母，总量百分比仍以量程上限为分母。
+自动避让处理同一数据条内的标签；手册也解释了长标签、表格行高、同列尺度及缺失值与零值。
+
 ## 与相关宏包的区别
 
 这些工具的能力存在重合。下面比较的是主要使用方式，不表示其他宏包无法实现相同效果。
@@ -151,29 +172,37 @@ Proposed & \gradbar{92.7} \\
 
 ## 一本手册，效果与源码对照
 
-优先阅读 [16 页图文宏包手册](gradbars-manual-v0.0.1.pdf)：28 个编号示例、
-三个完整应用案例、目录、参数速查与使用限制均集中在一个文档中。
-短示例采用左右对照，完整表格采用“上侧效果、下侧源码”；效果与高亮源码
-由同一段代码生成。[手册源码](docs/gradbars-manual.tex) 可继续编辑。
+优先阅读[图文宏包手册](gradbars-manual-v0.0.2.pdf)：37 个编号示例、选型指南和常见问题均集中在一个文档中。
+其中包括三个应用表格，以及双栏论文、跨页长表、黑白打印和 Beamer 幻灯片四种真实排版案例。
+短示例采用左右对照，完整表格采用“上侧效果、下侧源码”；真实排版案例同时收录编译预览和完整源码。
+[手册源码](docs/gradbars-manual.tex) 可继续编辑。
 
-安装包含 ctex 和 Fandol 字体的中文 TeX 支持后，在仓库根目录用 XeLaTeX 编译两次，以生成完整目录：
+安装 XeLaTeX、LaTeX 扩展宏包和包含 ctex、Fandol 字体的中文支持后，运行：
 
 ~~~sh
-xelatex -interaction=nonstopmode -halt-on-error "-jobname=gradbars-manual-v0.0.1" docs/gradbars-manual.tex
-xelatex -interaction=nonstopmode -halt-on-error "-jobname=gradbars-manual-v0.0.1" docs/gradbars-manual.tex
+python scripts/build_manual.py
+~~~
+
+脚本先编译四种真实排版案例，再编译手册；每份文档均编译两次。
+Python 仅用于便捷地重建文档，使用宏包不需要 Python。
+若仅修改手册文字且案例源码未变，可直接使用仓库附带的案例 PDF，在仓库根目录执行：
+
+~~~sh
+xelatex -interaction=nonstopmode -halt-on-error "-jobname=gradbars-manual-v0.0.2" docs/gradbars-manual.tex
+xelatex -interaction=nonstopmode -halt-on-error "-jobname=gradbars-manual-v0.0.2" docs/gradbars-manual.tex
 ~~~
 
 示例数据均为演示数据，不代表真实实验结论。
 
-完整示例与源码均收录在手册中。编译后的 `gradbars-manual-v0.0.1.pdf` 直接保存在仓库根目录。GitHub Actions 会在推送和拉取请求时编译手册。
+完整示例与源码均收录在手册中。编译后的 `gradbars-manual-v0.0.2.pdf` 直接保存在仓库根目录。GitHub Actions 会在推送和拉取请求时编译手册。
 
 ## 当前范围与限制
 
-- 当前支持的使用流程是 XeLaTeX；宏包依赖 TikZ、`xparse` 和 `expl3`。
+- 当前支持的使用流程是 XeLaTeX；宏包依赖 TikZ、`xparse`、`expl3` 和 `collcell`（含 array）。
 - 比较列的范围需要明确设置，暂不提供 CSV 导入或自动列最大值。
 - 堆叠条要求 `min=0` 且各段非负，不支持误差线和条件配色；正负数据可使用 `\gradbar`。
-- 图例和堆叠段标签需要自行编排。
-- 长标签可能需要增大槽宽；内部标签不会自动调整文字与背景的对比度。
+- 避让仅作用于同一数据条；外部长标签仍可能需要更宽的表格列。自动黑白文字按标签中心处的背景估算。
+- 数值列已在 tabular 和 longtable 案例中验证；尚未验证 tabularray 的专有列处理。
 - 尚未生成图表专用的无障碍 PDF 语义标签。
 
 ## 许可证与反馈

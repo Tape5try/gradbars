@@ -28,8 +28,8 @@ precision. TeX's dimension resolution limits the smallest drawable bar.
 | `width` | `24mm` | Positive track width; excludes outside label |
 | `height` | `1.5ex` | Positive track height |
 | `theme` | `blue` | `blue`, `teal`, `solid`, `gray`, `lbyellow`, `viblue`, `cyblu` |
-| `label` | `outside` | `outside`, `inside`, `none`, `end` |
-| `label width` | `4.5em` | Fixed right-aligned outside label slot |
+| `label` | `outside` | `outside`, `inside`, `none`, `end`, `auto` |
+| `label width` | `4.5em` | Minimum right-aligned outside label slot with automatic overflow handling |
 | `label gap` | `.6em` | Gap between track and outside label |
 | `precision` | `1` | Integer from `0` to `6`; trailing zeros shown |
 | `value format` | `value` | `value` or `percent` |
@@ -41,7 +41,7 @@ precision. TeX's dimension resolution limits the smallest drawable bar.
 | `left color` | set by theme | Gradient start, or entire solid fill |
 | `right color` | set by theme | Gradient end; ignored for solid fill |
 | `track color` | set by theme | Empty track color |
-| `text color` | set by theme | Label color |
+| `text color` | set by theme | Label color, or `auto` to select black/white |
 | `rounded` | `0pt` | Nonnegative corner radius; clamped to fit each bar |
 | `target` | empty | Reference value within the scale; empty disables |
 | `target color` | `gradbarsInk` | Target line color |
@@ -56,9 +56,10 @@ precision. TeX's dimension resolution limits the smallest drawable bar.
 
 Lengths use LaTeX units such as `mm`, `pt`, `em`, and `ex`. Supply nonnegative
 label spacing and enough label width for the content. An outside bar occupies
-approximately `width + label gap + label width`; long labels may protrude.
+approximately `width + label gap + max(label width, actual text width)` by default.
 Inside labels align near the track's right edge, regardless of the filled
-fraction. They are not automatically resized or contrast-adjusted.
+fraction. Oversized labels move outside by default; use `text color=auto` for
+automatic contrast. Font size is never reduced automatically.
 
 ## Geometry and labels
 
@@ -178,5 +179,78 @@ units and number formats are shared with gradbar.
 
 Stacks require min=0 and reject thresholds and error whiskers. Clear inherited
 options with `min=0,thresholds={},error={}` if needed. Negative/missing segments
-are never silently converted to zero. Segment labels and legends are manual;
-state category names and values in table columns as in manual example 28.
+are never silently converted to zero.
+
+## Stack names, labels and legends (v0.0.2)
+
+| Key | Default | Meaning |
+| --- | --- | --- |
+| `stack names` | empty | Names in segment order; if supplied, count must match segments |
+| `legend` | `false` | Draw a vertical, wrapping legend below the stack; requires names |
+| `segment labels` | `none` | `none`, `value`, `percent`, `name`, `name value`, `name percent` |
+| `segment font` | `\scriptsize` | Font declaration for segment labels |
+| `segment text color` | `auto` | Automatic black/white text or an explicit color |
+
+```latex
+\gradstack[width=70mm,height=16pt,precision=0,
+  stack names={Train,Validation,Test},
+  segment labels=name percent,legend=true]{80,2,18}
+\gradbarslegend[stack colors={skyblue,rose,gold}]{Train,Validation,Test}
+```
+
+Segment percentages use the **raw sum of segments**, including clipped portions.
+The total's `value format=percent` still uses **max**. For `{20,30}` and `max=200`,
+segments display 40% and 60%, the total displays 25%, and the track is quarter filled.
+Segment values use the configured precision and number format, without the total's
+unit suffix. Zero or fully clipped segments have no segment labels but keep their
+palette indices and legend entries. A zero total produces no segment percentages.
+
+Labels that do not fit their visible segment move above the track with leader lines.
+Overlapping external label boxes are placed on successive levels. A target crossing
+a segment label also moves that label out. External labels can increase picture size.
+Automatic legends require a width greater than 14pt and use the ordinary `font`.
+Long legend names wrap inside the track width; a single unbreakable word may need a wider width.
+Standalone `\gradbarslegend[options]{names}` uses `stack colors` and `width`;
+share a named style with the bars to ensure matching colors. Legend names must not be empty.
+
+## Automatic label layout (v0.0.2)
+
+`label=auto` centers the total in the filled portion when it fits, otherwise puts it
+outside. `text color=auto` selects black or white using sRGB luminance at the label
+center; for gradients this is an estimate. Put it **after** `theme`, which sets text color.
+Outside automatic text is black, assuming a light page. Set explicit colors for dark pages.
+
+`label overflow=auto` (default) moves oversized inside/end labels out, moves overly
+tall inside labels out, and expands the outside slot to fit its text. `label overflow=allow`
+retains manual overflow for inside/end labels and the configured outside slot width.
+An auto label still requires enough width to fit inside even in allow mode.
+Targets crossing the label, error whiskers, or enabled stack segment labels force
+inside total labels outside. End totals sit above external segment labels.
+
+Collision handling applies within one bar, not across table cells or separate bars.
+Outside labels may still exceed a column/page; shorten them or allocate more width.
+For consistent numeric alignment set a common `label width` large enough for the
+longest label. Contrast at a single point cannot cover a long label spanning several colors.
+
+## Numeric table columns (v0.0.2)
+
+```latex
+\gradbarscolumn{G}{max=100,width=35mm,precision=0}
+\begin{tabular}{lG}
+Model & \multicolumn{1}{c}{Score}\\
+Alpha & 82\\
+Pending & NA\\
+Empty & \\
+Zero & 0\\
+\end{tabular}
+```
+
+Choose an unused single ASCII letter as the column name. The interface uses array
+and collcell; the cells are left aligned and accept the same values as `\gradbar`.
+Column options override surrounding setup on each cell and may reference a named style.
+Use `\multicolumn{1}{c}{...}` for headers or exceptional nonnumeric cells. Put units
+in column options, not the raw input. A literal 0 remains distinct from empty/NA.
+Column definitions follow array's scoping; define reusable columns in the preamble.
+This does not scan the column, infer maxima, or implement an siunitx S column.
+The manual exercises tabular and multi-page longtable, including Beamer tables.
+The tabularray column machinery has not been validated.

@@ -1,6 +1,6 @@
 % !TeX program = xelatex
 % Compile twice from the repository root:
-% xelatex -interaction=nonstopmode -halt-on-error "-jobname=gradbars-manual-v0.0.1" docs/gradbars-manual.tex
+% xelatex -interaction=nonstopmode -halt-on-error "-jobname=gradbars-manual-v0.0.2" docs/gradbars-manual.tex
 \documentclass[10pt,a4paper,fontset=fandol]{ctexart}
 \usepackage[margin=18mm,top=19mm,bottom=20mm,headheight=15pt]{geometry}
 \usepackage{gradbars}
@@ -25,7 +25,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\small\sffamily\color{manualMuted}gradbars\quad 宏包手册}
-\fancyhead[R]{\small\sffamily\color{manualMuted}v0.0.1}
+\fancyhead[R]{\small\sffamily\color{manualMuted}v0.0.2}
 \fancyfoot[L]{\footnotesize\color{manualMuted}效果与源码对照 \enspace / \enspace XeLaTeX}
 \fancyfoot[R]{\small\thepage}
 \renewcommand{\headrulewidth}{.3pt}
@@ -39,7 +39,7 @@
   texcsstyle=*\color{blue!70!black},
   keywordstyle=\color{green!40!black},
   commentstyle=\color{manualMuted},
-  moretexcs={gradbar,gradstack,gradbarsstyle,gradbarssetup,toprule,midrule,bottomrule,arraystretch},
+  moretexcs={gradbarscolumn,gradbarslegend,gradbar,gradstack,gradbarsstyle,gradbarssetup,toprule,midrule,bottomrule,arraystretch},
   morekeywords={theme,max,width,height,label,precision,unit,text,blue,teal,solid,gray,percent},
   columns=fullflexible,keepspaces=true,showstringspaces=false,
   breaklines=true,breakatwhitespace=false,tabsize=2,
@@ -65,7 +65,7 @@
 }
 \begin{document}
 \thispagestyle{empty}
-{\small\sffamily\color{gradbarsBlue}THE GRADBARS PACKAGE \hfill VERSION 0.0.1}
+{\small\sffamily\color{gradbarsBlue}THE GRADBARS PACKAGE \hfill VERSION 0.0.2}
 \vspace{13mm}
 
 {\fontsize{42}{46}\selectfont\sffamily\bfseries gradbars}\par
@@ -82,7 +82,8 @@
 \gradbar[theme=gray]{54.2}
 \end{example}
 
-本手册把安装说明、完整参数、主题示例以及三个应用案例集中在同一文档中。
+本手册把安装说明、参数、37 个编号示例、选型指南与常见问题集中在同一文档中。
+其中包括三个应用表格，以及双栏论文、跨页长表、黑白打印和幻灯片的真实排版案例。
 浅黄色区域展示实际排版效果，浅紫色区域展示生成该效果的源码。
 源码中的空行用于区分示例，无需额外编写换行命令。
 示例框内的效果与源码来自同一段代码，避免两者脱节。
@@ -90,7 +91,7 @@
 \note{默认情况下，标签显示原始数值；非负范围内，条长表示数值与最大值的比例。
 例如 \key{max=200}、数值为 50 时，条长为四分之一，标签仍为 50.0。}
 
-\vspace{3mm}
+\clearpage
 \begingroup
 \setlength{\parskip}{0pt}
 \hypersetup{linkcolor=gradbarsInk}
@@ -101,14 +102,14 @@
 \endgroup
 \vfill
 {\small\color{manualMuted}2026 年 10 月 2 日 \quad · \quad MIT 许可证\par
-适用于 gradbars 0.0.1。示例数据仅用于演示，不代表真实实验结果。}
+适用于 gradbars 0.0.2。示例数据仅用于演示，不代表真实实验结果。}
 
 \clearpage
 \section{安装与快速开始}
 \subsection{安装宏包}
 把 \key{gradbars.sty} 放在主文档旁边，导言区写入
 \key{\usepackage{gradbars}} 即可。无需手动创建 \key{tikzpicture}，
-也无需开启 shell escape。宏包依赖 TikZ、xparse 和 expl3，不强制加载 ctex。
+也无需开启 shell escape。宏包依赖 TikZ、xparse、expl3 和 collcell（含 array），不强制加载 ctex。
 中文文档可自行使用 ctexart；本手册使用 XeLaTeX 编译。
 
 \subsection{最小完整文档}
@@ -301,7 +302,7 @@
 颜色可使用 xcolor 的混色表达式。
 
 \note{不要只靠颜色传递关键含义。并列指标应在列标题中写明名称和单位，
-并保留可读的数值。内部标签不会自动调整对比度，需根据背景选择文字颜色。}
+并保留可读的数值。可设置 \key{text color=auto} 根据背景选择黑白文字，也可显式指定颜色。}
 
 
 \clearpage
@@ -316,7 +317,7 @@
 \gradbar[label=none]{64}
 \end{example}
 
-外部标签采用固定宽度、右对齐的槽位，以保持同列对齐。
+外部标签采用右对齐的槽位，默认在文字过长时扩展；同列应统一设置足够大的槽宽。
 内部标签位于整条轨道右端附近，不跟随彩色条的末端移动。
 \key{label=none} 则只显示轨道和填充。
 
@@ -738,6 +739,240 @@ $W(-\mathrm{min})/(\mathrm{max}-\mathrm{min})$，
 总量越界时默认警告并从右侧截断，标签保留真实总量；\key{overflow=error} 改为报错。}
 
 \clearpage
+\section{堆叠图例与分段标签}
+\key{stack names} 为每一段提供名称，顺序与数值、颜色一致。
+\key{legend=true} 在条形下方自动生成图例；名称较长时在轨道宽度内换行。
+\key{segment labels} 可显示数值、占比、名称或它们的组合。
+
+\begin{example}[text and listing,sidebyside=false]{示例 29：自动图例与小段标签外移}
+\gradstack[
+  width=70mm,height=16pt,precision=0,
+  stack colors={gradbarsBlue,gradbarsTeal,gold},
+  stack names={Train,Validation,Test},
+  segment labels=name percent,legend=true,
+  label=end
+]{80,2,18}
+\end{example}
+
+段内放不下的标签自动移至条形上方，并添加引导线；水平范围相交的外部标签逐层抬高。\par
+\key{segment text color=auto} 默认按段颜色选择黑字或白字。
+\key{segment font} 默认是 \key{\scriptsize}，可按版面修改。
+零值段不绘制标签，但仍保留图例项和配色序号。
+
+\begin{example}[text and listing,sidebyside=false]{示例 30：分段占比与总量占比采用不同分母}
+\gradstack[
+  max=200,width=80mm,height=16pt,precision=0,
+  stack colors={gradbarsBlue,gradbarsTeal},
+  segment labels=percent,value format=percent
+]{20,30}
+\end{example}
+
+这里总量为 50，条长占量程 200 的四分之一，总标签为 25\%。
+两段标签分别是 $20/50=40\%$ 和 $30/50=60\%$。
+分段占比始终以原始总量为分母；即使条长被截断，也不会按可见部分重新归一化。
+\key{segment labels=value} 显示原始分段值，沿用数字格式及精度，省略总标签的 \key{unit}。
+
+\begin{example}[text and listing,sidebyside=false]{示例 31：多个堆叠条共用一个图例}
+\gradbarsstyle{parts}{width=55mm,height=14pt,
+  precision=0,stack colors={skyblue,rose,gold}}
+\begin{tabular}{@{}ll@{}}
+  A & \gradstack[style=parts]{50,30,20}\\[3pt]
+  B & \gradstack[style=parts]{65,20,15}
+\end{tabular}
+
+\gradbarslegend[style=parts]{Train,Validation,Test}
+\end{example}
+
+\note{启用自动图例或包含名称的段标签时，必须提供与段数一致的 \key{stack names}。
+\key{segment labels} 可选 none、value、percent、name、name value、name percent。
+独立图例需要和数据条使用相同的 \key{stack colors}，建议通过命名样式统一设置。}
+
+\clearpage
+\section{智能标签与数值列}
+\subsection{自动黑白文字、长标签与碰撞避让}
+\key{label=auto} 优先将总标签放在已填充部分的中央，空间不足时移至轨道右侧。
+\key{text color=auto} 根据标签中心处的背景选择黑白文字；渐变按中心颜色估算。
+主题会设置文字颜色，因此把 \key{text color=auto} 放在 \key{theme} 后面。
+
+\begin{example}[text and listing,sidebyside=false]{示例 32：深浅背景与长标签}
+\gradbar[color=black,width=45mm,height=15pt,
+  label=auto,text color=auto,precision=0]{90}
+
+\gradbar[color=gold,width=45mm,height=15pt,
+  label=auto,text color=auto,precision=0]{90}
+
+\gradbar[width=25mm,height=15pt,label=inside,
+  text={A label wider than the track}]{60}
+\end{example}
+
+默认 \key{label overflow=auto} 会将过宽的内部或条尾标签外移，
+并按实际文字宽度扩展外部标签槽；过高的内部标签也会外移。
+\key{label overflow=allow} 允许手工布局时保留越界标签。
+目标线穿过内部标签时标签外移；带误差线的内部总标签移至右侧。
+堆叠条启用段标签后，内部总标签也移至右侧，条尾总标签则位于外移段标签上方。
+
+\note{避让发生在同一数据条内部，不会重新排版相邻单元格或相邻数据条。
+外部文字默认按浅色页面选择黑字；深色页面请显式指定文字颜色。
+自动颜色基于标签中心，不能保证跨越多种颜色的长标签处处对比度相同。}
+
+\clearpage
+\subsection{单元格只填写数字}
+\key{\gradbarscolumn{G}{...}} 定义一个收集单元格内容的数值列。
+选择尚未使用的单个英文字母作为列名，整列共用范围、样式与标签格式。
+普通文本表头必须用 \key{\multicolumn} 绕过数值解析。
+
+\begin{example}[text and listing,sidebyside=false]{示例 33：统一列样式、缺失值和零值}
+\gradbarsstyle{score}{max=100,width=35mm,precision=0}
+\gradbarscolumn{G}{style=score}
+\begin{tabular}{@{}lG@{}}
+  \toprule
+  Model & \multicolumn{1}{c}{Score / 100}\\
+  \midrule
+  Alpha & 82\\
+  Beta & 65\\
+  Pending & NA\\
+  Empty & \\
+  Zero & 0\\
+  \bottomrule
+\end{tabular}
+\end{example}
+
+该接口基于 array 与 collcell，适用于这里演示的 tabular 和 longtable。
+表格命令、文本、单位或已绘制的数据条不能直接作为 G 列的数值输入；
+需要特殊单元格时使用 \key{\multicolumn{1}{l}{...}}。
+它不会扫描整列或自动计算最大值，也不是 siunitx 的 S 列。
+
+\clearpage
+\section{选型指南}
+先确定读者需要比较的是数值大小、相对零的变化、组成还是不确定性，再选择条形。
+同一比较组应共用范围与宽度，并在标题或表头中写明单位。
+
+\begin{tabularx}{\linewidth}{@{}p{23mm}p{44mm}X@{}}
+\toprule
+\textbf{类型} & \textbf{适用情形} & \textbf{选择与说明}\\
+\midrule
+普通条 & 准确率、数量、耗时、完成量 &
+用 \key{\gradbar} 表示一个非负值。越长表示越大；耗时越低越好，不能把条长直接理解为优劣。\\
+正负条 & 增减幅度、差值、偏差 &
+用 \key{min<0} 和正的 \key{max} 显示零点两侧；同列必须共用同一个零点位置。\\
+堆叠条 & 互斥类别的构成、资源分配 &
+用 \key{\gradstack}；各段非负且可相加。不同指标或重复计数不应拼成同一组成条。\\
+误差线 & 点估计及不确定区间 &
+在普通条或正负条上设置 \key{error} 或 \key{error minus}/\key{error plus}。
+在表注中明确区间是标准差、标准误还是置信区间。\\
+\bottomrule
+\end{tabularx}
+
+\subsection{组合使用时的语义}
+\key{target} 是一个参考值，\key{band} 是预先给定的参考范围，
+它们本身不表示估计误差。误差参数表示从点估计向两侧延伸的非负距离，
+不是区间的绝对端点；例如估计 60、区间 $[55,68]$，应设置
+\key{error minus=5,error plus=8}。
+
+若希望比较不同方案的总量，保留共同的 \key{max}；若要比较百分比组成，
+先由数据处理步骤计算各段百分比，再用统一的 \key{max=100}。
+仅设置 \key{segment labels=percent} 会改变标签，不会把原始数据条变成满条。
+
+\subsection{窄列与打印的取舍}
+双栏论文优先使用简短数值标签和共享图例；长类别名可放在左侧文本列。
+黑白打印同时保留名称、数值或目标位置，避免仅靠颜色表达类别。
+幻灯片应增大轨道高度与字体；标签外移后，应为其留出额外垂直空间。
+
+\clearpage
+\section{真实排版案例}
+下面四个案例使用各自的文档类实际编译，效果与完整源码均收录于本手册。
+配套源码位于 \key{docs/layouts}；从仓库根目录编译可找到 \key{gradbars.sty}。
+这些是实际排版环境，所有数值仍为演示数据。
+
+\subsection{示例 34：双栏论文}
+使用 article 的 twocolumn 选项；数据条宽度按单栏分配。
+下图是完整双栏页面。窄列的总宽度还需加上外部标签槽与间隔。
+\begin{center}
+\fbox{\includegraphics[width=.84\linewidth,height=.72\textheight,keepaspectratio]{docs/layouts/twocolumn.pdf}}
+\end{center}
+\clearpage
+\textbf{示例 34 完整源码}\par
+\lstinputlisting[style=manual]{docs/layouts/twocolumn.tex}
+
+\clearpage
+\subsection{示例 35：跨页长表}
+longtable 在单栏文档中自动分页，并在后续页重复表头。
+该案例包含 60 行，实际输出两页。所有页面使用相同的列定义和 0--100 量程。
+\begin{center}
+\fbox{\includegraphics[page=1,width=.46\linewidth]{docs/layouts/longtable.pdf}}
+\hfill
+\fbox{\includegraphics[page=2,width=.46\linewidth]{docs/layouts/longtable.pdf}}
+\end{center}
+长表不能放在 table 浮动体内，也不能直接用在 article 的双栏模式中。
+需要跨页时，将这部分切换为单栏或单独编排。
+\clearpage
+\textbf{示例 35 完整源码}\par
+\lstinputlisting[style=manual,basicstyle=\ttfamily\fontsize{7.5}{9}\selectfont]{docs/layouts/longtable.tex}
+
+\clearpage
+\subsection{示例 36：黑白打印}
+使用灰度主题与不同灰度的分段，同时保留数值、图例名称和目标线。
+下图截取实际页面的内容区域。本例展示灰度配色；本版尚未提供纹理填充模式。
+\begin{center}
+\fbox{\includegraphics[trim=35bp 360bp 35bp 35bp,clip,width=.72\linewidth]{docs/layouts/grayscale.pdf}}
+\end{center}
+\textbf{示例 36 完整源码}\par
+\lstinputlisting[style=manual]{docs/layouts/grayscale.tex}
+
+\clearpage
+\subsection{示例 37：幻灯片}
+使用 Beamer 的 16:9 页面。增大轨道高度，并通过 arraystretch 增加表格行距，
+使标签和相邻条形之间保留空隙。若幻灯片内还要显示 verbatim 源码，需给 frame 添加 fragile。
+\begin{center}
+\fbox{\includegraphics[width=.92\linewidth]{docs/layouts/slides.pdf}}
+\end{center}
+\textbf{示例 37 完整源码}\par
+\lstinputlisting[style=manual,basicstyle=\ttfamily\fontsize{7.5}{8.5}\selectfont]{docs/layouts/slides.tex}
+
+\clearpage
+\section{常见问题}
+\subsection{长标签仍然超出页面怎么办？}
+\key{label overflow=auto} 防止标签挤在轨道中，但不能突破页面宽度限制。
+外部槽宽会按文字扩展，因此应缩短文字、减小轨道宽度，或把长说明移到相邻文本列。
+需要多行说明时，可在 \key{text} 中提供指定宽度的 \key{\parbox}，并预留行高。
+若整列标签必须右对齐，请将 \key{label width} 设为能容纳该列最长标签的统一宽度。
+
+\subsection{条形相贴，或行高太大怎么办？}
+轨道高度由 \key{height} 设置；表格行距可通过
+\key{\renewcommand{\arraystretch}{1.5}} 或 array 的
+\key{\setlength{\extrarowheight}{3pt}} 调整。
+自动外移标签和图例会增加图形高度，这是为文字保留实际空间。
+密集表格可把自动图例关闭，表外只放一个 \key{\gradbarslegend}。
+
+\subsection{同列的条形为什么不可直接比较？}
+请检查各行的 \key{min}、\key{max}、\key{width} 是否一致。
+正负条尤其需要同时统一上下限；仅统一最大值仍可能让零点位置不同。
+建议用一个命名样式或 \key{\gradbarscolumn} 定义比较列。
+宏包不会根据当前行的数值自动推断范围。
+
+\subsection{缺失值和零值有何区别？}
+空参数、空数值单元格以及大写 \key{NA} 表示缺失；默认显示 \key{--}，
+可用 \key{missing text} 修改。\key{0} 是有效观测，显示零标签与空轨道。
+缺失值不应替换为零。堆叠组成不接受缺失段，因为未知段会使总量和占比不明确。
+
+\subsection{数值列为什么报 Invalid value？}
+G 列只接收十进制数、能展开为十进制数的宏、空值或 \key{NA}。
+不要在单元格里写百分号、单位或普通表头；单位放到列选项，表头用
+\key{\multicolumn{1}{c}{Score}}。需要手写特殊内容时同样用 multicolumn 绕过收集。
+
+\subsection{标签占比为什么与条长不相同？}
+普通条总标签的 \key{value format=percent} 使用量程上限作为分母
+（仅支持 \key{min=0}）。\par
+堆叠段的 \key{segment labels=percent} 使用分段总和作为分母。
+二者回答的问题不同；示例 30 将总量占比和组成占比并列展示。
+
+\subsection{支持哪些表格和编译方式？}
+本手册验证 XeLaTeX 下的 tabular、booktabs、longtable 和 Beamer 场景。
+tabularray 的专有列处理、siunitx 的 S 列及其他引擎不在当前验证范围。
+正文中的普通数据条与表格中的数据条使用相同命令。
+
+
+\clearpage
 \section{参数速查与使用限制}
 \begingroup\small
 \begin{tabularx}{\linewidth}{@{}p{31mm}p{25mm}X@{}}
@@ -749,8 +984,8 @@ $W(-\mathrm{min})/(\mathrm{max}-\mathrm{min})$，
 \key{width} & \key{24mm} & 正的轨道宽度，不含外部标签。\\
 \key{height} & \key{1.5ex} & 正的轨道高度。\\
 \key{theme} & \key{blue} & blue、teal、solid、gray、lbyellow、viblue、cyblu。\\
-\key{label} & \key{outside} & outside、inside、none、end。\\
-\key{label width} & \key{4.5em} & 外部标签固定槽宽。\\
+\key{label} & \key{outside} & outside、inside、none、end、auto。\\
+\key{label width} & \key{4.5em} & 外部标签最小槽宽；自动溢出模式下可扩展。\\
 \key{label gap} & \key{.6em} & 轨道与外部标签之间的间隔。\\
 \key{precision} & \key{1} & 0--6 的整数；保留末尾零。\\
 \key{value format} & \key{value} & 原始数值 value 或计算占比 percent。\\
@@ -762,7 +997,7 @@ $W(-\mathrm{min})/(\mathrm{max}-\mathrm{min})$，
 \key{left color} & 由主题指定 & 渐变起点，或纯色填充的颜色。\\
 \key{right color} & 由主题指定 & 渐变终点。\\
 \key{track color} & 由主题指定 & 空轨道颜色。\\
-\key{text color} & 由主题指定 & 标签文字颜色。\\
+\key{text color} & 由主题指定 & 标签文字颜色；auto 自动选黑白。\\
 \key{font} & 沿用周围字体 & 标签字体声明。\\
 \key{style} & 未指定 & 应用已定义的命名样式。\\
 \key{missing text} & \key{--} & 空参数或 NA 的显示标签。\\
@@ -774,6 +1009,23 @@ $W(-\mathrm{min})/(\mathrm{max}-\mathrm{min})$，
 \bottomrule
 \end{tabularx}
 \endgroup
+
+
+\subsection{v0.0.2 新增参数与命令}
+\begin{tabularx}{\linewidth}{@{}p{36mm}p{23mm}X@{}}
+\toprule
+\textbf{参数} & \textbf{默认值} & \textbf{含义}\\
+\midrule
+\key{stack names} & 空 & 与各段一一对应的名称列表。\\
+\key{legend} & \key{false} & 自动在堆叠条下方生成图例。\\
+\key{segment labels} & \key{none} & none、value、percent、name、name value、name percent。\\
+\key{segment font} & \key{\scriptsize} & 段标签字体。\\
+\key{segment text color} & \key{auto} & 自动黑白或显式颜色。\\
+\key{label overflow} & \key{auto} & 自动外移或 allow 允许越界。\\
+\bottomrule
+\end{tabularx}
+\key{\gradbarslegend[选项]{名称列表}} 生成可共享的独立图例；
+\key{\gradbarscolumn{G}{选项}} 定义统一样式的数值列。
 
 \subsection{已知边界}
 本版不提供 CSV 导入、自动列最大值或正负混合堆叠。

@@ -1,0 +1,32 @@
+% Compile with XeLaTeX from the repository root.
+\documentclass[aspectratio=169]{beamer}
+\usepackage{gradbars,booktabs}
+\setbeamertemplate{navigation symbols}{}
+\begin{document}
+\begin{frame}{Results at a glance}
+\gradbarscolumn{G}{width=40mm,max=100,height=15pt,
+  label=auto,text color=auto,color=gradbarsBlue,
+  precision=0,font=\small}
+\begin{columns}[T]
+\begin{column}{.46\textwidth}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{@{}lG@{}}
+\toprule
+Model & \multicolumn{1}{c}{Score / 100}\\
+\midrule
+A & 72\\ B & 89\\ C & 95\\
+\bottomrule
+\end{tabular}
+\end{column}
+\begin{column}{.46\textwidth}
+\gradstack[width=48mm,height=16pt,precision=0,
+  stack names={Train,Validation,Test},
+  segment labels=percent,legend=true,
+  label=none,font=\small]{70,15,15}
+\end{column}
+\end{columns}
+\medskip
+\footnotesize Illustrative data. Shared score scale: 0--100.
+Segment percentages use the total composition.
+\end{frame}
+\end{document}

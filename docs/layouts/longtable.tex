@@ -1,0 +1,32 @@
+% Compile twice with XeLaTeX from the repository root.
+\documentclass{article}
+\usepackage[a4paper,margin=22mm]{geometry}
+\usepackage{gradbars,booktabs,longtable}
+\gradbarscolumn{G}{max=100,width=40mm,precision=0}
+\newcommand{\SampleRows}{%
+North & 82\\ South & 67\\ East & 91\\
+West & 54\\ Pending & NA\\ Zero & 0\\}
+\begin{document}
+\section*{A multi-page data table}
+Illustrative rows are repeated to demonstrate page breaks. The scale is fixed
+at 0--100 on every page. A longtable must not be enclosed in a table float.
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{@{}lG@{}}
+\caption{Repeated observations; shared scale 0--100.}\\
+\toprule
+Region & \multicolumn{1}{c}{Score}\\
+\midrule
+\endfirsthead
+\toprule
+Region (continued) & \multicolumn{1}{c}{Score}\\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r}{Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+\SampleRows\SampleRows\SampleRows\SampleRows\SampleRows
+\SampleRows\SampleRows\SampleRows\SampleRows\SampleRows
+\end{longtable}
+\end{document}

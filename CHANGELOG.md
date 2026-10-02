@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.0.2 — 2026-10-02
+
+- Stack names, automatic/shared legends, segment values and percentages.
+- Small segment labels move outside with leader lines and collision avoidance.
+- Automatic total label placement, black/white text, and long-label handling.
+- Numeric table columns via `\gradbarscolumn`, with common options and missing values.
+- Selection guide and FAQ covering label width, row height, shared scales and missing data.
+- Four real layout cases: two-column article, multi-page longtable, grayscale and Beamer.
+- Unified manual with 37 numbered examples; build script and CI rebuild the real layouts first.
+- New dependency: collcell (and its array/etoolbox dependencies).
+
 ## 0.0.1 — 2026-10-02
 
 Initial public version.

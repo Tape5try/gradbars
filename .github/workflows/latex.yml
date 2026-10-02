@@ -14,7 +14,5 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y texlive-latex-extra texlive-pictures texlive-fonts-recommended texlive-xetex texlive-lang-chinese lmodern
-      - name: Build illustrated manual
-        run: |
-          xelatex -interaction=nonstopmode -halt-on-error "-jobname=gradbars-manual-v0.0.1" docs/gradbars-manual.tex
-          xelatex -interaction=nonstopmode -halt-on-error "-jobname=gradbars-manual-v0.0.1" docs/gradbars-manual.tex
+      - name: Build layouts and illustrated manual
+        run: python3 scripts/build_manual.py

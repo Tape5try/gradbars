@@ -1,8 +1,9 @@
 \NeedsTeXFormat{LaTeX2e}[2020/10/01]
-\ProvidesPackage{gradbars}[2026/10/02 v0.0.1 Inline data bars for LaTeX]
+\ProvidesPackage{gradbars}[2026/10/02 v0.0.2 Inline data bars for LaTeX]
 \RequirePackage{tikz}
 \RequirePackage{xparse}
 \RequirePackage{expl3}
+\RequirePackage{collcell}
 \usetikzlibrary{shadings}
 
 \definecolor{gradbarsBlue}{HTML}{2563EB}
@@ -100,6 +101,7 @@
   label/inside/.code=\def\gradbars@label{inside},
   label/none/.code=\def\gradbars@label{none},
   label/end/.code=\def\gradbars@label{end},
+  label/auto/.code=\def\gradbars@label{auto},
   value format/.is choice,
   value format/value/.code=\def\gradbars@format{value},
   value format/percent/.code=\def\gradbars@format{percent},
@@ -351,7 +353,7 @@
           {\gradbarsPosition{\l__gradbars_before_fp}*(\gradbars@width)}
         \pgfmathsetlengthmacro\gradbars@segmenthi
           {\gradbarsPosition{\l__gradbars_sum_fp}*(\gradbars@width)}
-        \ifdim\gradbars@segmenthi>\gradbars@segmentlo
+        \ifdim\gradbars@segmenthi>\gradbars@segmentlo\relax
           \path[fill=\gradbars@segmentcolor,draw=none]
             (\gradbars@segmentlo,0) rectangle (\gradbars@segmenthi,\gradbars@height);
         \fi
@@ -390,7 +392,7 @@
   \path[rounded corners=\gradbars@radius,fill=\gradbars@track,draw=none]
     (0,0) rectangle (\gradbars@width,\gradbars@height);
   \gradbarsDrawBand
-  \ifdim\gradbars@xstop>\gradbars@xstart
+  \ifdim\gradbars@xstop>\gradbars@xstart\relax
     \pgfmathsetlengthmacro\gradbars@fillradius{min(\gradbars@radius,.5*(\gradbars@xstop-\gradbars@xstart))}%
     \begin{scope}
       \clip[rounded corners=\gradbars@radius]
@@ -431,32 +433,12 @@
         ([yshift=.8*\gradbars@height]\gradbars@cap,0);
     }
   \fi\fi
-  \def\gradbars@temp{outside}%
-  \ifx\gradbars@label\gradbars@temp
-    \node[anchor=west,inner sep=0pt,outer sep=0pt,
-      text=\gradbars@textcolor,font=\gradbars@font]
-      at ([xshift=\gradbars@gap,yshift=.5*\gradbars@height]\gradbars@width,0)
-      {\makebox[\gradbars@labelwidth][r]{\gradbars@labelcontent}};
-  \else
-    \def\gradbars@temp{inside}%
-    \ifx\gradbars@label\gradbars@temp
-      \node[anchor=east,inner sep=0pt,outer sep=0pt,
-        text=\gradbars@textcolor,font=\gradbars@font]
-        at ([xshift=-.35em,yshift=.5*\gradbars@height]\gradbars@width,0)
-        {\gradbars@labelcontent};
-    \else
-      \def\gradbars@temp{end}%
-      \ifx\gradbars@label\gradbars@temp
-        \sbox\gradbars@labelbox{\pgfinterruptpicture
-          \gradbars@font\gradbars@labelcontent\endpgfinterruptpicture}%
-        \pgfmathsetlengthmacro\gradbars@labelx{max(.5*\wd\gradbars@labelbox,
-          min(\gradbars@xend,\gradbars@width-.5*\wd\gradbars@labelbox))}%
-        \node[anchor=south,inner sep=0pt,outer sep=0pt,text=\gradbars@textcolor]
-          at ([yshift=2pt]\gradbars@labelx,\gradbars@height)
-          {\usebox\gradbars@labelbox};
-      \fi
-    \fi
+  \gradbarsResetLabels
+  \ifgradbars@stack
+    \gradbarsDrawSegmentLabels
+    \ifgradbars@legend\gradbarsDrawLegend\fi
   \fi
+  \gradbarsDrawMainLabel
 }
 \def\gradbars@render{%
   \gradbars@validtrue
@@ -513,5 +495,357 @@
     \fi
   \endgroup
 }
+
+% v0.0.2: labels, legends and collected table columns.
+\def\gradbars@stacknames{}
+\def\gradbars@segmentlabels{none}
+\def\gradbars@segmentfont{\scriptsize}
+\def\gradbars@segmenttextcolor{auto}
+\def\gradbars@labeloverflow{auto}
+\newif\ifgradbars@legend
+\newif\ifgradbars@inside
+\newif\ifgradbars@fit
+\newsavebox\gradbars@segmentbox
+\pgfkeys{/gradbars,
+  stack names/.store in=\gradbars@stacknames,
+  legend/.is if=gradbars@legend,legend/.default=true,
+  segment font/.store in=\gradbars@segmentfont,
+  segment text color/.store in=\gradbars@segmenttextcolor,
+  segment labels/.is choice,
+  segment labels/none/.code=\def\gradbars@segmentlabels{none},
+  segment labels/value/.code=\def\gradbars@segmentlabels{value},
+  segment labels/percent/.code=\def\gradbars@segmentlabels{percent},
+  segment labels/name/.code=\def\gradbars@segmentlabels{name},
+  segment labels/name value/.code=\def\gradbars@segmentlabels{name value},
+  segment labels/name percent/.code=\def\gradbars@segmentlabels{name percent},
+  label overflow/.is choice,
+  label overflow/auto/.code=\def\gradbars@labeloverflow{auto},
+  label overflow/allow/.code=\def\gradbars@labeloverflow{allow}
+}
+\def\gradbarsMeasure#1#2#3{%
+  \sbox#1{\pgfinterruptpicture\font@name #2#3\endpgfinterruptpicture}}
+
+\ExplSyntaxOn
+\clist_new:N \l__gradbars_names_clist
+\seq_new:N \l__gradbars_occupied_seq
+\dim_new:N \l__gradbars_top_dim
+\dim_new:N \l__gradbars_labelbottom_dim
+\dim_new:N \l__gradbars_labelleft_dim
+\dim_new:N \l__gradbars_labelright_dim
+\dim_new:N \l__gradbars_leaderx_dim
+\dim_new:N \l__gradbars_leaderleft_dim
+\dim_new:N \l__gradbars_leaderright_dim
+\fp_new:N \l__gradbars_luminance_fp
+\int_new:N \l__gradbars_index_int
+\cs_new_protected:Npn \gradbarsContrast #1
+  {
+    \convertcolorspec{named}{#1}{rgb}\gradbars@rgb
+    \clist_set:Nx \l_tmpa_clist {\gradbars@rgb}
+    \fp_zero:N \l__gradbars_luminance_fp
+    \int_step_inline:nn {3}
+      {
+        \fp_set:Nn \l_tmpa_fp {\clist_item:Nn \l_tmpa_clist {##1}}
+        \fp_compare:nNnTF {\l_tmpa_fp} > {0.04045}
+          {\fp_set:Nn \l_tmpa_fp {((\l_tmpa_fp+0.055)/1.055)^2.4}}
+          {\fp_set:Nn \l_tmpa_fp {\l_tmpa_fp/12.92}}
+        \fp_add:Nn \l__gradbars_luminance_fp
+          {\l_tmpa_fp*\clist_item:nn {0.2126,0.7152,0.0722}{##1}}
+      }
+    \fp_compare:nNnTF {\l__gradbars_luminance_fp} > {0.179}
+      {\def\gradbars@labelcolor{black}}{\def\gradbars@labelcolor{white}}
+  }
+\let\gradbarsValidatePrevious\gradbarsValidateExtras
+\cs_set_protected:Npn \gradbarsValidateExtras
+  {
+    \gradbarsValidatePrevious
+    \clist_set:No \l__gradbars_names_clist {\gradbars@stacknames}
+    \ifgradbars@stack
+      \clist_if_empty:NF \l__gradbars_names_clist
+        {\int_compare:nNnF {\clist_count:N \l__gradbars_names_clist}
+          = {\clist_count:N \l__gradbars_stack_clist}
+          {\gradbarsFail{Stack~names~must~match~the~segment~count}}}
+      \bool_set_false:N \l_tmpa_bool
+      \ifgradbars@legend \bool_set_true:N \l_tmpa_bool \fi
+      \str_case_e:nn {\gradbars@segmentlabels}
+        {{name}{\bool_set_true:N \l_tmpa_bool}
+         {name~value}{\bool_set_true:N \l_tmpa_bool}
+         {name~percent}{\bool_set_true:N \l_tmpa_bool}}
+      \bool_if:NT \l_tmpa_bool
+        {\clist_if_empty:NT \l__gradbars_names_clist
+          {\gradbarsFail{Stack~names~are~required~for~names~or~legend}}}
+      \ifgradbars@legend
+        \ifdim\gradbars@width>14pt\relax\else
+          \gradbarsFail{Legend~width~must~exceed~14pt}\fi
+      \fi
+    \else
+      \ifgradbars@legend \gradbarsFail{Automatic~legend~requires~gradstack}\fi
+    \fi
+  }
+\cs_new_protected:Npn \gradbarsResetLabels
+  {\seq_clear:N \l__gradbars_occupied_seq
+   \dim_set:Nn \l__gradbars_top_dim {\gradbars@height+4pt}}
+\cs_new_protected:Npn \gradbarsCheckOverlap #1#2#3
+  {
+    \dim_compare:nNnT {\l__gradbars_labelleft_dim} < {#2+3pt}
+      {\dim_compare:nNnT {\l__gradbars_labelright_dim} > {#1-3pt}
+        {\dim_set:Nn \l__gradbars_labelbottom_dim
+          {\dim_max:nn {\l__gradbars_labelbottom_dim}{#3+3pt}}}}
+  }
+\cs_new_protected:Npn \gradbarsLeaderBounds #1#2#3
+  {
+    \dim_set:Nn \l__gradbars_leaderleft_dim
+      {\dim_min:nn {\l__gradbars_leaderleft_dim}{#1-4pt}}
+    \dim_set:Nn \l__gradbars_leaderright_dim
+      {\dim_max:nn {\l__gradbars_leaderright_dim}{#2+4pt}}
+  }
+\cs_new_protected:Npn \gradbarsPlaceSegment
+  {
+    \pgfmathsetlengthmacro\gradbars@segmentmid{.5*(\gradbars@segmentlo+\gradbars@segmenthi)}
+    \gradbars@fittrue
+    \ifdim\dimexpr\wd\gradbars@segmentbox+4pt\relax>\dimexpr\gradbars@segmenthi-\gradbars@segmentlo\relax
+      \gradbars@fitfalse\fi
+    \ifdim\dimexpr\ht\gradbars@segmentbox+\dp\gradbars@segmentbox+2pt\relax>\gradbars@height\relax
+      \gradbars@fitfalse\fi
+    \ifx\gradbars@target\@empty\else
+      \pgfmathsetlengthmacro\gradbars@distance{abs(\gradbars@xtarget-\gradbars@segmentmid)}
+      \ifdim\gradbars@distance<\dimexpr.5\wd\gradbars@segmentbox+2pt\relax
+        \gradbars@fitfalse\fi
+    \fi
+    \ifgradbars@fit
+      \let\gradbars@labelcolor\gradbars@segmenttextcolor
+      \str_if_eq:eeT {\gradbars@segmenttextcolor}{auto}{\gradbarsContrast{\gradbars@segmentcolor}}
+      \gradbarsMeasure\gradbars@segmentbox\gradbars@segmentfont{\color{\gradbars@labelcolor}\gradbars@segmentcontent}
+      \node[inner~sep=0pt,outer~sep=0pt,text=\gradbars@labelcolor]
+        at (\gradbars@segmentmid,.5*\gradbars@height){\usebox\gradbars@segmentbox};
+    \else
+      \pgfmathsetlengthmacro\gradbars@labelx
+        {max(.5*\wd\gradbars@segmentbox,min(\gradbars@segmentmid,\gradbars@width-.5*\wd\gradbars@segmentbox))}
+      \dim_set:Nn \l__gradbars_labelleft_dim {\gradbars@labelx-.5\wd\gradbars@segmentbox}
+      \dim_set:Nn \l__gradbars_labelright_dim {\gradbars@labelx+.5\wd\gradbars@segmentbox}
+      \dim_set:Nn \l__gradbars_labelbottom_dim {\gradbars@height+4pt}
+      \seq_map_inline:Nn \l__gradbars_occupied_seq {\gradbarsCheckOverlap ##1}
+      % Route elevated leaders around earlier label boxes, not through text.
+      \dim_set:Nn \l__gradbars_leaderx_dim {\gradbars@segmentmid}
+      \dim_compare:nNnT {\l__gradbars_labelbottom_dim} > {\gradbars@height+4pt}
+        {
+          \dim_set:Nn \l__gradbars_leaderleft_dim {\gradbars@segmentmid}
+          \dim_set:Nn \l__gradbars_leaderright_dim {\gradbars@segmentmid}
+          \seq_map_inline:Nn \l__gradbars_occupied_seq {\gradbarsLeaderBounds ##1}
+          \dim_compare:nNnTF
+            {\gradbars@segmentmid-\l__gradbars_leaderleft_dim} <
+            {\l__gradbars_leaderright_dim-\gradbars@segmentmid}
+            {\dim_set_eq:NN \l__gradbars_leaderx_dim \l__gradbars_leaderleft_dim}
+            {\dim_set_eq:NN \l__gradbars_leaderx_dim \l__gradbars_leaderright_dim}
+        }
+      \seq_put_right:Nx \l__gradbars_occupied_seq
+        {{\dim_use:N \l__gradbars_labelleft_dim}{\dim_use:N \l__gradbars_labelright_dim}
+          {\dim_eval:n {\l__gradbars_labelbottom_dim+\ht\gradbars@segmentbox+\dp\gradbars@segmentbox}}}
+      \dim_set:Nn \l__gradbars_top_dim {\dim_max:nn {\l__gradbars_top_dim}
+        {\l__gradbars_labelbottom_dim+\ht\gradbars@segmentbox+\dp\gradbars@segmentbox+3pt}}
+      \draw[gradbarsInk!55,line~width=.3pt]
+        (\gradbars@segmentmid,\gradbars@height)--
+        (\gradbars@segmentmid,\dim_eval:n {\gradbars@height+1pt})--
+        (\dim_use:N \l__gradbars_leaderx_dim,\dim_eval:n {\gradbars@height+1pt})--
+        (\dim_use:N \l__gradbars_leaderx_dim,\dim_eval:n {\l__gradbars_labelbottom_dim-2pt})--
+        (\gradbars@labelx,\dim_eval:n {\l__gradbars_labelbottom_dim-2pt});
+      \let\gradbars@labelcolor\gradbars@segmenttextcolor
+      \str_if_eq:eeT {\gradbars@segmenttextcolor}{auto}{\def\gradbars@labelcolor{black}}
+      \gradbarsMeasure\gradbars@segmentbox\gradbars@segmentfont{\color{\gradbars@labelcolor}\gradbars@segmentcontent}
+      \node[anchor=south,inner~sep=0pt,outer~sep=0pt,text=\gradbars@labelcolor]
+        at (\gradbars@labelx,\dim_use:N \l__gradbars_labelbottom_dim){\usebox\gradbars@segmentbox};
+    \fi
+  }
+\cs_new_protected:Npn \gradbarsDrawSegmentLabels
+  {
+    \str_if_eq:eeF {\gradbars@segmentlabels}{none}
+      {
+        \fp_zero:N \l__gradbars_sum_fp
+        \int_zero:N \l__gradbars_index_int
+        \clist_map_inline:Nn \l__gradbars_stack_clist
+          {
+            \int_incr:N \l__gradbars_index_int
+            \fp_set_eq:NN \l__gradbars_before_fp \l__gradbars_sum_fp
+            \fp_add:Nn \l__gradbars_sum_fp {##1}
+            \pgfmathsetlengthmacro\gradbars@segmentlo{\gradbarsPosition{\l__gradbars_before_fp}*(\gradbars@width)}
+            \pgfmathsetlengthmacro\gradbars@segmenthi{\gradbarsPosition{\l__gradbars_sum_fp}*(\gradbars@width)}
+            \ifdim\gradbars@segmenthi>\gradbars@segmentlo\relax
+              \cs_set:Npx \gradbars@segmentcolor
+                {\clist_item:Nn \l__gradbars_stackcolors_clist
+                 {1+\int_mod:nn {\l__gradbars_index_int-1}{\clist_count:N \l__gradbars_stackcolors_clist}}}
+              \def\gradbars@segmentcontent
+              {\def\gradbars@text{}\def\gradbars@unit{}\def\gradbars@format{value}
+                \cs_set:Npx \gradbars@number {\fp_eval:n {##1}}
+                \str_case_e:nn {\gradbars@segmentlabels}
+                  {{percent}{\def\gradbars@format{percent}}
+                   {name~percent}{\def\gradbars@format{percent}}}
+                \str_if_eq:eeT {\gradbars@format}{percent}
+                  {\cs_set:Npx \gradbars@number {\fp_eval:n {100*##1/\gradbars@total}}}
+                \tl_clear:N \l_tmpb_tl
+                \str_case_e:nn {\gradbars@segmentlabels}
+                  {{name}{\tl_set:Nn \l_tmpb_tl {name}}
+                   {name~value}{\tl_set:Nn \l_tmpb_tl {both}}
+                   {name~percent}{\tl_set:Nn \l_tmpb_tl {both}}}
+                \tl_if_empty:NF \l_tmpb_tl
+                    {\clist_item:Nn \l__gradbars_names_clist {\l__gradbars_index_int}}
+                   \str_if_eq:VnT \l_tmpb_tl {both}{:\space}
+                   \str_if_eq:VnF \l_tmpb_tl {name}{\gradbars@labelcontent}}
+              \gradbarsMeasure\gradbars@segmentbox\gradbars@segmentfont{\gradbars@segmentcontent}
+              \gradbarsPlaceSegment
+            \fi
+          }
+      }
+  }
+\cs_new_protected:Npn \gradbarsDrawLegend
+  {
+    \dim_set:Nn \l_tmpa_dim {6pt}
+    \int_zero:N \l__gradbars_index_int
+    \clist_map_inline:Nn \l__gradbars_names_clist
+      {
+        \int_incr:N \l__gradbars_index_int
+        \cs_set:Npx \gradbars@segmentcolor
+          {\clist_item:Nn \l__gradbars_stackcolors_clist
+            {1+\int_mod:nn {\l__gradbars_index_int-1}{\clist_count:N \l__gradbars_stackcolors_clist}}}
+        \gradbarsMeasure\gradbars@segmentbox\gradbars@font
+          {\parbox[t]{\dimexpr\gradbars@width-14pt\relax}{\raggedright\strut ##1\strut}}
+        \path[fill=\gradbars@segmentcolor,draw=none]
+          (0,-\dim_use:N \l_tmpa_dim) rectangle (8pt,-\dim_eval:n {\l_tmpa_dim+6pt});
+        \node[anchor=north~west,inner~sep=0pt,outer~sep=0pt,text=gradbarsInk]
+          at (14pt,-\dim_use:N \l_tmpa_dim){\usebox\gradbars@segmentbox};
+        \dim_add:Nn \l_tmpa_dim {\ht\gradbars@segmentbox+\dp\gradbars@segmentbox+4pt}
+      }
+  }
+\cs_new_protected:Npn \gradbarsMainBackground
+  {
+    \def\gradbars@labelcolor{black}
+    \ifgradbars@inside
+      \let\gradbars@background\gradbars@track
+      \clist_if_empty:NF \l__gradbars_band_clist
+        {\dim_compare:nNnT {\gradbars@labelx} > {\gradbars@bandxlo}
+          {\dim_compare:nNnT {\gradbars@labelx} < {\gradbars@bandxhi}
+            {\edef\gradbars@background{\gradbars@bandcolor!
+               \fp_eval:n {100*\gradbars@bandopacity}!\gradbars@track}}}}
+      \ifdim\gradbars@labelx>\gradbars@xstart\relax
+        \ifdim\gradbars@labelx<\gradbars@xstop\relax
+          \let\gradbars@background\gradbars@left
+          \ifgradbars@gradient
+            \pgfmathparse{100*(\gradbars@labelx-\gradbars@xstart)/(\gradbars@xstop-\gradbars@xstart)}
+            \edef\gradbars@background{\gradbars@right!\pgfmathresult!\gradbars@left}
+          \fi
+          \ifgradbars@stack
+            \fp_zero:N \l__gradbars_sum_fp
+            \int_zero:N \l__gradbars_index_int
+            \clist_map_inline:Nn \l__gradbars_stack_clist
+              {\fp_add:Nn \l__gradbars_sum_fp {##1}\int_incr:N \l__gradbars_index_int
+               \pgfmathsetlengthmacro\gradbars@segmenthi{\gradbarsPosition{\l__gradbars_sum_fp}*(\gradbars@width)}
+               \dim_compare:nNnT {\gradbars@labelx} < {\gradbars@segmenthi}
+               {
+                 \cs_set:Npx \gradbars@background
+                   {\clist_item:Nn \l__gradbars_stackcolors_clist
+                    {1+\int_mod:nn {\l__gradbars_index_int-1}{\clist_count:N \l__gradbars_stackcolors_clist}}}
+                 \clist_map_break:
+               }}
+          \fi
+        \fi
+      \fi
+      \gradbarsContrast{\gradbars@background}
+    \fi
+  }
+\cs_new_protected:Npn \gradbarsDrawMainLabel
+  {
+    \str_if_eq:eeF {\gradbars@label}{none}
+      {
+        \gradbarsMeasure\gradbars@labelbox\gradbars@font{\gradbars@labelcontent}
+        \let\gradbars@placement\gradbars@label
+        \gradbars@insidefalse
+        \str_if_eq:eeT {\gradbars@placement}{auto}
+          {\def\gradbars@placement{outside}
+           \ifdim\dimexpr\wd\gradbars@labelbox+4pt\relax<\dimexpr\gradbars@xstop-\gradbars@xstart\relax
+             \def\gradbars@placement{center}\fi}
+        \str_if_eq:eeF {\gradbars@labeloverflow}{allow}
+          {\str_if_eq:eeT {\gradbars@placement}{inside}
+             {\ifdim\dimexpr\wd\gradbars@labelbox+4pt\relax>\gradbars@width\relax
+                \def\gradbars@placement{outside}\fi}
+           \str_if_eq:eeT {\gradbars@placement}{end}
+             {\ifdim\wd\gradbars@labelbox>\gradbars@width\relax
+                \def\gradbars@placement{outside}\fi}}
+        \str_case_e:nn {\gradbars@placement}
+          {{inside}{\gradbars@insidetrue}{center}{\gradbars@insidetrue}}
+        \ifgradbars@inside
+          \str_if_eq:eeF {\gradbars@labeloverflow}{allow}
+            {\ifdim\dimexpr\ht\gradbars@labelbox+\dp\gradbars@labelbox+2pt\relax>\gradbars@height\relax
+               \def\gradbars@placement{outside}\gradbars@insidefalse\fi}
+          \ifgradbars@stack
+            \str_if_eq:eeF {\gradbars@segmentlabels}{none}
+              {\def\gradbars@placement{outside}\gradbars@insidefalse}
+          \fi
+          \ifgradbars@error \def\gradbars@placement{outside}\gradbars@insidefalse\fi
+          \ifgradbars@inside
+            \str_if_eq:eeTF {\gradbars@placement}{center}
+              {\pgfmathsetlengthmacro\gradbars@labelx{.5*(\gradbars@xstart+\gradbars@xstop)}}
+              {\pgfmathsetlengthmacro\gradbars@labelx{\gradbars@width-2pt-.5*\wd\gradbars@labelbox}}
+            \ifx\gradbars@target\@empty\else
+              \pgfmathsetlengthmacro\gradbars@distance{abs(\gradbars@xtarget-\gradbars@labelx)}
+              \ifdim\gradbars@distance<\dimexpr.5\wd\gradbars@labelbox+2pt\relax
+                \def\gradbars@placement{outside}\gradbars@insidefalse\fi
+            \fi
+          \fi
+        \fi
+        \let\gradbars@labelcolor\gradbars@textcolor
+        \str_if_eq:eeT {\gradbars@textcolor}{auto}{\gradbarsMainBackground}
+        \gradbarsMeasure\gradbars@labelbox\gradbars@font{\color{\gradbars@labelcolor}\gradbars@labelcontent}
+        \ifgradbars@inside
+          \node[inner~sep=0pt,outer~sep=0pt,text=\gradbars@labelcolor]
+            at (\gradbars@labelx,.5*\gradbars@height){\usebox\gradbars@labelbox};
+        \else
+          \str_if_eq:eeTF {\gradbars@placement}{end}
+            {\pgfmathsetlengthmacro\gradbars@labelx
+              {max(.5*\wd\gradbars@labelbox,min(\gradbars@xend,\gradbars@width-.5*\wd\gradbars@labelbox))}
+             \node[anchor=south,inner~sep=0pt,outer~sep=0pt,text=\gradbars@labelcolor]
+               at (\gradbars@labelx,\dim_use:N \l__gradbars_top_dim){\usebox\gradbars@labelbox};}
+            {\dim_set:Nn \l_tmpa_dim {\gradbars@labelwidth}
+             \str_if_eq:eeF {\gradbars@labeloverflow}{allow}
+               {\dim_set:Nn \l_tmpa_dim {\dim_max:nn {\l_tmpa_dim}{\wd\gradbars@labelbox}}}
+             \node[anchor=west,inner~sep=0pt,outer~sep=0pt,text=\gradbars@labelcolor]
+               at ([xshift=\gradbars@gap,yshift=.5*\gradbars@height]\gradbars@width,0)
+               {\makebox[\dim_use:N \l_tmpa_dim][r]{\usebox\gradbars@labelbox}};}
+        \fi
+      }
+  }
+\ExplSyntaxOff
+\NewDocumentCommand\gradbarslegend{O{} m}{%
+  \begingroup\pgfkeys{/gradbars,#1,stack names={#2}}%
+  \begingroup\font@name
+    \edef\gradbars@next{\endgroup
+      \def\noexpand\gradbars@width{\the\dimexpr\gradbars@width\relax}}%
+  \gradbars@next
+  \gradbarsStandaloneLegend
+  \endgroup}
+\ExplSyntaxOn
+\cs_new_protected:Npn \gradbarsStandaloneLegend
+  {
+    \gradbars@validtrue
+    \clist_set:No \l__gradbars_names_clist {\gradbars@stacknames}
+    \clist_set:No \l__gradbars_stackcolors_clist {\gradbars@stackcolors}
+    \clist_if_empty:NT \l__gradbars_names_clist {\gradbarsFail{Legend~names~must~not~be~empty}}
+    \clist_if_empty:NT \l__gradbars_stackcolors_clist {\gradbarsFail{Stack~colors~must~not~be~empty}}
+    \ifdim\gradbars@width>14pt\else\gradbarsFail{Legend~width~must~exceed~14pt}\fi
+    \ifgradbars@valid
+      \ifpgfpicture \gradbarsDrawLegend
+      \else\tikz[baseline=0pt]{\gradbarsDrawLegend}\fi
+    \fi
+  }
+\ExplSyntaxOff
+\NewDocumentCommand\gradbarscolumn{m m}{%
+  \gradbarsDefineColumn{#1}{#2}}
+\ExplSyntaxOn
+\cs_new_protected:Npn \gradbarsDefineColumn #1#2
+  {
+    \regex_match:nnTF {\A[A-Za-z]\Z} {#1}
+      {\expandafter\newcolumntype\expandafter{#1}
+        {>{\collectcell{\gradbar[#2]}}l<{\endcollectcell}}}
+      {\PackageError{gradbars}{Column~name~must~be~one~ASCII~letter}
+        {Choose~a~single~unused~letter,~for~example~G.}}
+  }
+\ExplSyntaxOff
 
 \endinput

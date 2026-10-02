@@ -1,0 +1,45 @@
+% Compile with XeLaTeX from the repository root.
+\documentclass[twocolumn]{article}
+\usepackage[a4paper,margin=20mm]{geometry}
+\usepackage{gradbars,booktabs}
+\title{Compact Results in a Two-Column Paper}
+\author{gradbars example}
+\date{}
+\gradbarscolumn{G}{max=100,width=22mm,precision=1,label width=3em}
+\begin{document}
+\maketitle
+\section{Evaluation}
+The table reports illustrative accuracy scores. All rows use the same scale
+from zero to 100; the bars are placed directly in the numeric column.
+\begin{table}[ht]
+\centering
+\caption{Accuracy (\%). Shared range: 0--100.}
+\begin{tabular}{@{}lG@{}}
+\toprule
+Model & \multicolumn{1}{c}{Accuracy}\\
+\midrule
+Baseline & 72.4\\
+Compact & 81.6\\
+Proposed & 92.7\\
+Unavailable & NA\\
+\bottomrule
+\end{tabular}
+\end{table}
+\section{Interpretation}
+A longer bar indicates a larger score. Missing values are displayed separately
+from zero. Column headings bypass numeric collection with multicolumn.
+\newpage
+\section{Uncertainty}
+Intervals should be described in the caption. These illustrative intervals
+are supplied directly; the package does not estimate uncertainty.
+\begin{center}
+\begin{tabular}{@{}lc@{}}
+\toprule
+Model & Score and interval\\
+\midrule
+A & \gradbar[width=22mm,error=4,label width=3em]{72}\\
+B & \gradbar[width=22mm,error=2,label width=3em]{89}\\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{document}

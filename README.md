@@ -6,23 +6,25 @@ Add a data bar directly to a table cell or a line of text, with consistent scale
 labels, and reference markers. Built on TikZ, gradbars provides a focused interface
 for model comparisons, dataset summaries, and progress reports.
 
-**v0.0.1 · XeLaTeX · MIT**
+**v0.0.2 · XeLaTeX · MIT**
 
-[中文说明](README.zh-CN.md) · [Illustrated manual (Chinese PDF)](gradbars-manual-v0.0.1.pdf) · [API reference](docs/api.md)
+[中文说明](README.zh-CN.md) · [Illustrated manual (Chinese PDF)](gradbars-manual-v0.0.2.pdf) · [API reference](docs/api.md)
 
 ![Model comparison table made with gradbars](docs/images/model-comparison.png)
 
 ## Why gradbars?
 
-- **Use ordinary table cells.** Write `\gradbar{72}` without constructing an axis
-  or wrapping each cell in a `tikzpicture`.
+- **Use ordinary table cells.** Write `\gradbar{72}`, or define a numeric column
+  with `\gradbarscolumn{G}{...}` and enter only numbers in its cells.
 - **Keep data and display separate.** Raw values determine geometry; labels can
   show values, computed percentages, custom text, or scientific notation.
 - **Make comparisons consistent.** Reuse named styles, explicit column ranges,
   bar widths, and fixed outside label slots.
 - **Add context in the same cell.** Combine targets, reference bands, conditional
   colors, signed bars, and error whiskers; use `\gradstack` for nonnegative compositions.
-- **Start from documented examples.** The single manual contains 28 examples with
+- **Label compositions automatically.** Add segment names, percentages and shared legends;
+  small labels move outside, while automatic text colors adapt to dark or light fills.
+- **Start from documented examples.** The single manual contains 37 examples with
   both rendered output and source, including the built-in palette of 16 choices:
   seven themes and nine solid colors.
 
@@ -97,16 +99,16 @@ Use `theme` for seven themes and gradient presets, and `color` for nine solid co
 
 Labels can sit `outside` or `inside` the track, above the endpoint with `label=end`,
 or be hidden with `label=none`.
-Outside labels have a fixed, right-aligned slot. Increase `label width` for long
-values or units. Colors, font, dimensions, and spacing are configurable.
-For inside labels, choose colors with sufficient contrast.
+Outside labels use a right-aligned slot that expands for long content by default.
+Set a common `label width` large enough for every value to keep a column aligned.
+`label=auto` chooses an inside or outside placement; `text color=auto` selects black or white.
 
 Additional gradients: `theme=lbyellow`, `theme=viblue`, `theme=cyblu`.
 Built-in solid color usage: `\gradbar[color=lightblue]{80}`.
 `lightgreen`, `lightyellow`, `lightblue`, `lightred`, `rose`, `skyblue`, `gold`, `lavender`, `peach`.
 
 
-## Effects in v0.0.1
+## Effects in v0.0.2
 
 ```latex
 \gradbar[rounded=2pt]{72}
@@ -139,6 +141,26 @@ Stacks use nonnegative raw segment values; the default maximum is 100. For examp
 Stacks do not automatically normalize to 100%, and reject missing or negative segments.
 See the [API reference](docs/api.md) for validation rules and option combinations.
 
+## New in v0.0.2
+
+```latex
+% Declare in the preamble, then use G in tabular or longtable.
+\gradbarscolumn{G}{max=100,width=30mm,precision=0}
+% A row can now be: Model A & 82 \\
+
+\gradstack[width=70mm,height=16pt,precision=0,
+  stack names={Train,Validation,Test},
+  segment labels=name percent,legend=true]{80,2,18}
+
+\gradbar[theme=solid,width=40mm,height=15pt,
+  label=auto,text color=auto]{86}
+```
+
+Use `\multicolumn{1}{c}{Score}` for text headers in numeric columns.
+Stack segment percentages use the sum of the raw segments; the total's percentage
+uses the scale maximum. Automatic collision handling is local to each bar.
+The manual explains label overflow, row heights, common column scales, and missing versus zero values.
+
 ## How it relates to other packages
 
 These tools overlap in capability. The distinction is the intended workflow,
@@ -158,18 +180,29 @@ main document structure and each cell needs a compact, consistently configured d
 
 ## One manual, output and source together
 
-The [16-page illustrated manual](gradbars-manual-v0.0.1.pdf) brings all three
-applications and 28 numbered examples into one document. Short examples put the
-output beside highlighted source; full tables put the output above the source.
-Both views are generated from the same code. The editable source is
+The [illustrated manual](gradbars-manual-v0.0.2.pdf) brings 37 numbered examples,
+a selection guide and an FAQ into one document. It includes three application tables
+and four real layouts: a two-column article, a multi-page longtable, grayscale output,
+and a Beamer slide. Short examples put output beside highlighted source; larger
+examples use output above source. The real layouts include compiled previews and
+their complete source. The editable source is
 [gradbars-manual.tex](docs/gradbars-manual.tex).
 
-To rebuild the Chinese manual, install the Chinese language collection, including
-ctex and Fandol fonts, and run XeLaTeX twice from the repository root:
+To rebuild all layouts and the Chinese manual, install XeLaTeX with the LaTeX extra
+and Chinese language collections (including ctex and Fandol), then run:
 
 ~~~sh
-xelatex -interaction=nonstopmode -halt-on-error "-jobname=gradbars-manual-v0.0.1" docs/gradbars-manual.tex
-xelatex -interaction=nonstopmode -halt-on-error "-jobname=gradbars-manual-v0.0.1" docs/gradbars-manual.tex
+python scripts/build_manual.py
+~~~
+
+Python is only a convenience for rebuilding the documentation; the package itself
+does not require it. The script builds each real layout twice before the manual.
+For manual text edits with unchanged layout sources, the included layout PDFs let
+you compile directly from the repository root:
+
+~~~sh
+xelatex -interaction=nonstopmode -halt-on-error "-jobname=gradbars-manual-v0.0.2" docs/gradbars-manual.tex
+xelatex -interaction=nonstopmode -halt-on-error "-jobname=gradbars-manual-v0.0.2" docs/gradbars-manual.tex
 ~~~
 
 All data in the examples are illustrative.
@@ -178,13 +211,14 @@ All examples and source are included in the manual. The compiled PDF is saved in
 
 ## Current scope
 
-- The supported workflow is XeLaTeX; the package uses TikZ, `xparse`, and `expl3`.
+- The supported workflow is XeLaTeX; the package uses TikZ, `xparse`, `expl3`, and `collcell` (including array).
 - Column ranges are explicit. CSV ingestion and automatic column maxima are not implemented.
 - Stacks require `min=0` and nonnegative segments. They do not support error whiskers
   or conditional thresholds; signed values remain available with `\gradbar`.
-- Legends and per-segment labels are not generated automatically.
-- Long labels may need a wider label slot. Inside labels do not automatically adapt
-  their text color to the background.
+- Label avoidance is local to one bar. Long outside labels may still need a wider
+  table column; automatic black/white text estimates the background at the label center.
+- Numeric columns are demonstrated with tabular and longtable; tabularray-specific
+  column handling has not been validated.
 - Accessible tagged chart descriptions are not generated.
 
 ## License

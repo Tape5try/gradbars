@@ -9,5 +9,7 @@ __pycache__/
 *.synctex.gz
 *.toc
 *.listing
-# Superseded local manual exports
-docs
+# XeLaTeX/Beamer intermediates
+*.nav
+*.snm
+*.vrb
