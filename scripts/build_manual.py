@@ -12,12 +12,12 @@ ROOT = Path(__file__).resolve().parent.parent
 BUILD = ROOT / "build" / "layouts"
 
 
-def compile_tex(source, output, jobname=None):
-    command = ["xelatex", "-interaction=nonstopmode", "-halt-on-error",
+def compile_tex(source, output, jobname=None, engine="xelatex"):
+    command = [engine, "-interaction=nonstopmode", "-halt-on-error",
                f"-output-directory={output}"]
     if jobname:
         command.append(f"-jobname={jobname}")
-    command.append(str(source))
+    command.append(source.as_posix())
     for _ in range(2):
         result = subprocess.run(command, cwd=ROOT, stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
@@ -48,6 +48,12 @@ def main():
         raise SystemExit("Manual compiled successfully. Close the root PDF in its viewer "
                          f"before replacing it. New PDF: {manual_build / f'gradbars-manual-v{version}.pdf'}")
     print(ROOT / f"gradbars-manual-v{version}.pdf")
+    print(f"Building English manual v{version}...", flush=True)
+    compile_tex(ROOT / "docs" / "gradbars-manual-en.tex", manual_build,
+                f"gradbars-manual-en-v{version}", engine="pdflatex")
+    shutil.copy2(manual_build / f"gradbars-manual-en-v{version}.pdf",
+                 ROOT / f"gradbars-manual-en-v{version}.pdf")
+    print(ROOT / f"gradbars-manual-en-v{version}.pdf")
 
 
 if __name__ == "__main__":

@@ -116,9 +116,9 @@ Invalid options produce a package error and no bar if compilation continues.
   surrounding coordinate transformations.
 - This version does not generate accessible tagged chart descriptions.
 
-## XeLaTeX workflow
+## Engine and documentation workflows
 
-Use XeLaTeX. GitHub Actions builds the manual; all examples are included in it.
+Package checks pass with pdfLaTeX, XeLaTeX and LuaLaTeX, including UTF-8 BOM CSV input. The Chinese manual uses XeLaTeX/ctex; the English manual builds with pdfLaTeX. GitHub Actions builds both manuals.
 
 ## Built-in colors
 

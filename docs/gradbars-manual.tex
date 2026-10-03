@@ -9,7 +9,7 @@
 \tcbuselibrary{listings,skins}
 \usepackage{fancyhdr}
 \usepackage[colorlinks=true,linkcolor=gradbarsBlue,urlcolor=gradbarsTeal,
-  pdftitle={gradbars 宏包手册},pdfauthor={gradbars contributors}]{hyperref}
+  pdftitle={gradbars 宏包手册},pdfauthor={SuFan}]{hyperref}
 \definecolor{manualCode}{HTML}{EEEEFF}
 \definecolor{manualResult}{HTML}{FAFAE6}
 \definecolor{manualLine}{HTML}{DCE3ED}
@@ -71,7 +71,8 @@
 {\fontsize{42}{46}\selectfont\sffamily\bfseries gradbars}\par
 \vspace{2mm}
 {\LARGE\bfseries 宏包手册}\par
-{\large\color{manualMuted}在 \LaTeX{} 表格与正文中绘制轻量数据条}
+{\large\color{manualMuted}在 \LaTeX{} 表格与正文中绘制轻量数据条}\par
+{\small 作者与维护者：苏凡（SuFan）\quad GitHub：Tape5try}
 \vspace{8mm}
 
 \begin{example}{一行命令，数值与图形同时呈现}
@@ -1593,5 +1594,5 @@ CSV 命令包括 \key{\gradbarsloadcsv}、\key{\gradbarscsvtable}、\key{\gradba
 CSV 仅支持逗号分隔的单行字段；数值列可自动计算共享范围。
 本版不提供 CSV 字段内换行或 CSV 表格自动分页。趋势线使用等间距观测，不解析日期。
 不要把绘图命令直接放入 siunitx 的数值型 S 列或 PDF 书签。
-本项目目前以 XeLaTeX 作为使用、编译和测试入口。图形尚未生成专用的无障碍 PDF 语义标签。
+宏包已通过 pdfLaTeX、XeLaTeX、LuaLaTeX 的功能检查（包括 CSV）。本中文手册采用 XeLaTeX，英文手册可用 pdfLaTeX 编译。图形尚未生成专用的无障碍 PDF 语义标签。
 \end{document}

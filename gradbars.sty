@@ -1,3 +1,6 @@
+% Author and maintainer: SuFan (GitHub: Tape5try)
+% Contact: 3546236610@qq.com
+% Copyright (c) 2026 SuFan. MIT License; see LICENSE.
 \NeedsTeXFormat{LaTeX2e}[2020/10/01]
 \ProvidesPackage{gradbars}[2026/10/03 v0.0.3 Inline data bars for LaTeX]
 \RequirePackage{tikz}
@@ -988,7 +991,10 @@
 \cs_new_protected:Npn \gradbarsCSVLine #1
   {
     \tl_set:Nn \l__gradbars_csv_line_tl {#1}
-    \regex_replace_once:nnN {\A\x{FEFF}} {} \l__gradbars_csv_line_tl
+    % pdfTeX reads UTF-8 as bytes; Unicode engines read a single BOM character.
+    \sys_if_engine_pdftex:TF
+      {\regex_replace_once:nnN {\A\x{EF}\x{BB}\x{BF}} {} \l__gradbars_csv_line_tl}
+      {\regex_replace_once:nnN {\A\x{FEFF}} {} \l__gradbars_csv_line_tl}
     \tl_if_blank:VF \l__gradbars_csv_line_tl
       {
         \exp_args:NV \gradbarsCSVParse \l__gradbars_csv_line_tl

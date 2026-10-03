@@ -2,9 +2,17 @@
 
 **直接嵌入 LaTeX 表格的数据条与迷你图形。**
 
-**v0.0.3 · XeLaTeX · MIT**
+**v0.0.3 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
 
-[English](README.md) · [图文手册源码](docs/gradbars-manual.tex) · [参数说明](docs/api.md) · [版本说明](docs/releases/v0.0.3.md)
+## 作者与维护者
+
+gradbars 的作者与维护者为 **苏凡（SuFan）**。
+**Tape5try** 是苏凡的 GitHub 用户名，不是另一位作者。
+联系邮箱：[3546236610@qq.com](mailto:3546236610@qq.com)。
+版权所有 (c) 2026 SuFan，采用 [MIT 许可证](LICENSE)。
+
+
+[English](README.md) · [中文手册 PDF](gradbars-manual-v0.0.3.pdf) · [英文手册 PDF](gradbars-manual-en-v0.0.3.pdf) · [参数说明](docs/api.md) · [版本说明](docs/releases/v0.0.3.md)
 
 ![对比、正负贡献、趋势与目标评价](docs/images/overview-v0.0.3.svg)
 
@@ -23,7 +31,7 @@
 
 ## 快速开始
 
-将 `gradbars.sty` 放在主 `.tex` 文件旁，选择 **XeLaTeX** 编译。
+将 `gradbars.sty` 放在主 `.tex` 文件旁，可使用 **pdfLaTeX、XeLaTeX 或 LuaLaTeX**。
 宏包依赖 TikZ、xparse、expl3、collcell。中文字体只用于中文手册，宏包本身不要求中文文档类。
 
 ```latex
@@ -125,12 +133,12 @@ Trend / Last & \gradspark[spark range=fixed,min=0,max=100]{25,45,NA,60,80} \\
 python scripts/build_manual.py
 ```
 
-脚本先编译四类真实排版，再用 XeLaTeX 两遍编译手册。需要 ctex/Fandol 和 LaTeX extra 宏包。
-Python 仅用于文档构建；宏包本身不需要。v0.0.3 的当前说明以手册源码为准，旧版 PDF 不包含本次全部功能。
+脚本先编译四类真实排版，再用 XeLaTeX 两遍编译中文手册、pdfLaTeX 两遍编译英文手册。中文文档需要 ctex/Fandol。
+Python 仅用于文档构建；宏包本身不需要。仓库包含中英文 v0.0.3 PDF 与源码；所有文本文件采用 LF 换行。
 
 ## 当前边界
 
-- 支持入口为 XeLaTeX；完整坐标轴或大型绘图仍应使用专门的绘图工具。
+- 宏包已通过 pdfLaTeX、XeLaTeX、LuaLaTeX 检查（包括 CSV）；中文手册使用 XeLaTeX。完整坐标轴或大型绘图仍应使用专门工具。
 - CSV 仅接受逗号分隔的单行字段，自动生成的 CSV 表格不自动分页。
 - 堆叠不接受缺失段、条件阈值与误差线。
 - 趋势线不解析日期，不接受柱形目标线、误差线、背景区间或阈值评价；观测必须等间隔。

@@ -1,0 +1,390 @@
+% !TeX program = pdflatex
+% Compile twice from the repository root with pdflatex.
+\documentclass[10pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=22mm,headheight=14pt]{geometry}
+\usepackage{gradbars,booktabs,array,tabularx}
+\usepackage{tcolorbox,fancyhdr}
+\tcbuselibrary{listings,skins,breakable}
+\usepackage[colorlinks=true,linkcolor=gradbarsBlue,urlcolor=gradbarsTeal,
+  pdftitle={gradbars v0.0.3 English manual},pdfauthor={SuFan}]{hyperref}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\renewcommand{\arraystretch}{1.25}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\sffamily gradbars --- English manual}
+\fancyhead[R]{v0.0.3}\fancyfoot[C]{\thepage}
+\newcommand{\key}[1]{\texttt{\detokenize{#1}}}
+\lstdefinestyle{gradmanual}{language=[LaTeX]TeX,basicstyle=\ttfamily\small,
+  columns=fullflexible,keepspaces=true,breaklines=true,showstringspaces=false,
+  moretexcs={gradbar,gradstack,graddumbbell,gradspark,gradcompare,gradrange,
+    gradbarssetup,gradbarsstyle,gradbarscategory,gradbarslegend,
+    gradbarscolumn,gradbarsloadcsv,gradbarcsv,gradbarscsvstyle,gradbarscsvtable},
+  texcsstyle=*\color{gradbarsBlue},commentstyle=\color{black!55}}
+\newtcblisting{demo}[1]{enhanced,listing engine=listings,
+  listing options={style=gradmanual},text and listing,title={#1},
+  colback=gradbarsTrack!50,colbacklower=blue!3,colframe=gradbarsInk!25,
+  coltitle=gradbarsInk,colbacktitle=gradbarsTrack,fonttitle=\bfseries,
+  boxrule=.4pt,arc=0pt,left=3mm,right=3mm,top=2mm,bottom=2mm,
+  before upper={\setlength{\parskip}{6pt}\small}}
+\lstnewenvironment{source}{\lstset{style=gradmanual}}{}
+\begin{document}
+\thispagestyle{empty}
+{\Huge\sffamily\bfseries gradbars}\par
+{\Large Compact data graphics inside LaTeX tables}\par
+Version 0.0.3 --- 3 October 2026\par
+\bigskip
+Author and maintainer: SuFan; GitHub account: Tape5try.\par
+\href{mailto:3546236610@qq.com}{3546236610@qq.com}\par
+\url{https://github.com/Tape5try/gradbars}
+
+The package draws individual data graphics in ordinary table cells or inline text.
+It provides a common interface for bars, compositions, comparisons, intervals
+and short trends. Raw values determine geometry; formatting only affects labels.
+
+This English manual contains executable examples with the output above their source.
+All numbers are illustrative. The Chinese manual provides additional examples
+and full two-column, longtable, grayscale and Beamer layouts.
+
+\begin{demo}{A single interface for compact graphics}
+\gradbar{72}
+
+\graddumbbell[precision=0]{58}{76}
+
+\gradstack[min=-50,precision=0,stack totals=separate]{60,-20,15,-10}
+
+\gradspark[spark range=fixed,min=0,max=100,precision=0]{25,45,NA,60,80}
+\end{demo}
+\vfill
+License: MIT. See LICENSE for the copyright notice and full terms.
+\clearpage
+\tableofcontents
+\clearpage
+\section{Installation and engine requirements}
+Place \key{gradbars.sty} beside your main source, or install it in a local TEXMF
+tree under \key{tex/latex/gradbars}. Load it with \key{\usepackage{gradbars}}.
+Dependencies are TikZ/PGF, xparse, expl3 and collcell (including array).
+No shell escape or external data-conversion program is required.
+
+The package has no inherent XeLaTeX requirement. PDF output with pdfLaTeX,
+XeLaTeX and LuaLaTeX is tested, including CSV input. The Chinese manual uses XeLaTeX with
+ctex and Fandol fonts. This English manual can be compiled with pdfLaTeX.
+The package itself does not load fontspec or ctex. Use an appropriate font and
+encoding setup for non-ASCII text in your own documents.
+
+\begin{source}
+\documentclass{article}
+\usepackage{booktabs,gradbars}
+\begin{document}
+\gradbarssetup{width=30mm,max=100,precision=1}
+\begin{tabular}{lc}
+\toprule
+Model & Accuracy (\%) \\
+\midrule
+Baseline & \gradbar{72.4} \\
+Proposed & \gradbar{92.7} \\
+\bottomrule
+\end{tabular}
+\end{document}
+\end{source}
+No \key{tikzpicture} wrapper is needed. Commands may also be used inside an
+existing TikZ picture. Settings and named styles follow ordinary TeX grouping.
+Options are applied left to right: put a theme or preset before individual overrides.
+
+\section{Choosing a graphic}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{37mm}>{\raggedright\arraybackslash}X@{}}
+\toprule
+Question & Interface\\\midrule
+How large is a value? & \key{\gradbar{value}}; use a negative min for signed values.\\
+How do two values compare? & \key{\gradcompare{reference}{current}} for layered bars;
+\key{\graddumbbell{reference}{current}} for connected points.\\
+What are the bounds? & \key{\gradrange{lower}{upper}} for supplied endpoints.\\
+What makes up the total? & \key{\gradstack{list}} for additive, common-unit contributions.\\
+How does a series change? & \key{\gradspark{list}} for equally spaced observations.\\
+What is the uncertainty? & \key{error minus} and \key{error plus} on a point estimate.\\
+\bottomrule
+\end{tabularx}
+\section{Values, scales, labels and missing observations}
+Defaults are min=0 and max=100. The maximum must be positive and the minimum
+must be nonpositive. Decimal literals and macros expanding to decimals are accepted;
+expressions, thousands separators, units in input, and scientific input notation are not.
+Scientific notation is available as an output format.
+
+Keep min, max and width identical within each comparison column.
+Zero is not missing. Empty input or uppercase NA denotes missing data for a single
+observation; missing stack segments are rejected. Overflow warns and clips geometry
+while preserving the original label. Use \key{overflow=error} for strict checking.
+
+\begin{demo}{Raw values, calculated percentages and missing values}
+\gradbar[max=200]{50}
+
+\gradbar[max=200,value format=percent]{50}
+
+\gradbar[max=200,unit={\,ms}]{50}
+
+\gradbar{0}
+
+\gradbar[missing text={N/A}]{NA}
+\end{demo}
+\key{unit} appends text. \key{value format=percent} computes $100v/\mathrm{max}$,
+ignores unit, and requires min=0. For values already expressed as percentages,
+use \key{unit={\%}}. \key{text} overrides the complete label without changing geometry.
+\key{precision} accepts integers from 0 to 6. \key{number format} is fixed, grouped
+or scientific. Missing labels do not acquire a unit or percent suffix.
+
+\section{Appearance, reusable styles and palettes}
+Seven themes are available: blue, teal, solid, gray, lbyellow, viblue and cyblu.
+Nine predefined solid colors are lightgreen, lightyellow, lightblue, lightred,
+rose, skyblue, gold, lavender and peach. Use \key{color} for solid fill and
+\key{left color}/\key{right color} for a gradient. Standard xcolor expressions work.
+
+\begin{demo}{A reusable layout style}
+\gradbarsstyle{paperrow}{preset=paper,width=45mm,max=100,precision=0}
+\gradbar[style=paperrow]{82}
+
+\graddumbbell[style=paperrow]{60}{82}
+
+\gradbar[preset=report,target=90,thresholds={60,80}]{75}
+
+\gradbar[preset=presentation]{92}
+
+\gradbar[preset=outline]{70}
+\end{demo}
+The paper preset uses thin solid bars, a faint track and outside values. Report
+uses thicker rounded bars; supply actual target and threshold values yourself.
+Presentation uses larger type and automatic inside placement. Outline uses hollow
+shapes with fine strokes. Presets do not invent data or scale limits.
+
+Group palettes are categorical (six distinct colors), sequential (five blue levels),
+diverging (orange through neutral to teal), and mono (gray with textures).
+These palettes select by segment position, not by value; short lists cycle.
+Named categories instead preserve identity across reordered or subsetted data:
+\begin{demo}{Stable category identity and a shared legend}
+\gradbarscategory{Compute}{gradbarsBlue}{diagonal}
+\gradbarscategory{Storage}{gradbarsOrange}{dots}
+\gradstack[stack names={Compute,Storage}]{60,30}
+
+\gradstack[stack names={Storage,Compute}]{30,60}
+
+\gradbarslegend[width=50mm]{Compute,Storage}
+\end{demo}
+Registered names override positional colors and patterns; unregistered names fall
+back to the current palette. Definitions are scoped. In print/mono mode, category
+colors use gray while registered patterns remain. Legends use the same mapping.
+Patterns are none, diagonal, reverse, dots, crosshatch, horizontal and vertical.
+Use names or textures alongside color when category distinctions matter.
+
+\section{Signed bars, targets, intervals and uncertainty}
+\begin{demo}{A signed point estimate and asymmetric uncertainty}
+\gradbar[min=-50,max=100,width=65mm,
+  target=40,band={20,60},error minus=8,error plus=12]{35}
+
+\gradbar[min=-50,max=100,width=65mm,shape=lollipop]{-25}
+
+\gradrange[min=-50,max=100,width=65mm,range point=10]{-20}{35}
+\end{demo}
+Error magnitudes are nonnegative distances from the observation, not absolute
+endpoints. Explain whether they represent standard deviation, standard error or
+confidence intervals in the table caption. Targets and bands are references, not
+automatically estimated uncertainty. A band must have ordered endpoints within
+the scale; invalid reference bands and targets cause errors.
+
+Floating intervals require lower$\le$upper; equal endpoints draw a cap, not an
+inflated bar. Both endpoints must be present or both missing. A range point must
+lie inside the original endpoints. Intervals reject error whiskers and quality
+thresholds. Default labels show the supplied endpoints.
+Lollipops show a point for zero, but no point for missing input.
+
+\section{Layered and dumbbell comparisons}
+\begin{demo}{Current and reference values}
+\gradcompare[width=65mm,precision=0]{60}{82}
+
+\graddumbbell[width=65mm,palette=categorical,precision=0]{48}{76}
+
+\graddumbbell[min=-50,max=100,width=65mm,
+  compare label=delta,precision=0]{-20}{35}
+
+\graddumbbell[width=65mm,precision=0]{NA}{65}
+\end{demo}
+Layered bars use a wide reference and a centered current layer. The
+\key{compare ratio} defaults to .45 and must be strictly between zero and one.
+Both lengths start from the common zero; they are not added or divided.
+
+Dumbbells use a hollow reference point and a current point joined by a line.
+The default label is current / reference; delta means current minus reference.
+A missing endpoint suppresses the connector; delta is missing if either endpoint
+is missing. Equal endpoints overlap. Error whiskers refer to the current value.
+\key{compare color}, \key{marker size} and \key{stem width} control appearance.
+Dedicated comparison and spark commands retain their shape when applying presets.
+
+\section{Stacked contributions and segment labels}
+\begin{demo}{Positive and negative contributions}
+\gradstack[min=-60,max=100,width=80mm,height=14pt,
+  precision=0,palette=categorical,stack totals=separate,
+  stack names={Sales,Materials,Service,Operations},
+  segment labels=value,legend=true]{60,-25,20,-15}
+\end{demo}
+Positive and negative contributions accumulate independently from zero. Within
+each side, segment order follows input order. Negative segments require a negative
+min. Positive and negative subtotals are checked separately against the scale.
+The default total is the algebraic sum; \key{stack totals=separate} shows positive
+and negative subtotals. A zero net does not erase nonzero contributions.
+
+Segment labels can be none, value, percent, name, name value or name percent.
+The percentage of a segment is
+\[100|v_i|/\sum_j|v_j|,\]
+including clipped contributions. These percentages
+represent shares of absolute activity, not shares of a potentially zero net.
+All-zero stacks do not calculate percentages. Stacks are not normalized to full
+width. Missing segments, empty lists, quality thresholds and error whiskers are rejected.
+
+Provide one stack name per segment for named labels or automatic legends.
+Small labels move outside with leader lines; automatic black/white text follows
+the fill. Zero segments retain their palette and legend positions. Use a shared
+\key{\gradbarslegend} outside a table to avoid repeating the legend for every row.
+
+\section{Quality: higher, lower, target or interval}
+Higher and lower modes classify the raw value using two increasing thresholds.
+Lower reverses the quality colors without reversing geometry. Threshold colors
+are always ordered bad, intermediate, good.
+
+\begin{demo}{Target distance and distance from an acceptable interval}
+\gradbar[better=target,quality target=50,thresholds={5,15},
+  target=50,palette=diverging]{52}
+
+\gradbar[better=target,quality target=50,thresholds={5,15},
+  target=50,palette=diverging]{75}
+
+\gradbar[better=interval,quality range={40,60},thresholds={0,10},
+  band={40,60},palette=diverging]{68}
+\end{demo}
+Target mode evaluates $d=|v-t|$. Interval mode evaluates
+$d=\max(0,a-v,v-b)$ for an ordered closed interval $[a,b]$.
+These modes require two nonnegative increasing distance thresholds:
+$d\le t_1$ is good, $t_1<d\le t_2$ intermediate, and $d>t_2$ bad.
+Thus thresholds of 0 and 10 classify values inside the interval, including its
+endpoints, as good. Quality target/range evaluate data; target/band draw optional
+references. Set them separately. Quality changes color, never positions or labels.
+It is not applied to stacks, floating intervals or sparklines.
+
+\section{Sparklines and missing positions}
+\begin{demo}{Comparable monthly observations}
+\gradbarsstyle{monthly}{width=65mm,height=7mm,min=0,max=100,
+  spark range=fixed,precision=0,row padding=3pt}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Series & Jan--Jun / June value\\\midrule
+North & \gradspark[style=monthly]{35,48,42,60,72,80}\\
+South & \gradspark[style=monthly]{55,53,NA,58,62,65}\\
+West & \gradspark[style=monthly]{45,45,45,45,45,45}\\
+East & \gradspark[style=monthly]{30,40,55,60,70,NA}\\
+\bottomrule
+\end{tabular}
+\end{demo}
+Observations are equally spaced. Empty fields and NA keep their horizontal
+position and break connections. The last label is the last position, not the last
+nonmissing observation. Default height is 4ex.
+
+\key{spark range=auto} uses each row's extrema; compare shapes only with this mode.
+Use fixed with shared min, max, width and height to compare magnitudes across rows.
+Constant auto series are centered vertically; a singleton is centered horizontally.
+All-missing series show only a track and missing label. Fixed ranges use normal
+overflow rules. Auto ranges do not support computed-percent labels.
+
+\key{spark points} can be extrema (default), all, last or none. Extrema mode
+marks all tied extrema and the last position if present. Low and high colors
+default to gradbarsOrange and gradbarsTeal. A constant series uses the high color;
+a non-extreme last point uses the line color. Point colors indicate position, not
+quality. Use color, stem width and marker size to style the line and points.
+Sparklines do not parse dates and do not use bar targets, error whiskers, bands or
+thresholds. Labels stay outside. Use a common observation grid for irregular dates.
+
+\section{CSV input and numeric table columns}
+CSV files are read as characters, not executed as TeX. UTF-8 BOM, quoted commas,
+doubled quotes and custom missing tokens are supported. Fields must fit on a
+single line and the delimiter must be a comma. Headers must be unique and nonempty.
+The following source assumes a CSV file with Name and Score columns:
+\begin{source}
+\gradbarsloadcsv{results}{results.csv}
+\gradbarscsvtable{results}{Name}{Score}
+\gradbarscsvstyle{shared}{results}{Score}
+\gradbarcsv[style=shared]{results}{1}{Score}
+\gradbarscsvcell{results}{1}{Name}
+\end{source}
+Rows are one-based. CSV range styles include zero and use a positive upper limit
+even for all-zero, all-negative or all-missing columns. Table generation does not
+automatically paginate. Keep your own longtable structure and use individual CSV
+cells when pagination matters. A dataset definition follows grouping.
+
+\begin{demo}{Only numbers in a common-style column}
+\gradbarscolumn{G}{width=35mm,min=-50,max=100,precision=0}
+\begin{tabular}{@{}lG@{}}
+\toprule
+Item & \multicolumn{1}{l}{Value}\\\midrule
+A & 72\\ B & -20\\ C & 0\\ D & NA\\
+\bottomrule
+\end{tabular}
+\end{demo}
+Numeric columns use collcell. Use multicolumn for text headings. They do not
+calculate a range and are not siunitx S columns. Avoid placing complete drawing
+commands in a numeric collection cell. tabular and longtable workflows are
+documented; a tabularray-specific collection interface is not implemented.
+
+\section{Label placement, printing and practical limits}
+Labels support outside, inside, end, auto and none. Auto moves a label outside
+when it does not fit. End places it above the endpoint. Comparisons, lollipops,
+outlined bars and intervals with a range point move internal labels outside.
+Sparklines always use outside labels. \key{text color=auto} chooses black or white.
+\key{label width} reserves an outside slot; use the same sufficiently wide slot
+throughout a column. Long labels may require a wider column or a custom short text.
+
+\key{row padding} reserves extra height above and below a graphic; it does not
+change the document's global row spacing. Use arraystretch or table row spacing
+when appropriate. Marker shapes reserve space consistently even when the first
+or last observation does not have a marker.
+
+\key{print} applies gray fills, textures and white label backgrounds. Mono is a
+group palette using those settings. Provide textual category names and real values
+as well as visual distinctions. Outlined bars and legends are available through
+\key{outline=true} or the outline preset; print clears outline mode.
+
+All collision handling is local to a graphic, not to the whole table. Complex
+axes, date parsing and large general-purpose plots are outside this package's
+scope. No specialized tagged-PDF chart descriptions are generated.
+
+\section{Compact option reference}
+\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{44mm}X@{}}
+\toprule
+Option & Default / meaning\\\midrule
+width, height & 24mm, 1.5ex; sparklines default to 4ex high.\\
+min, max & 0, 100; common scale.\\
+precision, number format & 1; fixed, grouped or scientific.\\
+unit, text & Empty; suffix or complete custom label.\\
+label, label width & outside, 4.5em.\\
+rounded, row padding & 0pt, 0pt; nonnegative lengths.\\
+marker size, stem width & 2pt, .6pt; positive lengths.\\
+outline, outline width & false, .4pt; positive width.\\
+compare color, compare ratio & black!20, .45; ratio strictly between 0 and 1.\\
+compare label & values or delta.\\
+stack totals & net or separate.\\
+stack colors & gradbarsBlue, gradbarsTeal, gold; cyclic.\\
+stack names, legend & Empty list; false.\\
+segment labels & none, value, percent, name, name value, name percent.\\
+better & higher, lower, target, interval.\\
+quality target, quality range & Required for their respective modes; no default.\\
+spark range, spark points & auto; extrema.\\
+overflow & clip or error.\\
+\bottomrule
+\end{tabularx}
+\normalsize
+
+\section{Contact and maintenance}
+The author and maintainer is SuFan, whose GitHub account is Tape5try. Contact
+\href{mailto:3546236610@qq.com}{3546236610@qq.com} or report an issue at
+\url{https://github.com/Tape5try/gradbars/issues}.
+Include a minimal source, engine name, TeX distribution and log.
+The MIT license is included in the distribution. Third-party dependencies retain
+their own authorship and licenses; they are not part of this package's copyright claim.
+\end{document}

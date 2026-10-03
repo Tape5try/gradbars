@@ -2,6 +2,10 @@
 
 ## 0.0.3 — 2026-10-03
 
+- English manual with executable examples, and versioned bilingual PDF documentation.
+- Cross-engine validation: pdfLaTeX, XeLaTeX and LuaLaTeX; fix UTF-8 BOM handling in pdfTeX CSV input.
+- LF text policy via .gitattributes.
+
 - Dumbbell comparisons and optional current-minus-reference labels.
 - Signed stacks with independent positive/negative accumulation and subtotals.
 - Segment shares use absolute contributions, including zero-net compositions.

@@ -2,9 +2,17 @@
 
 **Compact data graphics inside ordinary LaTeX tables.**
 
-**v0.0.3 · XeLaTeX · MIT**
+**v0.0.3 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
 
-[中文说明](README.zh-CN.md) · [Illustrated manual source](docs/gradbars-manual.tex) · [API reference](docs/api.md) · [Release notes](docs/releases/v0.0.3.md)
+## Author and maintainer
+
+gradbars is authored and maintained by **SuFan (苏凡)**.
+**Tape5try** is SuFan's GitHub username, not a separate author.
+Contact: [3546236610@qq.com](mailto:3546236610@qq.com).
+Copyright (c) 2026 SuFan. Distributed under the [MIT License](LICENSE).
+
+
+[中文说明](README.zh-CN.md) · [English manual PDF](gradbars-manual-en-v0.0.3.pdf) · [中文手册 PDF](gradbars-manual-v0.0.3.pdf) · [API reference](docs/api.md) · [Release notes](docs/releases/v0.0.3.md)
 
 ![gradbars: comparisons, signed contributions, trends and quality rules](docs/images/overview-v0.0.3.svg)
 
@@ -25,7 +33,7 @@ CSV input, numeric table columns and named styles remain available.
 
 ## Quick start
 
-Copy `gradbars.sty` next to your main `.tex` file and select **XeLaTeX**.
+Copy `gradbars.sty` next to your main `.tex` file. The package works with **pdfLaTeX, XeLaTeX and LuaLaTeX**.
 The package uses TikZ, xparse, expl3 and collcell, available in standard TeX installations.
 Chinese fonts are needed only for the Chinese manual, not for the package.
 
@@ -132,13 +140,13 @@ To generate the versioned PDF in the repository root:
 python scripts/build_manual.py
 ```
 
-The script uses XeLaTeX to rebuild the four layout previews and then the manual twice.
+The script rebuilds the four layouts and the Chinese manual with XeLaTeX, then the English manual with pdfLaTeX; each document gets two passes.
 It requires ctex/Fandol and the LaTeX extra packages; Python is only a documentation-build helper.
-The editable manual is the current v0.0.3 reference; an older PDF is not a substitute for it.
+Both versioned PDF manuals are included. The [English source](docs/gradbars-manual-en.tex) builds with pdfLaTeX; the Chinese manual uses XeLaTeX. All text files use LF line endings.
 
 ## Scope and limits
 
-- XeLaTeX is the supported engine. This is a table-oriented interface, not a full plotting system.
+- pdfLaTeX, XeLaTeX and LuaLaTeX have passed package checks including CSV input. Only the Chinese documentation requires the XeLaTeX/ctex workflow. This is a table-oriented interface, not a full plotting system.
 - CSV accepts single-line comma-separated fields; automatic CSV tables do not paginate.
 - Stacks reject missing segments, conditional thresholds and error whiskers.
 - Sparklines use equally spaced observations; they do not parse dates or draw bar targets, error whiskers or reference bands.
