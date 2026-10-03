@@ -4,14 +4,6 @@
 
 **v0.0.3 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
 
-## Author and maintainer
-
-gradbars is authored and maintained by **SuFan (苏凡)**.
-**Tape5try** is SuFan's GitHub username, not a separate author.
-Contact: [3546236610@qq.com](mailto:3546236610@qq.com).
-Copyright (c) 2026 SuFan. Distributed under the [MIT License](LICENSE).
-
-
 [中文说明](README.zh-CN.md) · [English manual PDF](gradbars-manual-en-v0.0.3.pdf) · [中文手册 PDF](gradbars-manual-v0.0.3.pdf) · [API reference](docs/api.md) · [Release notes](docs/releases/v0.0.3.md)
 
 ![gradbars: comparisons, signed contributions, trends and quality rules](docs/images/overview-v0.0.3.svg)
