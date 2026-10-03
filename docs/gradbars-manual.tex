@@ -39,7 +39,7 @@
   texcsstyle=*\color{blue!70!black},
   keywordstyle=\color{green!40!black},
   commentstyle=\color{manualMuted},
-  moretexcs={graddumbbell,gradspark,gradbarscategory,gradcompare,gradrange,gradbarsloadcsv,gradbarscsvtable,gradbarscsvstyle,gradbarcsv,gradbarscsvcell,gradbarscolumn,gradbarslegend,gradbar,gradstack,gradbarsstyle,gradbarssetup,toprule,midrule,bottomrule,arraystretch},
+  moretexcs={gradbullet,gradintervals,graddumbbell,gradspark,gradbarscategory,gradcompare,gradrange,gradbarsloadcsv,gradbarscsvtable,gradbarscsvstyle,gradbarcsv,gradbarscsvcell,gradbarscolumn,gradbarslegend,gradbar,gradstack,gradbarsstyle,gradbarssetup,toprule,midrule,bottomrule,arraystretch},
   morekeywords={theme,max,width,height,label,precision,unit,text,blue,teal,solid,gray,percent},
   columns=fullflexible,keepspaces=true,showstringspaces=false,
   breaklines=true,breakatwhitespace=false,tabsize=2,
@@ -72,7 +72,6 @@
 \vspace{2mm}
 {\LARGE\bfseries 宏包手册}\par
 {\large\color{manualMuted}在 \LaTeX{} 表格与正文中绘制轻量数据条}\par
-{\small 作者与维护者：苏凡（SuFan）\quad GitHub：Tape5try}
 \vspace{8mm}
 
 \begin{example}{一行命令，数值与图形同时呈现}
@@ -83,7 +82,7 @@
 \gradbar[theme=gray]{54.2}
 \end{example}
 
-本手册把安装说明、参数、56 个编号示例、选型指南与常见问题集中在同一文档中。
+本手册把安装说明、参数、60 个编号示例、选型指南与常见问题集中在同一文档中。
 其中包括六个应用表格，以及双栏论文、跨页长表、黑白打印和幻灯片的真实排版案例。
 浅黄色区域展示实际排版效果，浅紫色区域展示生成该效果的源码。
 全书按入门、图形、数据接口、外观、案例与参考六部分组织。源码中的空行用于区分示例。
@@ -1587,6 +1586,9 @@ CSV 命令包括 \key{\gradbarsloadcsv}、\key{\gradbarscsvtable}、\key{\gradba
 \key{quality range} & interval 模式的闭区间，默认空，必须提供。\\
 \key{palette} & categorical、sequential、diverging、mono，默认不应用。\\
 \key{\gradbarscategory{n}{c}{p}} & 固定名称 n 的颜色 c 和纹理 p，定义遵循作用域。\\
+\key{references} & 多条参考记录：数值/颜色/线型/名称；默认空。\\
+\key{\gradbullet[o]{v}} & 分级背景与居中的实际值条，需设置 bullet bands。\\
+\key{\gradintervals[o]{list}} & 多组区间：名称/下界/点估计/上界/颜色。\\
 \bottomrule
 \end{tabularx}
 
@@ -1595,4 +1597,78 @@ CSV 仅支持逗号分隔的单行字段；数值列可自动计算共享范围�
 本版不提供 CSV 字段内换行或 CSV 表格自动分页。趋势线使用等间距观测，不解析日期。
 不要把绘图命令直接放入 siunitx 的数值型 S 列或 PDF 书签。
 宏包已通过 pdfLaTeX、XeLaTeX、LuaLaTeX 的功能检查（包括 CSV）。本中文手册采用 XeLaTeX，英文手册可用 pdfLaTeX 编译。图形尚未生成专用的无障碍 PDF 语义标签。
+\clearpage
+\section{多重参考与区间对比}
+本节功能仍属于 v0.0.3。所有示例数据仅用于演示；参考标记和背景不改变原始数值及条形尺度。
+
+\subsection{多条参考线}
+\key{references} 接受一组记录，每条记录按
+\key{数值/颜色/线型/名称} 填写，用逗号分隔并分别加花括号。
+线型可选 \key{solid}、\key{dashed}、\key{dotted}。
+数值必须在 min/max 内；名称可留空，但最后一个斜杠必须保留。
+名称交替采用两层高度，长名称或密集参考仍需增加 width，或在表头解释名称。
+
+\begin{example}[sidebyside=false]{示例 57：基准、目标和警戒值}
+\gradbar[width=85mm,height=9pt,precision=0,
+  references={{40/gray/dotted/基准},
+              {75/gradbarsTeal/dashed/目标},
+              {95/gradbarsOrange/solid/警戒}}]{68}
+\end{example}
+\key{references={}} 清除继承的参考线；原有 \key{target} 仍可共存。
+参考线适用于普通条、正负条、堆叠、双层条、哑铃及区间条，不用于趋势线。
+参考名称不参与数值格式化；名称内不要使用作为字段分隔符的斜杠。
+
+\subsection{子弹图：分级背景、实际值和目标}
+\key{\gradbullet[选项]{实际值}} 绘制较高的背景和居中的细条。
+必须提供 \key{bullet bands}，每条记录为 \key{上界/颜色}。
+第一个区间从 min 开始，后续区间从前一个上界开始；上界必须严格递增，最后一个必须等于 max。
+背景区间只是参考等级，不会自动改变实际值颜色，也不会自动判定优劣方向。
+
+\begin{example}[sidebyside=false]{示例 58：完成度子弹图}
+\gradbullet[width=90mm,max=120,precision=0,
+  color=gradbarsBlue,
+  bullet bands={{60/black!8},{90/black!16},{120/black!26}},
+  references={{90/gradbarsTeal/dashed/目标},
+              {110/gradbarsOrange/solid/挑战}}]{82}
+\end{example}
+默认总高为 12pt，实际条占高度的 40\%，上下居中。
+外部数值保留原值；NA 表示缺失，零表示实际值为零。
+可使用原有条件配色、目标线和误差标记。
+背景采用显式颜色；黑白打印时请像上例一样选用不同灰度。
+\key{bullet bands} 仅用于子弹图，背景等级建议在表头或正文中说明。
+
+\clearpage
+\subsection{多组区间对比}
+\key{\gradintervals[选项]{记录列表}} 将多组区间排列在同一个单元格内。
+每条记录按 \key{名称/下界/点估计/上界/颜色} 填写。
+所有行共用 width、min、max；左侧名称自动按最长名称对齐。
+点估计为 NA 时不画圆点，区间仍保留；上下界同时为 NA 表示整组缺失。
+
+\begin{example}[sidebyside=false]{示例 59：同一指标的三组不确定区间}
+\gradintervals[width=72mm,min=0,max=100,
+  height=5pt,precision=0,row padding=4pt,
+  references={{70/gray/dashed/}}]{
+  {方法 A/45/58/72/gradbarsBlue},
+  {方法 B/55/68/82/gradbarsTeal},
+  {方法 C/62/NA/88/gradbarsOrange}}
+\end{example}
+圆点为显式提供的点估计，外部标签为原始上下界；不从上下界推断均值或置信水平。
+若区间表示 95\% 置信区间，应在表头或图注中写明。
+点估计必须位于原始区间内，下界不得大于上界。
+越界处理继承 \key{overflow}，所有组必须采用相同单位。
+
+\begin{example}[sidebyside=false]{示例 60：正负区间与缺失组}
+\begin{tabular}{ll}
+指标 & 估计区间\\
+变化量 & \gradintervals[min=-40,max=60,width=65mm,
+  height=4pt,precision=0,row padding=3pt]{
+  {组 A/-25/-10/5/gradbarsBlue},
+  {组 B/5/18/35/gradbarsTeal},
+  {组 C/NA/NA/NA/gray}}\\
+\end{tabular}
+\end{example}
+该命令使用内部小表格，整体作为一个单元格排版，不在组间自动分页。
+名称列、图区及外部区间标签都占用宽度；长名称请缩写，或调小图区 width。
+参考名称会在每组重复，紧凑表格推荐留空，并在共同表头解释参考线。
+记录名称及颜色字段不应包含斜杠；带逗号的名称应加额外花括号保护。
 \end{document}

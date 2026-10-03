@@ -1,6 +1,8 @@
 scripts/
 build/
 examples/
+docs/
+    ctan-upload.md
 __pycache__/
 *.aux
 *.log
@@ -14,3 +16,4 @@ __pycache__/
 *.nav
 *.snm
 *.vrb
+gradbars-0.0.3.zip

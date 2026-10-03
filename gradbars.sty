@@ -436,6 +436,7 @@
         ([yshift=.8*\gradbars@height]\gradbars@cap,0);
     }
   \fi\fi
+  \gradbarsDrawReferences
   \gradbarsResetLabels
   \ifgradbars@stack
     \gradbarsDrawSegmentLabels
@@ -1683,5 +1684,149 @@
   {\group_begin:
    \str_if_eq:eeT {\gradbars@shape}{dumbbell}{\def\gradbars@shape{lollipop}}
    \gradbarsTrackBeforeThree\group_end:}
+\ExplSyntaxOff
+% Reference records: {value/color/line style/name}, names may be empty.
+\def\gradbars@references{}
+\def\gradbars@bulletbands{}
+\newif\ifgradbars@bullet
+\pgfkeys{/gradbars/.cd,
+  references/.store in=\gradbars@references,
+  bullet bands/.store in=\gradbars@bulletbands}
+\NewDocumentCommand\gradbullet{O{} m}{%
+  \begingroup\gradbars@bullettrue
+  \gradbar[height=12pt,fill=solid,label=outside,#1,shape=bar]{#2}%
+  \endgroup}
+\ExplSyntaxOn
+\seq_new:N \l__gradbars_record_seq
+\clist_new:N \l__gradbars_refs_clist
+\clist_new:N \l__gradbars_bands_clist
+\fp_new:N \l__gradbars_band_start_fp
+\tl_new:N \l__gradbars_record_color_tl
+\tl_new:N \l__gradbars_record_style_tl
+\tl_new:N \l__gradbars_record_name_tl
+\cs_new_protected:Npn \gradbarsRecord #1#2
+  {\seq_set_split:Nnn \l__gradbars_record_seq {/}{#1}
+   \int_compare:nNnF {\seq_count:N \l__gradbars_record_seq} = {#2}
+     {\gradbarsFail{Wrong~number~of~fields~in~reference,~band~or~interval~record}}}
+\cs_new_eq:NN \gradbarsValidateBeforeReferences \gradbarsValidateExtras
+\cs_set_protected:Npn \gradbarsValidateExtras
+  {
+    \gradbarsValidateBeforeReferences
+    \clist_set:No \l__gradbars_refs_clist {\gradbars@references}
+    \clist_set:No \l__gradbars_bands_clist {\gradbars@bulletbands}
+    \ifgradbars@spark
+      \clist_if_empty:NF \l__gradbars_refs_clist
+        {\gradbarsFail{Spark~does~not~support~references}}
+    \fi
+    \clist_map_inline:Nn \l__gradbars_refs_clist
+      {\gradbarsRecord{##1}{4}
+       \ifgradbars@valid
+         \gradbarsCheckNumber{\seq_item:Nn \l__gradbars_record_seq {1}}{reference}
+         \ifgradbars@valid
+           \fp_compare:nT
+             {\seq_item:Nn \l__gradbars_record_seq {1}<\gradbars@min ||
+              \seq_item:Nn \l__gradbars_record_seq {1}>\gradbars@max}
+             {\gradbarsFail{Reference~must~lie~within~range}}
+           \tl_set:Nx \l_tmpa_tl {\seq_item:Nn \l__gradbars_record_seq {3}}
+           \exp_args:NnV \clist_if_in:nnF {solid,dashed,dotted} \l_tmpa_tl
+             {\gradbarsFail{Reference~line~style~must~be~solid,~dashed~or~dotted}}
+         \fi
+       \fi}
+    \ifgradbars@bullet
+      \clist_if_empty:NT \l__gradbars_bands_clist
+        {\gradbarsFail{Bullet~requires~explicit~bullet~bands}}
+    \else
+      \clist_if_empty:NF \l__gradbars_bands_clist
+        {\gradbarsFail{Bullet~bands~require~gradbullet}}
+    \fi
+    \ifgradbars@valid
+      \fp_set:Nn \l__gradbars_band_start_fp {\gradbars@min}
+      \clist_map_inline:Nn \l__gradbars_bands_clist
+        {\gradbarsRecord{##1}{2}
+         \ifgradbars@valid
+           \gradbarsCheckNumber{\seq_item:Nn \l__gradbars_record_seq {1}}{band~endpoint}
+           \ifgradbars@valid
+             \fp_compare:nT
+               {\seq_item:Nn \l__gradbars_record_seq {1}<=\l__gradbars_band_start_fp ||
+                \seq_item:Nn \l__gradbars_record_seq {1}>\gradbars@max}
+               {\gradbarsFail{Bullet~endpoints~must~increase~within~range}}
+             \fp_set:Nn \l__gradbars_band_start_fp {\seq_item:Nn \l__gradbars_record_seq {1}}
+           \fi
+         \fi}
+      \ifgradbars@bullet\ifgradbars@valid
+        \fp_compare:nNnF {\l__gradbars_band_start_fp} = {\gradbars@max}
+          {\gradbarsFail{Last~bullet~endpoint~must~equal~max}}
+      \fi\fi
+    \fi
+  }
+\cs_new_protected:Npn \gradbarsDrawReferences
+  {\int_zero:N \l_tmpa_int
+   \clist_map_inline:Nn \l__gradbars_refs_clist
+     {\seq_set_split:Nnn \l__gradbars_record_seq {/}{##1}
+      \tl_set:Nx \l__gradbars_record_color_tl {\seq_item:Nn \l__gradbars_record_seq {2}}
+      \tl_set:Nx \l__gradbars_record_style_tl {\seq_item:Nn \l__gradbars_record_seq {3}}
+      \tl_set:Nx \l__gradbars_record_name_tl {\seq_item:Nn \l__gradbars_record_seq {4}}
+      \pgfmathsetlengthmacro\gradbars@rx
+        {\gradbarsPosition{\seq_item:Nn \l__gradbars_record_seq {1}}*(\gradbars@width)}
+      \draw[draw=\l__gradbars_record_color_tl,line~width=.6pt,
+        \l__gradbars_record_style_tl]
+        (\gradbars@rx,-1pt)--(\gradbars@rx,{\gradbars@height+1pt});
+      \tl_if_blank:VF \l__gradbars_record_name_tl
+        {\node[anchor=south,inner~sep=1pt,font=\scriptsize,
+           text=\l__gradbars_record_color_tl]
+           at (\gradbars@rx,{\gradbars@height+2pt+10pt*\int_mod:nn{\l_tmpa_int}{2}})
+           {\l__gradbars_record_name_tl};}
+      \int_incr:N \l_tmpa_int}}
+\cs_new_eq:NN \gradbarsBandBeforeBullet \gradbarsDrawBand
+\cs_set_protected:Npn \gradbarsDrawBand
+  {\ifgradbars@bullet
+     \fp_set:Nn \l__gradbars_band_start_fp {\gradbars@min}
+     \clist_map_inline:Nn \l__gradbars_bands_clist
+       {\seq_set_split:Nnn \l__gradbars_record_seq {/}{##1}
+        \tl_set:Nx \l__gradbars_record_color_tl {\seq_item:Nn \l__gradbars_record_seq {2}}
+        \pgfmathsetlengthmacro\gradbars@bx
+          {\gradbarsPosition{\l__gradbars_band_start_fp}*(\gradbars@width)}
+        \pgfmathsetlengthmacro\gradbars@ex
+          {\gradbarsPosition{\seq_item:Nn \l__gradbars_record_seq {1}}*(\gradbars@width)}
+        \path[fill=\l__gradbars_record_color_tl,draw=none]
+          (\gradbars@bx,0) rectangle (\gradbars@ex,\gradbars@height);
+        \fp_set:Nn \l__gradbars_band_start_fp {\seq_item:Nn \l__gradbars_record_seq {1}}}
+   \fi\gradbarsBandBeforeBullet}
+\cs_new_eq:NN \gradbarsShapeBeforeBullet \gradbarsDrawShape
+\cs_set_protected:Npn \gradbarsDrawShape
+  {\ifgradbars@bullet
+     \begin{scope}[yshift=.3*\gradbars@height,yscale=.4]
+       \gradbarsShapeBeforeBullet
+     \end{scope}
+   \else\gradbarsShapeBeforeBullet\fi}
+% Each interval record has name / lower / point (or NA) / upper / color.
+\tl_new:N \l__gradbars_interval_rows_tl
+\cs_new_protected:Npn \gradbarsIntervalRow #1#2#3#4#5
+  {#1 & \gradrange[color=#5,range~point=#3]{#2}{#4}\\}
+\NewDocumentCommand\gradintervals{O{} m}
+  {\group_begin:
+   \pgfkeys{/gradbars,#1}
+   \gradbars@validtrue
+   \tl_clear:N \l__gradbars_interval_rows_tl
+   \clist_if_empty:nT {#2}{\gradbarsFail{Interval~comparison~requires~records}}
+   \clist_map_inline:nn {#2}
+     {\gradbarsRecord{##1}{5}
+      \ifgradbars@valid
+        \tl_set:Nx \l__gradbars_record_name_tl {\seq_item:Nn \l__gradbars_record_seq {1}}
+        \tl_set:Nx \l_tmpa_tl {\seq_item:Nn \l__gradbars_record_seq {3}}
+        \str_if_eq:VnT \l_tmpa_tl {NA}{\tl_clear:N \l_tmpa_tl}
+        \tl_put_right:Nx \l__gradbars_interval_rows_tl
+          {\exp_not:N \gradbarsIntervalRow
+            {\exp_not:V \l__gradbars_record_name_tl}
+            {\seq_item:Nn \l__gradbars_record_seq {2}}
+            {\exp_not:V \l_tmpa_tl}
+            {\seq_item:Nn \l__gradbars_record_seq {4}}
+            {\seq_item:Nn \l__gradbars_record_seq {5}}}
+      \fi}
+   \ifgradbars@valid
+     \begin{tabular}{@{}l@{\hspace{.7em}}l@{}}
+       \l__gradbars_interval_rows_tl
+     \end{tabular}
+   \fi\group_end:}
 \ExplSyntaxOff
 \endinput
