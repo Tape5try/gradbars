@@ -17,3 +17,4 @@ __pycache__/
 *.snm
 *.vrb
 *.zip
+/README.zh-CN.md
