@@ -157,6 +157,6 @@ Both versioned PDF manuals are included. The [English source](docs/gradbars-manu
 - Sparklines use equally spaced observations; they do not parse dates or draw bar targets, error whiskers or reference bands.
 - Fixed scales require `min <= 0` and `max > 0`; auto spark ranges can be positive, negative or constant.
 - Label avoidance is local to a graphic. Allow room for long external labels and legends.
-- Accessible tagged chart descriptions and tabularray-specific column handling are not implemented.
+- With LaTeX PDF tagging enabled, graphics generate alternative text automatically; use `alt={...}` for context or another language. Graphics inside an existing TikZ picture rely on its outer description. A tabularray-specific column interface is not implemented.
 
 MIT licensed. Bug reports should include a minimal `.tex` example, engine and log.

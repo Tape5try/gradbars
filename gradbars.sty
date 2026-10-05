@@ -2,7 +2,7 @@
 % Contact: 3546236610@qq.com
 % Copyright (c) 2026 SuFan. MIT License; see LICENSE.
 \NeedsTeXFormat{LaTeX2e}[2020/10/01]
-\ProvidesPackage{gradbars}[2026/10/04 v0.0.4 Inline data bars for LaTeX]
+\ProvidesPackage{gradbars}[2026/10/06 v0.0.4 Inline data bars for LaTeX]
 \RequirePackage{tikz}
 \RequirePackage{xparse}
 \RequirePackage{expl3}
@@ -48,6 +48,9 @@
 \def\gradbars@precision{1}
 \def\gradbars@unit{}
 \def\gradbars@text{}
+\def\gradbars@alt{}
+\def\gradbars@accessibility{auto}
+\newif\ifgradbars@capturealt
 \def\gradbars@label{outside}
 \def\gradbars@format{value}
 \def\gradbars@overflow{clip}
@@ -91,6 +94,11 @@
   precision/.store in=\gradbars@precision,
   unit/.store in=\gradbars@unit,
   text/.store in=\gradbars@text,
+  alt/.store in=\gradbars@alt,
+  accessibility/.is choice,
+  accessibility/auto/.code=\def\gradbars@accessibility{auto},
+  accessibility/artifact/.code=\def\gradbars@accessibility{artifact},
+  accessibility/off/.code=\def\gradbars@accessibility{off},
   label gap/.store in=\gradbars@gap,
   label width/.store in=\gradbars@labelwidth,
   font/.store in=\gradbars@font,
@@ -472,13 +480,17 @@
     \ifpgfpicture
       \begin{scope}\gradbars@draw\end{scope}%
     \else
+      \gradbarsPrepareAlt
       \tikz[baseline={([yshift=-.5ex]0,{.5*\gradbars@height})}]{\gradbars@draw}%
     \fi
   \fi
 }
 \NewDocumentCommand\gradbar{O{} m}{%
   \leavevmode\begingroup
+    \gradbarsCaptureTikzAlt
+    \gradbars@capturealttrue
     \pgfkeys{/gradbars,#1}%
+    \gradbars@capturealtfalse
     % Resolve font-relative dimensions in the surrounding text font.
     \ifpgfpicture
       \pgfinterruptpicture
@@ -843,7 +855,8 @@
   }
 \ExplSyntaxOff
 \NewDocumentCommand\gradbarslegend{O{} m}{%
-  \begingroup\pgfkeys{/gradbars,#1,stack names={#2}}%
+  \begingroup\gradbarsCaptureTikzAlt\gradbars@capturealttrue
+  \pgfkeys{/gradbars,#1,stack names={#2}}\gradbars@capturealtfalse%
   \begingroup\font@name
     \edef\gradbars@next{\endgroup
       \def\noexpand\gradbars@width{\the\dimexpr\gradbars@width\relax}}%
@@ -863,7 +876,7 @@
     \ifdim\gradbars@width>14pt\else\gradbarsFail{Legend~width~must~exceed~14pt}\fi
     \ifgradbars@valid
       \ifpgfpicture \gradbarsDrawLegend
-      \else\tikz[baseline=0pt]{\gradbarsDrawLegend}\fi
+      \else\gradbarsPrepareLegendAlt\tikz[baseline=0pt]{\gradbarsDrawLegend}\fi
     \fi
   }
 \ExplSyntaxOff
@@ -2131,6 +2144,7 @@
           {\gradbarsFail{Interval~requires~lower/point/upper}}}}}}
 \cs_new_protected:Npn \gradtableMeasure #1#2
   {\group_begin:
+   \gradbarsSuspendMeasurementTagging
    \tl_set:Nn \l__gradtable_id_tl {#1}
    \gradtableConfigure{#1}
    \gradtableHighlight{#1}{#2}
@@ -2149,6 +2163,7 @@
    \str_if_eq:VnT \l__gradtable_type_tl {number}
      {\dim_gset:Nn \g__gradtable_measured_dim
        {\dim_max:nn{\g__gradtable_measured_dim}{\box_wd:N\l__gradtable_measure_box}}}
+   \gradbarsResumeMeasurementTagging
    \group_end:
    \prop_put:Nnx \l__gradtable_widths_prop {#1}{\dim_use:N\g__gradtable_measured_dim}}
 \cs_new_protected:Npn \gradtableCell #1#2
@@ -2577,12 +2592,14 @@
          \exp_args:NV\gradtableMeasure\l__gradtable_id_tl{####1}}}}
 \cs_new_protected:Npn\gradtableExtent #1#2
   {\group_begin:\gradtableConfigure{#1}\gradtableHighlight{#1}{#2}
+   \gradbarsSuspendMeasurementTagging
    \dim_gset:Nn\g__gradtable_extent_dim{\prop_item:Nn\l__gradtable_overheads_prop{#1}}
    \str_case:VnF\l__gradtable_type_tl{{text}{}{number}{}}
      {\hbox_set:Nn\l__gradtable_measure_box{\gradtableContent{#2}}
       \dim_gset:Nn\g__gradtable_extent_dim
         {\dim_max:nn{\prop_item:Nn\l__gradtable_overheads_prop{#1}}
           {\box_wd:N\l__gradtable_measure_box-\gradbars@width}}}
+   \gradbarsResumeMeasurementTagging
    \group_end:
    \prop_put:Nnx\l__gradtable_overheads_prop{#1}{\dim_use:N\g__gradtable_extent_dim}}
 \cs_new_protected:Npn\gradtableAllocate
@@ -2667,4 +2684,149 @@
    \endlongtable}
 \ExplSyntaxOff
 
+% Accessible descriptions use the supported TikZ tagging interface.  No tagging
+% is activated by this package; ordinary documents keep their existing output.
+\def\gradbarsCaptureTikzAlt{%
+  % Capture explicit /tikz/alt options locally, without changing the global key.
+  \pgfkeysifdefined{/tikz/alt/.@cmd}{%
+    \pgfkeys{/tikz/alt/.append code={\ifgradbars@capturealt\def\gradbars@alt{##1}\fi}}%
+  }{\pgfkeys{/tikz/alt/.code={\def\gradbars@alt{##1}}}}%
+}
+\ExplSyntaxOn
+\tl_new:N \l__gradbars_alt_tl
+\seq_new:N \l__gradbars_alt_fields_seq
+\int_new:N \l__gradbars_alt_index_int
+\cs_new_protected:Npn \gradbarsAltValue #1
+  {
+    \tl_set:Nx \l_tmpa_tl {#1}
+    \tl_trim_spaces:N \l_tmpa_tl
+    \tl_if_empty:NTF \l_tmpa_tl
+      {\tl_put_right:Nn \l__gradbars_alt_tl {missing}}
+      {\str_if_eq:VnTF \l_tmpa_tl {NA}
+        {\tl_put_right:Nn \l__gradbars_alt_tl {missing}}
+        {\tl_put_right:Nx \l__gradbars_alt_tl {\fp_eval:n {\l_tmpa_tl}}}}
+  }
+\cs_new_protected:Npn \gradbarsBuildAlt
+  {
+    \tl_clear:N \l__gradbars_alt_tl
+    \ifgradbars@spark
+      \tl_put_right:Nn \l__gradbars_alt_tl {Equally~spaced~series:~}
+      \int_zero:N \l__gradbars_alt_index_int
+      \seq_map_inline:Nn \l__gradbars_series_seq
+        {\int_incr:N \l__gradbars_alt_index_int
+         \int_compare:nNnT {\l__gradbars_alt_index_int}>{1}
+           {\tl_put_right:Nn \l__gradbars_alt_tl {;~}}
+         \tl_put_right:Nx \l__gradbars_alt_tl
+           {observation~\int_use:N\l__gradbars_alt_index_int :~}
+         \gradbarsAltValue{##1}}
+      \tl_put_right:Nn \l__gradbars_alt_tl {.~Final~observation:~}
+      \gradbarsAltValue{\gradbars@sparklast}
+      \tl_put_right:Nx \l__gradbars_alt_tl
+        {.~Vertical~range:~\fp_use:N\l__gradbars_series_low_fp\c_space_tl to~\fp_use:N\l__gradbars_series_high_fp.}
+    \else\ifgradbars@stack
+      \tl_put_right:Nn \l__gradbars_alt_tl {Stacked~contributions:~}
+      \int_zero:N \l__gradbars_alt_index_int
+      \clist_map_inline:Nn \l__gradbars_stack_clist
+        {\int_incr:N \l__gradbars_alt_index_int
+         \int_compare:nNnT {\l__gradbars_alt_index_int}>{1}
+           {\tl_put_right:Nn \l__gradbars_alt_tl {;~}}
+         \clist_if_empty:NTF \l__gradbars_names_clist
+           {\tl_put_right:Nx \l__gradbars_alt_tl
+             {segment~\int_use:N\l__gradbars_alt_index_int}}
+           {\tl_put_right:Nx \l__gradbars_alt_tl
+             {\clist_item:Nn\l__gradbars_names_clist{\l__gradbars_alt_index_int}}}
+         \tl_put_right:Nn \l__gradbars_alt_tl {:~}\gradbarsAltValue{##1}}
+      \tl_put_right:Nx \l__gradbars_alt_tl
+        {.~Net:~\gradbars@total.~Positive~subtotal:~\gradbars@positive.\c_space_tl
+         Negative~subtotal:~\gradbars@negative.}
+    \else\ifgradbars@compare
+      \tl_put_right:Nn \l__gradbars_alt_tl {Reference:~}
+      \ifgradbars@referencemissing
+        \tl_put_right:Nn \l__gradbars_alt_tl {missing}
+      \else\gradbarsAltValue{\gradbars@reference}\fi
+      \tl_put_right:Nn \l__gradbars_alt_tl {.~Current:~}
+      \ifgradbars@missing\tl_put_right:Nn \l__gradbars_alt_tl {missing}
+      \else\gradbarsAltValue{\gradbars@value}\fi
+      \tl_put_right:Nn \l__gradbars_alt_tl {.~Change:~}
+      \ifgradbars@missing\tl_put_right:Nn \l__gradbars_alt_tl {missing}
+      \else\ifgradbars@referencemissing\tl_put_right:Nn \l__gradbars_alt_tl {missing}
+      \else\gradbarsAltValue{\gradbars@value-\gradbars@reference}\fi\fi
+      \str_if_eq:eeT {\gradbars@comparelabel}{percent}
+        {\tl_put_right:Nn \l__gradbars_alt_tl {.~Relative~change:~}
+         \ifgradbars@missing\tl_put_right:Nn \l__gradbars_alt_tl {missing}
+         \else\ifgradbars@referencemissing\tl_put_right:Nn \l__gradbars_alt_tl {missing}
+         \else\fp_compare:nNnTF {\gradbars@reference}={0}
+           {\tl_put_right:Nn \l__gradbars_alt_tl {undefined~for~a~zero~reference}}
+           {\gradbarsAltValue{100*(\gradbars@value-\gradbars@reference)/abs(\gradbars@reference)}
+            \tl_put_right:Nn \l__gradbars_alt_tl {~percent}}\fi\fi}
+      \tl_put_right:Nn \l__gradbars_alt_tl {.}
+    \else\ifgradbars@rangemode
+      \tl_put_right:Nn \l__gradbars_alt_tl {Interval:~}
+      \ifgradbars@rangemissing\tl_put_right:Nn \l__gradbars_alt_tl {missing.}
+      \else
+        \gradbarsAltValue{\gradbars@rangelo}
+        \tl_put_right:Nn \l__gradbars_alt_tl {~to~}\gradbarsAltValue{\gradbars@rangehi}
+        \tl_put_right:Nn \l__gradbars_alt_tl {.}
+        \tl_if_empty:oF {\gradbars@rangepoint}
+          {\tl_put_right:Nn \l__gradbars_alt_tl {~Point~estimate:~}
+           \gradbarsAltValue{\gradbars@rangepoint}\tl_put_right:Nn \l__gradbars_alt_tl {.}}
+      \fi
+    \else
+      \tl_put_right:Nn \l__gradbars_alt_tl {Value:~}
+      \ifgradbars@missing\tl_put_right:Nn \l__gradbars_alt_tl {missing.}
+      \else\gradbarsAltValue{\gradbars@value}\tl_put_right:Nn \l__gradbars_alt_tl {.}\fi
+    \fi\fi\fi\fi
+    \tl_if_empty:oF {\gradbars@unit}
+      {\tl_put_right:Nx \l__gradbars_alt_tl {~Unit:~\exp_not:o{\gradbars@unit}.}}
+    \ifgradbars@spark\else
+      \tl_put_right:Nx \l__gradbars_alt_tl
+        {~Scale:~\fp_eval:n{\gradbars@min}~to~\fp_eval:n{\gradbars@max}.}
+      \ifgradbars@error
+        \tl_put_right:Nx \l__gradbars_alt_tl
+          {~Error~distances:~minus~\gradbars@errorminus,~plus~\gradbars@errorplus.}
+      \fi
+      \tl_if_empty:oF {\gradbars@target}
+        {\tl_put_right:Nx \l__gradbars_alt_tl {~Target:~\gradbars@target.}}
+      \clist_map_inline:Nn \l__gradbars_refs_clist
+        {\seq_set_split:Nnn\l__gradbars_alt_fields_seq{/}{##1}
+         \tl_put_right:Nx\l__gradbars_alt_tl
+           {~Reference~\seq_item:Nn\l__gradbars_alt_fields_seq{4}:\c_space_tl
+            \seq_item:Nn\l__gradbars_alt_fields_seq{1}.}}
+      \tl_if_empty:oF {\gradbars@band}
+        {\tl_put_right:Nx\l__gradbars_alt_tl {~Reference~band:~\gradbars@band.}}
+      \ifgradbars@bullet
+        \tl_put_right:Nn\l__gradbars_alt_tl {~Background~grade~upper~bounds:~}
+        \clist_map_inline:Nn\l__gradbars_bands_clist
+          {\seq_set_split:Nnn\l__gradbars_alt_fields_seq{/}{##1}
+           \tl_put_right:Nx\l__gradbars_alt_tl
+             {\seq_item:Nn\l__gradbars_alt_fields_seq{1};~}}
+      \fi
+    \fi
+  }
+\cs_new_protected:Npn \gradbarsApplyAlt
+  {
+    \cs_if_exist:NT \tag_if_active:T
+      {\tag_if_active:T
+        {\pgfkeysifdefined{/tikz/alt/.@cmd}
+          {\str_case_e:nn {\gradbars@accessibility}
+            {{auto}{\tl_if_empty:oF{\gradbars@alt}
+                      {\tl_set:No\l__gradbars_alt_tl{\gradbars@alt}}
+                    \tikzset{alt={\l__gradbars_alt_tl}}}
+             {artifact}{\tikzset{artifact}}}}
+          {}}}
+  }
+\cs_new_protected:Npn \gradbarsPrepareAlt
+  {\cs_if_exist:NT\tag_if_active:T
+     {\tag_if_active:T{\gradbarsBuildAlt\gradbarsApplyAlt}}}
+\cs_new_protected:Npn \gradbarsPrepareLegendAlt
+  {\cs_if_exist:NT\tag_if_active:T
+     {\tag_if_active:T
+       {\tl_set:Nx\l__gradbars_alt_tl
+         {Legend~categories:~\clist_use:Nn\l__gradbars_names_clist{;~}.}
+        \gradbarsApplyAlt}}}
+\cs_new_protected:Npn \gradbarsSuspendMeasurementTagging
+  {\cs_if_exist:NT\tag_suspend:n{\tag_suspend:n{gradbars-measurement}}}
+\cs_new_protected:Npn \gradbarsResumeMeasurementTagging
+  {\cs_if_exist:NT\tag_resume:n{\tag_resume:n{gradbars-measurement}}}
+\ExplSyntaxOff
 \endinput

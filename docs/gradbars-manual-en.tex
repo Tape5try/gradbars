@@ -476,7 +476,8 @@ as well as visual distinctions. Outlined bars and legends are available through
 
 All collision handling is local to a graphic, not to the whole table. Complex
 axes, date parsing and large general-purpose plots are outside this package's
-scope. No specialized tagged-PDF chart descriptions are generated.
+scope. Automatic alternative descriptions are available when PDF tagging is enabled;
+see the tagging notes in the interface reference.
 
 \clearpage
 \part{Visual tables and data interfaces}
@@ -1044,12 +1045,41 @@ your data. Set scales, units, uncertainty interpretation, category identity and
 quality direction explicitly. Horizontal header spans are supported; vertical
 cell merging and automatically computed summary rows are not.
 
+\subsection{Tagged PDF and alternative text}
+On a LaTeX distribution supporting PDF tagging, enable it with DocumentMetadata
+before documentclass. Independent graphics generate English alternative text from
+raw data: values, units, scales, error distances, reference lines, comparison
+endpoints and differences, stack segments and subtotals, and every spark observation
+including missing positions. Intervals describe supplied endpoints and estimates;
+confidence levels are not inferred. Legends describe their category names.
+
+\begin{source}
+\DocumentMetadata{tagging=on,pdfstandard=ua-2,lang=en-US}
+\documentclass{article}
+\usepackage{gradbars}
+\begin{document}
+\gradbar{72}
+\gradbar[alt={Accuracy: 72 percent, out of 100 percent.}]{72}
+\graddumbbell[compare label=delta]{58}{76}
+\end{document}
+\end{source}
+Use alt to supply context or another language. Empty alt restores automatic text;
+the existing /tikz/alt syntax remains supported. Accessibility defaults to auto.
+Use accessibility=artifact only when surrounding text fully conveys the graphic's
+information. Accessibility=off leaves tagging to the surrounding code. These options
+do not change visible output when tagging is disabled.
+
+Descriptions use raw values before rounding. The text option only changes the
+visual label; use alt to change its semantic description. Table measurement does
+not produce tags, so each rendered graphic cell has one description. Inside an
+existing TikZ picture, describe the complete graphic using the outer picture's alt.
+Automatic descriptions do not establish document-wide PDF/UA conformance: validate
+table headers, reading order, fonts and other content separately.
+
 \subsection*{Contact and maintenance}
-The author and maintainer is SuFan, whose GitHub account is Tape5try. Contact
-\href{mailto:3546236610@qq.com}{3546236610@qq.com} or report an issue at
-\url{https://github.com/Tape5try/gradbars/issues}.
-Include a minimal source, engine name, TeX distribution and log.
-The MIT license is included in the distribution. Third-party dependencies retain
-their own authorship and licenses.
+Author and maintainer: SuFan (Tape5try).
+Contact \href{mailto:3546236610@qq.com}{3546236610@qq.com} or the
+\href{https://github.com/Tape5try/gradbars/issues}{issue tracker}.
+Include a minimal source, engine and log. Distributed under the MIT license.
 
 \end{document}

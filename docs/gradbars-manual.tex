@@ -2249,10 +2249,44 @@ CSV 命令包括 \key{\gradbarsloadcsv}、\key{\gradbarscsvtable}、\key{\gradba
 \bottomrule
 \end{tabularx}
 
+\clearpage
+\subsection{Tagged PDF 与替代文本}
+在支持 tagging 的 LaTeX 发行版中，在 documentclass 之前使用 DocumentMetadata 开启标记。
+宏包为独立图形自动生成英文替代文本，包括原始数值、单位、量程、参考线、误差距离、
+对比两端与差值、堆叠分段与正负小计，以及趋势中的每个观测和缺失位置。
+区间描述保留上下界与显式点估计，不推断置信水平。图例描述类别名称。
+表格测量过程不生成语义标签，实际图形单元格只生成一次描述。
+
+\begin{codeonly}
+\DocumentMetadata{tagging=on,pdfstandard=ua-2,lang=zh-CN}
+\documentclass{ctexart}
+\usepackage{gradbars}
+\begin{document}
+\gradbar{72}
+
+\gradbar[alt={准确率为百分之七十二，满分为百分之百。}]{72}
+
+\graddumbbell[compare label=delta]{58}{76}
+\end{document}
+\end{codeonly}
+
+\key{alt={描述}} 覆盖自动文本；空值恢复自动生成。
+原有 \key{/tikz/alt={描述}} 写法继续可用。
+
+\key{accessibility} 可选 auto、artifact 或 off。
+auto 是默认值，为图形生成描述；artifact 将图形作为装饰，
+仅用于周围文字已完整表达其信息的情况；off 将标记设置交由外层控制。
+
+未开启 tagging 时这些选项不改变视觉输出。自定义描述应解释单位、类别及图形在当前文档中的含义。
+
+在已有 tikzpicture 内调用宏包时不会创建独立图形标签，应为外层图提供完整替代文本。
+自动描述使用原始数据，不随 precision 舍入；text 仅修改视觉标签，语义描述需通过 alt 覆盖。
+该支持不等于整份文档已符合 PDF/UA；还需检查表头、阅读顺序、字体及其他内容的标记。
+
 \subsection{已知边界}
 CSV 仅支持逗号分隔的单行字段；数值列可自动计算共享范围。
 本版不提供 CSV 字段内换行或 CSV 表格自动分页。趋势线使用等间距观测，不解析日期。
 不要把绘图命令直接放入 siunitx 的数值型 S 列或 PDF 书签。
-宏包已通过 pdfLaTeX、XeLaTeX、LuaLaTeX 的功能检查（包括 CSV）。本中文手册采用 XeLaTeX，英文手册可用 pdfLaTeX 编译。图形尚未生成专用的无障碍 PDF 语义标签。
+宏包已通过 pdfLaTeX、XeLaTeX、LuaLaTeX 的功能检查（包括 CSV）。本中文手册采用 XeLaTeX，英文手册可用 pdfLaTeX 编译。Tagged PDF 支持见上一小节；文档的整体无障碍合规需要独立验证。
 
 \end{document}
