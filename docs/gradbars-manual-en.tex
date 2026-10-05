@@ -3,22 +3,23 @@
 \documentclass[10pt,a4paper]{article}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
-\usepackage[margin=22mm,headheight=14pt]{geometry}
-\usepackage{gradbars,booktabs,array,tabularx}
+\usepackage[margin=18mm,top=19mm,bottom=20mm,headheight=15pt]{geometry}
+\usepackage{gradbars,booktabs,array,tabularx,amsmath}
 \usepackage{tcolorbox,fancyhdr}
 \tcbuselibrary{listings,skins,breakable}
 \usepackage[colorlinks=true,linkcolor=gradbarsBlue,urlcolor=gradbarsTeal,
-  pdftitle={gradbars v0.0.3 English manual},pdfauthor={SuFan}]{hyperref}
+  pdftitle={gradbars v0.0.4 English manual},pdfauthor={SuFan}]{hyperref}
+\setcounter{tocdepth}{1}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{5pt}
 \renewcommand{\arraystretch}{1.25}
 \pagestyle{fancy}\fancyhf{}
 \fancyhead[L]{\sffamily gradbars --- English manual}
-\fancyhead[R]{v0.0.3}\fancyfoot[C]{\thepage}
+\fancyhead[R]{v0.0.4}\fancyfoot[C]{\thepage}
 \newcommand{\key}[1]{\texttt{\detokenize{#1}}}
-\lstdefinestyle{gradmanual}{language=[LaTeX]TeX,basicstyle=\ttfamily\small,
+\lstdefinestyle{gradmanual}{language=[LaTeX]TeX,basicstyle=\ttfamily\fontsize{8}{10}\selectfont,
   columns=fullflexible,keepspaces=true,breaklines=true,showstringspaces=false,
-  moretexcs={gradbar,gradstack,graddumbbell,gradspark,gradcompare,gradrange,
+  moretexcs={gradheader,gradspan,gradgroup,gradtablestyle,gradtableschema,graduseschema,gradcolumn,gradrow,gradbullet,gradintervals,gradbar,gradstack,graddumbbell,gradspark,gradcompare,gradrange,
     gradbarssetup,gradbarsstyle,gradbarscategory,gradbarslegend,
     gradbarscolumn,gradbarsloadcsv,gradbarcsv,gradbarscsvstyle,gradbarscsvtable},
   texcsstyle=*\color{gradbarsBlue},commentstyle=\color{black!55}}
@@ -29,42 +30,93 @@
   boxrule=.4pt,arc=0pt,left=3mm,right=3mm,top=2mm,bottom=2mm,
   before upper={\setlength{\parskip}{6pt}\small}}
 \lstnewenvironment{source}{\lstset{style=gradmanual}}{}
+
+\definecolor{manualResult}{HTML}{FAFAE6}
+\definecolor{manualCode}{HTML}{EEEEFF}
+\newtcblisting{coverexample}[1]{enhanced,skin=bicolor,
+  listing engine=listings,text side listing,
+  listing options={style=gradmanual,basicstyle=\ttfamily\fontsize{7.5}{9}\selectfont},
+  title={#1},fonttitle=\scriptsize\bfseries,
+  coltitle=gradbarsInk,colbacktitle=gradbarsTrack,
+  colback=manualResult,colbacklower=manualCode,colframe=gradbarsInk!15,
+  boxrule=.25pt,arc=0pt,lefthand width=59mm,sidebyside gap=4mm,
+  left=2mm,right=2mm,top=1mm,bottom=1mm,
+  before skip=3pt,after skip=3pt,sidebyside align=center,
+  before upper={\small\setlength{\parskip}{2pt}}}
 \begin{document}
 \thispagestyle{empty}
-{\Huge\sffamily\bfseries gradbars}\par
-{\Large Compact data graphics inside LaTeX tables}\par
-Version 0.0.3 --- 3 October 2026\par
-\bigskip
-Author and maintainer: SuFan; GitHub account: Tape5try.\par
-\href{mailto:3546236610@qq.com}{3546236610@qq.com}\par
-\url{https://github.com/Tape5try/gradbars}
-
-The package draws individual data graphics in ordinary table cells or inline text.
-It provides a common interface for bars, compositions, comparisons, intervals
-and short trends. Raw values determine geometry; formatting only affects labels.
-
-This English manual contains executable examples with the output above their source.
-All numbers are illustrative. The Chinese manual provides additional examples
-and full two-column, longtable, grayscale and Beamer layouts.
-
-\begin{demo}{A single interface for compact graphics}
-\gradbar{72}
-
-\graddumbbell[precision=0]{58}{76}
-
-\gradstack[min=-50,precision=0,stack totals=separate]{60,-20,15,-10}
-
-\gradspark[spark range=fixed,min=0,max=100,precision=0]{25,45,NA,60,80}
-\end{demo}
+{\small\sffamily\color{gradbarsBlue}THE GRADBARS PACKAGE}\par
+\vspace{6mm}
+{\fontsize{46}{50}\selectfont\sffamily\bfseries gradbars}\par
+\vspace{3mm}
+{\LARGE Data bars and visual tables for \LaTeX}\par
+{\large\color{black!55}Values, comparisons and trends, directly in your tables.}\par
+\vspace{5mm}
+\begingroup
+\gradbarssetup{width=30mm,precision=0}
+\begin{coverexample}{Gradients, rounded corners and a target}
+\gradbar[rounded=2pt,target=80]{68}
+\end{coverexample}
+\begin{coverexample}{Signed values and uncertainty}
+\gradbar[min=-50,max=50,error=8,
+  theme=teal]{-24}
+\end{coverexample}
+\begin{coverexample}{Stacked contributions}
+\gradstack{25,35,20}
+\end{coverexample}
+\begin{coverexample}{Before/after comparison and difference}
+\graddumbbell[compare label=delta]{46}{72}
+\end{coverexample}
+\begin{coverexample}{An interval and its point estimate}
+\gradrange[range point=64]{45}{82}
+\end{coverexample}
+\begin{coverexample}{Trends and missing observations}
+\gradspark{30,65,NA,50,82}
+\end{coverexample}
+\begin{coverexample}{Visual tables: width allocation, spanning headers and best values}
+\begin{gradtable}[width=\linewidth,
+  label width=8mm,column sep=3pt,
+  min graphic width=10mm,header align=c]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=bar,mark=best,
+    options={precision=0}]{score}{Score}
+  \gradheader{\gradspan{2}{Evaluation}}
+  \gradrow{A,82}
+  \gradrow{B,91}
+\end{gradtable}
+\end{coverexample}
+\endgroup
+\medskip
+{\small Shared options\quad /\quad Data semantics\quad /\quad Multipage tables}\par
 \vfill
-License: MIT. See LICENSE for the copyright notice and full terms.
+\hrule\medskip
+v0.0.4\quad English manual and examples\par
+\href{https://github.com/Tape5try/gradbars}{GitHub / Tape5try/gradbars}
+\quad\href{https://ctan.org/pkg/gradbars}{CTAN / gradbars}
 \clearpage
-\tableofcontents
+\begingroup
+\setlength{\parskip}{0pt}
+\hypersetup{linkcolor=gradbarsInk}
+\makeatletter
+\renewcommand*{\l@part}[2]{\addpenalty\@secpenalty\addvspace{.7em}%
+  {\bfseries\@dottedtocline{-1}{0pt}{0pt}{#1}{#2}}\nobreak}
+\renewcommand*{\l@section}[2]{\@dottedtocline{1}{0pt}{2em}{#1}{#2}}
+\makeatother
+\small\tableofcontents
+\endgroup
+\medskip
+\textbf{Reading this manual.} Start with data semantics, then choose a graphic.
+Appearance and evaluation rules precede the dedicated table interface; complete
+examples and the reference follow. Rendered examples use the source shown beside
+or below them. All data are illustrative. The English and Chinese manuals cover
+the same interfaces; their section and example numbers are independent.
+
 \clearpage
+\part{Quick start and data semantics}
 \section{Installation and engine requirements}
 Place \key{gradbars.sty} beside your main source, or install it in a local TEXMF
 tree under \key{tex/latex/gradbars}. Load it with \key{\usepackage{gradbars}}.
-Dependencies are TikZ/PGF, xparse, expl3 and collcell (including array).
+Dependencies include TikZ/PGF, xparse, expl3, collcell, array, booktabs, colortbl and longtable.
 No shell escape or external data-conversion program is required.
 
 The package has no inherent XeLaTeX requirement. PDF output with pdfLaTeX,
@@ -91,7 +143,7 @@ Proposed & \gradbar{92.7} \\
 No \key{tikzpicture} wrapper is needed. Commands may also be used inside an
 existing TikZ picture. Settings and named styles follow ordinary TeX grouping.
 Options are applied left to right: put a theme or preset before individual overrides.
-
+\clearpage
 \section{Choosing a graphic}
 \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{37mm}>{\raggedright\arraybackslash}X@{}}
 \toprule
@@ -105,6 +157,7 @@ How does a series change? & \key{\gradspark{list}} for equally spaced observatio
 What is the uncertainty? & \key{error minus} and \key{error plus} on a point estimate.\\
 \bottomrule
 \end{tabularx}
+\clearpage
 \section{Values, scales, labels and missing observations}
 Defaults are min=0 and max=100. The maximum must be positive and the minimum
 must be nonpositive. Decimal literals and macros expanding to decimals are accepted;
@@ -133,6 +186,182 @@ use \key{unit={\%}}. \key{text} overrides the complete label without changing ge
 \key{precision} accepts integers from 0 to 6. \key{number format} is fixed, grouped
 or scientific. Missing labels do not acquire a unit or percent suffix.
 
+\clearpage
+\part{Graphics and comparisons}
+\section{Signed bars, targets, intervals and uncertainty}
+\begin{demo}{A signed point estimate and asymmetric uncertainty}
+\gradbar[min=-50,max=100,width=65mm,
+  target=40,band={20,60},error minus=8,error plus=12]{35}
+
+\gradbar[min=-50,max=100,width=65mm,shape=lollipop]{-25}
+
+\gradrange[min=-50,max=100,width=65mm,range point=10]{-20}{35}
+\end{demo}
+Error magnitudes are nonnegative distances from the observation, not absolute
+endpoints. Explain whether they represent standard deviation, standard error or
+confidence intervals in the table caption. Targets and bands are references, not
+automatically estimated uncertainty. A band must have ordered endpoints within
+the scale; invalid reference bands and targets cause errors.
+
+Floating intervals require lower$\le$upper; equal endpoints draw a cap, not an
+inflated bar. Both endpoints must be present or both missing. A range point must
+lie inside the original endpoints. Intervals reject error whiskers and quality
+thresholds. Default labels show the supplied endpoints.
+Lollipops show a point for zero, but no point for missing input.
+\clearpage
+\section{Stacked contributions and segment labels}
+\begin{demo}{Positive and negative contributions}
+\gradstack[min=-60,max=100,width=80mm,height=14pt,
+  precision=0,palette=categorical,stack totals=separate,
+  stack names={Sales,Materials,Service,Operations},
+  segment labels=value,legend=true]{60,-25,20,-15}
+\end{demo}
+Positive and negative contributions accumulate independently from zero. Within
+each side, segment order follows input order. Negative segments require a negative
+min. Positive and negative subtotals are checked separately against the scale.
+The default total is the algebraic sum; \key{stack totals=separate} shows positive
+and negative subtotals. A zero net does not erase nonzero contributions.
+
+Segment labels can be none, value, percent, name, name value or name percent.
+The percentage of a segment is
+\[100|v_i|/\sum_j|v_j|,\]
+including clipped contributions. These percentages
+represent shares of absolute activity, not shares of a potentially zero net.
+All-zero stacks do not calculate percentages. Stacks are not normalized to full
+width. Missing segments, empty lists, quality thresholds and error whiskers are rejected.
+
+Provide one stack name per segment for named labels or automatic legends.
+Small labels move outside with leader lines; automatic black/white text follows
+the fill. Zero segments retain their palette and legend positions. Use a shared
+\key{\gradbarslegend} outside a table to avoid repeating the legend for every row.
+\clearpage
+\section{Layered and dumbbell comparisons}
+\begin{demo}{Current and reference values}
+\gradcompare[width=65mm,precision=0]{60}{82}
+
+\graddumbbell[width=65mm,palette=categorical,precision=0]{48}{76}
+
+\graddumbbell[min=-50,max=100,width=65mm,
+  compare label=delta,precision=0]{-20}{35}
+
+\graddumbbell[width=65mm,precision=0]{NA}{65}
+\end{demo}
+Layered bars use a wide reference and a centered current layer. The
+\key{compare ratio} defaults to .45 and must be strictly between zero and one.
+Both lengths start from the common zero; they are not added or divided.
+
+Dumbbells use a hollow reference point and a current point joined by a line.
+The default label is current / reference; delta means current minus reference.
+A missing endpoint suppresses the connector; delta is missing if either endpoint
+is missing. Equal endpoints overlap. Error whiskers refer to the current value.
+\key{compare color}, \key{marker size} and \key{stem width} control appearance.
+Dedicated comparison and spark commands retain their shape when applying presets.
+\clearpage
+
+\section{Change annotations and relative differences}
+\key{compare annotation=none|arrow|bracket} adds a directional arrow or a
+difference bracket above a layered comparison or dumbbell. None is the default.
+Arrows point from reference to current; equal values omit the arrow. Missing
+either endpoint suppresses the annotation.
+\begin{demo}{Absolute and relative change}
+\gradcompare[width=65mm,precision=0,
+  compare annotation=bracket]{80}{55}
+
+\graddumbbell[width=65mm,precision=1,marker shape=diamond,
+  compare annotation=arrow,compare label=percent]{40}{60}
+
+\graddumbbell[width=65mm,precision=1,compare label=percent]{0}{30}
+\end{demo}
+Relative change is $100(c-r)/|r|$ percent, where $r$ is the reference and $c$
+is the current value. A zero reference or missing endpoint gives a missing label,
+not infinity. This differs from \key{value format=percent}, which uses the scale
+maximum. Positive changes carry a plus sign. Annotation text follows percent
+mode; other modes annotate the raw-unit difference. Reference names and change
+annotations share the upper area, so avoid crowding both into a narrow graphic.
+
+\clearpage
+\section{Sparklines and missing positions}
+\begin{demo}{Comparable monthly observations}
+\gradbarsstyle{monthly}{width=65mm,height=7mm,min=0,max=100,
+  spark range=fixed,precision=0,row padding=3pt}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Series & Jan--Jun / June value\\\midrule
+North & \gradspark[style=monthly]{35,48,42,60,72,80}\\
+South & \gradspark[style=monthly]{55,53,NA,58,62,65}\\
+West & \gradspark[style=monthly]{45,45,45,45,45,45}\\
+East & \gradspark[style=monthly]{30,40,55,60,70,NA}\\
+\bottomrule
+\end{tabular}
+\end{demo}
+Observations are equally spaced. Empty fields and NA keep their horizontal
+position and break connections. The last label is the last position, not the last
+nonmissing observation. Default height is 4ex.
+
+\key{spark range=auto} uses each row's extrema; compare shapes only with this mode.
+Use fixed with shared min, max, width and height to compare magnitudes across rows.
+Constant auto series are centered vertically; a singleton is centered horizontally.
+All-missing series show only a track and missing label. Fixed ranges use normal
+overflow rules. Auto ranges do not support computed-percent labels.
+
+\key{spark points} can be extrema (default), all, last or none. Extrema mode
+marks all tied extrema and the last position if present. Low and high colors
+default to gradbarsOrange and gradbarsTeal. A constant series uses the high color;
+a non-extreme last point uses the line color. Point colors indicate position, not
+quality. Use color, stem width and marker size to style the line and points.
+Sparklines do not parse dates and do not use bar targets, error whiskers, bands or
+thresholds. Labels stay outside. Use a common observation grid for irregular dates.
+\clearpage
+
+\section{Multiple references, bullet charts and grouped intervals}
+\key{references} takes records in the form \key{value/color/line style/name}.
+Enclose each record in braces. Styles are solid, dashed and dotted. Values must
+lie within min/max. Leave a name empty by retaining the final slash.
+Names use alternating heights, but long or closely spaced names may still overlap.
+\begin{demo}{Several named references}
+\gradbar[width=85mm,height=9pt,precision=0,
+  references={{40/gray/dotted/Baseline},
+              {75/gradbarsTeal/dashed/Target},
+              {95/gradbarsOrange/solid/Limit}}]{68}
+\end{demo}
+\key{references={}} clears inherited references. They may coexist with target.
+References apply to bars, stacks, comparisons and intervals, not sparklines.
+Avoid slashes in names; compact tables can explain unnamed reference lines in a heading.
+
+\subsection{Bullet charts}
+\key{\gradbullet{value}} draws an actual value over explicit background grades.
+Provide \key{bullet bands} as upper-bound/color records. Bounds must strictly
+increase; the first band starts at min and the final bound must equal max.
+The default height is 12pt, with the actual bar occupying 40\% of that height.
+\begin{demo}{Actual performance, reference grades and targets}
+\gradbullet[width=85mm,max=120,precision=0,color=gradbarsBlue,
+  bullet bands={{60/black!8},{90/black!16},{120/black!26}},
+  references={{90/gradbarsTeal/dashed/Target},
+              {110/gradbarsOrange/solid/Stretch}}]{82}
+\end{demo}
+Grades do not classify performance automatically. Supply quality thresholds
+separately when needed. Explain the grades in a caption; use explicit gray shades
+for monochrome output. NA and zero retain their different meanings.
+
+\subsection{Several intervals in one cell}
+\key{\gradintervals{records}} accepts name/lower/point/upper/color records.
+Each record uses the same scale and graphic width; names align to the longest name.
+Use NA for an absent point, or NA for all three numbers for a missing record.
+\begin{demo}{Comparable uncertainty intervals}
+\gradintervals[width=65mm,min=0,max=100,height=5pt,
+  precision=0,row padding=4pt,references={{70/gray/dashed/}}]{
+  {Method A/45/58/72/gradbarsBlue},
+  {Method B/55/68/82/gradbarsTeal},
+  {Method C/62/NA/88/gradbarsOrange}}
+\end{demo}
+Points are supplied, never inferred. Lower must not exceed upper and a point
+must lie inside the original interval. Explain the confidence level if relevant.
+This command creates an indivisible inner table: names and endpoint labels add
+to its width, and records do not break across pages. Reference names repeat per record.
+
+
+\clearpage
+\part{Appearance, labels and evaluation}
 \section{Appearance, reusable styles and palettes}
 Seven themes are available: blue, teal, solid, gray, lbyellow, viblue and cyblu.
 Nine predefined solid colors are lightgreen, lightyellow, lightblue, lightred,
@@ -174,76 +403,35 @@ back to the current palette. Definitions are scoped. In print/mono mode, categor
 colors use gray while registered patterns remain. Legends use the same mapping.
 Patterns are none, diagonal, reverse, dots, crosshatch, horizontal and vertical.
 Use names or textures alongside color when category distinctions matter.
+\clearpage
 
-\section{Signed bars, targets, intervals and uncertainty}
-\begin{demo}{A signed point estimate and asymmetric uncertainty}
-\gradbar[min=-50,max=100,width=65mm,
-  target=40,band={20,60},error minus=8,error plus=12]{35}
+\section{Overflow indicators and marker shapes}
+\key{overflow mark=none|arrow|slash} indicates clipped values at scale boundaries.
+The default is none for individual graphics and arrow in gradtable. Exact boundary
+values do not produce a mark. \key{overflow=error} still rejects out-of-range data.
+\begin{demo}{Clipping without hiding the original value}
+\gradbar[max=100,width=65mm,precision=0,overflow mark=arrow]{125}
 
-\gradbar[min=-50,max=100,width=65mm,shape=lollipop]{-25}
-
-\gradrange[min=-50,max=100,width=65mm,range point=10]{-20}{35}
+\gradrange[min=-40,max=60,width=65mm,precision=0,
+  overflow mark=slash]{-55}{75}
 \end{demo}
-Error magnitudes are nonnegative distances from the observation, not absolute
-endpoints. Explain whether they represent standard deviation, standard error or
-confidence intervals in the table caption. Targets and bands are references, not
-automatically estimated uncertainty. A band must have ordered endpoints within
-the scale; invalid reference bands and targets cause errors.
+Checks use raw values, interval and error endpoints, both comparison values and
+separate signed stack subtotals. Fixed-range sparklines check all present points.
+The mark indicates overflow, not quality or the amount beyond the boundary.
 
-Floating intervals require lower$\le$upper; equal endpoints draw a cap, not an
-inflated bar. Both endpoints must be present or both missing. A range point must
-lie inside the original endpoints. Intervals reject error whiskers and quality
-thresholds. Default labels show the supplied endpoints.
-Lollipops show a point for zero, but no point for missing input.
+\key{marker shape} supports circle, square, diamond and triangle;
+\key{marker fill} supports solid and hollow. Dumbbell reference markers and
+interval estimates remain hollow to preserve their meaning. Marker size is the
+distance from the center to its boundary.
+\begin{demo}{Shapes that remain distinguishable in monochrome}
+\gradbar[shape=lollipop,marker shape=square]{72}
 
-\section{Layered and dumbbell comparisons}
-\begin{demo}{Current and reference values}
-\gradcompare[width=65mm,precision=0]{60}{82}
+\graddumbbell[marker shape=diamond]{48}{72}
 
-\graddumbbell[width=65mm,palette=categorical,precision=0]{48}{76}
-
-\graddumbbell[min=-50,max=100,width=65mm,
-  compare label=delta,precision=0]{-20}{35}
-
-\graddumbbell[width=65mm,precision=0]{NA}{65}
+\gradbar[shape=lollipop,marker shape=triangle,marker fill=hollow]{72}
 \end{demo}
-Layered bars use a wide reference and a centered current layer. The
-\key{compare ratio} defaults to .45 and must be strictly between zero and one.
-Both lengths start from the common zero; they are not added or divided.
 
-Dumbbells use a hollow reference point and a current point joined by a line.
-The default label is current / reference; delta means current minus reference.
-A missing endpoint suppresses the connector; delta is missing if either endpoint
-is missing. Equal endpoints overlap. Error whiskers refer to the current value.
-\key{compare color}, \key{marker size} and \key{stem width} control appearance.
-Dedicated comparison and spark commands retain their shape when applying presets.
-
-\section{Stacked contributions and segment labels}
-\begin{demo}{Positive and negative contributions}
-\gradstack[min=-60,max=100,width=80mm,height=14pt,
-  precision=0,palette=categorical,stack totals=separate,
-  stack names={Sales,Materials,Service,Operations},
-  segment labels=value,legend=true]{60,-25,20,-15}
-\end{demo}
-Positive and negative contributions accumulate independently from zero. Within
-each side, segment order follows input order. Negative segments require a negative
-min. Positive and negative subtotals are checked separately against the scale.
-The default total is the algebraic sum; \key{stack totals=separate} shows positive
-and negative subtotals. A zero net does not erase nonzero contributions.
-
-Segment labels can be none, value, percent, name, name value or name percent.
-The percentage of a segment is
-\[100|v_i|/\sum_j|v_j|,\]
-including clipped contributions. These percentages
-represent shares of absolute activity, not shares of a potentially zero net.
-All-zero stacks do not calculate percentages. Stacks are not normalized to full
-width. Missing segments, empty lists, quality thresholds and error whiskers are rejected.
-
-Provide one stack name per segment for named labels or automatic legends.
-Small labels move outside with leader lines; automatic black/white text follows
-the fill. Zero segments retain their palette and legend positions. Use a shared
-\key{\gradbarslegend} outside a table to avoid repeating the legend for every row.
-
+\clearpage
 \section{Quality: higher, lower, target or interval}
 Higher and lower modes classify the raw value using two increasing thresholds.
 Lower reverses the quality colors without reversing geometry. Threshold colors
@@ -267,39 +455,395 @@ Thus thresholds of 0 and 10 classify values inside the interval, including its
 endpoints, as good. Quality target/range evaluate data; target/band draw optional
 references. Set them separately. Quality changes color, never positions or labels.
 It is not applied to stacks, floating intervals or sparklines.
+\clearpage
+\section{Label placement, printing and practical limits}
+Labels support outside, inside, end, auto and none. Auto moves a label outside
+when it does not fit. End places it above the endpoint. Comparisons, lollipops,
+outlined bars and intervals with a range point move internal labels outside.
+Sparklines always use outside labels. \key{text color=auto} chooses black or white.
+\key{label width} reserves an outside slot; use the same sufficiently wide slot
+throughout a column. Long labels may require a wider column or a custom short text.
 
-\section{Sparklines and missing positions}
-\begin{demo}{Comparable monthly observations}
-\gradbarsstyle{monthly}{width=65mm,height=7mm,min=0,max=100,
-  spark range=fixed,precision=0,row padding=3pt}
-\begin{tabular}{@{}ll@{}}
-\toprule
-Series & Jan--Jun / June value\\\midrule
-North & \gradspark[style=monthly]{35,48,42,60,72,80}\\
-South & \gradspark[style=monthly]{55,53,NA,58,62,65}\\
-West & \gradspark[style=monthly]{45,45,45,45,45,45}\\
-East & \gradspark[style=monthly]{30,40,55,60,70,NA}\\
-\bottomrule
-\end{tabular}
+\key{row padding} reserves extra height above and below a graphic; it does not
+change the document's global row spacing. Use arraystretch or table row spacing
+when appropriate. Marker shapes reserve space consistently even when the first
+or last observation does not have a marker.
+
+\key{print} applies gray fills, textures and white label backgrounds. Mono is a
+group palette using those settings. Provide textual category names and real values
+as well as visual distinctions. Outlined bars and legends are available through
+\key{outline=true} or the outline preset; print clears outline mode.
+
+All collision handling is local to a graphic, not to the whole table. Complex
+axes, date parsing and large general-purpose plots are outside this package's
+scope. No specialized tagged-PDF chart descriptions are generated.
+
+\clearpage
+\part{Visual tables and data interfaces}
+
+\section{Dedicated visual tables: gradtable}
+Declare columns, then supply data rows. No alignment separators or row-ending
+commands are needed.
+
+\key{\gradcolumn[options]{id}{title}} requires a unique id;
+\key{\gradrow{cells}} provides comma-separated cells in declaration order.
+Protect text containing commas with braces. Use explicit NA for missing numbers.
+\begin{demo}{Text, numbers and bars in one table}
+\begin{gradtable}[preset=paper,graphic width=48mm,
+  text width=24mm,label width=14mm]
+  \gradcolumn{method}{Method}
+  \gradcolumn[type=number,options={precision=0}]{n}{Samples}
+  \gradcolumn[type=bar,options={max=100,precision=1}]{score}{Score}
+  \gradrow{Method A,120,82.4}
+  \gradrow{Method B,12500,91.2}
+  \gradrow{Method C,NA,NA}
+\end{gradtable}
 \end{demo}
-Observations are equally spaced. Empty fields and NA keep their horizontal
-position and break connections. The last label is the last position, not the last
-nonmissing observation. Default height is 4ex.
+Column \key{options={...}} accepts drawing options such as min, max, precision,
+unit, theme, target and references. All rows share those options. Number columns
+format values without clipping them to a drawing scale.
 
-\key{spark range=auto} uses each row's extrema; compare shapes only with this mode.
-Use fixed with shared min, max, width and height to compare magnitudes across rows.
-Constant auto series are centered vertically; a singleton is centered horizontally.
-All-missing series show only a track and missing label. Fixed ranges use normal
-overflow rules. Auto ranges do not support computed-percent labels.
+All outside labels in a column are measured before rendering. The label slot is
+the greater of label width and the widest actual label, and aligns values right.
+Wider labels do not change the graphic scale. Equal fixed precision naturally
+aligns decimal points; mixed units or scientific notation only guarantee right alignment.
+Defaults are graphic width=32mm, text width=22mm and label width=18mm.
 
-\key{spark points} can be extrema (default), all, last or none. Extrema mode
-marks all tied extrema and the last position if present. Low and high colors
-default to gradbarsOrange and gradbarsTeal. A constant series uses the high color;
-a non-extreme last point uses the line color. Point colors indicate position, not
-quality. Use color, stem width and marker size to style the line and points.
-Sparklines do not parse dates and do not use bar targets, error whiskers, bands or
-thresholds. Labels stay outside. Use a common observation grid for irregular dates.
+Declare every column before any group or data row. Every row must contain exactly
+one cell per column. Do not omit a missing field. Validation identifies the row
+and column id. Text wraps in text columns. By default the table uses its natural
+width; an explicit total width enables allocation as described below.
 
+\clearpage
+
+\section{Comparison, composition and trend columns}
+Available types are text, number, bar, bullet, interval, compare, dumbbell, stack
+and spark. Compare and dumbbell cells use reference/current order; default labels
+display current/reference, while delta displays current minus reference.
+NA means both missing; 40/NA and NA/60 represent one missing endpoint.
+\begin{demo}{Two views of the same comparison}
+\begin{gradtable}[text width=22mm,graphic width=32mm,
+  label width=12mm,header align=c,column sep=6pt,row stretch=1.8]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=compare,options={max=100,precision=0}]{bars}{Values}
+  \gradcolumn[type=dumbbell,options={max=100,precision=0,
+    compare label=delta,marker shape=diamond}]{change}{Change}
+  \gradrow{A,40/68,40/68}
+  \gradrow{B,75/60,75/60}
+  \gradrow{C,50/NA,50/NA}
+\end{gradtable}
+\end{demo}
+Stack and spark cells contain lists, so enclose each cell's list in braces.
+Whole-cell NA is supported. Missing individual stack contributions are not zero
+and must not be included in a total. A spark's missing last position retains a
+missing label rather than borrowing an earlier observation.
+\begin{demo}{Composition and a common-scale trend}
+\begin{gradtable}[text width=22mm,graphic width=32mm,
+  label width=12mm,header align=c,column sep=6pt,row stretch=1.8]
+  \gradcolumn{name}{Project}
+  \gradcolumn[type=stack,options={max=100,precision=0,
+    stack colors={gradbarsBlue,gradbarsTeal,gold}}]{mix}{Composition}
+  \gradcolumn[type=spark,options={spark range=fixed,
+    min=0,max=100,precision=0}]{trend}{Five periods}
+  \gradrow{A,{20,35,25},{35,48,NA,65,80}}
+  \gradrow{B,{30,20,15},{80,70,65,NA,NA}}
+  \gradrow{C,NA,NA}
+\end{gradtable}
+\end{demo}
+Keep stack categories in a consistent order or register named categories.
+Use a negative min for negative contributions. Use fixed spark ranges to compare
+magnitudes; auto scales each cell separately and only supports shape comparison.
+
+\clearpage
+
+\section{Alignment, rules and spacing}
+Headers follow the corresponding column unless overridden. With align=auto,
+text and graphic columns align left and number columns align right. Column
+settings override table settings. Use \key{header align=c} for centered headings.
+\begin{demo}{Horizontal alignment and vertically centered text}
+\begin{gradtable}[rules=grid,header align=c,valign=c,
+  text width=30mm,column sep=5pt,row padding=3pt,
+  header color=gradbarsBlue!8,rule color=gradbarsBlue!60!black]
+  \gradcolumn[align=l]{left}{Left}
+  \gradcolumn[align=c]{center}{Center}
+  \gradcolumn[align=r]{right}{Right}
+  \gradcolumn[type=number,align=c,width=20mm,
+    options={precision=0}]{number}{Count}
+  \gradrow{Method A,Method A,Method A,120}
+  \gradrow{A longer name wraps within the text column,Short,Short,5}
+\end{gradtable}
+\end{demo}
+\key{valign=t|c|b} affects text columns only, using array's p/m/b paragraph boxes.
+Use align=l,valign=c for left-aligned, vertically centered text.
+
+In natural-width mode, column width fixes text wrapping but is a minimum for
+number and graphic cells. Graphic width controls the plot, label width controls
+the numeric slot, and column width controls the cell. Graphic alignment moves
+the complete plot-plus-label cell; numeric labels remain right-aligned internally.
+\begin{demo}{A centered score heading and graphic cell}
+\begin{gradtable}[rules=rows,header align=c,
+  graphic width=28mm,label width=12mm,column sep=8pt,row stretch=1.4]
+  \gradcolumn[width=24mm,header align=l]{method}{Method}
+  \gradcolumn[type=bar,align=c,width=75mm,
+    options={max=100,precision=0}]{score}{Score}
+  \gradrow{A,82}
+  \gradrow{B,NA}
+\end{gradtable}
+\end{demo}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule Option & Meaning\\\midrule
+rules=booktabs & Default: top, header separator and bottom rules.\\
+rules=rows & Also separates data rows horizontally.\\
+rules=grid & Full horizontal/vertical grid and outer border.\\
+rules=none & No table rules.\\
+column sep & Horizontal padding per side of a column; default 6pt.\\
+row stretch & Positive base row-height multiplier: paper/mono 1.2, report 1.5.\\
+row padding & Extra height, default 0pt; does not scale graphics.\\
+header color & Report defaults to gradbarsTrack; empty clears the fill.\\
+rule color & Default black; local to this table.\\
+\bottomrule
+\end{tabularx}
+Spacing and widths must be nonnegative. Cell alignment does not position the
+whole table: use an enclosing group with centering, raggedright or raggedleft.
+
+\clearpage
+
+\section{Allocating a total table width}
+\key{width=\linewidth} allocates the available width without scaling text.
+Labels, fixed columns, padding and rules are reserved first; text columns and
+graphic areas share the remaining space. Values keep their original scale.
+\begin{demo}{A fixed number column and flexible text and graphics}
+\begin{gradtable}[width=\linewidth,header align=c,
+  label width=12mm,column sep=6pt,row padding=2pt,
+  min text width=18mm,min graphic width=15mm]
+  \gradcolumn[weight=1]{method}{Method name}
+  \gradcolumn[type=bar,weight=2,mark=both,
+    options={max=100,precision=1}]{score}{Score}
+  \gradcolumn[type=number,width=18mm,
+    options={precision=0}]{count}{Samples}
+  \gradheader{\gradspan{1}{Setup}\gradspan{2}{Evaluation}}
+  \gradrow{An improved method with a longer name,92.8,12500}
+  \gradrow{Baseline,84.6,320}
+  \gradrow{Pending,NA,80}
+\end{gradtable}
+\end{demo}
+Default width=0pt retains natural sizing. A positive column weight (default 1)
+shares space left after minimum widths, so weight=2 does not mean exactly twice
+the final column width. Min text width and min graphic width default to 12mm;
+the latter excludes the label slot. Number columns do not stretch.
+
+In total-width mode a column width fixes a text or graphic cell; number columns
+still grow to fit their labels. The allocated plot width overrides graphic width
+and any width in drawing options. Every row shares that allocated width.
+Headers and group titles may wrap; unbreakable words still need break points.
+An insufficient budget causes an error: increase the width, reduce padding or
+minimum widths, shorten units, or use fewer columns. Keep at least one flexible
+column when fixed columns leave unused space.
+
+\clearpage
+
+\section{Multilevel headers and spanning titles}
+\key{\gradheader{...}} adds a header layer. Within it,
+\key{\gradspan{count}{title}} spans consecutive columns. Declare all columns
+first, then header layers, then groups and rows. Each layer must span exactly
+the total number of columns. Column titles form the bottom header layer.
+\begin{demo}{Three header levels}
+\begin{gradtable}[rules=grid,header align=c,
+  header color=gradbarsBlue!8,text width=28mm,
+  column sep=8pt,row padding=3pt]
+  \gradcolumn{method}{Method}
+  \gradcolumn[type=number,width=24mm,
+    options={precision=1}]{accuracy}{Accuracy}
+  \gradcolumn[type=number,width=24mm,
+    options={precision=1}]{fscore}{F1}
+  \gradcolumn[type=number,width=24mm,
+    options={precision=0}]{latency}{ms}
+  \gradheader{\gradspan{4}{Model evaluation}}
+  \gradheader{\gradspan{1}{Setup}\gradspan{2}{Prediction quality}
+    \gradspan{1}{Latency}}
+  \gradrow{A,91.4,89.7,24}
+  \gradrow{B,93.2,91.5,31}
+\end{gradtable}
+\end{demo}
+Spanning titles are centered, follow header color and use the chosen rules.
+An empty title still occupies its declared span. Layers merge horizontally,
+not vertically. Schemas may include headers, but no columns may follow a header.
+
+\clearpage
+
+\section{Grouped rows and best-value marking}
+\key{\gradgroup{title}} inserts a full-width group heading. Each group needs at
+least one data row. Groups do not alter scales or participate in ranking.
+Group color defaults to gradbarsTrack; an empty value removes it. Group sep
+defaults to 4pt. All rule styles support groups.
+\begin{demo}{Ties, second-best values and lower-is-better metrics}
+\begin{gradtable}[header align=c,text width=30mm,
+  graphic width=38mm,label width=12mm,group sep=4pt]
+  \gradcolumn{method}{Method}
+  \gradcolumn[type=bar,mark=both,
+    options={max=100,precision=1}]{score}{Score}
+  \gradcolumn[type=number,mark=both,width=24mm,
+    options={better=lower,precision=1}]{time}{Time / s}
+  \gradgroup{Baselines}
+  \gradrow{A,82.4,12.8}
+  \gradrow{B,90.2,10.5}
+  \gradgroup{Improved methods}
+  \gradrow{C,90.2,9.6}
+  \gradrow{D,86.7,9.6}
+  \gradrow{E,NA,NA}
+\end{gradtable}
+\end{demo}
+Best values are bold and second-best values are underlined. Mark can be none
+(default), best or both, for number, bar and bullet columns. Ranking covers the
+whole table, across groups and pages. Use better=higher or better=lower inside
+column options; target-distance and interval-quality ranking are not supported.
+
+Ranking uses raw values before rounding. Equal numbers (including 2 and 2.0)
+tie; second best is the next distinct value. NA is excluded and zero participates.
+An all-missing column has no marks; an all-equal column has no second best.
+Increase precision if rounding hides a distinction. For stacks or trends, add a
+separate number column defining the metric to rank. Explain the marking in a caption.
+
+\clearpage
+
+\section{Report and monochrome table presets}
+Table presets are paper (thin solid bars and compact booktabs rules), report
+(tinted headings and taller rows) and mono (gray and textures). Column drawing
+options override the preset. Table presets and individual-graphic presets are
+separate interfaces.
+\begin{demo}{Bullet and interval columns}
+\begin{gradtable}[preset=report,graphic width=32mm,
+  text width=19mm,label width=19mm]
+  \gradcolumn{name}{Project}
+  \gradcolumn[type=bullet,options={max=100,precision=0,
+    bullet bands={{60/black!8},{85/black!16},{100/black!25}},
+    target=85}]{actual}{Progress}
+  \gradcolumn[type=interval,options={max=100,precision=0,
+    color=gradbarsTeal}]{estimate}{Interval}
+  \gradrow{A,78,65/78/90}
+  \gradrow{B,92,80/92/98}
+  \gradrow{C,NA,NA}
+\end{gradtable}
+\end{demo}
+Interval cells use lower/point/upper. NA in the point position omits only the
+point, while whole-cell NA omits the interval. The supplied point must lie inside
+the original endpoints. Bullet columns require explicit background bands.
+\begin{demo}{Signed observations in monochrome}
+\begin{gradtable}[preset=mono,graphic width=32mm,
+  text width=19mm,label width=19mm]
+  \gradcolumn{name}{Group}
+  \gradcolumn[type=bar,options={min=-40,max=60,precision=0}]{change}{Change}
+  \gradcolumn[type=interval,options={min=-40,max=60,
+    precision=0,marker shape=diamond}]{range}{Interval}
+  \gradrow{A,-12,-25/-12/5}
+  \gradrow{B,28,15/28/45}
+\end{gradtable}
+\end{demo}
+Default tables are indivisible and can be placed in table, table* or minipage.
+They do not infer ranges, calculate totals or load files automatically.
+
+\clearpage
+
+\section{Reusable table styles and schemas}
+\key{\gradtablestyle{name}{keys}} saves table appearance.
+
+\key{\gradtableschema{name}{body}} saves column and header declarations.
+
+Use style=name and \key{\graduseschema{name}}. Definitions may be placed in the
+preamble. Redefinition replaces an earlier definition and follows TeX grouping.
+\begin{demo}{Shared structure, different rule styles}
+\gradtablestyle{benchmark}{rules=booktabs,header align=c,
+  text width=30mm,graphic width=40mm,label width=12mm,
+  row stretch=1.3,group color=gradbarsBlue!8}
+\gradtableschema{benchmark}{
+  \gradcolumn{method}{Method}
+  \gradcolumn[type=bar,mark=both,
+    options={max=100,precision=1}]{score}{Score}
+}
+\begin{gradtable}[style=benchmark]
+  \graduseschema{benchmark}
+  \gradgroup{Validation}
+  \gradrow{A,81.5}
+  \gradrow{B,88.2}
+\end{gradtable}
+
+\begin{gradtable}[style=benchmark,rules=grid]
+  \graduseschema{benchmark}
+  \gradgroup{Test}
+  \gradrow{A,79.6}
+  \gradrow{B,85.3}
+\end{gradtable}
+\end{demo}
+Options after style override it. Styles may reference other styles and schemas
+may compose schemas; cycles cause errors. Ids must remain unique. Apply schemas
+before any data or group. Each table measures and ranks its own data separately.
+
+\clearpage
+
+\section{Multipage tables and repeated headers}
+\key{long=true} uses longtable to break between data rows. Every page repeats
+the full header, including spanning layers. Widths and ranking are computed for
+the entire table. A group heading stays with its first row; the remaining group
+may continue, but its name is not repeated automatically.
+
+Place long tables directly in single-column body text, outside floats, minipages
+and nonbreakable example boxes. They cannot run in two-column mode. A single row
+cannot split. Use caption for a numbered title, label for referencing (requires
+caption), and continued text for continuation notices (default: (continued)).
+An empty continued text suppresses the notice. Compile twice to settle references.
+
+The following table is typeset directly in this manual and can cross a page
+boundary. Its exact source is printed afterwards. Best values are bold and the
+next distinct values are underlined across all records.
+\begin{filecontents*}[overwrite]{\jobname-long-example.tex}
+\begin{gradtable}[long=true,width=\linewidth,
+  caption={Grouped benchmark},label={tab:english-long},
+  continued text={(continued)},header align=c,
+  label width=12mm,column sep=6pt,row stretch=1.4,row padding=3pt]
+  \gradcolumn[weight=1]{method}{Method}
+  \gradcolumn[type=bar,weight=2,mark=both,
+    options={max=100,precision=1}]{score}{Score}
+  \gradcolumn[type=number,width=18mm,mark=both,
+    options={better=lower,precision=1}]{time}{Time / s}
+  \gradcolumn[type=interval,weight=1.5,
+    options={max=100,precision=0}]{range}{Interval}
+  \gradheader{\gradspan{1}{Setup}\gradspan{3}{Shared evaluation set}}
+  \gradgroup{Experiment group A}
+  \gradrow{Method 01,70.0,8.0,66/70/74}
+  \gradrow{Method 02,77.2,11.1,73/77/81}
+  \gradrow{Method 03,84.4,14.2,80/84/88}
+  \gradrow{Method 04,91.0,17.0,87/91/95}
+  \gradrow{Method 05,70.2,20.1,66/70/74}
+  \gradrow{Method 06,77.4,23.2,73/77/81}
+  \gradrow{Method 07,84.0,9.0,80/84/88}
+  \gradrow{Method 08,91.2,12.1,87/91/95}
+  \gradgroup{Experiment group B}
+  \gradrow{Method 09,70.4,15.2,66/70/74}
+  \gradrow{Method 10,77.0,18.0,73/77/81}
+  \gradrow{Method 11,84.2,21.1,80/84/88}
+  \gradrow{Method 12,91.4,24.2,87/91/95}
+  \gradrow{Method 13,70.0,10.0,66/70/74}
+  \gradrow{Method 14,77.2,13.1,73/77/81}
+  \gradrow{Method 15,84.4,16.2,80/84/88}
+  \gradrow{Method 16,91.0,19.0,87/91/95}
+  \gradgroup{Experiment group C}
+  \gradrow{Method 17,70.2,22.1,66/70/74}
+  \gradrow{Method 18,77.4,8.2,73/77/81}
+  \gradrow{Method 19,84.0,11.0,80/84/88}
+  \gradrow{Method 20,91.2,14.1,87/91/95}
+  \gradrow{Method 21,70.4,17.2,66/70/74}
+  \gradrow{Method 22,77.0,20.0,73/77/81}
+  \gradrow{Method 23,84.2,23.1,80/84/88}
+  \gradrow{Method 24,91.4,9.2,87/91/95}
+\end{gradtable}
+\end{filecontents*}
+\par
+\input{\jobname-long-example.tex}
+\par\medskip
+\textbf{Source of the multipage example}
+\lstinputlisting[style=gradmanual]{\jobname-long-example.tex}
+
+\clearpage
 \section{CSV input and numeric table columns}
 CSV files are read as characters, not executed as TeX. UTF-8 BOM, quoted commas,
 doubled quotes and custom missing tokens are supported. Fields must fit on a
@@ -331,28 +875,120 @@ calculate a range and are not siunitx S columns. Avoid placing complete drawing
 commands in a numeric collection cell. tabular and longtable workflows are
 documented; a tabularray-specific collection interface is not implemented.
 
-\section{Label placement, printing and practical limits}
-Labels support outside, inside, end, auto and none. Auto moves a label outside
-when it does not fit. End places it above the endpoint. Comparisons, lollipops,
-outlined bars and intervals with a range point move internal labels outside.
-Sparklines always use outside labels. \key{text color=auto} chooses black or white.
-\key{label width} reserves an outside slot; use the same sufficiently wide slot
-throughout a column. Long labels may require a wider column or a custom short text.
+\clearpage
+\part{Complete layout examples}
 
-\key{row padding} reserves extra height above and below a graphic; it does not
-change the document's global row spacing. Use arraystretch or table row spacing
-when appropriate. Marker shapes reserve space consistently even when the first
-or last observation does not have a marker.
+\section{A complete benchmark table}
+Use shared scales within each column, explicit units and a stated ranking rule.
+This example combines a score, latency, before/after change and recent history.
+Best score and lowest latency are bold; missing observations remain missing.
+\begin{demo}{Model comparison with a grouped header}
+\begin{gradtable}[width=\linewidth,header align=c,
+  label width=8mm,column sep=3pt,min text width=12mm,
+  min graphic width=15mm,row stretch=1.7]
+  \gradcolumn{method}{Method}
+  \gradcolumn[type=bar,mark=best,weight=1.2,
+    options={max=100,precision=1}]{score}{Score}
+  \gradcolumn[type=number,width=15mm,mark=best,
+    options={better=lower,precision=1}]{time}{ms}
+  \gradcolumn[type=dumbbell,options={max=100,precision=1,
+    compare label=delta}]{change}{Change}
+  \gradcolumn[type=spark,options={spark range=fixed,
+    min=0,max=100,precision=1}]{trend}{Five periods}
+  \gradheader{\gradspan{1}{Setup}\gradspan{2}{Performance}
+    \gradspan{2}{Comparison}}
+  \gradrow{A,82.4,14.8,68/82.4,{68,74,70,78,82.4}}
+  \gradrow{B,91.6,18.2,76/91.6,{76,81,78,87,91.6}}
+  \gradrow{C,87.3,11.5,80/87.3,{80,72,83,78,87.3}}
+  \gradrow{D,78.9,9.6,83/78.9,{83,72,79,74,78.9}}
+\end{gradtable}
+\end{demo}
+The dumbbell connects reference and current values, and its label shows their
+difference. All trends share 0--100 vertically and equal observation spacing.
+These numbers are demonstrations, not experimental findings.
 
-\key{print} applies gray fills, textures and white label backgrounds. Mono is a
-group palette using those settings. Provide textual category names and real values
-as well as visual distinctions. Outlined bars and legends are available through
-\key{outline=true} or the outline preset; print clears outline mode.
+\section{Two-column papers, print and slides}
+\subsection{A narrow paper column}
+Use width=\key{\linewidth} in the local column or minipage; reduce horizontal
+padding and the reserved label slot before reducing font size. A normal gradtable
+can be inside a table float; a wide table* can span both paper columns.
+\begin{demo}{A table fitted to an 80mm column}
+\begin{minipage}{80mm}
+\begin{gradtable}[width=\linewidth,preset=paper,header align=c,
+  label width=8mm,column sep=3pt,min text width=12mm,
+  min graphic width=15mm]
+  \gradcolumn{method}{Method}
+  \gradcolumn[type=bar,mark=best,
+    options={max=100,precision=1}]{score}{Score}
+  \gradrow{Baseline,82.4}
+  \gradrow{Proposed,91.6}
+\end{gradtable}
+\end{minipage}
+\end{demo}
+Use the multipage example in the preceding part for long results lists. Long mode
+must be outside floats and two-column text, rather than shrinking an entire long table.
 
-All collision handling is local to a graphic, not to the whole table. Complex
-axes, date parsing and large general-purpose plots are outside this package's
-scope. No specialized tagged-PDF chart descriptions are generated.
+\subsection{Monochrome printing}
+Use preset=mono for tables, print for individual graphics, and registered textures
+for categories. Keep numeric labels and category names. Explain bold and underline
+marking. Print a sample at its final scale: very fine textures may disappear.
+\begin{demo}{Category shares with a matching print legend}
+\gradstack[print,width=75mm,height=17pt,
+  stack names={Train,Validation,Test},
+  stack patterns={diagonal,dots,crosshatch},
+  legend=true,segment labels=percent,precision=0]{60,25,15}
+\end{demo}
 
+\subsection{Beamer slides}
+Use fewer rows, larger text and stronger contrast. Individual graphics support
+preset=presentation. The following is a complete source for a separate slide:
+\begin{source}
+\documentclass{beamer}
+\usepackage{gradbars}
+\begin{document}
+\begin{frame}{Progress toward the target}
+\gradbarssetup{preset=presentation,width=.6\linewidth,
+  max=100,precision=0,target=90}
+\gradbar{82}
+\end{frame}
+\end{document}
+\end{source}
+Ordinary tables can be placed in a frame. Long mode is not a mechanism for
+splitting a visual table into slides; choose the rows for each frame explicitly.
+
+
+\clearpage
+\part{Questions and interface reference}
+
+\section{Frequently asked questions}
+\textbf{Why does a long label overflow?} Outside labels need room in addition to
+the plot. Increase label width, shorten a unit, or use text to give a shorter label.
+Gradtable measures the widest label per column; increase the total width or reduce
+padding if its reserved labels leave insufficient graphic space. Unbreakable text
+still needs explicit break opportunities.
+
+\textbf{How do I adjust row height?} In gradtable use row stretch and row padding;
+for a standalone graphic use row padding. In a standard tabular, arraystretch also
+changes row height. References and change annotations may need additional headroom.
+
+\textbf{Why do equal values have different lengths?} Use the same min, max and
+graphic width within a comparison column. Spark auto ranges rescale each series;
+use fixed for magnitude comparisons. Formatting does not change geometry.
+
+\textbf{Is NA the same as zero?} No. Zero is an observed value and participates in
+ranking. NA is missing. A spark keeps its missing position and breaks the line.
+A missing stack contribution cannot safely be treated as zero.
+
+\textbf{Why did a table not break across pages?} Normal gradtable is indivisible.
+Set long=true in single-column body text, outside a float or minipage. Individual
+rows cannot split. A group heading stays with its first row, but its name is not
+repeated on subsequent pages.
+
+\textbf{Why are two identical-looking labels ranked differently?} Ranking uses raw
+values, not rounded labels. Increase precision. Ties mark all equal raw values;
+second best means the next distinct value across the whole table.
+
+\clearpage
 \section{Compact option reference}
 \small
 \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{44mm}X@{}}
@@ -367,7 +1003,7 @@ rounded, row padding & 0pt, 0pt; nonnegative lengths.\\
 marker size, stem width & 2pt, .6pt; positive lengths.\\
 outline, outline width & false, .4pt; positive width.\\
 compare color, compare ratio & black!20, .45; ratio strictly between 0 and 1.\\
-compare label & values or delta.\\
+compare label & values, delta or percent.\\
 stack totals & net or separate.\\
 stack colors & gradbarsBlue, gradbarsTeal, gold; cyclic.\\
 stack names, legend & Empty list; false.\\
@@ -379,12 +1015,41 @@ overflow & clip or error.\\
 \bottomrule
 \end{tabularx}
 \normalsize
+\clearpage
 
-\section{Contact and maintenance}
+\section{Table and annotation reference}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{55mm}X@{}}
+\toprule Interface / option & Purpose\\\midrule
+\key{\gradcolumn[...]{id}{title}} & Declare a unique column before rows.\\
+\key{\gradrow{cells}} & Comma-separated cells in column order.\\
+\key{\gradheader{spans}} & Add a full header layer before data.\\
+\key{\gradspan{n}{title}} & Span n consecutive columns in that layer.\\
+\key{\gradgroup{title}} & Full-width heading followed by data.\\
+\key{\gradtablestyle{name}{keys}} & Reuse table options with style=name.\\
+\key{\gradtableschema{name}{body}} & Reuse declarations with graduseschema.\\
+\key{mark=none|best|both} & Raw-value ranking for number/bar/bullet.\\
+\key{width}, \key{weight} & Total width and flexible-column allocation.\\
+\key{long=true} & Paginate, repeating complete headers.\\
+\key{caption}, \key{label} & Long-table title and reference; label needs caption.\\
+\key{overflow mark} & none, arrow or slash at clipped boundaries.\\
+\key{marker shape} & circle, square, diamond or triangle.\\
+\key{compare annotation} & none, arrow or bracket.\\
+\key{compare label} & values, delta or percent.\\
+\key{references} & value/color/style/name records.\\
+\key{bullet bands} & Increasing upper-bound/color records ending at max.\\
+\bottomrule
+\end{tabularx}
+Neither table buffering nor the drawing commands infer scientific meaning from
+your data. Set scales, units, uncertainty interpretation, category identity and
+quality direction explicitly. Horizontal header spans are supported; vertical
+cell merging and automatically computed summary rows are not.
+
+\subsection*{Contact and maintenance}
 The author and maintainer is SuFan, whose GitHub account is Tape5try. Contact
 \href{mailto:3546236610@qq.com}{3546236610@qq.com} or report an issue at
 \url{https://github.com/Tape5try/gradbars/issues}.
 Include a minimal source, engine name, TeX distribution and log.
 The MIT license is included in the distribution. Third-party dependencies retain
-their own authorship and licenses; they are not part of this package's copyright claim.
+their own authorship and licenses.
+
 \end{document}

@@ -1,93 +1,100 @@
 # gradbars
 
-**Compact data graphics inside ordinary LaTeX tables.**
+**用一套接口，在 LaTeX 表格中呈现数值、比较与趋势。**
 
-**v0.0.3 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
+**v0.0.4 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
 
-[中文说明](README.zh-CN.md) · [English manual PDF](gradbars-manual-en-v0.0.3.pdf) · [中文手册 PDF](gradbars-manual-v0.0.3.pdf) · [API reference](docs/api.md) · [Release notes](docs/releases/v0.0.3.md)
+**已收录至 CTAN**：访问 [gradbars 宏包页面](https://ctan.org/pkg/gradbars)，查看收录版本、文档与下载入口。
 
-![gradbars: comparisons, signed contributions, trends and quality rules](docs/images/overview-v0.0.3.svg)
+[English](README.en.md) · [中文手册 PDF](gradbars-manual-v0.0.4.pdf) · [英文手册 PDF](gradbars-manual-en-v0.0.4.pdf)
 
-Use a consistent scale, keep real numbers visible, and add a small graphic directly
-to a table cell. No `tikzpicture` wrapper or shell escape is required.
+![对比、正负贡献、趋势与目标评价](docs/images/overview-v0.0.3.svg)
 
-## New in v0.0.3
+既可把单个图形嵌入现有 `tabular`，也可通过 `gradtable` 声明列、填写数据，统一生成可视化表格。图形保留共享尺度与真实数值，无需额外包裹 `tikzpicture`，无需开启 shell escape。
 
-- **Dumbbell comparisons:** hollow reference points, filled current points, optional current-minus-reference labels.
-- **Signed stacks:** accumulate positive and negative contributions independently; show the net or both subtotals.
-- **Sparklines:** equally spaced observations, gaps for missing values, extrema and last-point markers, automatic or shared fixed ranges.
-- **Target and interval quality:** evaluate distance from a goal or acceptable interval without changing data geometry.
-- **Semantic palettes:** categorical, sequential, diverging and monochrome schemes; named categories keep their colors and patterns when reordered.
-- **One reorganized manual:** 56 numbered output/source examples, six application tables, four real layout cases and an interface index.
+## v0.0.4：专属可视化表格
 
-Existing bars, lollipops, layered comparisons, floating intervals, error whiskers,
-CSV input, numeric table columns and named styles remain available.
+- **声明列，直接填数据**：`gradcolumn` 与 `gradrow` 组织表格，不必手写单元格分隔与换行命令。
+- **九种列类型**：文本、数字、普通条、子弹图、区间、双层对比条、哑铃、堆叠条和迷你趋势线。
+- **可控的布局**：左／中／右对齐、独立表头对齐、文本垂直对齐、四种线条样式，以及列间距和行高设置。
+- **自动分配列宽**：根据总宽度、固定列和权重分配空间；同列标签预先测量，图形共用尺度。
+- **多级表头与分组**：跨列标题、分组行、最佳值加粗和次佳值下划线，支持并列值及优劣方向。
+- **复用与跨页**：保存表格样式和列定义；`long=true` 重复完整表头，跨页保持列宽与排名一致。
+- **更完整的图形标注**：多条参考线、子弹图、多组区间、越界提示、点形状、差值箭头与百分比变化。
 
-## Quick start
+中文手册包含 **六部分、42 章、77 个编号示例**；英文手册包含 **六部分、28 节**。两份手册均提供实际效果与源码。
 
-Copy `gradbars.sty` next to your main `.tex` file. The package works with **pdfLaTeX, XeLaTeX and LuaLaTeX**.
-The package uses TikZ, xparse, expl3 and collcell, available in standard TeX installations.
-Chinese fonts are needed only for the Chinese manual, not for the package.
+## 快速开始
+
+将 `gradbars.sty` 放在主 `.tex` 文件旁，可使用 **pdfLaTeX、XeLaTeX 或 LuaLaTeX**。
+宏包依赖 TikZ/PGF、xparse、expl3、collcell、array、booktabs、colortbl 和 longtable。中文字体只用于中文手册，宏包本身不要求中文文档类。
 
 ```latex
 \documentclass{article}
-\usepackage{booktabs,gradbars}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
 \begin{document}
-\gradbarssetup{width=35mm,precision=0}
-\begin{tabular}{ll}
-\toprule
-View & Data \\
-\midrule
-Single value & \gradbar{72} \\
-Current / reference & \graddumbbell{58}{76} \\
-Positive / negative & \gradstack[min=-50,stack totals=separate]{60,-20,15,-10} \\
-Trend / last value & \gradspark[spark range=fixed,min=0,max=100]{25,45,NA,60,80} \\
-\bottomrule
-\end{tabular}
+\begin{gradtable}[width=\linewidth,header align=c,
+  label width=12mm,column sep=6pt]
+  \gradcolumn{method}{Method}
+  \gradcolumn[type=bar,weight=2,mark=both,
+    options={max=100,precision=1}]{score}{Score}
+  \gradcolumn[type=number,width=22mm,mark=best,
+    options={better=lower,precision=1}]{time}{Time / ms}
+  \gradheader{\gradspan{1}{Setup}\gradspan{2}{Evaluation}}
+  \gradgroup{Baselines}
+  \gradrow{Method A,82.4,14.8}
+  \gradrow{Method B,91.6,18.2}
+  \gradgroup{Improved}
+  \gradrow{Method C,87.3,11.5}
+  \gradrow{Pending,NA,NA}
+\end{gradtable}
 \end{document}
 ```
 
-## Choose a graphic
+得分越高越好，耗时越低越好；最佳值加粗，得分次佳值加下划线。`NA` 表示缺失，不等于零。上例使用英文表头，可直接用三种引擎编译；中文内容可使用 XeLaTeX 和 `ctexart` 文档类。
 
-| Need | Command or option |
+默认表格不跨页。需要跨页时，添加 `long=true`，将表格直接放在单栏正文中；不要置于浮动体或 `minipage` 内。
+
+## 如何选图形
+
+| 目的 | 入口 |
 | --- | --- |
-| One magnitude or signed change | `\gradbar[min=-50,max=100]{value}` |
-| Compact stem and endpoint | `\gradbar[shape=lollipop]{value}` |
-| Wide reference behind a narrow current bar | `\gradcompare{reference}{current}` |
-| Two positions and their difference | `\graddumbbell[compare label=delta]{before}{after}` |
-| Known lower and upper endpoints | `\gradrange[range point=50]{35}{75}` |
-| Additive contributions | `\gradstack[min=-60]{60,-25,20,-15}` |
-| Equally spaced time-series shape | `\gradspark{25,40,NA,60,80}` |
-| A point estimate with uncertainty distances | `\gradbar[error minus=5,error plus=8]{60}` |
+| 单个数值、相对零点的增减 | `\gradbar[min=-50,max=100]{值}` |
+| 更少填充面积 | `\gradbar[shape=lollipop]{值}` |
+| 宽基准条与细当前条 | `\gradcompare{基准}{当前}` |
+| 比较两个位置或差值 | `\graddumbbell[compare label=delta]{之前}{之后}` |
+| 给定上下界 | `\gradrange[range point=50]{35}{75}` |
+| 分级背景上的完成度 | `\gradbullet[bullet bands={{60/black!8},{100/black!20}},target=85]{78}` |
+| 可相加的贡献 | `\gradstack[min=-60]{60,-25,20,-15}` |
+| 等间隔变化趋势 | `\gradspark{25,40,NA,60,80}` |
+| 点估计与不确定性 | `\gradbar[error minus=5,error plus=8]{60}` |
 
-## Preserve data meaning
+## 保持正确的数据含义
 
-- Bars share explicit `min`, `max` and `width`. Zero stays at zero; negative values require a negative minimum.
-- `unit` appends text. `value format=percent` computes value/max only for nonnegative ranges. Formatting never changes geometry.
-- Empty input or `NA` denotes missing data. A missing spark observation breaks the line and retains its horizontal position.
-- Signed stacks accumulate from zero independently on each side. The default total is the algebraic sum; `stack totals=separate` shows positive / negative subtotals.
-- Stack segment percentages use `abs(segment) / sum(abs(segments))`. They are shares of absolute activity, not of the net balance. Stacks do not automatically normalize to full width.
-- Auto-scaled sparklines compare shapes. Use `spark range=fixed` with the same `min`, `max`, `width` and `height` to compare levels across rows.
-- Overflow warns and clips the drawing while retaining raw labels; use `overflow=error` for strict checking.
+- 同列共用 `min`、`max`、`width`；负值需要负的 `min`。
+- `unit` 只附加单位；`value format=percent` 计算数值相对于 max 的比例，且只用于非负量程。
+- 空输入和 `NA` 为缺失；趋势中的缺失保留横向位置并断开，末项缺失不会用前一项替代。
+- 正负堆叠的默认总标签是净值，`stack totals=separate` 显示“正小计 / 负小计”。净值为零仍可能有两侧贡献。
+- 堆叠分段百分比为 `abs(段值) / sum(abs(所有段值))`，表示绝对活动量份额；不是净值占比，也不自动归一化条形。
+- 自动趋势范围用于看形状；跨行比较水平和波动时，应统一 `spark range=fixed`、min、max、width、height。
+- 越界默认警告并截断图形，标签保留原值；`overflow=error` 可改为报错。
 
-## Express quality separately
+## 目标与区间评价
 
 ```latex
-% Within 5 of the goal is good; within 15 is intermediate.
 \gradbar[better=target,quality target=50,
   thresholds={5,15},target=50,palette=diverging]{52}
 
-% Inside [40,60] is good; no more than 10 away is intermediate.
 \gradbar[better=interval,quality range={40,60},
   thresholds={0,10},band={40,60},palette=diverging]{68}
 ```
 
-`threshold colors` always lists bad, intermediate, good. In target/interval modes,
-thresholds are nonnegative distances with inclusive upper boundaries.
-`quality target` / `quality range` evaluate data; `target` / `band` draw references.
-`better=higher|lower` remains available for monotonic metrics.
+这两种模式的 thresholds 是非负距离：距离不超过第一个阈值为好，不超过第二个为中，否则为差。
+`threshold colors` 顺序仍为差、中、好。quality 参数负责评价，target/band 负责绘制参考，需要分别设置。
+已有的 `better=higher|lower` 用于越大或越小越好的指标。
 
-## Reuse appearance and category identity
+## 复用排版与类别身份
 
 ```latex
 \gradbarsstyle{paperrow}{preset=paper,width=40mm,max=100,precision=1}
@@ -100,14 +107,14 @@ thresholds are nonnegative distances with inclusive upper boundaries.
 \gradbarslegend{Compute,Storage}
 ```
 
-Four layout presets: `paper`, `report`, `presentation`, `outline`.
-Four group palettes: `categorical`, `sequential`, `diverging`, `mono`.
-Seven themes and nine original solid colors remain available.
-Unregistered categories use cyclic position-based palettes; registered names preserve
-their assigned color and pattern. In print/mono mode category colors use the grayscale
-palette, while registered patterns remain. Legends use the same mapping as segments.
+排版预设：`paper`、`report`、`presentation`、`outline`。
+成组配色：`categorical`、`sequential`、`diverging`、`mono`。
+原有七种主题和九种单色继续保留。
 
-## CSV and existing tables
+未注册名称时按段序号循环取色；注册后按名称匹配。print/mono 使用灰度配色并保留命名类别纹理。
+图例与分段共用同一映射，颜色不足时可结合名称和纹理识别。
+
+## CSV 与现有表格
 
 ```latex
 \gradbarsloadcsv{results}{results.csv}
@@ -116,34 +123,33 @@ palette, while registered patterns remain. Legends use the same mapping as segme
 \gradbarscolumn{G}{style=shared}
 ```
 
-CSV fields are read as character data, not executed as TeX. Named columns, quoted commas,
-custom missing tokens and shared column ranges are supported. See the manual for complete tables.
+支持按列名读取、引号内逗号、缺失值映射和整列共享范围。CSV 字段按字符读取，不作为 TeX 执行。
+完整用法与表格源码集中在手册中。
 
-## Documentation and building
+## 一本文档，效果与源码对照
 
-The [single Chinese manual](docs/gradbars-manual.tex) is organized into quick start,
-graphic selection, data interfaces, appearance, complete layouts, and reference.
-It contains 56 numbered examples, including before/after evaluation, a monochrome
-contribution ledger and a monthly trend summary. All example data are illustrative.
+[中文手册源码](docs/gradbars-manual.tex) 按入门、图形、外观、专属表格、案例与参考六部分组织。
+77 个编号示例包含前后对比、收支贡献、趋势汇总和专属表格，以及双栏论文、跨页长表、黑白打印和幻灯片。
+[英文手册源码](docs/gradbars-manual-en.tex) 同步介绍 v0.0.4 接口，章节与示例编号独立。
+示例数据仅用于演示。
 
-To generate the versioned PDF in the repository root:
+生成仓库根目录中的版本 PDF：
 
 ```sh
 python scripts/build_manual.py
 ```
 
-The script rebuilds the four layouts and the Chinese manual with XeLaTeX, then the English manual with pdfLaTeX; each document gets two passes.
-It requires ctex/Fandol and the LaTeX extra packages; Python is only a documentation-build helper.
-Both versioned PDF manuals are included. The [English source](docs/gradbars-manual-en.tex) builds with pdfLaTeX; the Chinese manual uses XeLaTeX. All text files use LF line endings.
+脚本先编译四类真实排版，再用 XeLaTeX 两遍编译中文手册、pdfLaTeX 两遍编译英文手册。中文文档需要 ctex/Fandol。
+Python 仅用于文档构建；宏包本身不需要。仓库包含中英文 v0.0.4 PDF 与源码；所有文本文件采用 LF 换行。
 
-## Scope and limits
+## 当前边界
 
-- pdfLaTeX, XeLaTeX and LuaLaTeX have passed package checks including CSV input. Only the Chinese documentation requires the XeLaTeX/ctex workflow. This is a table-oriented interface, not a full plotting system.
-- CSV accepts single-line comma-separated fields; automatic CSV tables do not paginate.
-- Stacks reject missing segments, conditional thresholds and error whiskers.
-- Sparklines use equally spaced observations; they do not parse dates or draw bar targets, error whiskers or reference bands.
-- Fixed scales require `min <= 0` and `max > 0`; auto spark ranges can be positive, negative or constant.
-- Label avoidance is local to a graphic. Allow room for long external labels and legends.
-- Accessible tagged chart descriptions and tabularray-specific column handling are not implemented.
+- 宏包已通过 pdfLaTeX、XeLaTeX、LuaLaTeX 检查（包括 CSV）；中文手册使用 XeLaTeX。完整坐标轴或大型绘图仍应使用专门工具。
+- CSV 仅接受逗号分隔的单行字段，自动生成的 CSV 表格不自动分页。
+- 堆叠不接受缺失段、条件阈值与误差线。
+- 趋势线不解析日期，不接受柱形目标线、误差线、背景区间或阈值评价；观测必须等间隔。
+- 固定量程要求 min 不大于零、max 为正；自动趋势范围支持正数、负数与恒定序列。
+- 标签避让限于单个图形，长标签和图例仍需要表格预留空间。
+- 尚未实现图形专用无障碍 PDF 标签或 tabularray 专用列接口。
 
-MIT licensed. Bug reports should include a minimal `.tex` example, engine and log.
+MIT 许可证。提交问题时请附最小 `.tex` 示例、编译引擎和日志。
