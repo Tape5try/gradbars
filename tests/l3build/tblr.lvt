@@ -1,0 +1,17 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{tabularray}
+\UseTblrLibrary{gradbars,gradbars}
+\begin{document}
+\START
+\OMIT
+\setbox0=\hbox{\gradbarTblr[cell width=80pt,min=-10,max=10]{-5}}
+\TIMO
+\ifdim\wd0=80pt\TYPE{cell width=80pt}\else\TYPE{cell width=wrong}\fi
+\gradbarsiflibraryloaded{heat}{\TYPE{heat=loaded}}{\TYPE{heat=missing}}
+\gradbarsiflibraryloaded{table}{\TYPE{table=unwanted}}{\TYPE{table=absent}}
+\makeatletter
+\@ifpackageloaded{tblrlibgradbars}{\TYPE{external library=loaded}}{\TYPE{external library=missing}}
+\makeatother
+\END
+\end{document}

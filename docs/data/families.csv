@@ -1,0 +1,7 @@
+Method,Family,Score,Time
+Reference,Classic,78,30
+Compact,Neural,91,12
+Fast,Classic,84,8
+Wide,Neural,91,20
+Stable,Classic,84,10
+Pending,Neural,NA,NA

@@ -1,0 +1,108 @@
+\section{CSV input and numeric table columns}
+\label{sec:csv-input}
+CSV files are read as characters, not executed as TeX. UTF-8 BOM, quoted commas,
+doubled quotes and custom missing tokens are supported. Fields must fit on a
+single line and the delimiter must be a comma. Headers must be unique and nonempty.
+\subsection{Binding a native gradtable data source}
+\label{sec:csv-native}
+Load a dataset, then bind it with \key{data=results}. A column's
+\key{source=Score} selects an exact CSV header and defaults to its id. Fields may
+be reordered or reused. Omit \key{gradrow} in imported tables; rows follow file order,
+numeric missing values use the dataset's mapping and text stays literal.
+\begin{demo}{CSV field binding with multiple metrics}
+\gradbarsloadcsv{results}{docs/data/results.csv}
+\begin{gradtable}[data=results,width=\linewidth,scale=column,header align=c]
+  \gradcolumn[source=Model]{method}{Method}
+  \gradcolumn[type=bar,source=Score,mark=both]{score}{Score}
+  \gradcolumn[type=number,source=Latency,
+    options={precision=0}]{time}{Latency}
+\end{gradtable}
+\end{demo}
+Manual \key{gradrow} data cannot be mixed with an imported dataset. Unknown datasets
+or fields are errors. Quote list fields containing commas; use NA for missing
+observations or endpoints within compound fields. Native sources support
+\key{long=true}, with shared widths, scales, ranks and repeated headers across pages.
+See Section~\ref{sec:column-scale} for automatic ranges and Section~\ref{sec:heat}
+for changing a scalar column to \key{type=heat}.
+\subsection{Sorting, filtering and displaying the first rows}
+Sort names a declared column id; order selects ascending or descending. Numeric
+sorting uses raw values, places missing last in either direction and retains
+file order for ties. Filter combines comma-separated conditions with AND. Limit
+is a nonnegative integer; 0 is unlimited. Processing order is filter, stable sort,
+then limit.
+\begin{demo}{Filter scores, then select the two lowest latencies}
+\gradbarsloadcsv{results}{docs/data/results.csv}
+\begin{gradtable}[data=results,width=\linewidth,scale=column,
+  filter={score>=75},sort=time,order=ascending,limit=2,header align=c]
+  \gradcolumn[source=Model]{method}{Method}
+  \gradcolumn[type=bar,source=Score]{score}{Score}
+  \gradcolumn[type=bar,source=Latency,
+    options={better=lower,precision=0}]{time}{Latency}
+\end{gradtable}
+\end{demo}
+Numeric conditions support =, !=, <, <=, > and >=; for example,
+\key{filter={score>=75,time<100}}. Ordinary comparisons, including !=, exclude missing
+values; use score=NA or score!=NA to test mapped missingness. Text conditions
+support literal, case-sensitive = and !=; method= matches empty text. Protect a
+whole condition containing a comma, as in \key{filter={{method=Compact, tuned}}}.
+Text sorts in character order, not locale-specific collation, with empty text
+last. These keys require data and text, number, bar, bullet or heat columns.
+The loaded dataset remains unchanged; labels are not used to compare values.
+\subsection{Scale scope and rankings after selection}
+\key{scale scope=data} is the default: ranges still cover all imported rows.
+
+Latency above uses [0,125]; \key{scale scope=visible} uses the retained two rows and
+gives [0,88]. Rankings always use displayed rows. An empty visible selection uses
+[0,1]. Long tables paginate after selection and retain shared ranges and rankings.
+
+
+\subsection{Multiple keys and grouping order}
+\begin{sloppypar}
+\key{sort keys={score/descending,time/ascending}} sorts by score first and time
+second. Each key requires its own direction. Nonempty sort and sort keys cannot
+be combined; order applies only to the old single-key option. Missing stays last
+at each key; equal/missing keys proceed to the next key and full ties keep CSV order.
+\end{sloppypar}
+\begin{demo}{Global top-three selection before grouping}
+\gradbarsloadcsv{families}{docs/data/families.csv}
+\begin{gradtable}[data=families,width=\linewidth,
+  sort keys={score/descending,time/ascending},limit=3,group by=family,header align=c]
+  \gradcolumn[source=Method]{method}{Method}
+  \gradcolumn[source=Family]{family}{Family}
+  \gradcolumn[type=number,source=Score]{score}{Score}
+  \gradcolumn[type=number,source=Time]{time}{Time}
+\end{gradtable}
+\end{demo}
+Selection runs filter, global stable sort, global limit, then grouping.
+The selected rows are Compact, Wide and Fast; the original group order displays
+Classic's Fast first, then Neural's Compact and Wide. Limit is a table-wide data
+row count, not a per-group quota. Grouping changes whole-table order while
+preserving relative sort order within each group.
+
+\subsection{Legacy CSV access and numeric collection columns}
+
+The following source assumes a CSV file with Name and Score columns:
+\begin{source}
+\gradbarsloadcsv{results}{results.csv}
+\gradbarscsvtable{results}{Name}{Score}
+\gradbarscsvstyle{shared}{results}{Score}
+\gradbarcsv[style=shared]{results}{1}{Score}
+\gradbarscsvcell{results}{1}{Name}
+\end{source}
+Rows are one-based. CSV range styles include zero and use a positive upper limit
+even for all-zero, all-negative or all-missing columns. The legacy \key{gradbarscsvtable}
+does not paginate; native \key{gradtable} data sources support \key{long=true}. A dataset definition follows grouping.
+
+\begin{demo}{Only numbers in a common-style column}
+\gradbarscolumn{G}{width=35mm,min=-50,max=100,precision=0}
+\begin{tabular}{@{}lG@{}}
+\toprule
+\multicolumn{1}{c}{Item} & \multicolumn{1}{c}{Value}\\\midrule
+A & 72\\ B & -20\\ C & 0\\ D & NA\\
+\bottomrule
+\end{tabular}
+\end{demo}
+Numeric columns use collcell. Use multicolumn for text headings. They do not
+calculate a range and are not siunitx S columns. Avoid placing complete drawing
+commands in a numeric collection cell. tabular and longtable workflows are
+documented; a tabularray-specific collection interface is not implemented.

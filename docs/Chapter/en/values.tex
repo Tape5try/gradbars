@@ -1,0 +1,42 @@
+\section{Values, scales, labels and missing observations}
+Defaults are \key{min=0} and \key{max=100}. Drawing ranges require min<max; include zero
+when comparing magnitudes through bar lengths. Decimal/scientific literals and macros expanding to them are accepted;
+expressions, thousands separators and units inside input are not.
+Scientific notation is available as an output format.
+
+Keep min, max and width identical within each comparison column.
+Zero is not missing. Empty input or uppercase NA denotes missing data for a single
+observation; missing stack segments are rejected. Overflow warns and clips geometry
+while preserving the original label. Use \key{overflow=error} for strict checking.
+
+\begin{demo}{Raw values, calculated percentages and missing values}
+\gradbar[max=200]{50}
+
+\gradbar[max=200,value format=percent]{50}
+
+\gradbar[max=200,unit={\,ms}]{50}
+
+\gradbar{0}
+
+\gradbar[missing text={N/A}]{NA}
+\end{demo}
+\key{unit} appends text. \key{value format=percent} computes $100v/\mathrm{max}$,
+ignores unit, and requires \key{min=0}. For values already expressed as percentages,
+use \key{unit={\%}}. \key{text} overrides the complete label without changing geometry.
+\key{precision} accepts integers from 0 to 6. \key{number format} is fixed, grouped
+or scientific. Missing labels do not acquire a unit or percent suffix.
+
+\clearpage
+
+\subsection{Scientific input and finite precision}
+Decimal and e/E scientific literals share graphics, CSV, selection, ranks,
+statistics and range calculations. Zero is valid; nonzero magnitudes must lie
+between $10^{-100}$ and $10^{100}$, including explicit ranges and displayed
+statistics. Each decimal side accepts up to 101 digits; the exponent accepts
+up to three digits. Internal arithmetic has about 16 significant digits, so
+additional digits do not guarantee distinct values. Locale separators,
+expressions, input units, NaN and infinity are errors. Display precision does
+not alter calculations or ranks.
+\begin{demo}{Scientific input preserves the raw value}
+\gradbar[min=0,max=1e-2,number format=scientific,precision=2]{1.25E-3}
+\end{demo}

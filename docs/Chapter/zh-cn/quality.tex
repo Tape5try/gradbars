@@ -1,0 +1,55 @@
+\section{指标优劣方向}
+\key{better=higher} 表示越大越好，为默认值；\key{better=lower} 表示越小越好。
+此参数只影响已启用的 \key{thresholds} 条件配色，不修改数值、条长、目标位置或误差范围。
+没有 thresholds 时，不会自动推断评价标准，也不会改变主题配色。
+
+\begin{example}[text and listing,sidebyside=false]{示例 44：相同数值，不同评价方向}
+\gradbarssetup{max=100,width=35mm,
+  thresholds={60,80},precision=0}
+\begin{tabular}{@{}lcc@{}}
+  \toprule
+\multicolumn{1}{c}{Value} & \multicolumn{1}{c}{Higher is better} & \multicolumn{1}{c}{Lower is better}\\
+  \midrule
+  50 & \gradbar[better=higher]{50} & \gradbar[better=lower]{50}\\
+  70 & \gradbar[better=higher]{70} & \gradbar[better=lower]{70}\\
+  90 & \gradbar[better=higher]{90} & \gradbar[better=lower]{90}\\
+  \bottomrule
+\end{tabular}
+\end{example}
+
+\key{threshold colors} 的三个颜色始终按“差、中、好”排列。
+默认是浅红、金黄、浅绿。阈值 $a<b$ 始终从小到大填写：
+数值区间为 $v<a$、$a\le v<b$、$v\ge b$。
+higher 依次取第 1、2、3 个颜色，lower 依次取第 3、2、1 个颜色。
+等于阈值时属于右侧区间；不因方向改变边界归属。
+
+例如耗时使用 \key{thresholds={70,100},better=lower}：小于 70 为好，
+70 至小于 100 为中，100 及以上为差。
+堆叠组成不支持条件阈值，因此 better 不用于给各段评判优劣。
+如果叠加打印预设，建议使用数值、阈值说明或纹理保留含义，避免仅靠灰度表达好坏。
+
+
+
+\subsection{越接近目标越好、位于区间内最好}
+\key{better=target} 与 \key{quality target} 配合，评价距离 $d=|v-t|$。
+\key{better=interval} 与 \key{quality range={a,b}} 配合，评价到闭区间的距离
+$d=\max(0,a-v,v-b)$，其中 $a\le b$。
+\begin{example}[text and listing,sidebyside=false]{示例 45：目标偏差与合格范围}
+\gradbar[better=target,quality target=50,
+  thresholds={5,15},target=50,palette=diverging]{52}
+
+\gradbar[better=target,quality target=50,
+  thresholds={5,15},target=50,palette=diverging]{75}
+
+\gradbar[better=interval,quality range={40,60},
+  thresholds={0,10},band={40,60},palette=diverging]{55}
+
+\gradbar[better=interval,quality range={40,60},
+  thresholds={0,10},band={40,60},palette=diverging]{68}
+\end{example}
+这两种模式必须提供两个非负且严格递增的 thresholds，单位与原数据相同。
+若 $d\le t_1$ 为好，$t_1<d\le t_2$ 为中，$d>t_2$ 为差。
+\key{threshold colors} 的顺序仍为差、中、好。
+例如 thresholds 为 0,10 时，区间内（含端点）才判为好，离区间不超过 10 判为中。
+quality target/range 只负责评价；target/band 只负责绘制参考，需分别设置。
+评价不会改变长度、端点或原始标签，也不用于堆叠、浮动区间或趋势线。

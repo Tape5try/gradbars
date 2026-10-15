@@ -1,0 +1,96 @@
+\section{双层对比条、棒棒糖与浮动区间}
+这三种图形沿用现有的 min、max、width、标签格式与命名样式。
+比较时应保持相同的范围与宽度；图形形状不改变原始数据的意义。
+
+\subsection{双层对比条：基准与当前值}
+\key{\gradcompare[选项]{基准值}{当前值}} 绘制宽而浅的基准条，
+并在其中央叠加较细的当前值条。两个值分别从零开始定位，不相加，也不做除法。
+默认标签按“当前值 / 基准值”排列；斜线是分隔符，不表示比率。
+
+\begin{example}[text and listing,sidebyside=false]{示例 19：共用尺度的双层比较}
+\gradcompare[width=65mm,height=12pt,
+  compare color=black!20,precision=0]{60}{82}
+
+\gradcompare[width=65mm,height=12pt,
+  compare ratio=.35,precision=0]{85}{65}
+
+\gradcompare[min=-50,max=100,width=65mm,
+  height=12pt,precision=0]{-20}{35}
+\end{example}
+
+\key{compare color} 默认是 \key{black!20}，仅设置基准层颜色。
+\key{compare ratio} 是当前层高度与总高度的比值，默认 0.45，必须严格位于 0 与 1 之间。
+当前层沿用主题、条件配色和纹理；目标线与误差线也仍针对当前值。
+负值要求显式设置负的 min。任一值越界时，沿用 clip 警告并截断或 error 报错规则，
+标签保留原始数值。
+
+基准与当前值可分别使用空值或 NA 表示缺失，对应层不绘制，标签显示缺失标记。
+总标签放在外部或条尾上方；请求 inside/auto 时会移至外部，避免遮挡两层之间的差异。
+需要简短标签时，可用 text 覆盖，但应在表头或表注中说明基准值。
+
+\clearpage
+\subsection{棒棒糖：数值位置与细线}
+\key{shape=lollipop} 直接用于 \key{\gradbar}，无需换用另一套数据接口。
+细线从零延伸至数值位置，圆点标出数值；浅色细线表示整个轨道。
+适合密集表格中需要减少填色面积的场景。
+
+\begin{example}[text and listing,sidebyside=false]{示例 20：棒棒糖的正负值、零值与缺失值}
+\gradbarssetup{shape=lollipop,min=-50,max=100,
+  width=65mm,marker size=2pt,stem width=.7pt,
+  precision=0}
+\gradbar{72}
+
+\gradbar{-25}
+
+\gradbar{0}
+
+\gradbar{NA}
+\end{example}
+
+\key{marker size} 指圆点半径，默认 2pt，并限制在轨道高度的一半以内。
+\key{stem width} 默认 0.6pt，控制棒棒糖细线及浮动区间端点线的粗细。
+零值在零点绘制圆点，缺失值不绘制圆点或数值细线，两者保持区别。
+端点圆点可以向轨道外伸出一个半径，应给表格边界留出空间。
+条件配色仍由真实数值决定；使用纯色，不使用渐变或面积纹理。
+inside/auto 标签移至外部，end 标签仍可放在端点上方。
+
+\subsection{浮动区间：直接填写上下界}
+\key{\gradrange[选项]{下界}{上界}} 在两个端点之间绘制区间条，
+默认标签显示原始端点。\key{range point} 可显式提供一个区间内的点，以空心圆标出；
+宏包不会自行计算均值、中位数或置信区间。
+
+\begin{example}[text and listing,sidebyside=false]{示例 21：浮动区间与区间内的点}
+\gradrange[width=65mm,height=9pt,
+  range point=50,precision=0]{35}{75}
+
+\gradrange[min=-50,max=100,width=65mm,
+  height=9pt,precision=0]{-20}{35}
+
+\gradrange[width=65mm,height=9pt,precision=0]{50}{50}
+
+\gradrange[width=65mm,height=9pt]{NA}{NA}
+\end{example}
+
+\clearpage
+\subsection{区间语义与组合规则}
+下界必须小于或等于上界；相等时绘制端点线，不制造虚假的区间宽度。
+上下界必须同时有值或同时缺失。range point 必须位于原始上下界之间，缺失区间不能包含点。
+上下界越界时沿用 overflow 规则；所有位置使用同一 min/max 映射。
+范围下限仍要求为零或负值，上限仍要求为正值。
+
+浮动区间本身就是数据区间，不接受 error 或 thresholds，以免把上界误当作点估计或评价对象。
+可以添加 target、band、圆角和纹理。
+添加 range point 后，内部总标签自动外移，避免盖住圆点；默认仍显示上下界，而不是点值。
+\key{value format=percent} 分别计算两个端点相对于 max 的百分比，仅用于 \key{min=0}。
+
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{30mm}X@{}}
+\toprule
+\multicolumn{1}{c}{\textbf{需要表达的信息}} & \multicolumn{1}{c}{\textbf{推荐方式}}\\
+\midrule
+当前值与基准值 & \key{gradcompare}：两条共用零点与尺度，不累加。\\
+单个数值的大小 & \key{gradbar} 或 shape=lollipop：填充长度或端点位置表示数值。\\
+已知的两个区间端点 & \key{gradrange}：直接填写上下界，可附加区间内的点。\\
+点估计与误差距离 & \key{gradbar} 的 error/error minus/error plus：填写相对点估计的距离。\\
+所有观测共用的参考区间 & band：绘制背景参考，不充当单条观测的区间。\\
+\bottomrule
+\end{tabularx}

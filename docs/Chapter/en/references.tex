@@ -1,0 +1,46 @@
+
+\section{Multiple references, bullet charts and grouped intervals}
+\key{references} takes records in the form \key{value/color/line style/name}.
+Enclose each record in braces. Styles are solid, dashed and dotted. Values must
+lie within min/max. Leave a name empty by retaining the final slash.
+Names use alternating heights, but long or closely spaced names may still overlap.
+\begin{demo}{Several named references}
+\gradbar[width=85mm,height=9pt,precision=0,
+  references={{40/gray/dotted/Baseline},
+              {75/gradbarsTeal/dashed/Target},
+              {95/gradbarsOrange/solid/Limit}}]{68}
+\end{demo}
+\key{references={}} clears inherited references. They may coexist with target.
+References apply to bars, stacks, comparisons and intervals, not sparklines.
+Avoid slashes in names; compact tables can explain unnamed reference lines in a heading.
+
+\subsection{Bullet charts}
+\key{\gradbullet{value}} draws an actual value over explicit background grades.
+Provide \key{bullet bands} as upper-bound/color records. Bounds must strictly
+increase; the first band starts at min and the final bound must equal max.
+The default height is 12pt, with the actual bar occupying 40\% of that height.
+\begin{demo}{Actual performance, reference grades and targets}
+\gradbullet[width=85mm,max=120,precision=0,color=gradbarsBlue,
+  bullet bands={{60/black!8},{90/black!16},{120/black!26}},
+  references={{90/gradbarsTeal/dashed/Target},
+              {110/gradbarsOrange/solid/Stretch}}]{82}
+\end{demo}
+Grades do not classify performance automatically. Supply quality thresholds
+separately when needed. Explain the grades in a caption; use explicit gray shades
+for monochrome output. NA and zero retain their different meanings.
+
+\subsection{Several intervals in one cell}
+\key{\gradintervals{records}} accepts name/lower/point/upper/color records.
+Each record uses the same scale and graphic width; names align to the longest name.
+Use NA for an absent point, or NA for all three numbers for a missing record.
+\begin{demo}{Comparable uncertainty intervals}
+\gradintervals[width=65mm,min=0,max=100,height=5pt,
+  precision=0,row padding=4pt,references={{70/gray/dashed/}}]{
+  {Method A/45/58/72/gradbarsBlue},
+  {Method B/55/68/82/gradbarsTeal},
+  {Method C/62/NA/88/gradbarsOrange}}
+\end{demo}
+Points are supplied, never inferred. Lower must not exceed upper and a point
+must lie inside the original interval. Explain the confidence level if relevant.
+This command creates an indivisible inner table: names and endpoint labels add
+to its width, and records do not break across pages. Reference names repeat per record.

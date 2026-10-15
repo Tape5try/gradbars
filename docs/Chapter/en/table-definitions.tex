@@ -1,0 +1,33 @@
+\section{Reusable table styles and schemas}
+\key{\gradtablestyle{name}{keys}} saves table appearance.
+
+\key{\gradtableschema{name}{body}} saves column and header declarations.
+
+Use style=name and \key{\graduseschema{name}}. Definitions may be placed in the
+preamble. Redefinition replaces an earlier definition and follows TeX grouping.
+\begin{demo}{Shared structure, different rule styles}
+\gradtablestyle{benchmark}{rules=booktabs,header align=c,
+  text width=30mm,graphic width=40mm,label width=12mm,
+  row stretch=1.3,group color=gradbarsBlue!8}
+\gradtableschema{benchmark}{
+  \gradcolumn{method}{Method}
+  \gradcolumn[type=bar,mark=both,
+    options={max=100,precision=1}]{score}{Score}
+}
+\begin{gradtable}[style=benchmark,header align=c]
+  \graduseschema{benchmark}
+  \gradgroup{Validation}
+  \gradrow{A,81.5}
+  \gradrow{B,88.2}
+\end{gradtable}
+
+\begin{gradtable}[style=benchmark,rules=grid,header align=c]
+  \graduseschema{benchmark}
+  \gradgroup{Test}
+  \gradrow{A,79.6}
+  \gradrow{B,85.3}
+\end{gradtable}
+\end{demo}
+Options after style override it. Styles may reference other styles and schemas
+may compose schemas; cycles cause errors. Ids must remain unique. Apply schemas
+before any data or group. Each table measures and ranks its own data separately.

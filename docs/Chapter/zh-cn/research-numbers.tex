@@ -1,0 +1,55 @@
+\part{完整排版案例}
+
+
+
+\section{科研数字列与语义单位}
+\subsection{可选 siunitx 格式化}
+默认 \key{formatter=builtin} 保留现有格式。使用 siunitx v3 时，先显式加载宏包，再设置 \key{formatter=siunitx}。
+表格与列也有 formatter 默认/覆盖接口；列 options 中的绘图键仍可覆盖。
+该适配映射 precision 与 fixed、grouped、scientific 输出，只使用 num 和 unit，不把整幅图交给 S 列。
+缺少依赖或 v3 接口时明确报错，不静默更换格式。列默认设置与单图全局设置独立。
+\begin{codeonly}
+\usepackage{siunitx}
+\usepackage{gradbars}
+\gradbar[formatter=siunitx,precision=3,
+  unit code={\milli\second},unit text={milliseconds}]{1.23456e1}
+\end{codeonly}
+旧 unit 保持文字后缀语义；unit code 使用 SI 单位排版，必须配合 \key{formatter=siunitx} 和可读 unit text。
+不能同时使用两种单位，也不能为计算百分比附加语义单位。缺失值不附单位，count 摘要清除单位。
+自动替代文本使用未舍入值与 unit text，不复制单位排版命令；alt 仍可覆盖完整描述。
+\subsection{小数点、符号和指数对齐}
+\key{number align=decimal} 仅用于数字列；表格默认自动应用于数字列，显式用于图形列则报错。
+测量左右两部分，覆盖显示行、组摘要与整表摘要，再进行列宽分配；align 仍控制整个数字块的位置。
+科学计数法按尾数小数点对齐，并为指数及单位预留空间；\key{precision=0} 对齐整数末端，缺失标签居中。
+对齐后的显示采用五入时远离零的规则；统计仍依据原始浮点值。列显式宽度不足时应增加 width。
+跨页表格使用同一组锚点，不能将格式化字符串回流为计算输入。
+\begin{example}[text and listing,sidebyside=false]{完整案例：精度与耗时}
+\gradbarsloadcsv{precision}{docs/data/precision-time.csv}
+\begin{gradtable}[data=precision,width=\linewidth,style=research,theme=teal,
+  formatter=siunitx,group by=family,rank scope=group,group summary=true,
+  sort keys={score/descending,time/ascending},header align=c]
+  \gradcolumn[source=Method]{name}{Method}
+  \gradcolumn[source=Family]{family}{Family}
+  \gradcolumn[type=bar,source=Score,aggregate=mean,mark=both,
+    options={precision=2}]{score}{Score}
+  \gradcolumn[type=number,source=Time,aggregate=min,mark=both,
+    options={precision=3,better=lower,
+    unit code={\milli\second},unit text={milliseconds}}]{time}{Time}
+  \gradsummary{Overall}
+\end{gradtable}
+\end{example}
+组内最小耗时为 8.375 与 12 毫秒；并列得分 91.5 都是 Neural 的最佳值。
+\begin{example}[text and listing,sidebyside=false]{完整案例：不同数量级指标}
+\gradbarsloadcsv{magnitudes}{docs/data/magnitudes.csv}
+\begin{gradtable}[data=magnitudes,width=\linewidth,style=research,theme=violet,header align=c]
+  \gradcolumn[source=Method]{name}{Method}
+  \gradcolumn[type=number,source=Residual,aggregate=mean,mark=both,
+    options={precision=2,number format=scientific,better=lower}]{residual}{Residual}
+  \gradcolumn[type=number,source=Count,aggregate=sum,formatter=siunitx,
+    options={precision=2,number format=scientific}]{count}{Count}
+  \gradcolumn[type=number,source=Rate,aggregate=mean,
+    options={precision=3,unit={\,s}}]{rate}{Rate}
+  \gradsummary{Summary}
+\end{gradtable}
+\end{example}
+残差均值约为 $-7.9167\times10^{-4}$，Count 总和为 $4.175\times10^6$；摘要显示精度不会改变统计值。

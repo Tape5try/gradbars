@@ -1,0 +1,37 @@
+\part{专属数据表格与数据接口}
+
+
+\section{专属数据表格：gradtable}
+v0.0.8 提供统一的数据表格入口。先声明列，再填写每行数据；
+不需要手写对齐符号或换行命令。列类型包括 text、number、bar、bullet、interval，
+以及 compare、dumbbell、stack、spark 和 heat；复合数据的填写方法见“更多图形列”，heat 见第~\ref{sec:heat}~章。
+\key{\gradcolumn[列选项]{标识}{标题}} 的标识必须唯一；
+\key{\gradrow{单元格列表}} 按声明顺序填写逗号分隔的数据。
+带逗号的文本应加花括号保护，缺失数值请显式写 NA。
+
+\begin{example}[text and listing,sidebyside=false]{示例 52：论文型，文本、数字与普通条}
+\begin{gradtable}[preset=paper,graphic width=48mm,
+  text width=24mm,label width=14mm,header align=c]
+  \gradcolumn{method}{方法}
+  \gradcolumn[type=number,options={precision=0}]{n}{样本量}
+  \gradcolumn[type=bar,options={max=100,precision=1}]{score}{得分}
+  \gradrow{方法 A,120,82.4}
+  \gradrow{方法 B,12500,91.2}
+  \gradrow{方法 C,NA,NA}
+\end{gradtable}
+\end{example}
+列选项中的 \key{options={...}} 接受原有 gradbars 参数，如 min、max、precision、unit、
+theme、target 和 references。每列共用同一组参数，单元格不单独修改尺度。
+number 列只排版数值，不使用条形量程裁剪；precision、number format 和 unit 可控制显示。
+
+\subsection{宽度和标签对齐}
+graphic width 为默认图区宽度，text width 为文本列宽度，label width 为数值区的最小宽度。
+同列所有外部标签预先测量，使用该列最长标签与 label width 中的较大值，统一右对齐。
+标签加宽不会改变图区尺度。默认仍为右对齐；数字列可用 number \key{align=decimal} 精确对齐小数点。
+长文本会在文本列换行；默认按内容确定表宽；设置表格 width 后，可自动分配文字列和图区宽度，详见后文。
+默认 \key{graphic width=32mm}、\key{text width=22mm}、\key{label width=18mm}。
+
+\subsection{数据检查}
+行数据数量必须与列数一致；列标识不能重复，所有列必须在第一个数据行或分组标题之前声明。
+数字格式、区间端点和点估计的校验沿用单图接口，测量阶段的错误包含行号和列标识。
+不要用省略字段表示缺失，否则列表会缺少单元格。

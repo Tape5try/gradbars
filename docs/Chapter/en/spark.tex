@@ -1,0 +1,58 @@
+\section{Spark graphics: line, bar and win-loss}
+\begin{demo}{Comparable monthly observations}
+\gradbarsstyle{monthly}{width=65mm,height=7mm,min=0,max=100,
+  spark range=fixed,precision=0,row padding=3pt}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\multicolumn{1}{c}{Series} & \multicolumn{1}{c}{Jan--Jun / June value}\\\midrule
+North & \gradspark[style=monthly]{35,48,42,60,72,80}\\
+South & \gradspark[style=monthly]{55,53,NA,58,62,65}\\
+West & \gradspark[style=monthly]{45,45,45,45,45,45}\\
+East & \gradspark[style=monthly]{30,40,55,60,70,NA}\\
+\bottomrule
+\end{tabular}
+\end{demo}
+Observations are equally spaced. Empty fields and NA keep their horizontal
+position and break connections. The last label is the last position, not the last
+nonmissing observation. Default height is 4ex.
+
+\key{spark range=auto} uses each row's extrema; compare shapes only with this mode.
+Use fixed with shared min, max, width and height to compare magnitudes across rows.
+Constant auto series are centered vertically; a singleton is centered horizontally.
+All-missing series show only a track and missing label. Fixed ranges use normal
+overflow rules. Auto ranges do not support computed-percent labels.
+
+\key{spark points} can be extrema (default), all, last or none. Extrema mode
+marks all tied extrema and the last position if present. Low and high colors
+default to gradbarsOrange and gradbarsTeal. A constant series uses the high color;
+a non-extreme last point uses the line color. Point colors indicate position, not
+quality. Use color, stem width and marker size to style the line and points.
+Sparklines do not parse dates and do not use bar targets, error whiskers, bands or
+thresholds. Labels stay outside. Use a common observation grid for irregular dates.
+\clearpage
+
+\subsection{Bar sparks preserve magnitudes}
+\key{spark type=bar} draws signed bars in equally sized observation slots.
+Automatic ranges include zero; fixed ranges use min/max and normal overflow
+rules. Keep ranges shared when comparing rows.
+\begin{demo}{One series shown as line, bar and win-loss}
+\gradspark[width=65mm,height=7mm,precision=0]{20,-10,NA,40,0,-30}
+
+\gradspark[spark type=bar,width=65mm,height=7mm,
+  precision=0]{20,-10,NA,40,0,-30}
+
+\gradspark[spark type=winloss,width=65mm,height=7mm,
+  precision=0]{20,-10,NA,40,0,-30}
+\end{demo}
+\key{spark bar width} defaults to .7 of a slot and must be in (0,1]. Positive
+bars use the regular fill; negative bars use negative color. Zero draws a short
+baseline stroke; missing leaves a gap. All-zero/all-missing auto bars use [0,1].
+\subsection{Win-loss sparks show signs only}
+\key{spark type=winloss} maps positives to wins, negatives to losses and zero
+to ties. Fixed category heights do not express magnitudes; min/max and spark
+range do not affect the classification. Use spark win color, spark loss color
+and spark zero color to style categories and the baseline.
+Both discrete modes retain every position and the raw last-value label; a missing
+last position retains its missing label. Win-loss rejects computed-percent labels.
+Print uses grayscale. Spark points and extrema marker colors apply only to line
+mode. In \key{gradtable}, use \key{type=spark} with \key{spark type=bar} or winloss in options.

@@ -1,0 +1,38 @@
+\section{语义配色与稳定类别纹理}
+\key{palette} 管理一组颜色与纹理，与设置单条外观的 theme 和排版预设 preset 分工不同。
+选项从左到右执行。配色用于表达数据角色，不能替代单位、名称与数值。
+
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+\multicolumn{1}{c}{方案} & \multicolumn{1}{c}{用途}\\\midrule
+categorical & 六种类别色，循环使用；适合没有大小顺序的类别。\\
+sequential & 五级由浅到深的蓝色，适合有序类别，不自动把数值映射到色阶。\\
+diverging & 橙、浅橙、中性灰、浅青、青五色；同时设置负值、比较色及差中好颜色。\\
+mono & 灰度与三种纹理组合；同时设置黑白标签和趋势线极值点色。\\
+\bottomrule
+\end{tabularx}
+\begin{example}[text and listing,sidebyside=false]{示例 46：四套成组配色}
+\gradstack[palette=categorical]{20,25,15,20,10,10}
+
+\gradstack[palette=sequential]{20,20,20,20,20}
+
+\gradstack[palette=diverging,min=-50]{-20,-15,10,25,30}
+
+\gradstack[palette=mono]{35,40,25}
+\end{example}
+位置调色板按段序号循环。需要类别在不同顺序或子集下保持一致时，使用
+\key{\gradbarscategory{类别名称}{颜色}{纹理}}，并为每条堆叠设置 stack names。
+类别名称按实际文本匹配，定义遵循 TeX 分组作用域；未定义类别回退到序号配色。
+\begin{example}[text and listing,sidebyside=false]{示例 47：交换类别顺序后仍保留身份}
+\gradbarscategory{Compute}{gradbarsBlue}{diagonal}
+\gradbarscategory{Storage}{gradbarsOrange}{dots}
+\gradstack[stack names={Compute,Storage}]{60,30}
+
+\gradstack[stack names={Storage,Compute}]{30,60}
+
+\gradbarslegend[width=55mm]{Compute,Storage}
+\end{example}
+命名类别优先于序号配色，图例与数据段使用同一映射。
+print 或 palette=mono 激活时，类别色被灰度方案替代，类别纹理仍保留。
+纹理可选 none、diagonal、reverse、dots、crosshatch、horizontal、vertical。
+类别数超过色板长度时会复用颜色；请结合名称或纹理，不能把颜色视为唯一标识。

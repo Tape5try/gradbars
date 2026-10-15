@@ -1,0 +1,20 @@
+\section{Change annotations and relative differences}
+\key{compare annotation=none|arrow|bracket} adds a directional arrow or a
+difference bracket above a layered comparison or dumbbell. None is the default.
+Arrows point from reference to current; equal values omit the arrow. Missing
+either endpoint suppresses the annotation.
+\begin{demo}{Absolute and relative change}
+\gradcompare[width=65mm,precision=0,
+  compare annotation=bracket]{80}{55}
+
+\graddumbbell[width=65mm,precision=1,marker shape=diamond,
+  compare annotation=arrow,compare label=percent]{40}{60}
+
+\graddumbbell[width=65mm,precision=1,compare label=percent]{0}{30}
+\end{demo}
+Relative change is $100(c-r)/|r|$ percent, where $r$ is the reference and $c$
+is the current value. A zero reference or missing endpoint gives a missing label,
+not infinity. This differs from \key{value format=percent}, which uses the scale
+maximum. Positive changes carry a plus sign. Annotation text follows percent
+mode; other modes annotate the raw-unit difference. Reference names and change
+annotations share the upper area, so avoid crowding both into a narrow graphic.

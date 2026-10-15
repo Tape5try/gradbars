@@ -1,0 +1,81 @@
+\section{分组行与最优值标记}
+\subsection{用分组标题组织数据}
+\key{\gradgroup{标题}} 插入跨越所有列的分组行。先声明全部列，再填写分组和数据；
+每个分组必须至少有一条数据行。分组不占数据列，不参与数值比较，也不会改变列尺度。
+\key{group color} 设置标题底色，默认 gradbarsTrack，空值表示无底色；
+\key{group sep} 默认 4pt，为分组标题增加上方留白，非网格表还增加组前间距。
+分组行兼容四种 rules 样式。标题过长时应缩短文字，避免把整张表撑宽。
+
+\begin{example}[text and listing,sidebyside=false]{示例 60：分组展示与全表最优值}
+\begin{gradtable}[header align=c,text width=30mm,
+  graphic width=38mm,label width=12mm,group sep=4pt]
+  \gradcolumn{method}{方法}
+  \gradcolumn[type=bar,mark=both,
+    options={max=100,precision=1}]{score}{得分}
+  \gradcolumn[type=number,mark=both,width=24mm,
+    options={better=lower,precision=1}]{time}{耗时 / 秒}
+  \gradgroup{基础方法}
+  \gradrow{方法 A,82.4,12.8}
+  \gradrow{方法 B,90.2,10.5}
+  \gradgroup{改进方法}
+  \gradrow{方法 C,90.2,9.6}
+  \gradrow{方法 D,86.7,9.6}
+  \gradrow{方法 E,NA,NA}
+\end{gradtable}
+\end{example}
+\textbf{最佳值加粗，次佳值加下划线。} 得分的两个 90.2 均加粗，86.7 为次佳值；
+耗时的两个 9.6 均加粗，10.5 为次佳值。比较覆盖当前整张表的全部数据行，跨越分组。
+
+\clearpage
+\subsection{排名规则与数据含义}
+列选项 \key{mark=none|best|both} 默认为 none；best 仅标记最佳值，both 同时标记次佳值。
+该选项适用于 number、bar 和 bullet 列，只改变数字标签，不改变条长或原始数据。
+在列的 options 内使用 \key{better=higher}（默认）或 \key{better=lower} 指定方向；
+目标接近度和区间达标不能直接用于本接口的最优值排序。
+
+\begin{example}[text and listing,sidebyside=false]{示例 61：负数、并列值与零值}
+\begin{gradtable}[rules=grid,header align=c,
+  text width=34mm,column sep=8pt,row padding=2pt]
+  \gradcolumn{method}{项目}
+  \gradcolumn[type=number,mark=both,width=28mm,
+    options={better=lower,precision=1}]{loss}{偏差}
+  \gradrow{方案 A,-2}
+  \gradrow{方案 B,-2.0}
+  \gradrow{方案 C,0}
+  \gradrow{方案 D,NA}
+\end{gradtable}
+\end{example}
+\begin{itemize}
+  \item 排名采用格式化之前的原始数值；不会按字符串或四舍五入后的标签排序。
+  \item 数值相等即为并列，包括 2、2.0 等写法；次佳值取下一个不同的数值。
+  \item NA 不参与排名，零值正常参与。整列缺失时没有标记，全部相等时没有次佳值。
+  \item 若精度过低，不同原始数值可能显示成相同标签；应提高 precision，避免标记难以解释。
+  \item 使用加粗或下划线前，应在表注中解释约定。堆叠、趋势和对比列没有唯一的默认排名指标，
+        请另设 number 列明确指标，再标记最优值。
+\end{itemize}
+
+
+\subsection{CSV 自动分组与组内排名}
+\key{group by=family} 引用已经声明的文本列标识，而不是 CSV 字段名称。
+分组标题沿用 group color、group sep；组序按 CSV 中首次出现顺序，仅显示有数据的组。
+组内保留全局排序的相对顺序；空组名不会丢弃数据，默认显示 (ungrouped)，可用 group missing label 修改。
+文本 NA 及其他缺失标记仍作为独立组名。group by 不能与手写 \key{gradgroup} 混用。
+\key{rank scope=group} 在每个显示组内分别排名；默认 table 保持整表排名。
+排名使用原始值，跳过缺失并保留零，沿用并列值、次佳不同值与 better 规则。
+分组统计也支持手写 \key{gradgroup}；同名标题的手写组分别统计，首个标题之前的数据组成隐式未命名组。
+\begin{example}[text and listing,sidebyside=false]{完整案例：算法家族对比}
+\gradbarsloadcsv{families}{docs/data/families.csv}
+\begin{gradtable}[data=families,width=\linewidth,style=academic,theme=teal,
+  scale=column,group by=family,rank scope=group,group summary=true,
+  sort keys={score/descending,time/ascending},header align=c]
+  \gradcolumn[source=Method]{method}{Method}
+  \gradcolumn[source=Family]{family}{Family}
+  \gradcolumn[type=bar,source=Score,mark=both,aggregate=mean]{score}{Score}
+  \gradcolumn[type=number,source=Time,mark=both,aggregate=min,
+    options={better=lower,precision=0}]{time}{Time / ms}
+  \gradsummary{All visible}
+\end{gradtable}
+\end{example}
+Classic 的得分均值为 82，Neural 为 91；最快时间分别为 8 和 12。
+组标题与首行同页，分组汇总只显示一次并与组末行同页；续页不重复分组标题。
+尺度仍使用整列或命名共享范围，确保不同组之间可比较。

@@ -1,0 +1,17 @@
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage[libraries=none]{gradbars}
+\usegradbarslibrary{table}
+\setlength{\parindent}{0pt}
+\gradbarsdeclaretype{score}{\gradbar[color=teal]{#1}}
+\gradbarsdeclareformatter{plain}{\gradbarsformatnumber[precision=#2,number format=#3]{#1}}
+\begin{document}
+\gradgraphic[formatter=plain]{score}{72.125}\par
+\gradbar[alt={Custom modular value.}]{50}\par
+\begin{tikzpicture}[alt={Whole outer modular picture.}]
+\gradbar{50}
+\end{tikzpicture}\par
+\begin{gradtable}[width=\linewidth,theme=teal]
+\gradcolumn{name}{Name}\gradcolumn[type=bar,formatter=plain,aggregate=mean]{value}{Value}
+\gradrow{A,63}\gradrow{B,87}\gradsummary{Mean}\end{gradtable}
+\end{document}

@@ -1,155 +1,146 @@
 # gradbars
 
-**用一套接口，在 LaTeX 表格中呈现数值、比较与趋势。**
+**在 LaTeX 正文和表格中呈现数值、比较、组成与趋势。**
 
-**v0.0.4 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
+**v1.0.0 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
 
-**已收录至 CTAN**：访问 [gradbars 宏包页面](https://ctan.org/pkg/gradbars)，查看收录版本、文档与下载入口。
+计划发布日期：2026-10-30。
 
-[English](README.en.md) · [中文手册 PDF](gradbars-manual-v0.0.4.pdf) · [英文手册 PDF](gradbars-manual-en-v0.0.4.pdf)
+[English](README.en.md) · [中文手册](gradbars-manual-v1.0.0.pdf) · [英文手册](gradbars-manual-en-v1.0.0.pdf) · [CTAN](https://ctan.org/pkg/gradbars)
 
-![对比、正负贡献、趋势与目标评价](docs/images/overview-v0.0.3.svg)
+![gradbars：数据条、堆叠、趋势与色阶表格](docs/images/overview-v1.0.0.svg)
 
-既可把单个图形嵌入现有 `tabular`，也可通过 `gradtable` 声明列、填写数据，统一生成可视化表格。图形保留共享尺度与真实数值，无需额外包裹 `tikzpicture`，无需开启 shell escape。
+gradbars 基于 PGF/TikZ，既可将单个图形嵌入现有 `tabular`，也可通过 `gradtable` 声明列并填写数据，生成可视化表格。无需手动包裹 `tikzpicture`，无需开启 shell escape。
 
-## v0.0.4：专属可视化表格
+## 主要能力
 
-- **声明列，直接填数据**：`gradcolumn` 与 `gradrow` 组织表格，不必手写单元格分隔与换行命令。
-- **九种列类型**：文本、数字、普通条、子弹图、区间、双层对比条、哑铃、堆叠条和迷你趋势线。
-- **可控的布局**：左／中／右对齐、独立表头对齐、文本垂直对齐、四种线条样式，以及列间距和行高设置。
-- **自动分配列宽**：根据总宽度、固定列和权重分配空间；同列标签预先测量，图形共用尺度。
-- **多级表头与分组**：跨列标题、分组行、最佳值加粗和次佳值下划线，支持并列值及优劣方向。
-- **复用与跨页**：保存表格样式和列定义；`long=true` 重复完整表头，跨页保持列宽与排名一致。
-- **更完整的图形标注**：多条参考线、子弹图、多组区间、越界提示、点形状、差值箭头与百分比变化。
+- **内嵌图形**：数据条、正负条、棒棒糖、比较条、哑铃、子弹图、区间、堆叠条、趋势图与 Heat 色阶。
+- **可视化表格**：自动列宽、独立表头对齐、多级表头、分组、最佳与次佳值标记、统计汇总和跨页排版。
+- **数据处理**：CSV 字段绑定、排序、筛选、分组、自动列尺度和命名共享尺度。
+- **数字与外观**：科学计数输入、可选 siunitx 格式化、小数点对齐、主题、纹理、表格样式与图例。
+- **无障碍与扩展**：启用 LaTeX PDF tagging 后自动生成图形替代文本，支持 `alt` 覆盖；提供稳定的图形、格式化器和第三方库注册接口。
 
-中文手册包含 **六部分、42 章、77 个编号示例**；英文手册包含 **六部分、28 节**。两份手册均提供实际效果与源码。
+## 安装
+
+支持 LaTeX 2025-11-01+、expl3 2025-12-29+ 和 PGF/TikZ 3.1.11a+。较旧发行版请先更新。
+
+宏包已被 CTAN 收录。使用由 `tlmgr` 管理的 TeX Live 或 MacTeX 时：
+
+```sh
+tlmgr install gradbars
+```
+
+更新已安装的宏包或查看信息：
+
+```sh
+tlmgr update gradbars
+tlmgr info gradbars
+```
+
+TeX Live 仓库中的版本可能晚于 CTAN 或仓库开发版，请核对安装版本。手动安装时，将 `sty/` 中全部 `.sty` 文件（包括可选适配库 `tblrlibgradbars.sty`）一起放到主 `.tex` 文件旁，或安装到本地 TEXMF 的 `tex/latex/gradbars/` 目录；不要只复制主文件或混用不同版本的模块。
+
+支持 pdfLaTeX、XeLaTeX 和 LuaLaTeX。依赖包括 PGF/TikZ、xparse 和 expl3；CSV 收集列与专属表格还会加载 collcell、array、booktabs、colortbl 和 longtable。siunitx 为可选依赖，宏包本身不加载 ctex 或 fontspec。
 
 ## 快速开始
 
-将 `gradbars.sty` 放在主 `.tex` 文件旁，可使用 **pdfLaTeX、XeLaTeX 或 LuaLaTeX**。
-宏包依赖 TikZ/PGF、xparse、expl3、collcell、array、booktabs、colortbl 和 longtable。中文字体只用于中文手册，宏包本身不要求中文文档类。
+以下完整示例可直接编译：
 
 ```latex
 \documentclass{article}
 \usepackage{gradbars}
-\setlength{\parindent}{0pt}
 \begin{document}
-\begin{gradtable}[width=\linewidth,header align=c,
-  label width=12mm,column sep=6pt]
+\gradbar[max=100,width=30mm,precision=1]{72.4}
+
+\begin{gradtable}[width=\linewidth,header align=c]
   \gradcolumn{method}{Method}
-  \gradcolumn[type=bar,weight=2,mark=both,
+  \gradcolumn[type=bar,mark=both,
     options={max=100,precision=1}]{score}{Score}
-  \gradcolumn[type=number,width=22mm,mark=best,
+  \gradcolumn[type=number,mark=best,
     options={better=lower,precision=1}]{time}{Time / ms}
-  \gradheader{\gradspan{1}{Setup}\gradspan{2}{Evaluation}}
-  \gradgroup{Baselines}
-  \gradrow{Method A,82.4,14.8}
-  \gradrow{Method B,91.6,18.2}
-  \gradgroup{Improved}
-  \gradrow{Method C,87.3,11.5}
+  \gradrow{Baseline,72.4,18.2}
+  \gradrow{Proposed,92.7,11.5}
   \gradrow{Pending,NA,NA}
 \end{gradtable}
 \end{document}
 ```
 
-得分越高越好，耗时越低越好；最佳值加粗，得分次佳值加下划线。`NA` 表示缺失，不等于零。上例使用英文表头，可直接用三种引擎编译；中文内容可使用 XeLaTeX 和 `ctexart` 文档类。
+得分越高越好，耗时越低越好。`mark=both` 标记最佳与次佳值，`NA` 表示缺失而不是零。中文内容可使用 XeLaTeX 与 `ctexart`。
 
-默认表格不跨页。需要跨页时，添加 `long=true`，将表格直接放在单栏正文中；不要置于浮动体或 `minipage` 内。
+## 按需加载
 
-## 如何选图形
-
-| 目的 | 入口 |
-| --- | --- |
-| 单个数值、相对零点的增减 | `\gradbar[min=-50,max=100]{值}` |
-| 更少填充面积 | `\gradbar[shape=lollipop]{值}` |
-| 宽基准条与细当前条 | `\gradcompare{基准}{当前}` |
-| 比较两个位置或差值 | `\graddumbbell[compare label=delta]{之前}{之后}` |
-| 给定上下界 | `\gradrange[range point=50]{35}{75}` |
-| 分级背景上的完成度 | `\gradbullet[bullet bands={{60/black!8},{100/black!20}},target=85]{78}` |
-| 可相加的贡献 | `\gradstack[min=-60]{60,-25,20,-15}` |
-| 等间隔变化趋势 | `\gradspark{25,40,NA,60,80}` |
-| 点估计与不确定性 | `\gradbar[error minus=5,error plus=8]{60}` |
-
-## 保持正确的数据含义
-
-- 同列共用 `min`、`max`、`width`；负值需要负的 `min`。
-- `unit` 只附加单位；`value format=percent` 计算数值相对于 max 的比例，且只用于非负量程。
-- 空输入和 `NA` 为缺失；趋势中的缺失保留横向位置并断开，末项缺失不会用前一项替代。
-- 正负堆叠的默认总标签是净值，`stack totals=separate` 显示“正小计 / 负小计”。净值为零仍可能有两侧贡献。
-- 堆叠分段百分比为 `abs(段值) / sum(abs(所有段值))`，表示绝对活动量份额；不是净值占比，也不自动归一化条形。
-- 自动趋势范围用于看形状；跨行比较水平和波动时，应统一 `spark range=fixed`、min、max、width、height。
-- 越界默认警告并截断图形，标签保留原值；`overflow=error` 可改为报错。
-
-## 目标与区间评价
+默认 `\usepackage{gradbars}` 加载全部功能。也可显式选择库：
 
 ```latex
-\gradbar[better=target,quality target=50,
-  thresholds={5,15},target=50,palette=diverging]{52}
-
-\gradbar[better=interval,quality range={40,60},
-  thresholds={0,10},band={40,60},palette=diverging]{68}
+\usepackage[libraries={stack,spark,heat,csv,table}]{gradbars}
 ```
 
-这两种模式的 thresholds 是非负距离：距离不超过第一个阈值为好，不超过第二个为中，否则为差。
-`threshold colors` 顺序仍为差、中、好。quality 参数负责评价，target/band 负责绘制参考，需要分别设置。
-已有的 `better=higher|lower` 用于越大或越小越好的指标。
+| 库 | 提供的功能 |
+| :---: | --- |
+| `core` | 基础图形、数值处理、设置和无障碍标记；始终加载 |
+| `stack` | 正负堆叠、分段标签与图例 |
+| `spark` | 折线、柱形与 win-loss 趋势图 |
+| `heat` | 连续与发散色阶单元格 |
+| `csv` | CSV 导入、单元格访问和收集列 |
+| `table` | 专属可视化表格；自动加载前四个功能库 |
 
-## 复用排版与类别身份
+只需要基础图形时使用 `libraries=none`。后续库加载必须放在导言区：
 
 ```latex
-\gradbarsstyle{paperrow}{preset=paper,width=40mm,max=100,precision=1}
-\gradbar[style=paperrow]{82.5}
-
-\gradbarscategory{Compute}{gradbarsBlue}{diagonal}
-\gradbarscategory{Storage}{gradbarsOrange}{dots}
-\gradstack[stack names={Compute,Storage}]{60,30}
-\gradstack[stack names={Storage,Compute}]{30,60}
-\gradbarslegend{Compute,Storage}
+\usepackage[libraries=none]{gradbars}
+\usegradbarslibrary{stack,spark}
 ```
 
-排版预设：`paper`、`report`、`presentation`、`outline`。
-成组配色：`categorical`、`sequential`、`diverging`、`mono`。
-原有七种主题和九种单色继续保留。
+`all` 和 `none` 是 `libraries` 的模式值，不是库名。`\gradbarsset` 与 `\gradbarssetup` 均可设置当前作用域的默认选项。
 
-未注册名称时按段序号循环取色；注册后按名称匹配。print/mono 使用灰度配色并保留命名类别纹理。
-图例与分段共用同一映射，颜色不足时可结合名称和纹理识别。
+## tabularray 集成
 
-## CSV 与现有表格
+需要 tabularray 2025C（2025-11-27）或更新版本，在导言区加载：
 
 ```latex
-\gradbarsloadcsv{results}{results.csv}
-\gradbarscsvstyle{shared}{results}{Score}
-\gradbarcsv[style=shared]{results}{1}{Score}
-\gradbarscolumn{G}{style=shared}
+\usepackage{tabularray}
+\usepackage{gradbars}
+\UseTblrLibrary{gradbars}
 ```
 
-支持按列名读取、引号内逗号、缺失值映射和整列共享范围。CSV 字段按字符读取，不作为 TeX 执行。
-完整用法与表格源码集中在手册中。
+`G[选项]{宽度}`、`H[选项]{宽度}`、`N[选项]{宽度}`、`D[选项]{宽度}` 分别提供条形、Heat、数字和双层比较列。表头用 `{...}` 保护。`\gradbarTblr` 等单元格命令也可用于现有 `Q`、`X` 列；`label align=cell` 将 inside/auto 标签放在整个内容区域的中心，`label=left` 保留左侧格式化数值与单位。`gradtblr` 环境提供独立的预设样式，原生 `gradtable` 可使用 `style=matrix`。普通文档不自动加载 tabularray。完整示例见中英文手册的独立集成章节。
 
-## 一本文档，效果与源码对照
+## 数据与排版约定
 
-[中文手册源码](docs/gradbars-manual.tex) 按入门、图形、外观、专属表格、案例与参考六部分组织。
-77 个编号示例包含前后对比、收支贡献、趋势汇总和专属表格，以及双栏论文、跨页长表、黑白打印和幻灯片。
-[英文手册源码](docs/gradbars-manual-en.tex) 同步介绍 v0.0.4 接口，章节与示例编号独立。
-示例数据仅用于演示。
+- 比较同一指标时使用一致的范围；自动趋势范围主要用于比较形状，比较绝对水平时应固定尺度。
+- 数字格式化不改变原始数据计算。`unit` 附加文本，`value format=percent` 计算值相对于 `max` 的比例。
+- CSV 接受逗号分隔的单行字段，字段按字符读取，不作为 TeX 执行。趋势图使用等间隔观测，不解析日期。
+- 正负堆叠分别累积；默认标签为净值，分段百分比表示绝对贡献的份额。
+- `long=true` 支持专属表格跨页；跨页表格应放在单栏正文中，不能置于浮动体或 `minipage`。
+- 自动替代文本只覆盖图形；完整文档的阅读顺序、表格结构和其他无障碍要求需另行验证。
 
-生成仓库根目录中的版本 PDF：
+## 文档与开发
+
+中英文手册均提供效果与源码对照，包含入门、图形、外观、表格、应用案例和参考。
+
+- [中文主文件](docs/gradbars-manual.tex)与[中文章节](docs/Chapter/zh-cn/README.md)。
+- [英文主文件](docs/gradbars-manual-en.tex)与[英文章节](docs/Chapter/en/README.md)。
+- [API 参考](docs/api.md)、[开发者指南](docs/developer.md)和[迁移指南](docs/migration-v1.0.0.md)。
+- [稳定接口契约](docs/stability.md)：公开接口范围、覆盖顺序、兼容性和弃用约定。
+- [源码说明](gradbars-source-v1.0.0.pdf)：l3doc 文档与 docstrip 源码流程。
+- [变更记录](CHANGELOG.md)：版本新增、修复与兼容性变化。
+
+运行模块集中在 `sty/`，第三方库示例位于 `docs/libraries/`。从仓库根目录执行：
 
 ```sh
+l3build check
+python tests/run_tests.py
+python scripts/build_source.py --check
 python scripts/build_manual.py
 ```
 
-脚本先编译四类真实排版，再用 XeLaTeX 两遍编译中文手册、pdfLaTeX 两遍编译英文手册。中文文档需要 ctex/Fandol。
-Python 仅用于文档构建；宏包本身不需要。仓库包含中英文 v0.0.4 PDF 与源码；所有文本文件采用 LF 换行。
+构建脚本自动设置模块搜索路径，生成配套布局和中英文 PDF。中文手册需要 XeLaTeX、ctex/Fandol；英文手册使用 pdfLaTeX。Python 仅用于开发与构建，使用宏包时不需要。
 
-## 当前边界
+`gradbars.dtx` 与 `gradbars.ins` 是可复现的发行源码；`tex gradbars.ins` 提取完整运行模块。
+开发时修改 `sty/` 后运行 `python scripts/build_source.py` 同步发行源码。
+使用 `python scripts/check_tagging.py` 检查 PDF 结构中的替代文本，开发环境需安装 `pypdf`。
 
-- 宏包已通过 pdfLaTeX、XeLaTeX、LuaLaTeX 检查（包括 CSV）；中文手册使用 XeLaTeX。完整坐标轴或大型绘图仍应使用专门工具。
-- CSV 仅接受逗号分隔的单行字段，自动生成的 CSV 表格不自动分页。
-- 堆叠不接受缺失段、条件阈值与误差线。
-- 趋势线不解析日期，不接受柱形目标线、误差线、背景区间或阈值评价；观测必须等间隔。
-- 固定量程要求 min 不大于零、max 为正；自动趋势范围支持正数、负数与恒定序列。
-- 标签避让限于单个图形，长标签和图例仍需要表格预留空间。
-- 启用 LaTeX tagged PDF 后，图形自动提供替代文本；可用 `alt={...}` 覆盖为中文或补充上下文。嵌入已有 TikZ 图时由外层图提供描述；尚未实现 tabularray 专用列接口。
+## 反馈与许可
 
-MIT 许可证。提交问题时请附最小 `.tex` 示例、编译引擎和日志。
+通过 [GitHub Issues](https://github.com/Tape5try/gradbars/issues) 报告问题，请附最小 `.tex` 示例、编译引擎、宏包版本和相关日志。
+
+作者与维护者：SuFan（GitHub：Tape5try）。采用 [MIT 许可证](LICENSE)。

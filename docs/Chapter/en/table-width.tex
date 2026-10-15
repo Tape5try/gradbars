@@ -1,0 +1,31 @@
+\section{Allocating a total table width}
+\key{width=\linewidth} allocates the available width without scaling text.
+Labels, fixed columns, padding and rules are reserved first; text columns and
+graphic areas share the remaining space. Values keep their original scale.
+\begin{demo}{A fixed number column and flexible text and graphics}
+\begin{gradtable}[width=\linewidth,header align=c,
+  label width=12mm,column sep=6pt,row padding=2pt,
+  min text width=18mm,min graphic width=15mm]
+  \gradcolumn[weight=1]{method}{Method name}
+  \gradcolumn[type=bar,weight=2,mark=both,
+    options={max=100,precision=1}]{score}{Score}
+  \gradcolumn[type=number,width=18mm,
+    options={precision=0}]{count}{Samples}
+  \gradheader{\gradspan{1}{Setup}\gradspan{2}{Evaluation}}
+  \gradrow{An improved method with a longer name,92.8,12500}
+  \gradrow{Baseline,84.6,320}
+  \gradrow{Pending,NA,80}
+\end{gradtable}
+\end{demo}
+Default \key{width=0pt} retains natural sizing. A positive column weight (default 1)
+shares space left after minimum widths, so weight=2 does not mean exactly twice
+the final column width. Min text width and min graphic width default to 12mm;
+the latter excludes the label slot. Number columns do not stretch.
+
+In total-width mode a column width fixes a text or graphic cell; number columns
+still grow to fit their labels. The allocated plot width overrides graphic width
+and any width in drawing options. Every row shares that allocated width.
+Headers and group titles may wrap; unbreakable words still need break points.
+An insufficient budget causes an error: increase the width, reduce padding or
+minimum widths, shorten units, or use fewer columns. Keep at least one flexible
+column when fixed columns leave unused space.

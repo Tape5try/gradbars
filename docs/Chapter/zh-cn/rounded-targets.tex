@@ -1,0 +1,38 @@
+\section{圆角、目标线与条尾标签}
+\begin{example}{示例 37：圆角与真实长度}
+\gradbar[rounded=2pt]{72}
+
+\gradbar[rounded=10pt]{1}
+
+\gradbar[rounded=10pt]{0}
+\end{example}
+
+\key{rounded} 为圆角半径，默认 \key{0pt}。实际半径会被限制在轨道高度和
+彩色条宽度允许的范围内。小数值不被放大，零值仍只显示空轨道。
+
+\begin{example}{示例 38：目标线}
+\gradbar[target=80]{72}
+
+\gradbar[target=80,
+  target color=red!70!black]{92}
+\end{example}
+
+\key{target} 使用与输入值相同的单位，不是相对位置。目标线必须位于
+\key{min} 到 \key{max} 之间，越界会报错。
+默认不绘制目标线；\key{target={}} 可清除局部或继承的目标设置。
+
+\begin{example}{示例 39：标签跟随彩色条末端}
+\gradbar[label=end]{15}
+
+\gradbar[label=end]{72}
+
+\gradbar[label=end]{100}
+\end{example}
+
+\key{label=end} 把标签放在彩色条末端上方。靠近左右边界时，
+会在轨道范围内向内调整标签位置，避免常规数值标签越界。
+因此它会增加行高，但不为外部标签槽预留水平空间。
+
+\note{很长的自定义标签可能比轨道本身还宽；此时应增大 \key{width}，
+或改用 \key{label=outside} 并设置足够的 \key{label width}。
+上方标签不改变正文中的轨道基线。}

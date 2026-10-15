@@ -1,0 +1,15 @@
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\begin{document}
+\gradscale{shared}{min=0,max=100}
+\gradbar[scale group=shared,alt={Custom shared-scale value.}]{72}\par
+\begin{gradtable}[width=\linewidth,style=academic,theme=teal,
+  scale=column,scale padding=10,scale nice=true]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=bar,aggregate=mean,options={value format=percent}]{value}{Percent}
+  \gradrow{A,63}\gradrow{B,87}
+  \gradsummary{Mean}
+\end{gradtable}
+\end{document}

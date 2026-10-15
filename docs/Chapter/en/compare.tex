@@ -1,0 +1,21 @@
+\section{Layered and dumbbell comparisons}
+\begin{demo}{Current and reference values}
+\gradcompare[width=65mm,precision=0]{60}{82}
+
+\graddumbbell[width=65mm,palette=categorical,precision=0]{48}{76}
+
+\graddumbbell[min=-50,max=100,width=65mm,
+  compare label=delta,precision=0]{-20}{35}
+
+\graddumbbell[width=65mm,precision=0]{NA}{65}
+\end{demo}
+Layered bars use a wide reference and a centered current layer. The
+\key{compare ratio} defaults to .45 and must be strictly between zero and one.
+Both lengths start from the common zero; they are not added or divided.
+
+Dumbbells use a hollow reference point and a current point joined by a line.
+The default label is current / reference; delta means current minus reference.
+A missing endpoint suppresses the connector; delta is missing if either endpoint
+is missing. Equal endpoints overlap. Error whiskers refer to the current value.
+\key{compare color}, \key{marker size} and \key{stem width} control appearance.
+Dedicated comparison and spark commands retain their shape when applying presets.

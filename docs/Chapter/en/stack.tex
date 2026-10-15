@@ -1,0 +1,25 @@
+\section{Stacked contributions and segment labels}
+\begin{demo}{Positive and negative contributions}
+\gradstack[min=-60,max=100,width=80mm,height=14pt,
+  precision=0,palette=categorical,stack totals=separate,
+  stack names={Sales,Materials,Service,Operations},
+  segment labels=value,legend=true]{60,-25,20,-15}
+\end{demo}
+Positive and negative contributions accumulate independently from zero. Within
+each side, segment order follows input order. Negative segments require a negative
+min. Positive and negative subtotals are checked separately against the scale.
+The default total is the algebraic sum; \key{stack totals=separate} shows positive
+and negative subtotals. A zero net does not erase nonzero contributions.
+
+Segment labels can be none, value, percent, name, name value or name percent.
+The percentage of a segment is
+\[100|v_i|/\sum_j|v_j|,\]
+including clipped contributions. These percentages
+represent shares of absolute activity, not shares of a potentially zero net.
+All-zero stacks do not calculate percentages. Stacks are not normalized to full
+width. Missing segments, empty lists, quality thresholds and error whiskers are rejected.
+
+Provide one stack name per segment for named labels or automatic legends.
+Small labels move outside with leader lines; automatic black/white text follows
+the fill. Zero segments retain their palette and legend positions. Use a shared
+\key{\gradbarslegend} outside a table to avoid repeating the legend for every row.

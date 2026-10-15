@@ -1,0 +1,112 @@
+\part{外观、标签与评价规则}
+
+
+\section{主题与内置颜色}
+\key{theme} 一次设置填充方式、渐变两端、轨道和文字颜色。
+主题参数之后仍可逐项覆盖颜色；同一选项列表从左向右执行。
+示例 29 集中展示 19 种内置配色，包括十种主题和九种单色。
+渐变预设通过 \key{theme} 调用，内置颜色通过 \key{color} 设置纯色填充。
+
+\begin{example}[before upper={\fontsize{9}{10.6}\selectfont\setlength{\parskip}{13.8pt}}]{示例 29：内置主题与颜色}
+\gradbar[theme=blue]{72}
+
+\gradbar[theme=teal]{72}
+
+\gradbar[theme=solid]{72}
+
+\gradbar[theme=gray]{72}
+
+\gradbar[theme=lbyellow]{72}
+
+\gradbar[theme=viblue]{72}
+
+\gradbar[theme=cyblu]{72}
+
+\gradbar[theme=violet]{72}
+
+\gradbar[theme=orange]{72}
+
+\gradbar[theme=forest]{72}
+
+\gradbar[color=lightgreen]{72}
+
+\gradbar[color=lightyellow]{72}
+
+\gradbar[color=lightblue]{72}
+
+\gradbar[color=lightred]{72}
+
+\gradbar[color=rose]{72}
+
+\gradbar[color=skyblue]{72}
+
+\gradbar[color=gold]{72}
+
+\gradbar[color=lavender]{72}
+
+\gradbar[color=peach]{72}
+\end{example}
+
+\clearpage
+\begingroup
+\small
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+\multicolumn{1}{c}{\textbf{主题或颜色}} & \multicolumn{1}{c}{\textbf{特征与适用场景}}\\
+\midrule
+\key{blue} & 默认蓝色渐变，适合通用表格。\\
+\key{teal} & 青绿色渐变，适合区分另一组指标。\\
+\key{solid} & 蓝色纯色填充，减少渐变带来的视觉干扰。\\
+\key{gray} & 灰度填充，适合黑白输出；仍应保留数值标签。\\
+\midrule
+\key{lbyellow} & 浅蓝至浅黄渐变，适合浅色背景下的柔和展示。\\
+\key{viblue} & 浅紫至浅蓝渐变，适合低饱和度的对比表格。\\
+\key{cyblu} & 青色至浅蓝渐变，适合突出一组重点指标。\\
+\key{violet} & 紫罗兰至浅紫渐变，搭配淡紫轨道，适合区分另一组实验或指标。\\
+\key{orange} & 暖橙至浅橙渐变，搭配淡橙轨道，适合突出重点结果。\\
+\key{forest} & 森林绿至浅绿渐变，搭配淡绿轨道，适合完成度与资源指标。\\
+\midrule
+\key{lightgreen} & 浅绿纯色，适合展示完成度或达标指标。\\
+\key{lightyellow} & 浅黄纯色，适合轻量提示；浅色背景下应保留深色标签。\\
+\key{lightblue} & 浅蓝纯色，适合通用数据和大面积表格。\\
+\key{lightred} & 浅红纯色，适合标出需要关注的指标。\\
+\key{rose} & 玫红纯色，适合强调重点数据或区分对照组。\\
+\key{skyblue} & 天蓝纯色，适合清晰呈现进度和比例。\\
+\key{gold} & 金黄纯色，适合突出关键结果或优选方案。\\
+\key{lavender} & 淡紫纯色，适合柔和区分不同类别。\\
+\key{peach} & 蜜桃纯色，适合暖色风格的辅助指标。\\
+\bottomrule
+\end{tabularx}
+\endgroup
+
+\begin{example}{示例 30：自定义渐变与轨道}
+\gradbar[
+  theme=blue,
+  left color=violet!80!blue,
+  right color=violet!20,
+  track color=violet!5
+]{68}
+
+\gradbar[
+  theme=teal,
+  fill=solid,
+  left color=orange!85!black,
+  track color=orange!10
+]{68}
+\end{example}
+
+\subsection{颜色参数}
+内置配色无需自行定义。主题和渐变预设使用 \key{theme}；单色使用 \key{color}。
+单色名称也可用于 \key{left color} 或 \key{right color}，名称不带反斜杠。
+
+\key{theme=blue,color=rose} 使用玫红纯色；
+\key{color=rose,theme=blue} 则恢复蓝色渐变。
+
+\key{left color} 是渐变起点，也决定纯色填充的颜色；
+\key{right color} 仅在 \key{fill=gradient} 时生效。
+\key{track color} 控制空轨道，\key{text color} 控制标签。
+颜色可使用 xcolor 的混色表达式。
+
+\note{不要只靠颜色传递关键含义。并列指标应在列标题中写明名称和单位，
+并保留可读的数值。可设置 \key{text color=auto} 根据背景选择黑白文字，也可显式指定颜色。}

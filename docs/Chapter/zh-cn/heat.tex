@@ -1,0 +1,58 @@
+\section{Heat 色阶单元格}
+\label{sec:heat}
+Heat 用背景颜色表示单个数值，在色块内保留数值标签，适合观察同一指标的高低分布。
+\key{\gradheat[选项]{值}} 可在正文、普通表格或已有 TikZ 图形中使用。
+颜色按 min/max 在线性尺度上连续插值，不改变原始数值。
+\begin{example}[text and listing,sidebyside=false]{连续色阶与缺失值}
+\gradheat[min=0,max=100]{0}\quad
+\gradheat[min=0,max=100]{50}\quad
+\gradheat[min=0,max=100]{100}\quad
+\gradheat{NA}
+\end{example}
+\subsection{配色、文字与缺失值}
+\key{heat low color} 与 \key{heat high color} 指定量程两端的颜色；better=lower 反转颜色方向。
+\key{heat text color=auto} 按对比度选择黑白文字，也可指定固定颜色。
+\key{heat missing color} 定义缺失值底色，缺失不等于零。
+支持 precision、unit、number format、自定义 text、圆角、print 灰度及替代文本。
+标签显示在色块内，独立命令使用 \key{label=none} 可隐藏标签。
+Heat 不绘制条形的目标线、误差线、纹理或阈值区间。
+\subsection{发散色阶与中心值}
+\key{heat palette=diverging} 使用橙色、中心色和青绿色分别表示量程两侧与中心。
+\key{heat center} 默认是 0，\key{heat center color} 默认是白色；也可指定目标值作为中心。
+中心必须位于 min/max 之内，允许等于端点。
+\begin{example}[text and listing,sidebyside=false]{不对称量程中的零中心与目标中心}
+\gradheat[heat palette=diverging,
+  min=-50,max=100,heat center=0]{-25}\quad
+\gradheat[heat palette=diverging,
+  min=-50,max=100,heat center=0]{0}\quad
+\gradheat[heat palette=diverging,
+  min=-50,max=100,heat center=0]{50}
+
+\gradheat[heat palette=diverging,
+  min=20,max=80,heat center=50]{35}\quad
+\gradheat[heat palette=diverging,
+  min=20,max=80,heat center=50]{50}\quad
+\gradheat[heat palette=diverging,
+  min=20,max=80,heat center=50]{65}
+\end{example}
+中心两侧分别插值，因此不对称范围也能让中心精确对应中性色。
+\key{better=lower} 交换两端颜色，保留中心色；print 将两端转换为灰色、中心保留白色。
+在 palette 后设置 heat low color、heat center color、heat high color 可自定义颜色。
+顺序色阶使用 \key{heat palette=sequential}，沿用原有蓝色渐变。
+自动范围不会为中心自动扩张；中心为零时可保留 \key{include zero=true}，其他中心可设置合适的固定范围。
+缺失值使用独立的底色；标签与替代文本保留原始数值，替代文本也包含中心值。
+
+\subsection{在 gradtable 中声明 Heat 列}
+在专属数据表格中使用 \key{type=heat}，每个单元格填写一个数值或 NA。
+色块占据列内容宽度，保留正常列间距；\key{mark=best|both} 可标记最佳与次佳值。
+下面先采用固定量程；自动范围见第~\ref{sec:column-scale}~章，CSV 数据源见第~\ref{sec:csv-input}~章。
+\begin{example}[text and listing,sidebyside=false]{固定尺度的 Heat 表格列}
+\begin{gradtable}[width=\linewidth,header align=c]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=heat,mark=both,
+    options={min=0,max=100,precision=0}]{score}{Score}
+  \gradrow{A,70}
+  \gradrow{B,90}
+  \gradrow{Pending,NA}
+\end{gradtable}
+\end{example}

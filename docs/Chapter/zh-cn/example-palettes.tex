@@ -1,0 +1,36 @@
+\section{完整案例：主题与标签总览}
+这个案例把四种主题、三种标签位置、自定义标签和正文用法放在一起，
+可直接复制到文档中比较效果。
+
+\begin{example}[text and listing,sidebyside=false]{示例 70：主题与布局速查}
+\begingroup
+\gradbarssetup{
+  width=30mm, label width=3.8em,
+  unit={\%}, precision=0
+}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{@{}ll@{}}
+  \toprule
+\multicolumn{1}{c}{Style} & \multicolumn{1}{c}{Preview}\\
+  \midrule
+  Blue    & \gradbar[theme=blue]{72} \\
+  Teal    & \gradbar[theme=teal]{72} \\
+  Solid   & \gradbar[theme=solid]{72} \\
+  Gray    & \gradbar[theme=gray]{72} \\
+  Inside  & \gradbar[label=inside,
+              height=2.5ex,right color=white]{64} \\
+  Custom  & \gradbar[theme=teal,max=10,
+              text={8 / 10}]{8} \\
+  No label & \gradbar[theme=gray,label=none]{64} \\
+  \bottomrule
+\end{tabular}
+
+Completion:
+\gradbar[width=16mm,label width=3em]{64}.
+\endgroup
+\end{example}
+
+\subsection{如何选用}
+为一组指标选择稳定的样式即可，不必为每个数值选择不同的颜色。
+需要黑白输出时选择灰度；需要减少视觉装饰时选择纯色。
+精确比较依靠数值标签，彩色条提供快速浏览的线索。

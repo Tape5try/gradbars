@@ -1,0 +1,24 @@
+\documentclass{article}
+\usepackage[libraries=none]{gradbars}
+\setlength{\parindent}{0pt}
+\makeatletter
+\@ifpackageloaded{collcell}{\errmessage{Unexpected collected-table dependency}}{}
+\@ifpackageloaded{longtable}{\errmessage{Unexpected long-table dependency}}{}
+\@ifpackageloaded{gradbars-lib-stack}{\errmessage{Unexpected stack engine}}{}
+\@ifpackageloaded{gradbars-lib-spark}{\errmessage{Unexpected spark engine}}{}
+\makeatother
+\gradbarsiflibraryloaded{core}{}{\errmessage{Core is not loaded}}
+\gradbarsiflibraryloaded{table}{\errmessage{Table is unexpectedly loaded}}{}
+\begin{document}
+\gradbarsset{width=30mm,max=100,precision=2}
+\gradbar{72.125}\par
+{\gradbarsset{color=teal}\gradbar{50}}\par
+\gradbar{50}\par
+\gradcompare{40}{60}\par
+\graddumbbell{40}{60}\par
+\gradrange[range point=50]{30}{70}\par
+\gradbarslegend{One,Two}\par
+\gradscale{explicit}{min=-50,max=100}
+\gradbar[scale group=explicit]{-25}\par
+\gradgraphic{bar}{72}\par
+\end{document}

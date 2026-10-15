@@ -1,0 +1,34 @@
+\section{命名样式与缺失值}
+\key{\gradbarsstyle{名称}{参数}} 定义可复用的配置；使用 \key{style=名称} 调用。
+样式可以引用已定义的样式，后面的参数覆盖前面的设置。
+定义和调用均遵循普通 TeX 分组，不会改变其他单元格。
+
+\begin{example}{示例 6：定义并复用样式}
+\gradbarsstyle{accuracy}{
+  max=100,theme=teal,
+  rounded=2pt,precision=1,
+  unit={\%}
+}
+\gradbar[style=accuracy]{92.7}
+
+\gradbar[style=accuracy,
+  target=95]{94.2}
+\end{example}
+
+样式在当前作用域内可以重新定义。未知名称会报错；循环引用会触发嵌套深度限制。
+
+\begin{example}{示例 7：零值与缺失值}
+\gradbar{0}
+
+\gradbar{NA}
+
+\gradbar[missing text={N/A}]{}
+\end{example}
+
+空参数或大写 \key{NA} 表示缺失值，忽略首尾空格。
+零值显示数值零；缺失值只显示轨道和缺失标签，默认标签为短横线。
+宏包不会把其他文字或拼写错误自动当成缺失值。
+
+\note{缺失值不绘制数值填充和误差线，也不附加单位或百分号。
+目标线和区间背景仍保留，表示这一列的参考尺度。
+\key{text} 可以覆盖缺失标签，\key{label=none} 可以隐藏它。}

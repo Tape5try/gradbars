@@ -1,0 +1,52 @@
+\section{更多图形列}
+\subsection{双层对比条与哑铃图}
+新增 \key{type=compare} 和 \key{type=dumbbell}，单元格写成“基准值/当前值”。
+整格 NA 表示两者都缺失，也可使用 40/NA 或 NA/60 表示单侧缺失。
+颜色、尺度、变化标注和标签选项沿用对应的独立图形命令。
+输入顺序是基准/当前，默认显示标签的顺序为当前/基准；delta 显示当前减基准。
+
+\begin{example}[text and listing,sidebyside=false]{示例 53：同一数据的两种对比表达}
+\begin{gradtable}[text width=25mm,graphic width=34mm,
+  label width=10mm,header align=c,column sep=7pt,
+  row stretch=1.8]
+  \gradcolumn{name}{方法}
+  \gradcolumn[type=compare,
+    options={max=100,precision=0}]{bars}{基准与当前}
+  \gradcolumn[type=dumbbell,
+    options={max=100,precision=0,compare label=delta,
+      marker shape=diamond}]{change}{变化}
+  \gradrow{方法 A,40/68,40/68}
+  \gradrow{方法 B,75/60,75/60}
+  \gradrow{方法 C,50/NA,50/NA}
+\end{gradtable}
+\end{example}
+双层条适合保留两组长度，哑铃图适合强调两个端点之间的差异。
+列标题应说明基准、当前或差值的含义；同一列所有行应采用同一尺度。
+
+\clearpage
+\subsection{堆叠条与迷你折线}
+新增 \key{type=stack} 和 \key{type=spark}。由于行数据也使用逗号分隔，
+一格内的数值列表必须用一层花括号包住，例如 \key{\gradrow{项目,{20,30,50}}}。
+堆叠列显示各段及总量；迷你折线列显示序列，并在外部标注最后一个观测值。
+
+\begin{example}[text and listing,sidebyside=false]{示例 54：构成与趋势并列展示}
+\begin{gradtable}[text width=25mm,graphic width=34mm,
+  label width=10mm,header align=c,column sep=7pt,
+  row stretch=1.8]
+  \gradcolumn{name}{项目}
+  \gradcolumn[type=stack,options={max=100,precision=0,
+    stack colors={gradbarsBlue,gradbarsTeal,gold}}
+    ]{mix}{三类构成}
+  \gradcolumn[type=spark,options={spark range=fixed,
+    min=0,max=100,precision=0}]{trend}{最近五期}
+  \gradrow{项目 A,{20,35,25},{35,48,NA,65,80}}
+  \gradrow{项目 B,{30,20,15},{80,70,65,NA,NA}}
+  \gradrow{项目 C,NA,NA}
+\end{gradtable}
+\end{example}
+三段颜色依次代表类别一、二、三；同一类别在各行保持相同顺序和颜色。
+堆叠列的整格 NA 表示构成缺失，不能把缺失的一段当作零值参与累计。
+含负段时应明确设置负的 min，正段与负段分别累计。
+迷你折线在缺失处断开，末次观测缺失时标签仍为缺失符号，不借用之前的值。
+这里显式设置 \key{spark range=fixed,min=0,max=100}，使不同项目可按同一纵向尺度比较；
+默认 auto 为各单元格独立缩放，只适合观察形态。

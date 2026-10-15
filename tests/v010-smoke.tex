@@ -1,0 +1,22 @@
+\documentclass{article}
+\usepackage[libraries=none]{gradbars}
+\usegradbarslibrary{spark,stack}
+\usegradbarslibrary{stack,spark,heat,csv,table,table}
+\setlength{\parindent}{0pt}
+\gradbarsdeclaretype{teal-score}{\gradbar[color=teal,rounded=1pt]{#1}}
+\gradbarsdeclareformatter{boxed}{\fbox{\gradbarsformatnumber[precision=#2,number format=#3]{#1}}}
+\begin{document}
+\gradbarsset{precision=2}
+\gradstack[min=-50,max=100]{20,-10,30}\par
+\gradspark{20,NA,50}\par
+\gradgraphic{teal-score}{72.125}\par
+\gradgraphic{heat}{72.125}\par
+\gradbar[formatter=boxed]{72.125}\par
+\gradbarsformatnumber[precision=3]{1.23456}\par
+\gradbarsiflibraryloaded{table}{Table library loaded.}{\errmessage{Missing table library}}\par
+\begin{gradtable}[style=academic,theme=teal,width=\linewidth]
+\gradcolumn{name}{Name}
+\gradcolumn[type=number,formatter=boxed,aggregate=mean]{value}{Value}
+\gradrow{A,72.125}\gradrow{B,90}\gradsummary{Mean}
+\end{gradtable}
+\end{document}

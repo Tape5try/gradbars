@@ -1,0 +1,107 @@
+\section{按需加载库与公开扩展接口}
+\subsection{默认完整加载与最小模式}
+\key{\usepackage{gradbars}} 保持默认完整加载，已有文档可继续使用原命令。\par
+也可通过选项显式列出全部功能库：
+\begin{codeonly}
+\usepackage[libraries={stack,spark,heat,csv,table}]{gradbars}
+\end{codeonly}
+这与默认完整加载等效；按实际需要缩减列表即可选择部分库。
+仅需基础图形时可选择 \key{libraries=none}，再在导言区显式加载需要的库：
+\begin{codeonly}
+\usepackage[libraries=none]{gradbars}
+\usegradbarslibrary{stack,spark}
+\end{codeonly}
+也可在宏包选项中写 \key{libraries={heat,spark}}。
+核心包含普通条、比较与区间、参考标记、评价规则和图例。
+\key{stack} 提供正负堆叠，\key{spark} 提供折线、柱形与 win-loss，\key{heat} 提供色阶，
+\key{csv} 提供文件导入与收集列，\key{table} 提供专属表格并自动加载前四项依赖。
+重复加载不重复定义；未知库、缺少文件、循环依赖和未加载的命令均有明确错误提示。
+库加载只在导言区执行；选择 \key{formatter=siunitx} 时仍需用户显式加载 siunitx v3。
+\subsection{全部内置可加载库}
+v1.0.0 注册了以下六个内置库名。核心始终加载，另外五个为功能库：
+\begin{description}
+\item[\key{core}] 基础数据条、比较条、哑铃、区间、参考标记、评价规则和图例，
+以及数值处理、设置接口与无障碍标记。始终自动加载，无须单独指定。
+\item[\key{stack}] 正负堆叠条、分段标签与堆叠图例。主要入口为 \key{\gradstack}，依赖核心。
+\item[\key{spark}] 迷你趋势图，支持折线、柱形和 win-loss。主要入口为 \key{\gradspark}，依赖核心。
+\item[\key{heat}] 连续色阶与发散色阶单元格，支持中心值。主要入口为 \key{\gradheat}，依赖核心。
+\item[\key{csv}] CSV 数据导入、单元格读取、CSV 表格及已有表格的收集列。\par
+主要入口包括 \key{\gradbarsloadcsv} 和 \key{\gradbarscolumn}，依赖核心。
+\item[\key{table}] 专属 \key{gradtable} 表格，提供列定义、分组、汇总、共享尺度、排名、
+样式和跨页布局。自动加载核心及 \key{stack}、\key{spark}、\key{heat}、\key{csv}。
+\end{description}
+以下写法列出全部六个库；显式列出 \key{core} 是允许的，但并非必需：
+\begin{codeonly}
+\usepackage[libraries={core,stack,spark,heat,csv,table}]{gradbars}
+\end{codeonly}
+也可以先进入最小模式，再在导言区加载这些库：
+\begin{codeonly}
+\usepackage[libraries=none]{gradbars}
+\usegradbarslibrary{core,stack,spark,heat,csv,table}
+\end{codeonly}
+\key{all} 和 \key{none} 是宏包选项 \key{libraries} 的模式值，不是库名。
+仅需专属表格时写 \key{libraries=table} 即可，由加载器补齐依赖。
+\key{keys}、\key{numbers}、\key{render-tikz}、\key{tagging}、\key{api}、
+\key{table-data}、\key{table-layout} 和 \key{model} 是内部模块，不作为公开库名单独加载。
+第三方库须先通过 \key{\gradbarsdeclarelibrary} 注册；本章的 \key{demo} 是配套示例，
+不是内置库。
+
+\subsection{统一设置与作用域}
+\key{\gradbarsset{...}} 与 \key{\gradbarssetup{...}} 使用相同选项、作用域和覆盖规则。
+在 TeX 分组中的设置保持局部，单个图形的可选参数只影响该次绘制。
+\begin{example}{统一设置与局部覆盖}
+\gradbarsset{max=100,precision=2}
+\gradbar{72.125}
+{\gradbarsset{color=teal}\gradbar{50}}
+\end{example}
+\subsection{稳定的图形与格式化器注册}
+以下公开入口遵循版本 1 的稳定接口契约：
+\begin{itemize}
+\item 图形：\key{\gradbarsdeclaretype} 与 \key{\gradgraphic}。
+\item 格式化：\key{\gradbarsdeclareformatter} 与 \key{\gradbarsformatnumber}。
+\item 库注册：\key{\gradbarsdeclarelibrary}。
+\end{itemize}
+类型回调收到一个验证后的数值或 \key{NA}，应通过公开图形接口绘制。
+格式化器回调收到显示数值、精度和数字格式，仅返回数字排版；单位和百分比后缀由引擎添加。
+\begin{codeonly}
+\gradbarsdeclaretype{score}{\gradbar[color=teal]{#1}}
+\gradbarsdeclareformatter{boxed}{%
+  \fbox{\gradbarsformatnumber[precision=#2,number format=#3]{#1}}}
+\gradgraphic{score}{72.125}
+\gradbar[formatter=boxed]{72.125}
+\end{codeonly}
+自定义类型用于单个标量图形，尚未扩展原生 \key{gradcolumn} 的类型枚举；
+自定义格式化器可用于图形及普通数字列，暂不支持 \key{number align=decimal}。
+注册名称为以字母开头的小写字母、数字与连字符；注册为全局，重名报错。
+\subsection{只使用公开入口的第三方示例}
+配套文件 \key{docs/libraries/gradbars-contrib-demo.sty} 声明示例类型、格式化器和表格样式。
+导言区通过依赖列表注册并加载：
+\begin{codeonly}
+\gradbarsdeclarelibrary{demo}{table}{docs/libraries/gradbars-contrib-demo.sty}
+\usegradbarslibrary{demo}
+\end{codeonly}
+\begin{example}[text and listing,sidebyside=false]{公开库的图形、格式化与样式复用}
+\gradgraphic{demo-score}{72.125}\par
+\gradbar[formatter=demo-boxed]{72.125}\par
+\begin{gradtable}[style=demo-report,width=\linewidth,header align=c]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=number,formatter=demo-boxed,aggregate=mean]{value}{Score}
+  \gradrow{A,72}\gradrow{B,90}\gradsummary{Mean}
+\end{gradtable}
+\end{example}
+该示例不访问私有变量。开发者参考见 \key{docs/developer.md}，迁移说明见 \key{docs/migration-v1.0.0.md}。
+\subsection{安装与发布文件}
+手动安装时应把发行包 \key{sty/} 目录中的全部 \key{.sty}
+放在同一目录，而不是只替换主文件。模块版本需要一致。
+构建入口为 \key{l3build check}、\key{l3build doc} 和 \key{l3build ctan}；完整回归继续通过
+\key{python tests/run_tests.py} 验证。
+\subsection{版本 1 的兼容性契约}
+已文档化的公开命令、选项、默认值与库依赖规则保持稳定。
+兼容新增采用次版本；删除接口或更改默认值、数据语义采用主版本。
+弃用接口在版本 1 期间继续可用；私有变量与内部模块文件名不属于稳定承诺。
+契约范围、覆盖顺序和回调限制见 \key{docs/stability.md}。
+支持环境为 LaTeX 2025-11-01、expl3 2025-12-29、PGF/TikZ 3.1.11a 或更新版本，
+安装时须保持十五个基本运行文件与可选 \key{tblrlibgradbars.sty} 适配库的版本一致。
+\key{gradbars.dtx} 和 \key{gradbars.ins} 可通过 docstrip 提取同一套运行模块；
+\key{python scripts/build_source.py --check} 验证两者一致性。
+源码说明采用 l3doc，面向用户的效果与源码手册继续按章节维护。

@@ -1,0 +1,57 @@
+\section{Source organization and reproducibility}
+\textsf{gradbars} uses PGF/TikZ for inline data graphics. The editable runtime
+modules live in \texttt{sty/}; the generated \texttt{gradbars.dtx} bundles the
+same modules with this source guide. Generate it with
+\texttt{python scripts/build\_source.py}. Check for drift with the
+\texttt{--check} option. The check extracts every module using docstrip and
+compares its contents with the runtime sources (line endings and trailing
+whitespace are normalized).
+
+Run \texttt{tex gradbars.ins} in a separate directory containing the two
+distribution source files to extract all matching runtime modules. Install the
+complete set together. Run \texttt{pdflatex gradbars.dtx} from the repository
+root for this guide; the illustrated bilingual manuals are built separately by
+\texttt{python scripts/build\_manual.py}. The default driver prints the guide
+only. Replace \cs{OnlyDescription} with \cs{AlsoImplementation} in a working
+copy to inspect the complete implementation with \textsf{l3doc}.
+
+\section{Four responsibilities}
+User commands and keys select data and scoped settings. The model validates
+input, resolves shared scales, and produces normalized geometry. The TikZ
+renderer draws paths and labels from that geometry. Integration modules manage
+alternative text, table measurement and external formatting.
+
+The model uses normalized positions in $[0,1]$ after the configured overflow
+policy. It retains raw input separately. Zero, start, stop and endpoint are
+not formatted labels. Projection to physical dimensions happens in the drawing
+font context so that \texttt{em}/\texttt{ex} retain their established meaning.
+The private \cs{\_\_gradbars\_render\_tikz:} function is the default backend
+boundary, not a public callback. No second backend is supplied.
+
+\section{Stable extension contract}
+The public library, scalar type and numeric formatter registration commands
+documented in \texttt{docs/stability.md} are stable in version 1.
+Library registration is global and loading is confined to the preamble;
+repeated loading is harmless. Type and formatter names cannot be replaced.
+Scalar callbacks receive a validated number or \texttt{NA}. Formatter
+callbacks receive a display number, precision and number format; the engine
+appends units separately. Opaque formatters cannot participate in decimal
+alignment. Private variables and functions are not covered by the contract.
+
+\section{Validation and accessibility}
+Run \texttt{l3build check} and \texttt{python tests/run\_tests.py} for semantic
+and three-engine regression tests. Run \texttt{python scripts/check\_tagging.py}
+on a current tagging-capable TeX distribution to verify figure descriptions and
+measurement suppression. Automatic alternative text does not establish PDF/UA
+conformance for a complete table or document.
+
+The optional \texttt{tblrlibgradbars.sty} is included in the same docstrip
+source. With tabularray 2025C or newer, \verb|\UseTblrLibrary{gradbars}| loads
+cell helpers and dedicated columns. Its public trial hooks suspend tagging
+during measurement; fixed and X widths are tested in the PDF structure checks.
+
+The Chinese and English manuals contain tutorials, option and library
+references, rendered examples and source. The developer reference documents
+the private data boundary; \texttt{docs/migration-v1.0.0.md} documents upgrade
+and compatibility rules. The build and archive checks are separate, allowing
+validation without creating a CTAN zip.

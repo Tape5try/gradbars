@@ -1,0 +1,38 @@
+\section{完整案例：数据集概览}
+下面将同一组数据分别显示为样本数和总量占比。两列分母都为 125000；
+标签格式不同，但相同数据的彩色条长度保持一致。
+
+\begin{example}[text and listing,sidebyside=false]{示例 69：样本量与占比}
+\begingroup
+\gradbarssetup{
+  max=125000, width=29mm,
+  label width=4.8em, precision=0
+}
+\renewcommand{\arraystretch}{1.65}
+\begin{tabular}{@{}lcc@{}}
+  \toprule
+\multicolumn{1}{c}{Split} & \multicolumn{1}{c}{Samples} & \multicolumn{1}{c}{Share of total}\\
+  \midrule
+  Training
+    & \gradbar[theme=solid]{87500}
+    & \gradbar[theme=teal,
+        value format=percent,precision=1]{87500} \\
+  Validation
+    & \gradbar[theme=solid]{18750}
+    & \gradbar[theme=teal,
+        value format=percent,precision=1]{18750} \\
+  Test
+    & \gradbar[theme=solid]{18750}
+    & \gradbar[theme=teal,
+        value format=percent,precision=1]{18750} \\
+  Unassigned
+    & \gradbar[theme=solid]{0}
+    & \gradbar[theme=teal,
+        value format=percent,precision=1]{0} \\
+  \bottomrule
+\end{tabular}
+\endgroup
+\end{example}
+
+\note{本例演示较大数值与真实零值。样本数中的分组空白仅用于可读性，
+输入仍必须写成 \key{87500}，不能在数值参数中加入逗号或单位。}

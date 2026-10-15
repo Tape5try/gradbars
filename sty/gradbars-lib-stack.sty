@@ -1,0 +1,88 @@
+% Author: SuFan; MIT License. Internal implementation unless documented.
+\ProvidesPackage{gradbars-lib-stack}[2026/10/30 v1.0.0 gradbars lib-stack]
+\ExplSyntaxOn
+\cs_new_protected:Npn \gradbarsParseStack #1
+  {
+    \tl_set:Nx \l_tmpa_tl {#1}
+    % Empty elements are invalid, not silently dropped by clist normalization.
+    \regex_match:nVTF {\A\s*\Z|\A\s*,|,\s*,|,\s*\Z} \l_tmpa_tl
+      {\gradbarsFail{Stack~requires~a~nonempty~list~of~numbers}} { }
+    \clist_set:Nx \l__gradbars_stack_clist {#1}
+    \fp_zero:N \l__gradbars_sum_fp
+    \fp_zero:N \l__gradbars_positive_fp
+    \fp_zero:N \l__gradbars_negative_fp
+    \clist_map_inline:Nn \l__gradbars_stack_clist
+      {
+        \gradbarsCheckNumber{##1}{stack~segment}
+        \ifgradbars@valid
+          \fp_add:Nn \l__gradbars_sum_fp {##1}
+          \fp_compare:nNnTF {##1} < {0}
+            {\fp_add:Nn \l__gradbars_negative_fp {##1}}
+            {\fp_add:Nn \l__gradbars_positive_fp {##1}}
+        \fi
+      }
+    \cs_set:Npx \gradbars@total {\fp_to_decimal:N \l__gradbars_sum_fp}
+    \cs_set:Npx \gradbars@positive {\fp_to_decimal:N \l__gradbars_positive_fp}
+    \cs_set:Npx \gradbars@negative {\fp_to_decimal:N \l__gradbars_negative_fp}
+    \cs_set:Npx \gradbars@gross {\fp_eval:n {\gradbars@positive-\gradbars@negative}}
+  }
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn \gradbarsDrawStack
+  {
+    \gradbarsStackReset
+    \int_zero:N \l_tmpa_int
+    \clist_map_inline:Nn \l__gradbars_stack_clist
+      {
+        \gradbarsStackStep{##1}
+        \int_incr:N \l_tmpa_int
+        \gradbarsCategoryColor{\l_tmpa_int}
+        \pgfmathsetlengthmacro\gradbars@segmentlo
+          {\gradbarsPosition{\l__gradbars_before_fp}*(\gradbars@width)}
+        \pgfmathsetlengthmacro\gradbars@segmenthi
+          {\gradbarsPosition{\l__gradbars_sum_fp}*(\gradbars@width)}
+        \ifdim\gradbars@segmenthi>\gradbars@segmentlo\relax
+          \ifgradbars@outline
+            \draw[draw=\gradbars@segmentcolor,line~width=\gradbars@outlinewidth]
+              (\gradbars@segmentlo,0) rectangle (\gradbars@segmenthi,\gradbars@height);
+          \else
+            \path[fill=\gradbars@segmentcolor,draw=none]
+              (\gradbars@segmentlo,0) rectangle (\gradbars@segmenthi,\gradbars@height);
+            \gradbarsPatternRect{\l_tmpa_int}{\gradbars@segmentlo}{0}{\gradbars@segmenthi}{\gradbars@height}
+          \fi
+        \fi
+      }
+  }
+\ExplSyntaxOff
+\ExplSyntaxOff
+\DeclareDocumentCommand\gradstack{O{} m}{%
+  \leavevmode\begingroup
+    \gradbars@validtrue
+    \gradbarsParseStack{#2}%
+    \ifgradbars@valid
+      \gradbars@stacktrue
+      \gradbar[#1]{\gradbars@total}%
+    \fi
+  \endgroup
+}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\fp_new:N \l__gradbars_positive_fp
+\fp_new:N \l__gradbars_negative_fp
+\cs_new_protected:Npn \gradbarsStackReset
+  {\fp_zero:N \l__gradbars_positive_fp\fp_zero:N \l__gradbars_negative_fp}
+\cs_new_protected:Npn \gradbarsStackStep #1
+  {
+    \fp_compare:nNnTF {#1} < {0}
+      {\fp_set_eq:NN \l__gradbars_sum_fp \l__gradbars_negative_fp
+       \fp_add:Nn \l__gradbars_negative_fp {#1}
+       \fp_set_eq:NN \l__gradbars_before_fp \l__gradbars_negative_fp}
+      {\fp_set_eq:NN \l__gradbars_before_fp \l__gradbars_positive_fp
+       \fp_add:Nn \l__gradbars_positive_fp {#1}
+       \fp_set_eq:NN \l__gradbars_sum_fp \l__gradbars_positive_fp}
+  }
+
+\ExplSyntaxOff
+
+\ExplSyntaxOff
+\endinput

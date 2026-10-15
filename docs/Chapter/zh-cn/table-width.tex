@@ -1,0 +1,39 @@
+\section{按总宽度分配列宽}
+表格选项 \key{width=\linewidth} 将整张表限定为当前可用宽度。
+宏包先测量该列全部数值标签，保留标签、间距与线条的空间，
+再为文字列和图形区域分配剩余宽度。图形的数值尺度保持不变，字体不会被整体缩小。
+
+\begin{example}[text and listing,sidebyside=false]{示例 58：固定数值列与可伸缩图形列}
+\begin{gradtable}[width=\linewidth,header align=c,
+  label width=12mm,column sep=6pt,row padding=2pt,
+  min text width=18mm,min graphic width=15mm]
+  \gradcolumn[weight=1]{method}{方法名称}
+  \gradcolumn[type=bar,weight=2,mark=both,
+    options={max=100,precision=1}]{score}{得分}
+  \gradcolumn[type=number,width=18mm,
+    options={precision=0}]{count}{样本量}
+  \gradheader{\gradspan{1}{实验设置}
+    \gradspan{2}{评估结果}}
+  \gradrow{带有较长名称的改进方法,92.8,12500}
+  \gradrow{基础方法,84.6,320}
+  \gradrow{待测方法,NA,80}
+\end{gradtable}
+\end{example}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+\multicolumn{1}{c}{参数} & \multicolumn{1}{c}{分配规则}\\\midrule
+\key{width=0pt} & 默认值，保持按内容排版；正值启用总宽度分配。\\
+\key{weight} & 列选项，默认 1。无固定宽度的文字、图形列按权重分配剩余空间。\\
+\key{min text width} & 可伸缩文字列的最低宽度，默认 12mm。\\
+\key{min graphic width} & 可伸缩图区的最低宽度，默认 12mm，不含外部数值。\\
+列选项 \key{width} & 总宽度模式下固定文字或图形列的单元格宽度；数字列仍至少容纳全部标签。\\
+\bottomrule
+\end{tabularx}
+权重作用于满足最低宽度之后的剩余空间，因此 weight=2 不代表最终列宽恰为另一列的两倍。
+数字列按标签所需宽度排版，不参与伸缩。图形列的最终图区宽度由分配结果决定，
+优先于 graphic width 或图形 options 内的 width；同一列的所有行始终共享同一图区宽度。
+
+\note{总宽度不足以容纳固定列、标签、最小图区及间距时，宏包会报错。
+可以增加表宽、减小 column sep 或最低宽度、缩短单位，或减少列数。
+所有列都固定后若仍有剩余空间，应至少保留一个可伸缩文字或图形列。
+总宽度模式允许长表头和分组标题换行；文字中的不可断长串仍需自行提供断行位置。}

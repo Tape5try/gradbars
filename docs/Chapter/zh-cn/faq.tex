@@ -1,0 +1,54 @@
+\part{常见问题与接口参考}
+
+
+\section{常见问题}
+\subsection{长标签仍然超出页面怎么办？}
+\key{label overflow=auto} 防止标签挤在轨道中，但不能突破页面宽度限制。
+外部槽宽会按文字扩展，因此应缩短文字、减小轨道宽度，或把长说明移到相邻文本列。
+需要多行说明时，可在 \key{text} 中提供指定宽度的 \key{\parbox}，并预留行高。
+若整列标签必须右对齐，请将 \key{label width} 设为能容纳该列最长标签的统一宽度。
+
+\subsection{条形相贴，或行高太大怎么办？}
+轨道高度由 \key{height} 设置；表格行距可通过
+\key{\renewcommand{\arraystretch}{1.5}} 或 array 的
+\key{\setlength{\extrarowheight}{3pt}} 调整。
+自动外移标签和图例会增加图形高度，这是为文字保留实际空间。
+密集表格可把自动图例关闭，表外只放一个 \key{\gradbarslegend}。
+
+\subsection{同列的条形为什么不可直接比较？}
+请检查各行的 \key{min}、\key{max}、\key{width} 是否一致。
+正负条尤其需要同时统一上下限；仅统一最大值仍可能让零点位置不同。
+建议用一个命名样式或 \key{\gradbarscolumn} 定义比较列。
+手写与 CSV 数据均可通过 \key{scale=column} 根据整列计算共享范围；默认采用固定范围。
+
+\subsection{缺失值和零值有何区别？}
+空参数、空数值单元格以及大写 \key{NA} 表示缺失；默认显示 \key{--}，
+可用 \key{missing text} 修改。\key{0} 是有效观测，显示零标签与空轨道。
+缺失值不应替换为零。堆叠组成不接受缺失段，因为未知段会使总量和占比不明确。
+
+\subsection{数值列为什么报 Invalid value？}
+G 列接收十进制或 e/E 科学计数、能展开为这些数值的宏、空值或 \key{NA}。
+不要在单元格里写百分号、单位或普通表头；单位放到列选项，表头用
+\key{\multicolumn{1}{c}{Score}}。需要手写特殊内容时同样用 multicolumn 绕过收集。
+
+\subsection{标签占比为什么与条长不相同？}
+普通条总标签的 \key{value format=percent} 使用量程上限作为分母
+（仅支持 \key{min=0}）。\par
+堆叠段的 \key{segment labels=percent} 使用分段总和作为分母。
+二者回答的问题不同；示例 17 将总量占比和组成占比并列展示。
+
+\subsection{支持哪些表格和编译方式？}
+本手册验证 XeLaTeX 下的 tabular、booktabs、longtable 和 Beamer 场景。
+tabularray 的专有列处理、siunitx 的 S 列及其他引擎不在当前验证范围。
+正文中的普通数据条与表格中的数据条使用相同命令。
+
+
+
+\subsection{正负堆叠的净值为零，为什么仍然有条形？}
+正负贡献分别累计，50 与 $-50$ 的净值为零但活动量为 100。
+
+需要看到两侧小计时使用 \key{stack totals=separate}；分段百分比的分母为绝对值之和。
+\subsection{两条趋势线看起来一样高，数值却不同？}
+默认 auto 范围只比较形状。要比较绝对变化，请共用 \key{spark range=fixed}、min、max 和 height。
+\subsection{重排类别后颜色改变怎么办？}
+位置色板按序号取色。定义 \key{gradbarscategory} 并提供 stack names，可保持类别身份；图例使用相同名称。

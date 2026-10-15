@@ -1,0 +1,30 @@
+\part{Questions and interface reference}
+
+
+\section{Frequently asked questions}
+\textbf{Why does a long label overflow?} Outside labels need room in addition to
+the plot. Increase label width, shorten a unit, or use text to give a shorter label.
+Gradtable measures the widest label per column; increase the total width or reduce
+padding if its reserved labels leave insufficient graphic space. Unbreakable text
+still needs explicit break opportunities.
+
+\textbf{How do I adjust row height?} In gradtable use row stretch and row padding;
+for a standalone graphic use row padding. In a standard tabular, arraystretch also
+changes row height. References and change annotations may need additional headroom.
+
+\textbf{Why do equal values have different lengths?} Use the same min, max and
+graphic width within a comparison column. Spark auto ranges rescale each series;
+use fixed for magnitude comparisons. Formatting does not change geometry.
+
+\textbf{Is NA the same as zero?} No. Zero is an observed value and participates in
+ranking. NA is missing. A spark keeps its missing position and breaks the line.
+A missing stack contribution cannot safely be treated as zero.
+
+\textbf{Why did a table not break across pages?} Normal gradtable is indivisible.
+Set \key{long=true} in single-column body text, outside a float or minipage. Individual
+rows cannot split. A group heading stays with its first row, but its name is not
+repeated on subsequent pages.
+
+\textbf{Why are two identical-looking labels ranked differently?} Ranking uses raw
+values, not rounded labels. Increase precision. Ties mark all equal raw values;
+second best means the next distinct value in the chosen table or group scope.

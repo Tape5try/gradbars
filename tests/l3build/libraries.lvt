@@ -1,0 +1,38 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage[libraries=none]{gradbars}
+\usegradbarslibrary{table,table}
+\begin{document}
+\START
+\gradbarsiflibraryloaded{stack}{\TYPE{stack=loaded}}{\TYPE{stack=missing}}
+\gradbarsiflibraryloaded{spark}{\TYPE{spark=loaded}}{\TYPE{spark=missing}}
+\gradbarsiflibraryloaded{heat}{\TYPE{heat=loaded}}{\TYPE{heat=missing}}
+\gradbarsiflibraryloaded{csv}{\TYPE{csv=loaded}}{\TYPE{csv=missing}}
+\OMIT
+\setbox0=\hbox{\gradstack[min=-50,max=100]{20,-10,30}}
+\setbox0=\hbox{\gradspark{10,NA,20}}
+\setbox0=\hbox{\gradheat{50}}
+\TIMO
+\TYPE{independent graphics rendered after dependency loading}
+\ExplSyntaxOn
+\tl_new:N\g_test_mean_tl
+\tl_new:N\g_test_best_tl
+\cs_new_eq:NN\savedMeasure\gradtableMeasureSummary
+\cs_set_protected:Npn\gradtableMeasureSummary
+  {\savedMeasure
+   \tl_gset:Nx\g_test_mean_tl{\prop_item:Nn\l__gradtable_summary_values_prop{value}}
+   \tl_gset:Nx\g_test_best_tl{\prop_item:Nn\l__gradtable_best_prop{value}}}
+\ExplSyntaxOff
+\OMIT
+\begin{gradtable}
+\gradcolumn{name}{Name}\gradcolumn[type=number,aggregate=mean,mark=both]{value}{Value}
+\gradrow{A,72}\gradrow{B,90}\gradrow{C,NA}\gradsummary{Mean}
+\end{gradtable}
+\TIMO
+\ExplSyntaxOn
+\TYPE{mean=\g_test_mean_tl}
+\TYPE{best=\g_test_best_tl}
+\ExplSyntaxOff
+\TYPE{summary and rank rendering completed}
+\END
+\end{document}

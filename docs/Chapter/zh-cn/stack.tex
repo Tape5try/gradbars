@@ -1,0 +1,58 @@
+\section{堆叠条}
+\key{\gradstack[参数]{数值列表}} 将正数向右累计、负数向左累计。含负段时必须设置负的 min。
+所有段共用 \key{max}，默认 100；不会自动把总量归一化成满条。
+默认总标签显示代数和（净值），也可以用 \key{value format=percent} 显示总量占上限的比例。
+
+\begin{example}{示例 13：三段组成与未填满的轨道}
+\gradstack[
+  stack colors={skyblue,rose,gold},
+  rounded=2pt,
+  target=90
+]{30,25,15}
+
+\gradstack[max=200,
+  value format=percent,
+  stack colors={skyblue,rose,gold}
+]{30,25,15}
+\end{example}
+
+第一条的三段长度分别占轨道的 30\%、25\%、15\%，总量为 70；
+第二条沿用相同原始数据，上限改为 200，总量占比为 35\%。
+\key{stack colors} 依次指定段颜色；颜色少于段数时循环使用。
+零段不占宽度，但仍保留其颜色序号。所有段均为零时只显示空轨道。
+
+\begin{example}[text and listing,sidebyside=false]{示例 14：表格中的堆叠组成}
+\gradbarsstyle{composition}{
+  width=42mm,precision=0,rounded=2pt,
+  stack colors={skyblue,rose,gold}
+}
+\begin{tabular}{@{}lccc l@{}}
+  \toprule
+\multicolumn{1}{c}{Plan} & \multicolumn{1}{c}{A} & \multicolumn{1}{c}{B} & \multicolumn{1}{c}{C} & \multicolumn{1}{c}{Total / 100}\\
+  \midrule
+  Alpha & 30 & 25 & 15 & \gradstack[style=composition]{30,25,15} \\
+  Beta  & 20 & 35 & 35 & \gradstack[style=composition]{20,35,35} \\
+  \bottomrule
+\end{tabular}
+\end{example}
+
+\note{堆叠条不接受缺失段、空列表、条件配色或误差线。含负段时显式设置 \key{min<0}。
+目标线、区间背景、圆角、数字格式和标签位置可以组合使用。
+正负小计分别检查范围，越界时警告并截断相应端，标签保留真实数据；\key{overflow=error} 改为报错。}
+
+
+\subsection{正负混合堆叠与小计}
+正数和负数分别从零开始累计，输入顺序只决定同一侧的段顺序。
+净值为零不代表没有活动量；例如 50 与 $-50$ 仍绘制两段。
+默认总标签为净值；\key{stack totals=separate} 显示“正小计 / 负小计”。
+\begin{example}[text and listing,sidebyside=false]{示例 15：收入与支出分开累计}
+\gradstack[min=-60,max=100,width=85mm,
+  height=12pt,precision=0,palette=categorical,
+  stack totals=separate,
+  stack names={Sales,Materials,Service,Operations},
+  segment labels=value,legend=true]{60,-25,20,-15}
+\end{example}
+分段百分比使用 $100|v_i|/\sum_j|v_j|$，表示绝对活动量份额，所有非零段份额相加为 100\%。
+负号由数值标签或左右位置表达。全零数据没有可见段，也不计算百分比。
+这不同于净值占比：净值可为零，不能拿它作为组成比例的分母。
+负量程不支持总标签的 \key{value format=percent}；需要百分号单位可使用 \key{unit={\%}}。

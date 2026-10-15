@@ -1,0 +1,28 @@
+\section{Compact option reference}
+\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{44mm}X@{}}
+\toprule
+\multicolumn{1}{c}{Option} & \multicolumn{1}{c}{Default / meaning}\\\midrule
+\key{width}, \key{height} & \key{24mm}, \key{1.5ex}; sparklines default to \key{4ex} high.\\
+\key{min}, \key{max} & \key{0}, \key{100}; common scale.\\
+\key{precision}, \key{number format} & \key{1}; \key{fixed}, \key{grouped} or \key{scientific}.\\
+\key{unit}, \key{text} & Empty; suffix or complete custom label.\\
+\key{label}, \key{label width} & \key{outside}, \key{4.5em}; label also accepts \key{left}.\\
+\key{baseline}, \key{baseline shift} & \key{auto}, \key{0pt}; \key{text}, \key{center} or \key{bottom} presets.\\
+\key{rounded}, \key{row padding} & \key{0pt}, \key{0pt}; nonnegative lengths.\\
+\key{marker size}, \key{stem width} & \key{2pt}, \key{.6pt}; positive lengths.\\
+\key{outline}, \key{outline width} & \key{false}, \key{.4pt}; positive width.\\
+\key{compare color}, \key{compare ratio} & \key{black!20}, \key{.45}; ratio strictly between 0 and 1.\\
+\key{compare label} & \key{values}, \key{delta} or \key{percent}.\\
+\key{stack totals} & \key{net} or \key{separate}.\\
+\key{stack colors} & \key{gradbarsBlue}, \key{gradbarsTeal}, \key{gold}; cyclic.\\
+\key{stack names}, \key{legend} & Empty list; \key{false}.\\
+\key{segment labels} & \key{none}, \key{value}, \key{percent}, \key{name}, \key{name value}, \key{name percent}.\\
+\key{better} & \key{higher}, \key{lower}, \key{target}, \key{interval}.\\
+\key{quality target}, \key{quality range} & Required for their respective modes; no default.\\
+\key{spark range}, \key{spark points} & \key{auto}; \key{extrema}.\\
+\key{overflow} & \key{clip} or \key{error}.\\
+\key{negative fill} & \key{solid}; \key{gradient} with \key{negative left color} and \key{negative right color}.\\
+\bottomrule
+\end{tabularx}
+\normalsize

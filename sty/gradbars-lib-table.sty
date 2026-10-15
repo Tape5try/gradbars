@@ -1,0 +1,658 @@
+% Author: SuFan; MIT License. Internal implementation unless documented.
+\ProvidesPackage{gradbars-lib-table}[2026/10/30 v1.0.0 gradbars lib-table]
+\RequirePackage{booktabs}
+\RequirePackage{colortbl}
+\RequirePackage{longtable}
+\ExplSyntaxOff
+% gradtable buffers declarations and rows; no alignment tokens in user data.
+\ExplSyntaxOn
+\seq_new:N \l__gradtable_columns_seq
+\seq_new:N \l__gradtable_rows_seq
+\prop_new:N \l__gradtable_titles_prop
+\prop_new:N \l__gradtable_types_prop
+\prop_new:N \l__gradtable_options_prop
+\prop_new:N \l__gradtable_widths_prop
+\prop_new:N \l__gradtable_align_prop
+\prop_new:N \l__gradtable_headalign_prop
+\prop_new:N \l__gradtable_valign_prop
+\prop_new:N \l__gradtable_colwidth_prop
+\tl_new:N \l__gradtable_align_tl
+\tl_new:N \l__gradtable_headalign_tl
+\tl_new:N \l__gradtable_valign_tl
+\tl_new:N \l__gradtable_default_align_tl
+\tl_new:N \l__gradtable_default_headalign_tl
+\tl_new:N \l__gradtable_default_valign_tl
+\tl_new:N \l__gradtable_rules_tl
+\tl_new:N \l__gradtable_stretch_tl
+\tl_new:N \l__gradtable_header_spec_tl
+\tl_new:N \l__gradtable_header_color_tl
+\tl_new:N \l__gradtable_rule_color_tl
+\dim_new:N \l__gradtable_colwidth_dim
+\dim_new:N \l__gradtable_sep_dim
+\dim_new:N \l__gradtable_padding_dim
+\tl_new:N \l__gradtable_preset_tl
+\tl_new:N \l__gradtable_type_tl
+\tl_new:N \l__gradtable_options_tl
+\tl_new:N \l__gradtable_id_tl
+\tl_new:N \l__gradtable_preamble_tl
+\tl_new:N \l__gradtable_body_tl
+\clist_new:N \l__gradtable_cells_clist
+\seq_new:N \l__gradtable_interval_seq
+\dim_new:N \l__gradtable_graphic_dim
+\dim_new:N \l__gradtable_text_dim
+\dim_new:N \l__gradtable_label_dim
+\dim_new:N \g__gradtable_measured_dim
+\box_new:N \l__gradtable_measure_box
+\int_new:N \l__gradtable_row_int
+\int_new:N \l__gradtable_col_int
+\bool_new:N \l__gradtable_valid_bool
+\bool_new:N \l__gradtable_started_bool
+\keys_define:nn {gradbars/table}
+  {preset .choice:,
+   preset / paper .code:n = \tl_set:Nn \l__gradtable_preset_tl {paper},
+   preset / report .code:n = \tl_set:Nn \l__gradtable_preset_tl {report},
+   preset / mono .code:n = \tl_set:Nn \l__gradtable_preset_tl {mono},
+   graphic~width .dim_set:N = \l__gradtable_graphic_dim,
+   label~width .dim_set:N = \l__gradtable_label_dim,
+   text~width .dim_set:N = \l__gradtable_text_dim,
+   align .choices:nn = {auto,l,c,r}{\tl_set_eq:NN\l__gradtable_default_align_tl\l_keys_choice_tl},
+   header~align .choices:nn = {auto,l,c,r}{\tl_set_eq:NN\l__gradtable_default_headalign_tl\l_keys_choice_tl},
+   valign .choices:nn = {t,c,b}{\tl_set_eq:NN\l__gradtable_default_valign_tl\l_keys_choice_tl},
+   rules .choices:nn = {booktabs,rows,grid,none}{\tl_set_eq:NN\l__gradtable_rules_tl\l_keys_choice_tl},
+   row~stretch .tl_set:N = \l__gradtable_stretch_tl,
+   column~sep .dim_set:N = \l__gradtable_sep_dim,
+   row~padding .dim_set:N = \l__gradtable_padding_dim,
+   header~color .tl_set:N = \l__gradtable_header_color_tl,
+   rule~color .tl_set:N = \l__gradtable_rule_color_tl}
+\keys_define:nn {gradbars/table/column}
+  {type .choices:nn = {text,number,bar,bullet,interval,compare,dumbbell,stack,spark,heat}
+     {\tl_set_eq:NN \l__gradtable_type_tl \l_keys_choice_tl},
+   options .tl_set:N = \l__gradtable_options_tl,
+   align .choices:nn = {auto,l,c,r}{\tl_set_eq:NN\l__gradtable_align_tl\l_keys_choice_tl},
+   header~align .choices:nn = {auto,l,c,r}{\tl_set_eq:NN\l__gradtable_headalign_tl\l_keys_choice_tl},
+   valign .choices:nn = {t,c,b}{\tl_set_eq:NN\l__gradtable_valign_tl\l_keys_choice_tl},
+   width .dim_set:N = \l__gradtable_colwidth_dim}
+\cs_new_protected:Npn \gradtableError #1
+  {\bool_set_false:N \l__gradtable_valid_bool
+   \PackageError{gradbars}{Table~row~\int_use:N\l__gradtable_row_int,
+      ~column~\tl_use:N\l__gradtable_id_tl :~#1}
+     {Check~column~declarations~and~comma-separated~row~data.}}
+\DeclareDocumentCommand\gradcolumn{O{} m m}
+  {\PackageError{gradbars}{gradcolumn~requires~gradtable}{Place~column~declarations~inside~gradtable.}}
+\DeclareDocumentCommand\gradrow{m}
+  {\PackageError{gradbars}{gradrow~requires~gradtable}{Place~rows~inside~gradtable.}}
+\cs_new_protected:Npn \gradtableColumn #1#2#3
+  {\bool_if:NT \l__gradtable_started_bool {\gradtableError{Declare~columns~before~rows}}
+   \seq_if_empty:NF\l__gradtable_headers_seq{\gradtableError{Declare~columns~before~headers}}
+   \tl_set:Nn \l__gradtable_id_tl {#2}
+   \tl_if_blank:nT {#2}{\gradtableError{Column~identifier~must~not~be~empty}}
+   \prop_if_in:NnT \l__gradtable_types_prop {#2}{\gradtableError{Duplicate~column~identifier}}
+   \tl_set:Nn \l__gradtable_type_tl {text}
+   \tl_clear:N \l__gradtable_options_tl
+   \tl_set_eq:NN\l__gradtable_align_tl\l__gradtable_default_align_tl
+   \tl_set_eq:NN\l__gradtable_headalign_tl\l__gradtable_default_headalign_tl
+   \tl_set_eq:NN\l__gradtable_valign_tl\l__gradtable_default_valign_tl
+   \dim_zero:N\l__gradtable_colwidth_dim
+   \fp_set:Nn\l__gradtable_weight_fp{1}
+   \tl_set:Nn\l__gradtable_mark_tl{none}
+   \tl_set:Nn\l__gradtable_source_tl{#2}
+   \tl_set_eq:NN\l__gradtable_scale_tl\l__gradtable_default_scale_tl
+   \bool_set_eq:NN\l__gradtable_zero_bool\l__gradtable_default_zero_bool
+   \tl_set_eq:NN\l__gradtable_formatter_tl\l__gradtable_default_formatter_tl
+   \tl_set_eq:NN\l__gradtable_number_align_tl\l__gradtable_default_number_align_tl
+   \bool_set_false:N\l__gradtable_number_align_explicit_bool
+   \tl_set:Nn\l__gradtable_aggregate_tl{none}
+   \tl_set_eq:NN\l__gradtable_scale_group_tl\l__gradtable_default_scale_group_tl
+   \fp_set_eq:NN\l__gradtable_scale_padding_fp\l__gradtable_default_scale_padding_fp
+   \bool_set_eq:NN\l__gradtable_scale_nice_bool\l__gradtable_default_scale_nice_bool
+   \keys_set:nn {gradbars/table/column}{#1}
+   \gradtableStoreNumericFormat{#2}
+   \dim_compare:nNnT{\l__gradtable_colwidth_dim}<{0pt}{\gradtableError{Column~width~must~be~nonnegative}}
+   \prop_put:Nnx\l__gradtable_fixed_prop{#2}{\dim_use:N\l__gradtable_colwidth_dim}
+   \prop_put:Nnx\l__gradtable_weights_prop{#2}{\fp_use:N\l__gradtable_weight_fp}
+   \str_if_eq:VnT\l__gradtable_align_tl{auto}
+     {\tl_set:Nn\l__gradtable_align_tl{l}
+      \str_if_eq:VnT\l__gradtable_type_tl{number}{\tl_set:Nn\l__gradtable_align_tl{r}}}
+   \str_if_eq:VnT\l__gradtable_headalign_tl{auto}{\tl_set_eq:NN\l__gradtable_headalign_tl\l__gradtable_align_tl}
+   \str_if_eq:VnT\l__gradtable_type_tl{text}
+     {\dim_compare:nNnT{\l__gradtable_colwidth_dim}={0pt}{\dim_set_eq:NN\l__gradtable_colwidth_dim\l__gradtable_text_dim}}
+   \prop_put:NnV\l__gradtable_marks_prop{#2}\l__gradtable_mark_tl
+   \str_if_eq:VnF\l__gradtable_mark_tl{none}
+     {\str_case:VnF\l__gradtable_type_tl{{number}{}{bar}{}{bullet}{}{heat}{}}
+       {\gradtableError{Mark~requires~number,~bar,~bullet~or~heat~column}}}
+   \prop_put:NnV\l__gradtable_sources_prop{#2}\l__gradtable_source_tl
+   \prop_put:NnV\l__gradtable_scales_prop{#2}\l__gradtable_scale_tl
+   \prop_put:NnV\l__gradtable_aggregates_prop{#2}\l__gradtable_aggregate_tl
+   \prop_put:NnV\l__gradtable_scale_groups_prop{#2}\l__gradtable_scale_group_tl
+   \prop_put:Nnx\l__gradtable_scale_padding_prop{#2}{\fp_to_decimal:N\l__gradtable_scale_padding_fp}
+   \prop_put:Nnx\l__gradtable_scale_nice_prop{#2}{\bool_if:NTF\l__gradtable_scale_nice_bool{true}{false}}
+   \str_if_eq:VnF\l__gradtable_aggregate_tl{none}
+     {\str_case:VnF\l__gradtable_type_tl{{number}{}{bar}{}{bullet}{}{heat}{}}
+        {\gradtableError{Aggregate~requires~a~scalar~numeric~column}}}
+   \tl_if_empty:NF\l__gradtable_scale_group_tl
+     {\str_if_eq:VnT\l__gradtable_scale_tl{column}
+        {\gradtableError{Scale~group~requires~scale=fixed}}}
+   \prop_put:Nnx\l__gradtable_zero_prop{#2}{\bool_if:NTF\l__gradtable_zero_bool{true}{false}}
+   \seq_put_right:Nn \l__gradtable_columns_seq {#2}
+   \prop_put:Nnn \l__gradtable_titles_prop {#2}{#3}
+   \prop_put:NnV \l__gradtable_types_prop {#2}\l__gradtable_type_tl
+   \prop_put:NnV \l__gradtable_options_prop {#2}\l__gradtable_options_tl
+   \prop_put:NnV\l__gradtable_align_prop{#2}\l__gradtable_align_tl
+   \prop_put:NnV\l__gradtable_headalign_prop{#2}\l__gradtable_headalign_tl
+   \prop_put:NnV\l__gradtable_valign_prop{#2}\l__gradtable_valign_tl
+   \prop_put:Nnx\l__gradtable_colwidth_prop{#2}{\dim_use:N\l__gradtable_colwidth_dim}
+   \prop_put:Nnx \l__gradtable_widths_prop {#2}{\dim_use:N\l__gradtable_label_dim}}
+\cs_new_protected:Npn \gradtableRow #1
+  {\bool_set_true:N \l__gradtable_started_bool
+   \int_incr:N \l__gradtable_row_int
+   \clist_set:Nn \l__gradtable_cells_clist {#1}
+   \int_compare:nNnTF {\clist_count:N\l__gradtable_cells_clist} = {\seq_count:N\l__gradtable_columns_seq}
+     {\seq_put_right:Nn \l__gradtable_rows_seq {#1}}
+     {\gradtableError{Wrong~number~of~cells;~use~NA~for~missing~data}}}
+
+
+
+
+
+
+
+
+
+\DeclareDocumentEnvironment{gradtable}{O{} +b}
+  {\group_begin:
+   \prop_clear:N\l__gradtable_fixed_prop
+   \prop_clear:N\l__gradtable_weights_prop
+   \prop_clear:N\l__gradtable_plots_prop
+   \prop_clear:N\l__gradtable_sources_prop
+   \prop_clear:N\l__gradtable_scales_prop
+   \prop_clear:N\l__gradtable_zero_prop
+   \prop_clear:N\l__gradtable_ranges_prop
+   \prop_clear:N\l__gradtable_aggregates_prop
+   \prop_clear:N\l__gradtable_formatters_prop
+   \prop_clear:N\l__gradtable_number_align_prop
+   \prop_clear:N\l__gradtable_decimal_left_prop
+   \prop_clear:N\l__gradtable_decimal_right_prop
+   \prop_clear:N\l__gradtable_scale_groups_prop
+   \prop_clear:N\l__gradtable_scale_padding_prop
+   \prop_clear:N\l__gradtable_scale_nice_prop
+   \prop_clear:N\l__gradtable_percent_bases_prop
+   \bool_set_false:N\l__gradtable_summary_bool
+   \seq_clear:N\l__gradtable_headers_seq
+   \prop_clear:N\l__gradtable_groups_prop
+   \prop_clear:N\l__gradtable_marks_prop
+   \seq_clear:N\l__gradtable_style_stack_seq
+   \seq_clear:N\l__gradtable_schema_stack_seq
+   \cs_set_eq:NN\gradtableSavedRuleColor\CT@arc@
+   \seq_clear:N\l__gradtable_columns_seq\seq_clear:N\l__gradtable_rows_seq
+   \prop_clear:N\l__gradtable_titles_prop\prop_clear:N\l__gradtable_types_prop
+   \prop_clear:N\l__gradtable_options_prop\prop_clear:N\l__gradtable_widths_prop
+   \prop_clear:N\l__gradtable_align_prop\prop_clear:N\l__gradtable_headalign_prop
+   \prop_clear:N\l__gradtable_valign_prop\prop_clear:N\l__gradtable_colwidth_prop
+   \int_zero:N\l__gradtable_row_int\tl_clear:N\l__gradtable_id_tl
+   \bool_set_true:N\l__gradtable_valid_bool\bool_set_false:N\l__gradtable_started_bool
+   \keys_set:nn{gradbars/table}{preset=paper,graphic~width=32mm,text~width=22mm,label~width=18mm,
+      align=auto,header~align=auto,valign=t,rules=booktabs,row~stretch=auto,
+      column~sep=6pt,row~padding=0pt,header~color=auto,rule~color=black,group~color=gradbarsTrack,group~sep=4pt,width=0pt,min~text~width=12mm,min~graphic~width=12mm,
+      long=false,caption={},label={},continued~text={(continued)},data={},scale=fixed,include~zero=true,
+      sort={},sort~keys={},order=ascending,filter={},limit=0,scale~scope=data,
+      group~by={},rank~scope=table,group~summary=false,group~summary~scope=visible,
+      group~summary~label={Summary},group~missing~label={(ungrouped)},
+      scale~group={},scale~padding=0,scale~nice=false,theme=none,font={},
+      summary~color=auto,summary~font={\bfseries\boldmath},
+      formatter=builtin,number~align=none,#1}
+   \str_if_eq:VnT\l__gradtable_stretch_tl{auto}
+     {\tl_set:Nn\l__gradtable_stretch_tl{1.2}
+      \str_if_eq:VnT\l__gradtable_preset_tl{report}{\tl_set:Nn\l__gradtable_stretch_tl{1.5}}}
+   \regex_match:nVTF{\A\d+(\.\d+)?\Z}\l__gradtable_stretch_tl
+     {\fp_compare:nNnF{\l__gradtable_stretch_tl}>{0}{\gradtableError{Row~stretch~must~be~positive}}}
+     {\gradtableError{Row~stretch~must~be~a~positive~decimal}}
+   \dim_compare:nNnT{\l__gradtable_sep_dim}<{0pt}{\gradtableError{Column~sep~must~be~nonnegative}}
+   \dim_compare:nNnT{\l__gradtable_padding_dim}<{0pt}{\gradtableError{Row~padding~must~be~nonnegative}}
+   \bool_set_false:N\l__gradtable_header_auto_bool
+   \str_if_eq:VnT\l__gradtable_header_color_tl{auto}
+     {\bool_set_true:N\l__gradtable_header_auto_bool\tl_clear:N\l__gradtable_header_color_tl
+      \str_if_eq:VnT\l__gradtable_theme_tl{none}
+        {\str_if_eq:VnT\l__gradtable_preset_tl{report}{\tl_set:Nn\l__gradtable_header_color_tl{gradbarsTrack}}}}
+   \gradtableResolveThemeColors
+   \dim_compare:nNnF{\l__gradtable_graphic_dim}>{0pt}{\gradtableError{Graphic~width~must~be~positive}}
+   \dim_compare:nNnF{\l__gradtable_text_dim}>{0pt}{\gradtableError{Text~width~must~be~positive}}
+   \dim_compare:nNnT{\l__gradtable_label_dim}<{0pt}{\gradtableError{Label~width~must~be~nonnegative}}
+   \gradtableValidateLayout
+   \RenewDocumentCommand\gradheader{+m}{\gradtableAddHeader{##1}}
+   \RenewDocumentCommand\gradcolumn{O{} m m}{\gradtableColumn{##1}{##2}{##3}}
+   \RenewDocumentCommand\gradrow{m}{\gradtableRow{##1}}
+   \RenewDocumentCommand\gradgroup{m}{\gradtableGroup{##1}}
+   \RenewDocumentCommand\graduseschema{m}{\gradtableUseSchema{##1}}
+   \RenewDocumentCommand\gradsummary{O{} m}{\gradtableSummaryDeclare{##1}{##2}}
+   #2
+   \tl_if_empty:NF\l__gradtable_data_tl{\gradtableImportCSV}
+   \prop_if_in:NxT\l__gradtable_groups_prop{\int_eval:n{\l__gradtable_row_int+1}}
+     {\gradtableError{Group~requires~at~least~one~data~row}}
+   \seq_if_empty:NT\l__gradtable_columns_seq{\gradtableError{Table~requires~columns}}
+   \gradtableValidateSelection
+   \bool_if:NT\l__gradtable_valid_bool{\gradtableRender}
+   \cs_gset_eq:NN\CT@arc@\gradtableSavedRuleColor
+   \group_end:}{}
+\ExplSyntaxOff
+
+% Reusable table definitions, group headings and column extrema.
+\ExplSyntaxOn
+\prop_new:N\g__gradtable_styles_prop
+\prop_new:N\g__gradtable_schemas_prop
+\prop_new:N\l__gradtable_groups_prop
+\prop_new:N\l__gradtable_marks_prop
+\prop_new:N\l__gradtable_best_prop
+\prop_new:N\l__gradtable_second_prop
+\seq_new:N\l__gradtable_style_stack_seq
+\seq_new:N\l__gradtable_schema_stack_seq
+\seq_new:N\l__gradtable_rank_seq
+\tl_new:N\l__gradtable_mark_tl
+\tl_new:N\l__gradtable_group_color_tl
+\tl_new:N\g__gradtable_rank_direction_tl
+\tl_new:N\l__gradtable_rank_direction_tl
+\tl_new:N\l__gradtable_rank_value_tl
+\dim_new:N\l__gradtable_group_sep_dim
+\int_new:N\l__gradtable_rank_col_int
+\cs_generate_variant:Nn\prop_if_in:NnT{NxT}
+\cs_generate_variant:Nn\prop_get:NnNT{NxNT}
+\keys_define:nn{gradbars/table}
+  {style .code:n=\gradtableUseStyle{#1},
+   group~color .tl_set:N=\l__gradtable_group_color_tl,
+   group~sep .code:n={\dim_set:Nn\l__gradtable_group_sep_dim{#1}
+     \dim_compare:nNnT{\l__gradtable_group_sep_dim}<{0pt}
+       {\gradtableError{Group~sep~must~be~nonnegative}}}}
+\keys_define:nn{gradbars/table/column}
+  {mark .choices:nn={none,best,both}{\tl_set_eq:NN\l__gradtable_mark_tl\l_keys_choice_tl}}
+\DeclareDocumentCommand\gradtablestyle{m m}
+  {\tl_if_blank:nTF{#1}{\PackageError{gradbars}{Empty~table~style~name}{Supply~a~name.}}
+     {\prop_gput:Nnn\g__gradtable_styles_prop{#1}{#2}}}
+\DeclareDocumentCommand\gradtableschema{m +m}
+  {\tl_if_blank:nTF{#1}{\PackageError{gradbars}{Empty~table~schema~name}{Supply~a~name.}}
+     {\prop_gput:Nnn\g__gradtable_schemas_prop{#1}{#2}}}
+\cs_new_protected:Npn\gradtableUseStyle #1
+  {\seq_if_in:NnTF\l__gradtable_style_stack_seq{#1}
+     {\gradtableError{Recursive~table~style~#1}}
+     {\prop_get:NnNTF\g__gradtable_styles_prop{#1}\l_tmpa_tl
+       {\seq_put_right:Nn\l__gradtable_style_stack_seq{#1}
+        \exp_args:NnV\keys_set:nn{gradbars/table}\l_tmpa_tl
+        \seq_pop_right:NN\l__gradtable_style_stack_seq\l_tmpa_tl}
+       {\gradtableError{Unknown~table~style~#1}}}}
+\DeclareDocumentCommand\graduseschema{m}
+  {\PackageError{gradbars}{graduseschema~requires~gradtable}{Use~inside~gradtable.}}
+\cs_new_protected:Npn\gradtableUseSchema #1
+  {\seq_if_in:NnTF\l__gradtable_schema_stack_seq{#1}
+     {\gradtableError{Recursive~table~schema~#1}}
+     {\prop_get:NnNTF\g__gradtable_schemas_prop{#1}\l_tmpa_tl
+       {\seq_put_right:Nn\l__gradtable_schema_stack_seq{#1}
+        \tl_use:N\l_tmpa_tl
+        \seq_pop_right:NN\l__gradtable_schema_stack_seq\l_tmpa_tl}
+       {\gradtableError{Unknown~table~schema~#1}}}}
+\DeclareDocumentCommand\gradgroup{m}
+  {\PackageError{gradbars}{gradgroup~requires~gradtable}{Use~inside~gradtable.}}
+\cs_new_protected:Npn\gradtableGroup #1
+  {\bool_set_true:N\l__gradtable_started_bool
+   \seq_if_empty:NT\l__gradtable_columns_seq{\gradtableError{Declare~columns~before~groups}}
+   \tl_if_blank:nT{#1}{\gradtableError{Group~title~must~not~be~empty}}
+   \prop_if_in:NxT\l__gradtable_groups_prop{\int_eval:n{\l__gradtable_row_int+1}}
+     {\gradtableError{Group~requires~at~least~one~data~row}}
+   \prop_put:Nxn\l__gradtable_groups_prop{\int_eval:n{\l__gradtable_row_int+1}}{#1}}
+
+
+
+
+
+
+
+\ExplSyntaxOff
+% v0.0.4: column-spanning headers, constrained widths and long tables.
+\ExplSyntaxOn
+\seq_new:N\l__gradtable_headers_seq
+\tl_new:N\l__gradtable_head_tl
+\tl_new:N\l__gradtable_caption_tl
+\tl_new:N\l__gradtable_label_tl
+\tl_new:N\l__gradtable_continued_tl
+\tl_new:N\l__gradtable_span_id_tl
+\bool_new:N\l__gradtable_long_bool
+\dim_new:N\l__gradtable_total_dim
+\dim_new:N\l__gradtable_min_text_dim
+\dim_new:N\l__gradtable_min_graphic_dim
+\dim_new:N\l__gradtable_remaining_dim
+\dim_new:N\l__gradtable_base_dim
+\dim_new:N\l__gradtable_span_dim
+\dim_new:N\g__gradtable_extent_dim
+\fp_new:N\l__gradtable_weight_fp
+\fp_new:N\l__gradtable_weight_sum_fp
+\prop_new:N\l__gradtable_fixed_prop
+\prop_new:N\l__gradtable_weights_prop
+\prop_new:N\l__gradtable_flex_prop
+\prop_new:N\l__gradtable_plots_prop
+\prop_new:N\l__gradtable_overheads_prop
+\int_new:N\l__gradtable_span_start_int
+\int_new:N\l__gradtable_span_count_int
+\keys_define:nn{gradbars/table}
+  {width .dim_set:N=\l__gradtable_total_dim,
+   min~text~width .dim_set:N=\l__gradtable_min_text_dim,
+   min~graphic~width .dim_set:N=\l__gradtable_min_graphic_dim,
+   long .bool_set:N=\l__gradtable_long_bool,
+   caption .tl_set:N=\l__gradtable_caption_tl,
+   label .tl_set:N=\l__gradtable_label_tl,
+   continued~text .tl_set:N=\l__gradtable_continued_tl}
+\keys_define:nn{gradbars/table/column}
+  {weight .code:n={\regex_match:nnTF{\A\d+(\.\d+)?\Z}{#1}
+     {\fp_set:Nn\l__gradtable_weight_fp{#1}
+      \fp_compare:nNnF{#1}>{0}{\gradtableError{Column~weight~must~be~positive}}}
+     {\gradtableError{Column~weight~must~be~a~positive~decimal}}}}
+
+\DeclareDocumentCommand\gradheader{+m}
+  {\PackageError{gradbars}{gradheader~requires~gradtable}{Declare~headers~inside~gradtable.}}
+\DeclareDocumentCommand\gradspan{m m}
+  {\PackageError{gradbars}{gradspan~requires~gradheader}{Place~spans~inside~gradheader.}}
+\cs_new_protected:Npn\gradtableAddHeader #1
+  {\bool_if:NT\l__gradtable_started_bool{\gradtableError{Declare~headers~before~rows}}
+   \int_zero:N\l__gradtable_span_count_int
+   \cs_set_eq:NN\gradtableSavedSpan\gradspan
+   \RenewDocumentCommand\gradspan{m m}
+     {\regex_match:nnTF{\A[1-9]\d*\Z}{##1}
+       {\int_add:Nn\l__gradtable_span_count_int{##1}}
+       {\gradtableError{Header~span~must~be~a~positive~integer}}}
+   #1
+   \cs_set_eq:NN\gradspan\gradtableSavedSpan
+   \int_compare:nNnF{\l__gradtable_span_count_int}={\seq_count:N\l__gradtable_columns_seq}
+     {\gradtableError{Header~spans~must~cover~all~columns~exactly}}
+   \seq_put_right:Nn\l__gradtable_headers_seq{#1}}
+
+
+
+
+
+
+
+\ExplSyntaxOff
+
+
+\ExplSyntaxOff
+\ExplSyntaxOff
+% v0.0.5: native CSV tables, column scales and scalar heat cells.
+\ExplSyntaxOn
+\tl_new:N\l__gradtable_data_tl
+\seq_new:N\l__gradtable_data_rows_seq
+\seq_new:N\l__gradtable_range_rows_seq
+\tl_new:N\l__gradtable_source_tl
+\tl_new:N\l__gradtable_scale_tl
+\tl_new:N\l__gradtable_default_scale_tl
+\bool_new:N\l__gradtable_zero_bool
+\bool_new:N\l__gradtable_default_zero_bool
+\prop_new:N\l__gradtable_sources_prop
+\prop_new:N\l__gradtable_scales_prop
+\prop_new:N\l__gradtable_zero_prop
+\prop_new:N\l__gradtable_ranges_prop
+\tl_new:N\l__gradtable_import_row_tl
+\tl_new:N\l__gradtable_import_source_tl
+\int_new:N\l__gradtable_import_row_int
+\int_new:N\l__gradtable_scale_col_int
+\seq_new:N\l__gradtable_scale_values_seq
+\fp_new:N\l__gradtable_min_fp
+\fp_new:N\l__gradtable_max_fp
+\fp_new:N\l__gradtable_positive_fp
+\fp_new:N\l__gradtable_negative_fp
+\bool_new:N\l__gradtable_seen_bool
+\keys_define:nn{gradbars/table}
+  {data .tl_set:N=\l__gradtable_data_tl,
+   scale .choices:nn={fixed,column}{\tl_set_eq:NN\l__gradtable_default_scale_tl\l_keys_choice_tl},
+   include~zero .bool_set:N=\l__gradtable_default_zero_bool}
+\keys_define:nn{gradbars/table/column}
+  {source .tl_set:N=\l__gradtable_source_tl,
+   scale .choices:nn={fixed,column}{\tl_set_eq:NN\l__gradtable_scale_tl\l_keys_choice_tl},
+   include~zero .bool_set:N=\l__gradtable_zero_bool}
+
+
+
+
+
+\ExplSyntaxOff
+
+\ExplSyntaxOff
+\ExplSyntaxOn
+\tl_new:N\l__gradtable_sort_tl
+\tl_new:N\l__gradtable_order_tl
+\tl_new:N\l__gradtable_filter_tl
+\tl_new:N\l__gradtable_scale_scope_tl
+\int_new:N\l__gradtable_limit_int
+\int_new:N\l__gradtable_sort_col_int
+\int_new:N\l__gradtable_selection_col_int
+\seq_new:N\l__gradtable_selected_seq
+\seq_new:N\l__gradtable_filters_seq
+\seq_new:N\l__gradtable_filter_parts_seq
+\clist_new:N\l__gradtable_selection_cells_clist
+\prop_new:N\l__gradtable_selection_rows_prop
+\prop_new:N\l__gradtable_sort_values_prop
+\prop_new:N\l__gradtable_sort_missing_prop
+\tl_new:N\l__gradtable_selection_value_tl
+\tl_new:N\l__gradtable_selection_type_tl
+\tl_new:N\l__gradtable_filter_id_tl
+\tl_new:N\l__gradtable_filter_op_tl
+\tl_new:N\l__gradtable_filter_target_tl
+\bool_new:N\l__gradtable_selected_bool
+\cs_generate_variant:Nn\clist_map_inline:nn{Vn}
+\cs_generate_variant:Nn\regex_extract_once:nnNTF{nVNTF}
+\keys_define:nn{gradbars/table}
+  {sort .tl_set:N=\l__gradtable_sort_tl,
+   order .choices:nn={ascending,descending}{\tl_set_eq:NN\l__gradtable_order_tl\l_keys_choice_tl},
+   filter .tl_set:N=\l__gradtable_filter_tl,
+   limit .code:n={\regex_match:nnTF{\A\d+\Z}{#1}
+     {\int_set:Nn\l__gradtable_limit_int{#1}}{\gradtableError{Limit~must~be~a~nonnegative~integer}}},
+   scale~scope .choices:nn={data,visible}{\tl_set_eq:NN\l__gradtable_scale_scope_tl\l_keys_choice_tl}}
+
+
+
+
+
+
+
+
+
+\ExplSyntaxOff
+
+\ExplSyntaxOff
+\ExplSyntaxOn
+\tl_new:N\l__gradtable_aggregate_tl
+\prop_new:N\l__gradtable_aggregates_prop
+\tl_new:N\l__gradtable_scale_group_tl
+\tl_new:N\l__gradtable_default_scale_group_tl
+\prop_new:N\l__gradtable_scale_groups_prop
+\fp_new:N\l__gradtable_scale_padding_fp
+\fp_new:N\l__gradtable_default_scale_padding_fp
+\bool_new:N\l__gradtable_scale_nice_bool
+\bool_new:N\l__gradtable_default_scale_nice_bool
+\prop_new:N\l__gradtable_scale_padding_prop
+\prop_new:N\l__gradtable_scale_nice_prop
+\prop_new:N\l__gradtable_percent_bases_prop
+\fp_new:N\l__gradtable_padding_amount_fp
+\fp_new:N\l__gradtable_nice_step_fp
+\fp_new:N\l__gradtable_nice_power_fp
+\tl_new:N\l__gradtable_theme_tl
+\tl_new:N\l__gradtable_theme_color_tl
+\tl_new:N\l__gradtable_font_tl
+\tl_new:N\l__gradtable_summary_color_tl
+\tl_new:N\l__gradtable_summary_font_tl
+\bool_new:N\l__gradtable_header_auto_bool
+\bool_new:N\l__gradtable_summary_bool
+\tl_new:N\l__gradtable_summary_label_tl
+\tl_new:N\l__gradtable_summary_scope_tl
+\tl_new:N\l__gradtable_summary_label_id_tl
+\prop_new:N\l__gradtable_summary_values_prop
+\seq_new:N\l__gradtable_summary_rows_seq
+\int_new:N\l__gradtable_summary_col_int
+\int_new:N\l__gradtable_summary_count_int
+\fp_new:N\l__gradtable_summary_sum_fp
+\fp_new:N\l__gradtable_summary_min_fp
+\fp_new:N\l__gradtable_summary_max_fp
+\tl_new:N\l__gradtable_summary_value_tl
+\keys_define:nn{gradbars/table}
+  {scale~group .tl_set:N=\l__gradtable_default_scale_group_tl,
+   scale~padding .code:n=\gradtableSetPadding\l__gradtable_default_scale_padding_fp{#1},
+   scale~nice .bool_set:N=\l__gradtable_default_scale_nice_bool,
+   theme .choices:nn={none,blue,teal,violet,orange,forest,mono}
+     {\tl_set_eq:NN\l__gradtable_theme_tl\l_keys_choice_tl},
+   font .tl_set:N=\l__gradtable_font_tl,
+   summary~color .tl_set:N=\l__gradtable_summary_color_tl,
+   summary~font .tl_set:N=\l__gradtable_summary_font_tl}
+\keys_define:nn{gradbars/table/column}
+  {aggregate .choices:nn={none,count,sum,mean,min,max}
+     {\tl_set_eq:NN\l__gradtable_aggregate_tl\l_keys_choice_tl},
+   scale~group .tl_set:N=\l__gradtable_scale_group_tl,
+   scale~padding .code:n=\gradtableSetPadding\l__gradtable_scale_padding_fp{#1},
+   scale~nice .bool_set:N=\l__gradtable_scale_nice_bool}
+\keys_define:nn{gradbars/table/summary}
+  {scope .choices:nn={visible,data}{\tl_set_eq:NN\l__gradtable_summary_scope_tl\l_keys_choice_tl}}
+
+
+
+
+\DeclareDocumentCommand\gradsummary{O{} m}
+  {\PackageError{gradbars}{gradsummary~requires~gradtable}{Place~it~inside~gradtable.}}
+\cs_new_protected:Npn\gradtableSummaryDeclare #1#2
+  {\bool_if:NT\l__gradtable_summary_bool{\gradtableError{Only~one~summary~row~is~supported}}
+   \bool_set_true:N\l__gradtable_summary_bool
+   \tl_set:Nn\l__gradtable_summary_label_tl{#2}
+   \tl_set:Nn\l__gradtable_summary_scope_tl{visible}
+   \keys_set:nn{gradbars/table/summary}{#1}}
+
+
+
+
+
+
+\gradtablestyle{academic}{preset=paper,rules=booktabs,header~align=c,row~stretch=1.2,column~sep=6pt}
+\gradtablestyle{reference}{preset=paper,rules=booktabs,header~align=c,
+  row~stretch=1.25,column~sep=6pt,number~align=decimal}
+\gradtablestyle{matrix}{preset=paper,rules=rows,align=c,header~align=c,
+  row~stretch=1.35,column~sep=6pt,row~padding=1pt}
+\gradtablestyle{compact}{preset=paper,rules=booktabs,header~align=c,row~stretch=1.05,column~sep=4pt,
+  graphic~width=24mm,label~width=12mm,text~width=18mm,font={\small}}
+\gradtablestyle{dashboard}{preset=report,rules=rows,header~align=c,row~stretch=1.5,column~sep=8pt,
+  row~padding=2pt,theme=blue}
+\ExplSyntaxOff
+
+\ExplSyntaxOff
+\ExplSyntaxOff
+% v0.0.7: stable lexicographic selection, automatic groups and group statistics.
+\ExplSyntaxOn
+\tl_new:N\l__gradtable_sort_keys_tl
+\seq_new:N\l__gradtable_sort_keys_seq
+\seq_new:N\l__gradtable_sort_parts_seq
+\tl_new:N\l__gradtable_sort_id_tl
+\tl_new:N\l__gradtable_sort_direction_tl
+\clist_new:N\l__gradtable_sort_left_clist
+\clist_new:N\l__gradtable_sort_right_clist
+\tl_new:N\l__gradtable_sort_left_tl
+\tl_new:N\l__gradtable_sort_right_tl
+\bool_new:N\l__gradtable_sort_left_missing_bool
+\bool_new:N\l__gradtable_sort_right_missing_bool
+\int_new:N\l__gradtable_compare_int
+\tl_new:N\l__gradtable_group_by_tl
+\tl_new:N\l__gradtable_rank_scope_tl
+\bool_new:N\l__gradtable_group_summary_bool
+\tl_new:N\l__gradtable_group_summary_scope_tl
+\tl_new:N\l__gradtable_group_summary_label_tl
+\tl_new:N\l__gradtable_group_missing_label_tl
+\prop_new:N\l__gradtable_group_ids_prop
+\prop_new:N\l__gradtable_group_labels_prop
+\prop_new:N\l__gradtable_row_groups_prop
+\prop_new:N\l__gradtable_group_ends_prop
+\prop_new:N\l__gradtable_group_best_prop
+\prop_new:N\l__gradtable_group_second_prop
+\prop_new:N\l__gradtable_group_summary_values_prop
+\prop_new:N\g__gradtable_group_result_prop
+\prop_new:N\g__gradtable_group_widths_prop
+\int_new:N\l__gradtable_group_count_int
+\int_new:N\l__gradtable_group_col_int
+\int_new:N\l__gradtable_current_group_int
+\tl_new:N\l__gradtable_group_key_tl
+\tl_new:N\l__gradtable_group_id_tl
+\seq_new:N\l__gradtable_group_input_seq
+\cs_generate_variant:Nn\prop_put:Nnn{NVV,NxV}
+\cs_generate_variant:Nn\prop_remove:Nn{Nx}
+\keys_define:nn{gradbars/table}
+  {sort~keys .tl_set:N=\l__gradtable_sort_keys_tl,
+   group~by .tl_set:N=\l__gradtable_group_by_tl,
+   rank~scope .choices:nn={table,group}{\tl_set_eq:NN\l__gradtable_rank_scope_tl\l_keys_choice_tl},
+   group~summary .bool_set:N=\l__gradtable_group_summary_bool,
+   group~summary~scope .choices:nn={visible,data}{\tl_set_eq:NN\l__gradtable_group_summary_scope_tl\l_keys_choice_tl},
+   group~summary~label .tl_set:N=\l__gradtable_group_summary_label_tl,
+   group~missing~label .tl_set:N=\l__gradtable_group_missing_label_tl}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\ExplSyntaxOff
+
+
+\ExplSyntaxOff
+\ExplSyntaxOn
+\tl_new:N\l__gradtable_default_formatter_tl
+\tl_new:N\l__gradtable_formatter_tl
+\tl_new:N\l__gradtable_default_number_align_tl
+\tl_new:N\l__gradtable_number_align_tl
+\bool_new:N\l__gradtable_number_align_explicit_bool
+\prop_new:N\l__gradtable_formatters_prop
+\prop_new:N\l__gradtable_number_align_prop
+\prop_new:N\l__gradtable_decimal_left_prop
+\prop_new:N\l__gradtable_decimal_right_prop
+\dim_new:N\g__gradbars_decimal_left_dim
+\dim_new:N\g__gradbars_decimal_right_dim
+\dim_new:N\g__gradbars_decimal_full_dim
+\box_new:N\l__gradbars_decimal_left_box
+\box_new:N\l__gradbars_decimal_right_box
+\tl_new:N\l__gradbars_decimal_integer_tl
+\tl_new:N\l__gradbars_decimal_fraction_tl
+\tl_new:N\l__gradbars_decimal_sign_tl
+\seq_new:N\l__gradbars_decimal_parts_seq
+\fp_new:N\l__gradbars_decimal_value_fp
+\int_new:N\l__gradbars_decimal_exponent_int
+\keys_define:nn{gradbars/table}
+  {formatter .code:n={\gradbarsCheckFormatter{#1}\tl_set:Nn\l__gradtable_default_formatter_tl{#1}},
+   number~align .choices:nn={none,decimal}{\tl_set_eq:NN\l__gradtable_default_number_align_tl\l_keys_choice_tl}}
+\keys_define:nn{gradbars/table/column}
+  {formatter .code:n={\gradbarsCheckFormatter{#1}\tl_set:Nn\l__gradtable_formatter_tl{#1}},
+   number~align .choices:nn={none,decimal}
+     {\tl_set_eq:NN\l__gradtable_number_align_tl\l_keys_choice_tl\bool_set_true:N\l__gradtable_number_align_explicit_bool}}
+\cs_new_protected:Npn\gradtableStoreNumericFormat #1
+  {\str_if_eq:VnF\l__gradtable_type_tl{number}
+     {\bool_if:nT{\l__gradtable_number_align_explicit_bool && \str_if_eq_p:Vn\l__gradtable_number_align_tl{decimal}}
+        {\gradtableError{Decimal~alignment~requires~a~number~column}}
+      \tl_set:Nn\l__gradtable_number_align_tl{none}}
+   \prop_put:NnV\l__gradtable_formatters_prop{#1}\l__gradtable_formatter_tl
+   \prop_put:NnV\l__gradtable_number_align_prop{#1}\l__gradtable_number_align_tl}
+
+
+
+
+
+\int_new:N\l__gradtable_decimal_col_int
+
+
+\gradtablestyle{research}{preset=paper,rules=booktabs,header~align=c,row~stretch=1.3,
+  column~sep=5pt,row~padding=1pt,group~sep=5pt,number~align=decimal,
+  summary~font={\bfseries\boldmath}}
+\ExplSyntaxOff
+
+
+\ExplSyntaxOff
+
+\ExplSyntaxOff
+\RequirePackage{gradbars-table-data}
+\RequirePackage{gradbars-table-layout}
+\endinput

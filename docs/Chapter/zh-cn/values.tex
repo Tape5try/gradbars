@@ -1,0 +1,59 @@
+\section{数值语义与边界}
+默认范围为非负数据，条形从零开始，长度遵循
+\[
+  L=W\min\!\left(1,\frac{v}{M}\right),
+  \qquad v\geq 0,\quad M>0,
+\]
+其中 $v$ 是输入值，$M$ 是 \key{max}，$W$ 是 \key{width}。
+标签的舍入与格式不改变条长。
+
+\begin{example}{示例 3：原始数值、单位与计算占比}
+\gradbar[max=200]{50}
+
+\gradbar[max=200,
+  unit={\,ms}]{50}
+
+\gradbar[max=200,
+  value format=percent]{50}
+\end{example}
+
+\key{unit} 只添加后缀，不换算数值。
+\key{value format=percent} 才计算 $100v/M$，自动添加百分号，并忽略 \key{unit}。
+如果原始数据已经是 86.5 这样的百分数，应使用 \key{max=100,unit={\%}}。
+
+\begin{example}{示例 4：已有百分数与自定义标签}
+\gradbar[unit={\%}]{86.5}
+
+\gradbar[max=10,
+  text={8 / 10}]{8}
+
+\gradbar[max=10,
+  text={},precision=0]{8}
+\end{example}
+
+\begin{example}{示例 5：零值和超出最大值}
+\gradbar{0}
+
+\gradbar{100}
+
+\gradbar[max=100,
+  value format=percent]{125}
+\end{example}
+
+零值只有空轨道，不会被强制画出最短长度。很小的正值也不会人为放大；
+实际可见精度受 TeX 长度分辨率限制。
+超出最大值时默认发出警告，并截断彩色区域，标签仍显示真实值。
+
+\note{\key{overflow=error} 会把越界改成明确报错。
+默认范围不接受负数；需要双向条时设置负的 min。非数字、零或负的最大值同样会报错。}
+
+\clearpage
+
+\subsection{科学计数输入与有限精度}
+普通小数与 \key{1.2e-3}、\key{-2.5E4} 共用数值解析，可用于图形、CSV、筛选排序、排名、汇总和尺度。
+零值有效，非零数值绝对值需位于 $10^{-100}$ 至 $10^{100}$；显式范围和显示统计值也适用这一边界。
+小数点两侧各至多 101 位数字，指数部分至多三位；内部约有 16 位有效数字，更多输入位数不能保证可区分。
+不接受地区千位分隔、小数逗号、公式、输入单位、NaN 或无穷大。显示精度不会改变计算和排名。
+\begin{example}{科学计数输入仍保留原始数值}
+\gradbar[min=0,max=1e-2,number format=scientific,precision=2]{1.25E-3}
+\end{example}

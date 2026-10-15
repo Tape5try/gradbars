@@ -1,0 +1,13 @@
+\section{Choosing a graphic}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{37mm}>{\raggedright\arraybackslash}X@{}}
+\toprule
+\multicolumn{1}{c}{Question} & \multicolumn{1}{c}{Interface}\\\midrule
+How large is a value? & \key{\gradbar{value}}; use a negative min for signed values.\\
+How do two values compare? & \key{\gradcompare{reference}{current}} for layered bars;
+\key{\graddumbbell{reference}{current}} for connected points.\\
+What are the bounds? & \key{\gradrange{lower}{upper}} for supplied endpoints.\\
+What makes up the total? & \key{\gradstack{list}} for additive, common-unit contributions.\\
+How does a series change? & \key{\gradspark{list}} for equally spaced observations.\\
+What is the uncertainty? & \key{error minus} and \key{error plus} on a point estimate.\\
+\bottomrule
+\end{tabularx}

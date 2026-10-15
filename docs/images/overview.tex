@@ -1,0 +1,34 @@
+% Build from the repository root with scripts/build_manual.py's compile_tex helper.
+\documentclass[border=6mm]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{gradbars}
+\begin{document}
+\begin{minipage}{172mm}
+\setlength{\parindent}{0pt}
+\sffamily
+{\Huge\bfseries\color{gradbarsInk}gradbars}\hfill
+{\small\color{gradbarsTeal}v1.0.0}\par
+\vspace{2mm}
+{\large Inline data graphics and visual tables for \LaTeX}\par
+\vspace{5mm}
+\begin{gradtable}[width=\linewidth,header align=c,
+  column sep=4pt,row stretch=1.6,label width=7mm]
+  \gradcolumn{method}{Method}
+  \gradcolumn[type=bar,options={max=100,precision=0}]{score}{Score}
+  \gradcolumn[type=stack,options={max=100,precision=0}]{mix}{Mix}
+  \gradcolumn[type=spark,options={spark range=fixed,
+    min=0,max=100,precision=0}]{trend}{Trend}
+  \gradcolumn[type=heat,options={min=0,max=100,precision=0}]{heat}{Heat}
+  \gradrow{Baseline,62,{20,25,17},{30,45,40,62},62}
+  \gradrow{Model A,78,{28,30,20},{40,52,68,78},78}
+  \gradrow{Model B,86,{30,32,24},{48,65,72,86},86}
+  \gradrow{Proposed,94,{34,35,25},{55,70,83,94},94}
+\end{gradtable}\par
+\vspace{4mm}
+{\small\ttfamily\color{gradbarsTeal}
+\textbackslash usepackage[libraries=\{stack,spark,heat,csv,table\}]\{gradbars\}}\par
+\vspace{2mm}
+{\small\color{black!60}Shared scales. CSV data. Summaries. Accessible graphics.}
+\end{minipage}
+\end{document}

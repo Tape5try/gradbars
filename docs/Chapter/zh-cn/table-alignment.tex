@@ -1,0 +1,80 @@
+\section{表格对齐与线条样式}
+\subsection{单元格对齐}
+未单独设置时，表头采用对应列的对齐方式。
+表格级 \key{align=auto} 时，文本和图形列默认左对齐，纯数字列默认右对齐；列选项优先于表格设置。
+
+\begin{example}[text and listing,sidebyside=false]{示例 55：左、中、右对齐与居中表头}
+\begin{gradtable}[rules=grid,header align=c,valign=c,
+  text width=30mm,column sep=5pt,row padding=3pt,
+  header color=gradbarsBlue!8,rule color=gradbarsBlue!60!black]
+  \gradcolumn[align=l]{left}{左对齐}
+  \gradcolumn[align=c]{center}{居中}
+  \gradcolumn[align=r]{right}{右对齐}
+  \gradcolumn[type=number,align=c,width=20mm,
+    options={precision=0}]{number}{数量}
+  \gradrow{方法 A,方法 A,方法 A,120}
+  \gradrow{较长的名称会在文本列内自动换行,短名称,短名称,5}
+\end{gradtable}
+\end{example}
+文本列的 \key{valign=t|c|b} 对应 array 的 p、m、b 段落列，默认 t。
+
+“左对齐且垂直居中”可写 \key{align=l,valign=c}；
+“水平和垂直均居中”可写 \key{align=c,valign=c}。
+垂直设置只作用于文本列，其对齐参考遵循 p/m/b 的段落盒规则。
+
+\clearpage
+\subsection{列宽、图区宽度与数值宽度}
+列选项 width 对文本列表示固定换行宽度，默认取表格 text width；
+对数字和图形列表示最小单元格宽度，内容超过时自动扩展。
+graphic width 只控制图区，label width 只控制数值区，三者不能相互替代。
+图形列 align 对整个“图形加数值”单元格生效，图形内部数值仍保持统一右对齐。
+
+\begin{example}[text and listing,sidebyside=false]{示例 56：得分列与表头居中}
+\begin{gradtable}[rules=rows,header align=c,
+  graphic width=28mm,label width=12mm,
+  column sep=8pt,row stretch=1.4]
+  \gradcolumn[width=24mm,header align=c]{method}{方法}
+  \gradcolumn[type=bar,align=c,width=75mm,
+    options={max=100,precision=0}]{score}{得分}
+  \gradrow{方法 A,82}
+  \gradrow{方法 B,NA}
+\end{gradtable}
+\end{example}
+
+\subsection{四种线条样式和间距参数}
+线条与图形主题独立，可与 paper、report、mono 任意组合。
+
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+\multicolumn{1}{c}{选项} & \multicolumn{1}{c}{含义与默认值}\\\midrule
+\key{rules=booktabs} & 默认三线表：顶线、表头分隔线、底线。\\
+\key{rules=rows} & 三线表基础上增加数据行之间的横线。\\
+\key{rules=grid} & 完整横纵网格与外边框。\\
+\key{rules=none} & 不绘制表格线条。\\
+\key{column sep} & 每列左右内边距，默认 6pt；相邻列通常合计为其两倍。\\
+\key{row stretch} & 基础行高系数；默认 paper/mono 为 1.2，report 为 1.5。\\
+\key{row padding} & 附加行高，默认 0pt；不缩放单元格图形。\\
+\key{header color} & 表头底色；默认 report 为 gradbarsTrack，其余无底色，空值清除。\\
+\key{rule color} & 表格线颜色，默认 black，设置只影响当前 gradtable。\\
+\bottomrule
+\end{tabularx}
+
+行高系数必须为正，列间距、附加行高及列宽不能为负。
+\key{width=0pt} 表示使用默认：文本列采用 text width，其余列按内容排版。
+
+\begin{example}[text and listing,sidebyside=false]{示例 57：无线框、统一居中与单列覆盖}
+\begin{gradtable}[rules=none,align=c,header align=c,
+  text width=30mm,column sep=10pt,row stretch=1.5,
+  header color=gradbarsTeal!8]
+  \gradcolumn{name}{项目}
+  \gradcolumn[type=number,width=24mm,
+    options={precision=0}]{count}{数量}
+  \gradcolumn[type=number,align=r,width=24mm,
+    options={precision=1,unit={ 分}}]{score}{评分}
+  \gradrow{项目 A,12,82.4}
+  \gradrow{项目 B,120,91.2}
+\end{gradtable}
+\end{example}
+这些 align 参数控制单元格，不负责整张表在页面上的位置。
+整张表居中时，可在外层 table 环境中使用标准的 \key{\centering}；
+左、右放置可使用外层分组中的 \key{\raggedright} 或 \key{\raggedleft}。

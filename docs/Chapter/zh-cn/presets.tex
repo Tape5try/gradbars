@@ -1,0 +1,54 @@
+\section{四套排版预设}
+使用 \key{preset=paper}、\key{preset=report}、\key{preset=presentation}
+或 \key{preset=outline} 一次应用一组视觉选项。
+这些预设不改变量程、数据、目标值或阈值；同一选项列表仍从左到右执行。
+
+\begin{example}[text and listing,sidebyside=false]{示例 50：四套内置排版预设}
+\begin{tabular}{@{}ll@{}}
+  \toprule
+\multicolumn{1}{c}{Preset} & \multicolumn{1}{c}{Preview}\\
+  \midrule
+  Paper & \gradbar[preset=paper,width=45mm]{82}\\
+  Report & \gradbar[preset=report,width=45mm,
+    target=90,thresholds={60,80}]{75}\\
+  Presentation & \gradbar[preset=presentation,
+    width=45mm]{92}\\
+  Outline & \gradbar[preset=outline,width=45mm]{70}\\
+  \bottomrule
+\end{tabular}
+\end{example}
+
+\clearpage
+\begin{tabularx}{\linewidth}{@{}p{30mm}X@{}}
+\toprule
+\multicolumn{1}{c}{\textbf{预设}} & \multicolumn{1}{c}{\textbf{特点与设置}}\\
+\midrule
+paper：论文简洁型 & 5pt 细条、纯色、浅灰轨道、small 字号和外部数值；标签间隔较小，上下留白各 0.5pt。\\
+report：报告仪表型 & 12pt 粗条、3pt 圆角、外部数值，上下留白各 2pt；提供目标线颜色与差／中／好配色，实际目标与阈值由使用者填写。\\
+\key{presentation}\newline 演示强调型 & 18pt 条形、large 字号、高对比纯色、自动黑白文字，优先使用内部标签；上下留白各 4pt。\\
+outline：轮廓节墨型 & 7pt 空心轮廓、白轨道、细端点与外部数值，上下留白各 1pt；不绘制大面积填充或纹理。\\
+\bottomrule
+\end{tabularx}
+
+\key{row padding} 只增加数据条自身上下的占位，不修改表格或文档的全局行距。
+\key{outline=true} 单独开启空心绘制，\key{outline width} 默认 0.4pt；
+outline 预设将其设为 0.35pt。堆叠条也可使用轮廓，其图例同步显示空心色块，段标签移至外部。
+
+预设会重设主题、shape、标签位置、字体、间距与纹理等视觉设置。
+例如 \key{preset=paper,shape=lollipop} 保留论文预设并改为棒棒糖；反过来写则恢复普通条。
+双层条、棒棒糖、带点区间及轮廓条可能把内部标签外移，这是这些图形的避让规则。
+需要打印纹理时，可在预设之后追加 print；print 会关闭轮廓绘制。
+
+\begin{example}[text and listing,sidebyside=false]{示例 51：命名样式与新图形共用预设}
+\gradbarsstyle{compact}{preset=paper,width=55mm,
+  max=100,precision=0,label width=6em}
+\begin{tabular}{@{}ll@{}}
+  \toprule
+\multicolumn{1}{c}{View} & \multicolumn{1}{c}{Value}\\
+  \midrule
+  Current / reference & \gradcompare[style=compact]{65}{82}\\
+  Single value & \gradbar[style=compact,shape=lollipop]{82}\\
+  Lower / upper & \gradrange[style=compact]{70}{90}\\
+  \bottomrule
+\end{tabular}
+\end{example}

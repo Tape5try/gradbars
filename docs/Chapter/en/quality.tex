@@ -1,0 +1,23 @@
+\section{Quality: higher, lower, target or interval}
+Higher and lower modes classify the raw value using two increasing thresholds.
+Lower reverses the quality colors without reversing geometry. Threshold colors
+are always ordered bad, intermediate, good.
+
+\begin{demo}{Target distance and distance from an acceptable interval}
+\gradbar[better=target,quality target=50,thresholds={5,15},
+  target=50,palette=diverging]{52}
+
+\gradbar[better=target,quality target=50,thresholds={5,15},
+  target=50,palette=diverging]{75}
+
+\gradbar[better=interval,quality range={40,60},thresholds={0,10},
+  band={40,60},palette=diverging]{68}
+\end{demo}
+Target mode evaluates $d=|v-t|$. Interval mode evaluates
+$d=\max(0,a-v,v-b)$ for an ordered closed interval $[a,b]$.
+These modes require two nonnegative increasing distance thresholds:
+$d\le t_1$ is good, $t_1<d\le t_2$ intermediate, and $d>t_2$ bad.
+Thus thresholds of 0 and 10 classify values inside the interval, including its
+endpoints, as good. Quality target/range evaluate data; target/band draw optional
+references. Set them separately. Quality changes color, never positions or labels.
+It is not applied to stacks, floating intervals or sparklines.

@@ -1,0 +1,574 @@
+% Author: SuFan; MIT License. Internal implementation unless documented.
+\ProvidesPackage{gradbars-render-tikz}[2026/10/30 v1.0.0 gradbars render-tikz]
+\ExplSyntaxOn
+\cs_new_protected:Npn \gradbarsDrawBand
+  {
+    \clist_if_empty:NF \l__gradbars_band_clist
+      {
+        \pgfmathsetlengthmacro\gradbars@bandxlo{\gradbarsPosition{\gradbars@bandlo}*(\gradbars@width)}
+        \pgfmathsetlengthmacro\gradbars@bandxhi{\gradbarsPosition{\gradbars@bandhi}*(\gradbars@width)}
+        \path[fill=\gradbars@bandcolor,fill~opacity=\gradbars@bandopacity,draw=none]
+          (\gradbars@bandxlo,-2pt) rectangle ([yshift=2pt]\gradbars@bandxhi,\gradbars@height);
+      }
+  }
+
+\ExplSyntaxOff
+\ExplSyntaxOff
+\def\gradbars@labelcontent{%
+  \ifx\gradbars@text\@empty
+    \ifgradbars@missing\gradbars@missingtext\else
+      \begingroup
+      \def\gradbars@temp{scientific}%
+      \ifx\gradbars@numberformat\gradbars@temp
+        \pgfmathprintnumber[sci,sci zerofill,precision=\gradbars@precision]{\gradbars@number}%
+      \else
+        \def\gradbars@temp{grouped}%
+        \ifx\gradbars@numberformat\gradbars@temp
+          \pgfmathprintnumber[fixed,fixed zerofill,precision=\gradbars@precision,1000 sep={\mathord{,}}]{\gradbars@number}%
+        \else
+          \pgfmathprintnumber[fixed,fixed zerofill,precision=\gradbars@precision,1000 sep={\,}]{\gradbars@number}%
+        \fi
+      \fi
+      \def\gradbars@temp{percent}%
+      \ifx\gradbars@format\gradbars@temp\%\else\gradbars@unit\fi
+      \endgroup
+    \fi
+  \else\gradbars@text\fi
+}
+
+\def\gradbars@draw{%
+  \tikzset{gradbars label background/.style={}}%
+  \ifgradbars@print
+    \tikzset{gradbars label background/.style={fill=white,inner sep=1pt}}%
+  \fi
+  \gradbarsPrepareLayout
+  \gradbarsDrawTrack
+  \gradbarsDrawBand
+  \gradbarsDrawShape
+  \ifgradbars@spark\else\ifdim\gradbars@xzero>0pt
+    \draw[gradbarsInk!65,line width=.35pt]
+      (\gradbars@xzero,0)--(\gradbars@xzero,\gradbars@height);
+  \fi\fi
+  \ifx\gradbars@target\@empty\else
+    \pgfmathsetlengthmacro\gradbars@xtarget{\gradbars@targetpos*(\gradbars@width)}%
+    \draw[draw=\gradbars@targetcolor,line width=.6pt]
+      ([yshift=-1pt]\gradbars@xtarget,0)--
+      ([yshift=1pt]\gradbars@xtarget,\gradbars@height);
+  \fi
+  \ifgradbars@missing\else\ifgradbars@error
+    \pgfmathsetlengthmacro\gradbars@xlo{\gradbars@errorlo*(\gradbars@width)}%
+    \pgfmathsetlengthmacro\gradbars@xhi{\gradbars@errorhi*(\gradbars@width)}%
+    \draw[draw=\gradbars@errorcolor,line width=.5pt]
+      ([yshift=.5*\gradbars@height]\gradbars@xlo,0)--
+      ([yshift=.5*\gradbars@height]\gradbars@xhi,0);
+    \foreach \gradbars@cap in {\gradbars@xlo,\gradbars@xhi}{
+      \draw[draw=\gradbars@errorcolor,line width=.5pt]
+        ([yshift=.2*\gradbars@height]\gradbars@cap,0)--
+        ([yshift=.8*\gradbars@height]\gradbars@cap,0);
+    }
+  \fi\fi
+  \gradbarsDrawReferences
+  \gradbarsDrawOverflow
+  \gradbarsDrawChange
+  \gradbarsResetLabels
+  \ifgradbars@stack
+    \gradbarsDrawSegmentLabels
+    \ifgradbars@legend\gradbarsDrawLegend\fi
+  \fi
+  \gradbarsDrawMainLabel
+  \gradbarsResolveBaseline
+  \coordinate (gradbarsbaseline) at (0,\gradbars@baseliney);
+  \path[use as bounding box] (0,-\gradbars@rowpadding)
+    rectangle (\gradbars@width,{\gradbars@height+\gradbars@rowpadding});
+}
+\ExplSyntaxOn
+\cs_new_protected:Npn \__gradbars_render_tikz: {
+    \ifpgfpicture
+      \begin{scope}\gradbars@draw\end{scope}%
+    \else
+      \gradbarsPrepareAlt
+      \tikz[baseline=(gradbarsbaseline)]{\gradbars@draw}%
+    \fi
+}
+
+\ExplSyntaxOff
+
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn \gradbarsContrast #1
+  {
+    \convertcolorspec{named}{#1}{rgb}\gradbars@rgb
+    \clist_set:Nx \l_tmpa_clist {\gradbars@rgb}
+    \fp_zero:N \l__gradbars_luminance_fp
+    \int_step_inline:nn {3}
+      {
+        \fp_set:Nn \l_tmpa_fp {\clist_item:Nn \l_tmpa_clist {##1}}
+        \fp_compare:nNnTF {\l_tmpa_fp} > {0.04045}
+          {\fp_set:Nn \l_tmpa_fp {((\l_tmpa_fp+0.055)/1.055)^2.4}}
+          {\fp_set:Nn \l_tmpa_fp {\l_tmpa_fp/12.92}}
+        \fp_add:Nn \l__gradbars_luminance_fp
+          {\l_tmpa_fp*\clist_item:nn {0.2126,0.7152,0.0722}{##1}}
+      }
+    \fp_compare:nNnTF {\l__gradbars_luminance_fp} > {0.179}
+      {\def\gradbars@labelcolor{black}}{\def\gradbars@labelcolor{white}}
+  }
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn \gradbarsDrawSegmentLabels
+  {
+    \str_if_eq:eeF {\gradbars@segmentlabels}{none}
+      {
+        \gradbarsStackReset
+        \int_zero:N \l__gradbars_index_int
+        \clist_map_inline:Nn \l__gradbars_stack_clist
+          {
+            \int_incr:N \l__gradbars_index_int
+            \gradbarsStackStep{##1}
+            \pgfmathsetlengthmacro\gradbars@segmentlo{\gradbarsPosition{\l__gradbars_before_fp}*(\gradbars@width)}
+            \pgfmathsetlengthmacro\gradbars@segmenthi{\gradbarsPosition{\l__gradbars_sum_fp}*(\gradbars@width)}
+            \ifdim\gradbars@segmenthi>\gradbars@segmentlo\relax
+              \gradbarsCategoryColor{\l__gradbars_index_int}
+              \def\gradbars@segmentcontent
+              {\def\gradbars@text{}\def\gradbars@unit{}\def\gradbars@unitcode{}\def\gradbars@unittext{}\def\gradbars@format{value}
+                \cs_set:Npx \gradbars@number {\fp_eval:n {##1}}
+                \str_case_e:nn {\gradbars@segmentlabels}
+                  {{percent}{\def\gradbars@format{percent}}
+                   {name~percent}{\def\gradbars@format{percent}}}
+                \str_if_eq:eeT {\gradbars@format}{percent}
+                  {\cs_set:Npx \gradbars@number {\fp_eval:n {100*abs(##1)/\gradbars@gross}}}
+                \tl_clear:N \l_tmpb_tl
+                \str_case_e:nn {\gradbars@segmentlabels}
+                  {{name}{\tl_set:Nn \l_tmpb_tl {name}}
+                   {name~value}{\tl_set:Nn \l_tmpb_tl {both}}
+                   {name~percent}{\tl_set:Nn \l_tmpb_tl {both}}}
+                \tl_if_empty:NF \l_tmpb_tl
+                    {\clist_item:Nn \l__gradbars_names_clist {\l__gradbars_index_int}}
+                   \str_if_eq:VnT \l_tmpb_tl {both}{:\space}
+                   \str_if_eq:VnF \l_tmpb_tl {name}{\gradbarsSingleLabel}}
+              \gradbarsMeasure\gradbars@segmentbox\gradbars@segmentfont{\gradbars@segmentcontent}
+              \gradbarsPlaceSegment
+            \fi
+          }
+      }
+  }
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn \gradbarsDrawLegend
+  {
+    \dim_set:Nn \l_tmpa_dim {6pt}
+    \int_zero:N \l__gradbars_index_int
+    \clist_map_inline:Nn \l__gradbars_names_clist
+      {
+        \int_incr:N \l__gradbars_index_int
+        \gradbarsCategoryColor{\l__gradbars_index_int}
+        \gradbarsMeasure\gradbars@segmentbox\gradbars@font
+          {\parbox[t]{\dimexpr\gradbars@width-14pt\relax}{\raggedright\strut ##1\strut}}
+        \ifgradbars@outline
+          \draw[draw=\gradbars@segmentcolor,line~width=\gradbars@outlinewidth]
+            (0,-\dim_use:N \l_tmpa_dim) rectangle (8pt,-\dim_eval:n {\l_tmpa_dim+6pt});
+        \else
+          \path[fill=\gradbars@segmentcolor,draw=none]
+            (0,-\dim_use:N \l_tmpa_dim) rectangle (8pt,-\dim_eval:n {\l_tmpa_dim+6pt});
+          \gradbarsPatternRect{\l__gradbars_index_int}{0}{-\dim_use:N \l_tmpa_dim}
+            {8pt}{-\dim_eval:n {\l_tmpa_dim+6pt}}
+        \fi
+        \node[anchor=north~west,inner~sep=0pt,outer~sep=0pt,text=gradbarsInk]
+          at (14pt,-\dim_use:N \l_tmpa_dim){\usebox\gradbars@segmentbox};
+        \dim_add:Nn \l_tmpa_dim {\ht\gradbars@segmentbox+\dp\gradbars@segmentbox+4pt}
+      }
+  }
+\ExplSyntaxOff
+\ExplSyntaxOn
+\dim_new:N \l__gradbars_labelslot_dim
+\cs_new_protected:Npn \__gradbars_draw_graphic_label:
+  {
+    \str_if_eq:eeF {\gradbars@label}{none}
+      {
+        \gradbarsMeasure\gradbars@labelbox\gradbars@font{\gradbars@labelcontent}
+        \let\gradbars@placement\gradbars@label
+        \gradbars@insidefalse
+        \str_if_eq:eeT {\gradbars@placement}{auto}
+          {\def\gradbars@placement{outside}
+           \ifdim\dimexpr\wd\gradbars@labelbox+4pt\relax<\dimexpr\gradbars@xstop-\gradbars@xstart\relax
+             \def\gradbars@placement{center}\fi}
+        \str_if_eq:eeF {\gradbars@labeloverflow}{allow}
+          {\str_if_eq:eeT {\gradbars@placement}{inside}
+             {\ifdim\dimexpr\wd\gradbars@labelbox+4pt\relax>\gradbars@width\relax
+                \def\gradbars@placement{outside}\fi}
+           \str_if_eq:eeT {\gradbars@placement}{end}
+             {\ifdim\wd\gradbars@labelbox>\gradbars@width\relax
+                \def\gradbars@placement{outside}\fi}}
+        \str_case_e:nn {\gradbars@placement}
+          {{inside}{\gradbars@insidetrue}{center}{\gradbars@insidetrue}}
+        \ifgradbars@inside
+          \str_if_eq:eeF {\gradbars@shape}{bar}
+            {\def\gradbars@placement{outside}\gradbars@insidefalse}
+          \ifgradbars@stack
+            \fp_compare:nNnT {\gradbars@negative} < {0}
+              {\def\gradbars@placement{outside}\gradbars@insidefalse}
+          \fi
+          \ifgradbars@compare \def\gradbars@placement{outside}\gradbars@insidefalse\fi
+          \ifgradbars@outline \def\gradbars@placement{outside}\gradbars@insidefalse\fi
+          \ifgradbars@rangemode
+            \tl_if_empty:oF {\gradbars@rangepoint}
+              {\def\gradbars@placement{outside}\gradbars@insidefalse}
+          \fi
+        \fi
+        \ifgradbars@inside
+          \str_if_eq:eeF {\gradbars@labeloverflow}{allow}
+            {\ifdim\dimexpr\ht\gradbars@labelbox+\dp\gradbars@labelbox+2pt\relax>\gradbars@height\relax
+               \def\gradbars@placement{outside}\gradbars@insidefalse\fi}
+          \ifgradbars@stack
+            \str_if_eq:eeF {\gradbars@segmentlabels}{none}
+              {\def\gradbars@placement{outside}\gradbars@insidefalse}
+          \fi
+          \ifgradbars@error \def\gradbars@placement{outside}\gradbars@insidefalse\fi
+          \ifgradbars@inside
+            \str_if_eq:eeTF {\gradbars@placement}{center}
+              {\pgfmathsetlengthmacro\gradbars@labelx{.5*(\gradbars@xstart+\gradbars@xstop)}}
+              {\pgfmathsetlengthmacro\gradbars@labelx{\gradbars@width-2pt-.5*\wd\gradbars@labelbox}}
+            \ifx\gradbars@target\@empty\else
+              \pgfmathsetlengthmacro\gradbars@distance{abs(\gradbars@xtarget-\gradbars@labelx)}
+              \ifdim\gradbars@distance<\dimexpr.5\wd\gradbars@labelbox+2pt\relax
+                \def\gradbars@placement{outside}\gradbars@insidefalse\fi
+            \fi
+          \fi
+        \fi
+        \let\gradbars@labelcolor\gradbars@textcolor
+        \str_if_eq:eeT {\gradbars@textcolor}{auto}{\gradbarsMainBackground}
+        \gradbarsMeasure\gradbars@labelbox\gradbars@font{\color{\gradbars@labelcolor}\gradbars@labelcontent}
+        \ifgradbars@inside
+          \node[inner~sep=0pt,outer~sep=0pt,text=\gradbars@labelcolor]
+            [gradbars~label~background]
+            at (\gradbars@labelx,.5*\gradbars@height){\usebox\gradbars@labelbox};
+        \else
+          \str_if_eq:eeTF {\gradbars@placement}{left}
+            {\dim_set:Nn \l__gradbars_labelslot_dim {\gradbars@leftlabelwidth}
+             \str_if_eq:eeF {\gradbars@labeloverflow}{allow}
+               {\dim_set:Nn \l__gradbars_labelslot_dim
+                  {\dim_max:nn {\l__gradbars_labelslot_dim}{\wd\gradbars@labelbox}}}
+             \node[anchor=east,inner~sep=0pt,outer~sep=0pt,text=\gradbars@labelcolor]
+               at (-\gradbars@gap,.5*\gradbars@height)
+               {\makebox[\dim_use:N \l__gradbars_labelslot_dim][r]{\usebox\gradbars@labelbox}};}
+            {\str_if_eq:eeTF {\gradbars@placement}{end}
+            {\pgfmathsetlengthmacro\gradbars@labelx
+              {max(.5*\wd\gradbars@labelbox,min(\gradbars@xend,\gradbars@width-.5*\wd\gradbars@labelbox))}
+             \node[anchor=south,inner~sep=0pt,outer~sep=0pt,text=\gradbars@labelcolor]
+               at (\gradbars@labelx,\dim_use:N \l__gradbars_top_dim){\usebox\gradbars@labelbox};}
+            {\dim_set:Nn \l__gradbars_labelslot_dim {\gradbars@labelwidth}
+             \str_if_eq:eeF {\gradbars@labeloverflow}{allow}
+               {\dim_set:Nn \l__gradbars_labelslot_dim
+                  {\dim_max:nn {\l__gradbars_labelslot_dim}{\wd\gradbars@labelbox}}}
+             \node[anchor=west,inner~sep=0pt,outer~sep=0pt,text=\gradbars@labelcolor]
+               at ([xshift=\gradbars@gap,yshift=.5*\gradbars@height]\gradbars@width,0)
+               {\makebox[\dim_use:N \l__gradbars_labelslot_dim][r]{\usebox\gradbars@labelbox}};}}
+        \fi
+      }
+  }
+\cs_new_protected:Npn \gradbarsDrawMainLabel
+  {\bool_lazy_and:nnTF
+     {\str_if_eq_p:ee{\gradbars@labelalign}{cell}}
+     {\str_if_eq_p:ee{\gradbars@label}{inside} || \str_if_eq_p:ee{\gradbars@label}{auto}}
+     {\def\gradbars@placement{center}\gradbars@insidetrue
+      \pgfmathsetlengthmacro\gradbars@labelx{.5*\gradbars@width}
+      \let\gradbars@labelcolor\gradbars@textcolor
+      \str_if_eq:eeT{\gradbars@textcolor}{auto}{\gradbarsMainBackground}
+      \gradbarsMeasure\gradbars@labelbox\gradbars@font
+        {\color{\gradbars@labelcolor}\gradbars@labelcontent}
+      \node[inner~sep=0pt,outer~sep=0pt,text=\gradbars@labelcolor]
+        [gradbars~label~background] at (\gradbars@labelx,.5*\gradbars@height)
+        {\usebox\gradbars@labelbox};}
+     {\__gradbars_draw_graphic_label:}}
+\cs_new_protected:Npn \gradbarsResolveBaseline
+  {
+    \pgfmathsetlengthmacro\gradbars@baseliney{.5*\gradbars@height-\gradbars@baselineoffset}
+    \str_case_e:nn {\gradbars@baseline}
+      {
+        {center}{\pgfmathsetlengthmacro\gradbars@baseliney{.5*\gradbars@height}}
+        {bottom}{\def\gradbars@baseliney{0pt}}
+        {text}
+          {\str_if_eq:eeT {\gradbars@label}{none}
+             {\gradbarsMeasure\gradbars@labelbox\gradbars@font{\strut}}
+           \pgfmathsetlengthmacro\gradbars@baseliney
+             {.5*\gradbars@height-.5*(\ht\gradbars@labelbox-\dp\gradbars@labelbox)}
+           \str_if_eq:eeF {\gradbars@label}{none}
+             {\str_if_eq:eeT {\gradbars@placement}{end}
+                {\pgfmathsetlengthmacro\gradbars@baseliney
+                   {\dim_use:N \l__gradbars_top_dim+\dp\gradbars@labelbox}}}}
+      }
+    \pgfmathsetlengthmacro\gradbars@baseliney{\gradbars@baseliney-\gradbars@baselineshift}
+  }
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn \gradbarsDrawTrack
+  {
+    \str_if_eq:eeTF {\gradbars@shape}{lollipop}
+      {\draw[draw=\gradbars@track,line~width=\gradbars@stemwidth]
+        (0,.5*\gradbars@height)--(\gradbars@width,.5*\gradbars@height);}
+      {\ifgradbars@outline
+        \path[rounded~corners=\gradbars@radius,fill=\gradbars@track,
+          draw=gradbarsInk!35,line~width=\gradbars@outlinewidth]
+          (0,0) rectangle (\gradbars@width,\gradbars@height);
+       \else
+        \path[rounded~corners=\gradbars@radius,fill=\gradbars@track,draw=none]
+          (0,0) rectangle (\gradbars@width,\gradbars@height);
+       \fi}
+  }
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn \gradbarsDrawDot #1
+  {
+    \pgfmathsetlengthmacro\gradbars@dotradius{min(\gradbars@markersize,.5*\gradbars@height)}
+    \ifgradbars@outline
+      \path[fill=white,draw=\gradbars@left,line~width=\gradbars@stemwidth]
+        (#1,.5*\gradbars@height) circle[radius=\gradbars@dotradius];
+    \else
+      \path[fill=\gradbars@left,draw=none]
+        (#1,.5*\gradbars@height) circle[radius=\gradbars@dotradius];
+    \fi
+  }
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn \gradbarsDrawShape
+  {
+    \str_if_eq:eeTF {\gradbars@shape}{lollipop}
+      {\ifgradbars@missing\else
+         \draw[draw=\gradbars@left,line~width=\gradbars@stemwidth]
+           (\gradbars@xzero,.5*\gradbars@height)--(\gradbars@xend,.5*\gradbars@height);
+         \gradbarsDrawDot{\gradbars@xend}
+       \fi}
+      {
+        \ifgradbars@compare
+          \ifgradbars@referencemissing\else
+            \pgfmathsetlengthmacro\gradbars@xref{\gradbarsPosition{\gradbars@reference}*(\gradbars@width)}
+            \ifgradbars@outline
+              \draw[draw=\gradbars@comparecolor,line~width=\gradbars@outlinewidth]
+                (\gradbars@xzero,0) rectangle (\gradbars@xref,\gradbars@height);
+            \else
+              \path[rounded~corners=\gradbars@radius,fill=\gradbars@comparecolor,draw=none]
+                (\gradbars@xzero,0) rectangle (\gradbars@xref,\gradbars@height);
+            \fi
+          \fi
+          \begin{scope}[yshift={.5*(1-\gradbars@compareratio)*\gradbars@height}]
+            \pgfmathsetlengthmacro\gradbars@height{\gradbars@compareratio*\gradbars@height}
+            \pgfmathsetlengthmacro\gradbars@radius{min(\gradbars@radius,.5*\gradbars@height)}
+            \gradbarsDrawBarBody
+          \end{scope}
+        \else
+          \gradbarsDrawBarBody
+          \ifgradbars@rangemode\ifgradbars@missing\else
+            \draw[draw=\gradbars@left,line~width=\gradbars@stemwidth]
+              (\gradbars@xstart,0)--(\gradbars@xstart,\gradbars@height)
+              (\gradbars@xstop,0)--(\gradbars@xstop,\gradbars@height);
+            \tl_if_empty:oF {\gradbars@rangepoint}
+              {\pgfmathsetlengthmacro\gradbars@xpoint{\gradbarsPosition{\gradbars@rangepoint}*(\gradbars@width)}
+               \pgfmathsetlengthmacro\gradbars@dotradius{min(\gradbars@markersize,.5*\gradbars@height)}
+               \gradbarsDrawMarker{\gradbars@xpoint}{.5*\gradbars@height}{gradbarsInk}{hollow}}
+          \fi\fi
+        \fi
+      }
+  }
+\ExplSyntaxOff
+\ExplSyntaxOff
+\def\gradbarsDrawBarBody{%
+  \ifdim\gradbars@xstop>\gradbars@xstart\relax
+    \pgfmathsetlengthmacro\gradbars@fillradius{min(\gradbars@radius,.5*(\gradbars@xstop-\gradbars@xstart))}%
+    \begin{scope}
+      \clip[rounded corners=\gradbars@radius]
+        (0,0) rectangle (\gradbars@width,\gradbars@height);
+      \ifgradbars@stack
+        \clip[rounded corners=\gradbars@fillradius]
+          (\gradbars@xstart,0) rectangle (\gradbars@xstop,\gradbars@height);
+        \gradbarsDrawStack
+      \else\ifgradbars@outline
+        \draw[rounded corners=\gradbars@fillradius,draw=\gradbars@left,line width=\gradbars@outlinewidth]
+          (\gradbars@xstart,0) rectangle (\gradbars@xstop,\gradbars@height);
+      \else\ifgradbars@gradient
+        \path[rounded corners=\gradbars@fillradius,shade,
+          left color=\gradbars@left,right color=\gradbars@right]
+          (\gradbars@xstart,0) rectangle (\gradbars@xstop,\gradbars@height);
+      \else
+        \path[rounded corners=\gradbars@fillradius,fill=\gradbars@left,draw=none]
+          (\gradbars@xstart,0) rectangle (\gradbars@xstop,\gradbars@height);
+      \fi\fi\fi
+      \ifgradbars@stack\else\ifgradbars@outline\else
+        \clip[rounded corners=\gradbars@fillradius]
+          (\gradbars@xstart,0) rectangle (\gradbars@xstop,\gradbars@height);
+        \gradbarsPatternRect{0}{\gradbars@xstart}{0}{\gradbars@xstop}{\gradbars@height}
+      \fi
+      \fi
+    \end{scope}
+  \fi
+}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_eq:NN \gradbarsShapeBeforeThree \gradbarsDrawShape
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_set_protected:Npn \gradbarsDrawShape
+  {
+    \str_case_e:nnF {\gradbars@shape}
+      {{dumbbell}{\gradbarsDrawDumbbell}{sparkline}{\gradbarsDrawSpark}}
+      {\gradbarsShapeBeforeThree}
+  }
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn \gradbarsDrawDumbbell
+  {
+    \gradbarsMarkerBounds
+    \ifgradbars@referencemissing\else
+      \pgfmathsetlengthmacro\gradbars@xref{\gradbarsPosition{\gradbars@reference}*\gradbars@width}
+      \ifgradbars@missing\else
+        \draw[draw=\gradbars@left,line~width=\gradbars@stemwidth]
+          (\gradbars@xref,.5*\gradbars@height)--(\gradbars@xend,.5*\gradbars@height);
+      \fi
+      \group_begin:\let\gradbars@left\gradbars@comparecolor
+        \gradbars@outlinetrue\gradbarsDrawDot{\gradbars@xref}\group_end:
+    \fi
+    \ifgradbars@missing\else\gradbarsDrawDot{\gradbars@xend}\fi
+  }
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn \gradbarsMarkerBounds
+  {\path
+     (-\gradbars@markersize,-\gradbars@markersize) rectangle
+     ([xshift=\gradbars@markersize,yshift=\gradbars@markersize]\gradbars@width,\gradbars@height);}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_eq:NN \gradbarsTrackBeforeThree \gradbarsDrawTrack
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_set_protected:Npn \gradbarsDrawTrack
+  {\group_begin:
+   \str_if_eq:eeT {\gradbars@shape}{dumbbell}{\def\gradbars@shape{lollipop}}
+   \gradbarsTrackBeforeThree\group_end:}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn \gradbarsDrawReferences
+  {\int_zero:N \l_tmpa_int
+   \clist_map_inline:Nn \l__gradbars_refs_clist
+     {\seq_set_split:Nnn \l__gradbars_record_seq {/}{##1}
+      \tl_set:Nx \l__gradbars_record_color_tl {\seq_item:Nn \l__gradbars_record_seq {2}}
+      \tl_set:Nx \l__gradbars_record_style_tl {\seq_item:Nn \l__gradbars_record_seq {3}}
+      \tl_set:Nx \l__gradbars_record_name_tl {\seq_item:Nn \l__gradbars_record_seq {4}}
+      \pgfmathsetlengthmacro\gradbars@rx
+        {\gradbarsPosition{\seq_item:Nn \l__gradbars_record_seq {1}}*(\gradbars@width)}
+      \draw[draw=\l__gradbars_record_color_tl,line~width=.6pt,
+        \l__gradbars_record_style_tl]
+        (\gradbars@rx,-1pt)--(\gradbars@rx,{\gradbars@height+1pt});
+      \tl_if_blank:VF \l__gradbars_record_name_tl
+        {\node[anchor=south,inner~sep=1pt,font=\scriptsize,
+           text=\l__gradbars_record_color_tl]
+           at (\gradbars@rx,{\gradbars@height+2pt+10pt*\int_mod:nn{\l_tmpa_int}{2}})
+           {\l__gradbars_record_name_tl};}
+      \int_incr:N \l_tmpa_int}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_eq:NN \gradbarsBandBeforeBullet \gradbarsDrawBand
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_set_protected:Npn \gradbarsDrawBand
+  {\ifgradbars@bullet
+     \fp_set:Nn \l__gradbars_band_start_fp {\gradbars@min}
+     \clist_map_inline:Nn \l__gradbars_bands_clist
+       {\seq_set_split:Nnn \l__gradbars_record_seq {/}{##1}
+        \tl_set:Nx \l__gradbars_record_color_tl {\seq_item:Nn \l__gradbars_record_seq {2}}
+        \pgfmathsetlengthmacro\gradbars@bx
+          {\gradbarsPosition{\l__gradbars_band_start_fp}*(\gradbars@width)}
+        \pgfmathsetlengthmacro\gradbars@ex
+          {\gradbarsPosition{\seq_item:Nn \l__gradbars_record_seq {1}}*(\gradbars@width)}
+        \path[fill=\l__gradbars_record_color_tl,draw=none]
+          (\gradbars@bx,0) rectangle (\gradbars@ex,\gradbars@height);
+        \fp_set:Nn \l__gradbars_band_start_fp {\seq_item:Nn \l__gradbars_record_seq {1}}}
+   \fi\gradbarsBandBeforeBullet}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_eq:NN \gradbarsShapeBeforeBullet \gradbarsDrawShape
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_set_protected:Npn \gradbarsDrawShape
+  {\ifgradbars@bullet
+     \begin{scope}[yshift=.3*\gradbars@height,yscale=.4]
+       \gradbarsShapeBeforeBullet
+     \end{scope}
+   \else\gradbarsShapeBeforeBullet\fi}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn \gradbarsDrawMarker #1#2#3#4
+  {\group_begin:
+   \tl_set:Nn \l_tmpa_tl {#3}
+   \str_if_eq:eeT {#4}{hollow}{\tl_set:Nn \l_tmpa_tl {white}}
+   \begin{scope}[shift={(#1,#2)}]
+   \tikzset{gradbars~mark/.style={draw=#3,fill=\l_tmpa_tl,line~width=\gradbars@stemwidth}}
+   \str_case_e:nn {\gradbars@markershape}
+     {{circle}{\path[gradbars~mark] (0,0) circle[radius=\gradbars@markersize];}
+      {square}{\path[gradbars~mark] (-\gradbars@markersize,-\gradbars@markersize)
+        rectangle (\gradbars@markersize,\gradbars@markersize);}
+      {diamond}{\path[gradbars~mark] (0,\gradbars@markersize)--(\gradbars@markersize,0)
+        --(0,-\gradbars@markersize)--(-\gradbars@markersize,0)--cycle;}
+      {triangle}{\path[gradbars~mark] (0,\gradbars@markersize)
+        --(\gradbars@markersize,-\gradbars@markersize)--(-\gradbars@markersize,-\gradbars@markersize)--cycle;}}
+   \end{scope}\group_end:}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_set_protected:Npn \gradbarsDrawDot #1
+  {\ifgradbars@outline
+     \gradbarsDrawMarker{#1}{.5*\gradbars@height}{\gradbars@left}{hollow}
+   \else\gradbarsDrawMarker{#1}{.5*\gradbars@height}{\gradbars@left}{\gradbars@markerfill}\fi}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn \gradbarsDrawOverflow
+  {\str_if_eq:eeF {\gradbars@overflowmark}{none}
+    {\bool_set_true:N \l__gradbars_overflow_known_bool
+     \ifgradbars@missing\bool_set_false:N \l__gradbars_overflow_known_bool\fi
+     \ifgradbars@compare\ifgradbars@referencemissing\else
+       \bool_set_true:N \l__gradbars_overflow_known_bool\fi\fi
+     \ifgradbars@spark\bool_set_eq:NN \l__gradbars_overflow_known_bool \l__gradbars_series_any_bool\fi
+     \bool_if:NT \l__gradbars_overflow_known_bool {
+      \fp_set:Nn \l__gradbars_raw_low_fp {\gradbars@value}
+      \fp_set_eq:NN \l__gradbars_raw_high_fp \l__gradbars_raw_low_fp
+      \ifgradbars@stack
+        \fp_set:Nn \l__gradbars_raw_low_fp {\gradbars@negative}
+        \fp_set:Nn \l__gradbars_raw_high_fp {\gradbars@positive}
+      \fi
+      \ifgradbars@rangemode
+        \fp_set:Nn \l__gradbars_raw_low_fp {\gradbars@rangelo}
+        \fp_set:Nn \l__gradbars_raw_high_fp {\gradbars@rangehi}
+      \fi
+      \ifgradbars@compare\ifgradbars@referencemissing\else
+        \fp_set:Nn \l__gradbars_raw_low_fp {min(\gradbars@value,\gradbars@reference)}
+        \fp_set:Nn \l__gradbars_raw_high_fp {max(\gradbars@value,\gradbars@reference)}
+        \ifgradbars@missing
+          \fp_set:Nn \l__gradbars_raw_low_fp {\gradbars@reference}
+          \fp_set_eq:NN \l__gradbars_raw_high_fp \l__gradbars_raw_low_fp
+        \fi
+      \fi\fi
+      \ifgradbars@error
+        \fp_set:Nn \l__gradbars_raw_low_fp {min(\l__gradbars_raw_low_fp,\gradbars@value-\gradbars@errorminus)}
+        \fp_set:Nn \l__gradbars_raw_high_fp {max(\l__gradbars_raw_high_fp,\gradbars@value+\gradbars@errorplus)}
+      \fi
+      \ifgradbars@spark
+        \fp_set_eq:NN \l__gradbars_raw_low_fp \l__gradbars_series_min_fp
+        \fp_set_eq:NN \l__gradbars_raw_high_fp \l__gradbars_series_max_fp
+      \fi
+      \fp_compare:nNnT {\l__gradbars_raw_low_fp} < {\gradbars@min}{\gradbarsOverflowSide{0pt}{-1}}
+      \fp_compare:nNnT {\l__gradbars_raw_high_fp} > {\gradbars@max}{\gradbarsOverflowSide{\gradbars@width}{1}}
+    }}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn \gradbarsDrawChange
+  {\ifgradbars@compare\ifgradbars@missing\else\ifgradbars@referencemissing\else
+   \str_if_eq:eeF {\gradbars@change}{none}
+    {\pgfmathsetlengthmacro\gradbars@cx{\gradbarsPosition{\gradbars@reference}*\gradbars@width}
+     \begin{scope}[yshift={\gradbars@height+5pt}]
+       \str_if_eq:eeTF {\gradbars@change}{arrow}
+         {\dim_compare:nNnF {\gradbars@xend} = {\gradbars@cx}
+            {\draw[->,draw=gradbarsInk,line~width=.5pt](\gradbars@cx,0)--(\gradbars@xend,0);}}
+         {\draw[draw=gradbarsInk,line~width=.5pt]
+           (\gradbars@cx,-2pt)--(\gradbars@cx,0)--(\gradbars@xend,0)--(\gradbars@xend,-2pt);}
+       \node[anchor=south,inner~sep=1pt,font=\scriptsize,text=gradbarsInk]
+         at ({.5*(\gradbars@cx+\gradbars@xend)},1pt){\gradbarsChangeLabel};
+     \end{scope}}
+   \fi\fi\fi}
+\ExplSyntaxOff
+\endinput

@@ -1,0 +1,19 @@
+\section{完整案例：等间隔趋势汇总}
+同表采用固定纵向范围，不逐行放大微小波动；缺失月份保留位置。
+\begin{example}[text and listing,sidebyside=false]{示例 73：半年观测与末期数值}
+\gradbarsstyle{monthly}{width=65mm,height=7mm,
+  min=0,max=100,spark range=fixed,precision=0,
+  row padding=3pt,spark points=extrema}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\multicolumn{1}{c}{Series} & \multicolumn{1}{c}{Jan--Jun / June value}\\\midrule
+North & \gradspark[style=monthly]{35,48,42,60,72,80}\\
+South & \gradspark[style=monthly]{55,53,NA,58,62,65}\\
+West & \gradspark[style=monthly]{45,45,45,45,45,45}\\
+East & \gradspark[style=monthly]{30,40,55,60,70,NA}\\
+\bottomrule
+\end{tabular}
+\end{example}
+North 与 South 的极值点只表示各自的最高与最低观测，不表示好坏。
+East 的末期标签为缺失，不能用前一期的 70 代替。
+不等间隔日期应先整理到公共观测网格；不要直接当作等间距序列。

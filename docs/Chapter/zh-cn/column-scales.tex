@@ -1,0 +1,66 @@
+\section{自动列尺度与零点基准}
+\label{sec:column-scale}
+列宽控制图形占据多少空间，数值尺度控制相同数值在图形中的位置；两者独立设置。
+表格与列均可设置 \key{scale}（fixed 或 column）和 \key{include zero}（true 或 false）。
+默认 fixed 沿用 options 中的 min/max；column 在排版前扫描整列，覆盖 options 中的 min/max。
+列设置覆盖表格设置，文本列不参与尺度计算。手写数据与 CSV 数据源使用相同规则。
+范围跨页后仍保持一致。CSV 筛选默认仍按完整数据计算；\key{scale scope=visible} 改为显示行范围。
+\begin{example}[text and listing,sidebyside=false]{整列自动范围与单列零点设置}
+\begin{gradtable}[width=\linewidth,scale=column,include zero=false,header align=c]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=bar,include zero=true]{score}{Score}
+  \gradcolumn[type=bar]{time}{Time}
+  \gradrow{A,70,70}
+  \gradrow{B,90,90}
+  \gradrow{Pending,NA,NA}
+\end{gradtable}
+\end{example}
+上例 Score 列采用 [0,90]，Time 列采用 [70,90]。
+\subsection{是否包含零与固定范围}
+缺失值不参与范围计算，零是真实观测；默认 \key{include zero=true}。
+不包含零时，正数列可采用正的 min，纯负数列可采用负的 max。
+条形的零基准会截到最近的量程边界，因此比较相对零点的量级时应保留零。
+百分比标签仍要求 \key{min=0}、max>0；跨批次比较时，应使用 \key{scale=fixed} 和相同的 min/max。
+目标线、参考线与误差幅度不参与自动范围；有这些标注时可采用固定范围。
+\subsection{缺失值、恒定列与复合图形}
+全缺失或仅表头时范围为 [0,1]；包含零的全零列也采用 [0,1]。
+不包含零的恒定列采用 [值减0.5,值加0.5]，避免零宽量程。
+普通数字、条形、子弹图与 Heat 按单个数值计算范围。
+对比与区间按端点和点估计计算；趋势按全部观测共享固定范围；
+堆叠按每行正负累计值计算，并保留零基准。
+
+\subsection{共享尺度组：跨表采用同一范围}
+\key{\gradscale{名称}{min=下限,max=上限}} 显式声明量程，要求下限小于上限。
+通过 scale group 引用，可用于独立图形或表格列；重复定义替换当前作用域中的组，普通 TeX 分组结束后恢复外层定义。
+组范围优先于图形 options 中的 min/max，未知组名会报错，不依赖表格出现顺序。
+\begin{example}[text and listing,sidebyside=false]{独立图形与表格共享准确率尺度}
+\gradscale{accuracy}{min=0,max=100}
+\gradbar[scale group=accuracy,theme=violet]{72}
+
+\begin{gradtable}[style=academic,theme=violet,width=\linewidth,header align=c]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=bar,scale group=accuracy]{score}{Score}
+  \gradrow{A,72}\gradrow{B,90}
+\end{gradtable}
+\end{example}
+表格或列的 scale group 要求 \key{scale=fixed}，不能同时使用 \key{scale=column}。
+表格组设置由列继承，列可用空 scale group 清除；普通趋势图引用组时采用固定范围，win-loss 仍表示正负类别。
+本版不隐式收集后续表格的数据计算跨表范围。
+\subsection{尺度留白、整洁边界与百分比分母}
+表格和列可以设置 scale padding 与 scale nice；仅作用于自动列范围，默认分别为 0 和 false。
+padding 的单位是原始范围跨度的百分比，在非零端点向外扩张；零端点保留原位。
+之后按 1、2、5 的数量级步长向外取整，目标约为五个间隔。列设置覆盖表格设置，固定或命名范围不扩张。
+\begin{example}[text and listing,sidebyside=false]{显示范围扩张，原百分比含义保持一致}
+\begin{gradtable}[style=compact,theme=forest,width=\linewidth,
+  scale=column,scale padding=10,scale nice=true,header align=c]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=bar,aggregate=mean,
+    options={value format=percent}]{score}{Score}
+  \gradrow{A,63}\gradrow{B,87}
+  \gradsummary{Mean}
+\end{gradtable}
+\end{example}
+本例范围先为 [0,87]，留白后为 [0,95.7]，整洁边界为 [0,100]。
+百分比仍以原上限 87 为分母，原最大值的标签仍为 100\%，而不是随绘图范围扩张变小。
+可用图形选项 percent base 显式指定正的分母；不设置留白与整洁边界时沿用原有 max 分母规则。
+图形百分比仍要求 \key{min=0}。排序、排名与汇总始终依据原始数值；Heat 中心仍需位于最终范围内。

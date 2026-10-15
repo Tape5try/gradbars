@@ -1,0 +1,20 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{gradbars}
+\newcount\testCount
+\gradbarsdeclaretype{stable}{\global\advance\testCount1\relax\gradbar{#1}}
+\begin{document}
+\START
+\OMIT
+\setbox0=\hbox{\gradgraphic[label=left,baseline=text]{stable}{72.125}}
+\setbox0=\hbox{\gradgraphic{stable}{NA}}
+\TIMO
+\TYPE{stable scalar callback count=\the\testCount}
+\ExplSyntaxOn
+\prop_if_empty:NTF\l__gradbars_model_prop
+  {\TYPE{model~scope=local}}{\TYPE{model~scope=leaked}}
+\prop_if_in:NnTF\g__gradtable_styles_prop{reference}
+  {\TYPE{reference~style=registered}}{\TYPE{reference~style=missing}}
+\ExplSyntaxOff
+\END
+\end{document}

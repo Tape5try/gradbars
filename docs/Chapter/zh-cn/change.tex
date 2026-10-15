@@ -1,0 +1,25 @@
+\section{对比变化标注}
+\key{compare annotation=none|arrow|bracket} 在双层条或哑铃上方添加方向箭头或差值括号。
+默认 none。箭头从基准指向当前值；相等时省略箭头，仍可显示零差值。
+缺失任意一个值时不画变化标注。
+
+\begin{example}[text and listing,sidebyside=false]{示例 23：差值括号与百分比变化}
+\gradcompare[width=65mm,precision=0,
+  compare annotation=bracket]{80}{55}
+
+\graddumbbell[width=65mm,precision=1,
+  compare annotation=arrow,compare label=percent,
+  marker shape=diamond]{40}{60}
+
+\graddumbbell[width=65mm,precision=1,
+  compare label=percent]{0}{30}
+\end{example}
+\key{compare label=percent} 计算
+\[
+  100\,\frac{\text{当前值}-\text{基准值}}{|\text{基准值}|}\,\% .
+\]
+这是相对基准的变化，区别于 \key{value format=percent} 的量程占比。
+基准为零或任一值缺失时，百分比标签显示缺失符号，不生成无穷大或虚构的百分比。
+负基准使用绝对值作分母；正差值加正号，负差值保留负号。
+compare annotation 的文本跟随 percent 模式，其余模式显示原单位差值。
+标注与参考名称可能占用同一上方区域，密集情况建议保留其中一组名称，或增大行距。

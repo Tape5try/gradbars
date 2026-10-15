@@ -1,0 +1,35 @@
+\section{越界指示与点标记}
+\key{overflow mark=arrow|slash|none} 控制量程边缘的箭头、双斜线或不标记。
+单图默认 none，\key{gradtable} 默认 arrow。只有严格超出端点时显示；刚好等于上限不显示。
+\key{overflow=error} 仍会报错，标记不能绕过校验；裁剪模式保留真实标签。
+
+\begin{example}[text and listing,sidebyside=false]{示例 40：超范围数值和区间}
+\gradbar[max=100,width=65mm,precision=0,
+  overflow mark=arrow]{125}
+
+\gradbar[min=-40,max=60,width=65mm,precision=0,
+  overflow mark=slash]{-55}
+
+\gradrange[min=-40,max=60,width=65mm,precision=0,
+  overflow mark=arrow]{-55}{75}
+\end{example}
+标记检查原始值、区间端点、正负堆叠小计、对比两值和误差端点。
+固定范围趋势检查所有有效观测，即使末项缺失也保留越界提示。
+箭头表示数据超出量程，不表示指标好坏，也不表示超出的具体幅度。
+
+\subsection{形状与填充}
+\key{marker shape=circle|square|diamond|triangle} 对应圆、方、菱形和三角形。
+\key{marker fill=solid|hollow} 控制普通点标记填充，marker size 为中心到边界的尺寸。
+哑铃基准点和区间点估计固定为空心，以保留原有语义；当前点、棒棒糖和趋势点可选空心或实心。
+
+\begin{example}[text and listing,sidebyside=false]{示例 41：四种点形状}
+\gradbar[shape=lollipop,marker shape=circle]{72}
+
+\gradbar[shape=lollipop,marker shape=square]{72}
+
+\graddumbbell[marker shape=diamond]{48}{72}
+
+\gradbar[shape=lollipop,marker shape=triangle,
+  marker fill=hollow]{72}
+\end{example}
+标记形状便于黑白辨认；同一语义应保持同一形状，不应暗示不同的测量单位。

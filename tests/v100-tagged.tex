@@ -1,0 +1,19 @@
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\gradbarsdeclaretype{score}{\gradbar{#1}}
+\begin{document}
+\gradgraphic[precision=1,label=left,baseline=text]{score}{12.345}\par
+\gradbar[alt={Explicit stable description.}]{37.125}\par
+\gradbar[accessibility=artifact]{56.78}\par
+\gradbar[accessibility=off]{67.89}\par
+\begin{tikzpicture}[alt={Whole stable picture.}]
+\gradbar{72.125}
+\end{tikzpicture}\par
+\begin{gradtable}[style=reference,width=\linewidth]
+\gradcolumn{name}{Method}
+\gradcolumn[type=bar,aggregate=mean]{value}{Value}
+\gradrow{A,82}\gradrow{B,94}\gradsummary{Mean}
+\end{gradtable}
+\end{document}

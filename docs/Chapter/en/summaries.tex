@@ -1,0 +1,75 @@
+\section{Summary rows and statistical scope}
+\label{sec:summary}
+Set aggregate on scalar number, bar, bullet or heat columns and declare one
+\key{gradsummary} in the table. Aggregate accepts none (default), count, sum, mean,
+min or max. Summary cells display numbers rather than graphics, so a total
+outside the drawing range is not clipped.
+\begin{demo}{A valid-observation mean and total latency}
+\begin{gradtable}[style=academic,theme=teal,width=\linewidth,header align=c]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=bar,aggregate=mean,mark=both,
+    options={max=100}]{score}{Score}
+  \gradcolumn[type=number,aggregate=sum,
+    options={precision=0,unit={\,ms}}]{time}{Time}
+  \gradrow{A,72,20}\gradrow{B,90,30}\gradrow{Missing,NA,0}
+  \gradsummary{Summary}
+\end{gradtable}
+\end{demo}
+The score mean is 81 and latency sum is 50. Count counts valid numeric observations
+and displays an integer with no unit or computed percent. Missing is skipped;
+zero is retained. Empty/all-missing count and sum are 0; mean/min/max are missing.
+\subsection{Displayed rows or the full dataset}
+\begin{sloppypar}
+\key{\gradsummary[scope=visible|data]{label}} defaults to visible, after CSV
+filtering, sorting and limit. Data uses all imported rows; both scopes coincide
+for manual tables. The label occupies the first text column; use an empty label
+for an all-numeric table. Text/compound columns cannot be aggregated and columns
+without an aggregate leave empty summary cells.
+\end{sloppypar}
+\begin{demo}{Display two rows, summarize all imported observations}
+\gradbarsloadcsv{results}{docs/data/results.csv}
+\begin{gradtable}[style=compact,data=results,width=\linewidth,
+  sort=score,order=descending,limit=2,header align=c]
+  \gradcolumn[source=Model]{name}{Method}
+  \gradcolumn[type=number,source=Score,aggregate=mean]{score}{Score}
+  \gradcolumn[type=number,width=18mm,source=Latency,aggregate=count]{n}{Latency}
+  \gradsummary[scope=data]{All data}
+\end{gradtable}
+\end{demo}
+The full score mean is 61.675; valid latency count is 4. Summaries do not affect
+ranking, ranges or source-row counts. Number columns retain their alignment,
+bar/bullet summaries align right and heat summaries center. Precision, units
+and number format are inherited and measured before width allocation. Long
+tables show the summary once with their last data row. Summary color=auto follows
+the table theme; an empty color disables fill. Summary font defaults to bold text
+and math.
+
+\subsection{Group summaries and independent statistical scopes}
+\begin{sloppypar}
+\key{group summary=true} adds one numeric row per displayed group using the
+existing column aggregates, even without an overall \key{gradsummary}.
+Group summary label defaults to Summary in the first text column.
+\key{group summary scope=visible|data} defaults to visible; data includes all
+imported observations of that group, including filtered/limited-out members.
+Undisplayed groups do not acquire headings or summaries. Manual groups have
+the same rows in both scopes. Missing, zero and formatting rules match overall
+summaries. Group and overall scope settings are independent; color/font reuse
+summary color and summary font. Neither summary participates in sorting, ranks
+or ranges. The overall summary follows the final group summary on the same page.
+\end{sloppypar}
+\begin{demo}{Complete example: grouped experiment results}
+\gradscale{change}{min=-10,max=10}
+\gradbarsloadcsv{experiments}{docs/data/experiments.csv}
+\begin{gradtable}[data=experiments,width=\linewidth,theme=violet,
+  group by=batch,group summary=true,group summary label={Group summary},
+  sort keys={change/descending,duration/ascending},header align=c]
+  \gradcolumn[source=Run]{run}{Run}
+  \gradcolumn[source=Batch]{batch}{Batch}
+  \gradcolumn[type=heat,source=Change,aggregate=mean,scale group=change,
+    options={heat palette=diverging,heat center=0}]{change}{Change}
+  \gradcolumn[type=number,source=Duration,aggregate=count]{duration}{Duration}
+  \gradsummary{All visible}
+\end{gradtable}
+\end{demo}
+The groups have Change means of $-1$ and 3. Duration summaries count valid
+observations: two per group and four overall. The overall Change mean is 1.

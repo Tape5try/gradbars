@@ -1,0 +1,25 @@
+\section{Overflow indicators and marker shapes}
+\key{overflow mark=none|arrow|slash} indicates clipped values at scale boundaries.
+The default is none for individual graphics and arrow in \key{gradtable}. Exact boundary
+values do not produce a mark. \key{overflow=error} still rejects out-of-range data.
+\begin{demo}{Clipping without hiding the original value}
+\gradbar[max=100,width=65mm,precision=0,overflow mark=arrow]{125}
+
+\gradrange[min=-40,max=60,width=65mm,precision=0,
+  overflow mark=slash]{-55}{75}
+\end{demo}
+Checks use raw values, interval and error endpoints, both comparison values and
+separate signed stack subtotals. Fixed-range sparklines check all present points.
+The mark indicates overflow, not quality or the amount beyond the boundary.
+
+\key{marker shape} supports circle, square, diamond and triangle;
+\key{marker fill} supports solid and hollow. Dumbbell reference markers and
+interval estimates remain hollow to preserve their meaning. Marker size is the
+distance from the center to its boundary.
+\begin{demo}{Shapes that remain distinguishable in monochrome}
+\gradbar[shape=lollipop,marker shape=square]{72}
+
+\graddumbbell[marker shape=diamond]{48}{72}
+
+\gradbar[shape=lollipop,marker shape=triangle,marker fill=hollow]{72}
+\end{demo}

@@ -1,0 +1,177 @@
+\section{参数速查与使用限制}
+\begingroup\small
+\begin{tabularx}{\linewidth}{@{}p{31mm}p{25mm}X@{}}
+\toprule
+\multicolumn{1}{c}{\textbf{参数}} & \multicolumn{1}{c}{\textbf{默认值}} & \multicolumn{1}{c}{\textbf{含义与可选值}}\\
+\midrule
+\key{min} & \key{0} & 范围下限，必须为零或负值。\\
+\key{max} & \key{100} & 范围上限，必须为正值。\\
+\key{width} & \key{24mm} & 正的轨道宽度，不含外部标签。\\
+\key{height} & \key{1.5ex} & 正的轨道高度。\\
+\key{theme} & \key{blue} & blue、teal、solid、gray、lbyellow、viblue、cyblu。\\
+\key{label} & \key{outside} & outside、left、inside、none、end、auto。\\
+\key{label width} & \key{4.5em} & 外部标签最小槽宽；自动溢出模式下可扩展。\\
+\key{label gap} & \key{.6em} & 轨道与外部标签之间的间隔。\\
+\key{baseline} & \key{auto} & auto、text、center 或 bottom；控制行内图形基线。\\
+\key{baseline shift} & \key{0pt} & 在预设基线上附加垂直偏移。\\
+\key{precision} & \key{1} & 0--6 的整数；保留末尾零。\\
+\key{value format} & \key{value} & 原始数值 value 或计算占比 percent。\\
+\key{unit} & 空 & 原始数值的后缀；占比模式忽略此项。\\
+\key{text} & 空 & 覆盖整个标签；空值恢复自动格式。\\
+\key{overflow} & \key{clip} & clip 警告并截断，或 error 报错。\\
+\key{color} & 未指定 & 指定单色，并切换为纯色填充。\\
+\key{fill} & 由主题指定 & gradient 或 solid。\\
+\key{left color} & 由主题指定 & 渐变起点，或纯色填充的颜色。\\
+\key{right color} & 由主题指定 & 渐变终点。\\
+\key{track color} & 由主题指定 & 空轨道颜色。\\
+\key{negative fill} & \key{solid} & 负值使用纯色或 gradient。\\
+\key{negative left/right color} & 空 & 负值渐变两端；设置任一项会启用渐变。\\
+\key{text color} & 由主题指定 & 标签文字颜色；auto 自动选黑白。\\
+\key{font} & 沿用周围字体 & 标签字体声明。\\
+\key{style} & 未指定 & 应用已定义的命名样式。\\
+\key{missing text} & \key{--} & 空参数或 NA 的显示标签。\\
+\key{number format} & \key{fixed} & fixed、grouped 或 scientific。\\
+\key{band} & 空 & 范围内严格递增的两个参考端点。\\
+\key{band color} & \key{gold} & 区间背景颜色。\\
+\key{band opacity} & \key{0.3} & 区间透明度，范围为 0 到 1。\\
+\key{stack colors} & 蓝、青绿、金黄 & 堆叠条分段颜色列表，可循环使用。\\
+\bottomrule
+\end{tabularx}
+\endgroup
+
+
+\subsection{数据、标签与图例参数}
+\begin{tabularx}{\linewidth}{@{}p{36mm}p{23mm}X@{}}
+\toprule
+\multicolumn{1}{c}{\textbf{参数}} & \multicolumn{1}{c}{\textbf{默认值}} & \multicolumn{1}{c}{\textbf{含义}}\\
+\midrule
+\key{stack names} & 空 & 与各段一一对应的名称列表。\\
+\key{legend} & \key{false} & 自动在堆叠条下方生成图例。\\
+\key{segment labels} & \key{none} & none、value、percent、name、name value、name percent。\\
+\key{segment font} & \key{\scriptsize} & 段标签字体。\\
+\key{segment text color} & \key{auto} & 自动黑白或显式颜色。\\
+\key{label overflow} & \key{auto} & 自动外移或 allow 允许越界。\\
+\key{better} & \key{higher} & higher 越大越好，lower 越小越好；只影响条件配色。\\
+\key{pattern} & \key{none} & 普通条的纹理名称。\\
+\key{pattern color} & \key{black} & 纹理线条或点阵的颜色。\\
+\key{stack patterns} & \key{none} & 堆叠段和图例的纹理列表，循环使用。\\
+\key{print} & 未应用 & 黑白打印预设。\\
+\key{print labels} & \key{false} & 内部标签白底；print 会开启此项。\\
+\bottomrule
+\end{tabularx}
+\key{\gradbarslegend[选项]{名称列表}} 生成可共享的独立图例；
+\key{\gradbarscolumn{G}{选项}} 定义统一样式的数值列。
+
+CSV 命令包括 \key{\gradbarsloadcsv}、\key{\gradbarscsvtable}、\key{\gradbarscsvstyle}，\par
+以及 \key{\gradbarcsv} 和 \key{\gradbarscsvcell}。
+完整参数与范围计算规则见“CSV 数据导入”一节。
+
+\subsection{图形与排版参数}
+\begin{tabularx}{\linewidth}{@{}p{32mm}p{22mm}X@{}}
+\toprule
+\multicolumn{1}{c}{\textbf{图形参数}} & \multicolumn{1}{c}{\textbf{默认值}} & \multicolumn{1}{c}{\textbf{说明}}\\
+\midrule
+\key{shape} & \key{bar} & bar 普通条；lollipop 棒棒糖。哑铃与趋势使用专用命令。\\
+\key{compare color} & \key{black!20} & 双层条的基准层颜色。\\
+\key{compare ratio} & \key{.45} & 当前层高度比，严格在 0 与 1 之间。\\
+\key{range point} & 空 & 浮动区间内的点，仅用于 gradrange。\\
+\key{marker size} & \key{2pt} & 圆点半径，必须为正，受轨道高度限制。\\
+\key{stem width} & \key{.6pt} & 棒棒糖及区间端点线宽，必须为正。\\
+\key{outline} & \key{false} & 是否只绘制轮廓。\\
+\key{outline width} & \key{.4pt} & 轮廓线宽，必须为正。\\
+\key{row padding} & \key{0pt} & 图形上下各增加的留白，必须非负。\\
+\key{preset} & 未应用 & paper、report、presentation、outline。\\
+\bottomrule
+\end{tabularx}
+
+
+\subsection{图形与评价接口}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{43mm}X@{}}
+\toprule
+\multicolumn{1}{c}{接口或选项} & \multicolumn{1}{c}{说明}\\\midrule
+\key{\graddumbbell[o]{a}{b}} & 基准 a、当前 b；空心与实心圆。\\
+\key{compare label} & values（默认）、delta 或 percent；也适用于双层条。\\
+\key{stack totals} & net（默认净值）或 separate（正小计 / 负小计）。\\
+\key{\gradspark[o]{list}} & 等间距序列；空字段和 NA 为缺失。\\
+\key{spark range} & auto（默认行内范围）或 fixed（公共 min/max）。\\
+\key{spark points} & extrema（默认）、all、last、none。\\
+\key{spark high color} & 默认 gradbarsTeal。\\
+\key{spark low color} & 默认 gradbarsOrange。\\
+\key{better} & higher、lower、target、interval。\\
+\key{quality target} & target 模式的数值目标，默认空，必须提供。\\
+\key{quality range} & interval 模式的闭区间，默认空，必须提供。\\
+\key{palette} & categorical、sequential、diverging、mono，默认不应用。\\
+\key{\gradbarscategory{n}{c}{p}} & 固定名称 n 的颜色 c 和纹理 p，定义遵循作用域。\\
+\key{references} & 多条参考记录：数值/颜色/线型/名称；默认空。\\
+\key{\gradbullet[o]{v}} & 分级背景与居中的实际值条，需设置 bullet bands。\\
+\key{\gradintervals[o]{list}} & 多组区间：名称/下界/点估计/上界/颜色。\\
+\bottomrule
+\end{tabularx}
+
+\clearpage
+\subsection{表格与标注接口}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+\multicolumn{1}{c}{接口} & \multicolumn{1}{c}{含义}\\\midrule
+\key{gradtable} & 表格环境：外观、列宽与分页设置。\\
+\key{\gradcolumn[o]{id}{title}} & 声明列：type 选择类型，options 接受图形与数字选项。\\
+\key{\gradrow{list}} & 按列顺序填写逗号分隔的数据。\\
+\key{\gradheader{spans}} & 添加一层表头，用 gradspan 声明连续的合并列。\\
+\key{\gradspan{n}{title}} & 在 gradheader 中合并 n 列并设置标题。\\
+\key{\gradgroup{title}} & 插入跨列分组标题，与首条数据保持在同页。\\
+\key{\gradtablestyle{n}{keys}} & 保存表格选项，通过 style=n 调用。\\
+\key{\gradtableschema{n}{body}} & 保存列定义，通过 graduseschema 调用。\\
+\key{mark=none|best|both} & 数字、普通条、子弹图与 Heat 列的最佳及次佳值标记。\\
+\key{data / source} & CSV 数据集及列字段绑定。\\
+\key{scale / include zero} & 固定或自动列尺度，控制是否包含零。\\
+\key{type=heat / \gradheat} & 连续色阶单元格及独立命令。\\
+\key{width / weight} & 表格总宽度，以及可伸缩列分配剩余空间的权重。\\
+\key{long=true} & 单栏正文中的跨页模式，重复完整表头。\\
+\key{overflow mark} & none（单图默认）、arrow、slash。\\
+\key{marker shape} & circle（默认）、square、diamond、triangle。\\
+\key{marker fill} & solid（默认）或 hollow。\\
+\key{compare annotation} & none（默认）、arrow、bracket。\\
+\key{compare label=percent} & 相对于基准绝对值的百分比变化。\\
+\bottomrule
+\end{tabularx}
+
+\clearpage
+\subsection{Tagged PDF 与替代文本}
+在支持 tagging 的 LaTeX 发行版中，在 documentclass 之前使用 DocumentMetadata 开启标记。
+宏包为独立图形自动生成英文替代文本，包括原始数值、单位、量程、参考线、误差距离、
+对比两端与差值、堆叠分段与正负小计，以及趋势中的每个观测和缺失位置。
+区间描述保留上下界与显式点估计，不推断置信水平。图例描述类别名称。
+表格测量过程不生成语义标签，实际图形单元格只生成一次描述。
+
+\begin{codeonly}
+\DocumentMetadata{tagging=on,pdfstandard=ua-2,lang=zh-CN}
+\documentclass{ctexart}
+\usepackage{gradbars}
+\begin{document}
+\gradbar{72}
+
+\gradbar[alt={准确率为百分之七十二，满分为百分之百。}]{72}
+
+\graddumbbell[compare label=delta]{58}{76}
+\end{document}
+\end{codeonly}
+
+\key{alt={描述}} 覆盖自动文本；空值恢复自动生成。
+原有 \key{/tikz/alt={描述}} 写法继续可用。
+
+\key{accessibility} 可选 auto、artifact 或 off。
+auto 是默认值，为图形生成描述；artifact 将图形作为装饰，
+仅用于周围文字已完整表达其信息的情况；off 将标记设置交由外层控制。
+
+未开启 tagging 时这些选项不改变视觉输出。自定义描述应解释单位、类别及图形在当前文档中的含义。
+
+在已有 tikzpicture 内调用宏包时不会创建独立图形标签，应为外层图提供完整替代文本。
+自动描述使用原始数据，不随 precision 舍入；text 仅修改视觉标签，语义描述需通过 alt 覆盖。
+该支持不等于整份文档已符合 PDF/UA；还需检查表头、阅读顺序、字体及其他内容的标记。
+
+\subsection{已知边界}
+CSV 仅支持逗号分隔的单行字段；数值列可自动计算共享范围。
+
+CSV 不支持字段内换行；旧的 \key{gradbarscsvtable} 不分页，原生 \key{gradtable} 数据源支持 \key{long=true}。趋势线使用等间距观测，不解析日期。
+不要把绘图命令直接放入 siunitx 的数值型 S 列或 PDF 书签。
+宏包已通过 pdfLaTeX、XeLaTeX、LuaLaTeX 的功能检查（包括 CSV）。本中文手册采用 XeLaTeX，英文手册可用 pdfLaTeX 编译。Tagged PDF 支持见上一小节；文档的整体无障碍合规需要独立验证。

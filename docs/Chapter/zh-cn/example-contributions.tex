@@ -1,0 +1,23 @@
+\section{完整案例：收支贡献与黑白打印}
+正负分开累计，同一类别跨行保持纹理一致；表头明确显示的是正负小计。
+这不是瀑布图：每一段不是接着上一段净值往上或往下移动。
+\begin{example}[text and listing,sidebyside=false]{示例 72：共享类别图例的贡献表}
+\gradbarscategory{Revenue}{gradbarsBlue}{diagonal}
+\gradbarscategory{Materials}{gradbarsOrange}{dots}
+\gradbarscategory{Service}{gradbarsGreen}{crosshatch}
+\gradbarsstyle{ledger}{width=65mm,height=10pt,
+  min=-60,max=100,precision=0,palette=mono,
+  stack names={Revenue,Materials,Service},
+  stack totals=separate}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\multicolumn{1}{c}{Period} & \multicolumn{1}{c}{Positive / Negative (units)}\\\midrule
+Q1 & \gradstack[style=ledger]{80,-35,-10}\\
+Q2 & \gradstack[style=ledger]{95,-30,-15}\\
+Q3 & \gradstack[style=ledger]{70,-40,-20}\\
+\bottomrule
+\end{tabular}
+
+\gradbarslegend[palette=mono,width=65mm]{Revenue,Materials,Service}
+\end{example}
+所有行都使用 $[-60,100]$ 范围，零点位置固定。图例在表外只出现一次。

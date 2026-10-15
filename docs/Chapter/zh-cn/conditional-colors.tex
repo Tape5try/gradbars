@@ -1,0 +1,47 @@
+\section{条件配色}
+\key{thresholds} 接受两个严格递增的阈值，\key{threshold colors}
+接受三个颜色。颜色选择基于原始输入值，不基于四舍五入后的标签，
+也不基于截断后的条长。
+
+\begin{example}{示例 42：低、中、高三段配色}
+\gradbarssetup{
+  thresholds={60,80},
+  threshold colors={
+    lightred,gold,lightgreen
+  }
+}
+\gradbar{59}
+
+\gradbar{60}
+
+\gradbar{79}
+
+\gradbar{80}
+
+\gradbar{92}
+\end{example}
+
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+\multicolumn{1}{c}{\textbf{条件}} & \multicolumn{1}{c}{\textbf{本例颜色}}\\
+\midrule
+$v<60$ & lightred\\
+$60\leq v<80$ & gold\\
+$v\geq80$ & lightgreen\\
+\bottomrule
+\end{tabularx}
+
+\begin{example}{示例 43：与目标和圆角叠加}
+\gradbar[
+  width=30mm,
+  thresholds={60,80},
+  rounded=2pt,
+  target=80,
+  label=end
+]{72}
+\end{example}
+
+\note{启用条件配色后，所选颜色采用纯色填充，并优先于主题或
+\key{negative color}。默认三色为 lightred、gold、lightgreen。
+用 \key{thresholds={}} 关闭。阈值代表什么、数值越高是否越好，
+应在表格标题或注释中说明。}

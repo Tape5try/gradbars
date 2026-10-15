@@ -1,0 +1,66 @@
+\part{Quick start and data semantics}
+
+\section{Installation and engine requirements}
+The supported baseline is LaTeX 2025-11-01+, expl3 2025-12-29+ and
+PGF/TikZ 3.1.11a+. Update older distributions before installing this release.
+\pkg{gradbars} is available on \href{https://ctan.org/pkg/gradbars}{CTAN} and included
+in TeX Live as \pkg{gradbars}. For TeX Live installations managed by \key{tlmgr} (including
+MacTeX), install it from a terminal:
+\begin{lstlisting}[style=gradmanual,language={}]
+tlmgr install gradbars
+\end{lstlisting}
+Update an installed copy or inspect package information with:
+\begin{lstlisting}[style=gradmanual,language={}]
+tlmgr update gradbars
+tlmgr info gradbars
+\end{lstlisting}
+Load \key{\usepackage{gradbars}} in the preamble; no project-local sty copy is
+needed. The configured TeX Live repository may not yet contain a new CTAN
+release. Check the installed version before using new manual features.
+For a release not yet synchronized, place all matching \key{.sty} files
+from \key{sty/} beside your source, or use a local TEXMF tree under \key{tex/latex/gradbars}.
+Include \key{tblrlibgradbars.sty} for the optional tabularray adapter.
+A project-local copy takes precedence over the system installation. See the
+\href{https://tug.org/texlive/doc/tlmgr.html}{TeX Live package manager documentation}.
+Dependencies include TikZ/PGF, xparse, expl3, collcell, array, booktabs, colortbl and longtable.
+No shell escape or external data-conversion program is required.
+
+The package has no inherent XeLaTeX requirement. PDF output with pdfLaTeX,
+XeLaTeX and LuaLaTeX is tested, including CSV input. The Chinese manual uses XeLaTeX with
+ctex and Fandol fonts. This English manual can be compiled with pdfLaTeX.
+The package itself does not load fontspec or ctex. Use an appropriate font and
+encoding setup for non-ASCII text in your own documents.
+
+\subsection{Loading selected libraries}
+Select feature libraries in the preamble with the \key{libraries} option:
+\begin{source}
+\usepackage[libraries={stack,spark,heat,csv,table}]{gradbars}
+\end{source}
+This explicitly loads all five feature libraries and is equivalent to the
+default \key{\usepackage{gradbars}}. Use a shorter list when fewer features are needed:
+\begin{source}
+\usepackage[libraries={stack,spark,heat}]{gradbars}
+\end{source}
+The \key{table} library automatically loads \key{stack}, \key{spark}, \key{heat}
+and \key{csv}. Select \key{libraries=none} for the shared engine and public API
+only. Load libraries in the preamble; see the libraries chapter for details.
+
+\subsection{A complete example}
+\begin{source}
+\documentclass{article}
+\usepackage{booktabs,gradbars}
+\begin{document}
+\gradbarssetup{width=30mm,max=100,precision=1}
+\begin{tabular}{lc}
+\toprule
+\multicolumn{1}{c}{Model} & \multicolumn{1}{c}{Accuracy (\%)}\\
+\midrule
+Baseline & \gradbar{72.4} \\
+Proposed & \gradbar{92.7} \\
+\bottomrule
+\end{tabular}
+\end{document}
+\end{source}
+No \key{tikzpicture} wrapper is needed. Commands may also be used inside an
+existing TikZ picture. Settings and named styles follow ordinary TeX grouping.
+Options are applied left to right: put a theme or preset before individual overrides.

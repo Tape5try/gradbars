@@ -1,0 +1,76 @@
+% Author: SuFan; MIT License. Internal implementation unless documented.
+\ProvidesPackage{gradbars-numbers}[2026/10/30 v1.0.0 gradbars numbers]
+\ExplSyntaxOff
+% v0.0.8: bounded scientific input, optional SI formatting and decimal anchors.
+\ExplSyntaxOn
+\def\gradbars@formatter{builtin}
+\def\gradbars@unitcode{}
+\def\gradbars@unittext{}
+\pgfkeys{/gradbars,
+  formatter/.is~choice,
+  formatter/builtin/.code=\def\gradbars@formatter{builtin},
+  formatter/siunitx/.code=\def\gradbars@formatter{siunitx},
+  unit~code/.store~in=\gradbars@unitcode,
+  unit~text/.store~in=\gradbars@unittext}
+\ExplSyntaxOn
+\tl_new:N\l__gradbars_input_tl
+\prg_new_protected_conditional:Npnn\gradbarsIfNumber:n #1{T,F,TF}
+  {\tl_set:Nx\l__gradbars_input_tl{#1}\tl_trim_spaces:N\l__gradbars_input_tl
+   \regex_match:nVTF{\A[+\-]?(\d{1,101}(\.\d{0,101})?|\.\d{1,101})([eE][+\-]?\d{1,3})?\Z}\l__gradbars_input_tl
+     {\fp_compare:nNnTF{abs(\l__gradbars_input_tl)}>{1e100}
+        {\prg_return_false:}
+        {\fp_compare:nNnTF{\l__gradbars_input_tl}={0}{\prg_return_true:}
+           {\fp_compare:nNnTF{abs(\l__gradbars_input_tl)}<{1e-100}
+              {\prg_return_false:}{\prg_return_true:}}}}
+     {\prg_return_false:}}
+\prg_generate_conditional_variant:Nnn\gradbarsIfNumber:n{V}{T,F,TF}
+\cs_set_protected:Npn\gradbarsCheckNumber #1#2
+  {\gradbarsIfNumber:nF{#1}
+     {\gradbars@validfalse
+      \PackageError{gradbars}{Invalid~#2:~expected~a~decimal~or~scientific~number}
+        {Use~86.5~or~1.2e-3.~Nonzero~magnitudes~must~be~between~1e-100~and~1e100;~expressions,~NaN~and~infinity~are~not~accepted.}}}
+\cs_new_protected:Npn\gradbarsValidateFormatter
+  {\str_if_eq:eeT{\gradbars@formatter}{siunitx}
+     {\@ifpackageloaded{siunitx}
+        {\cs_if_exist:NF\unit{\gradbarsFail{Formatter~siunitx~requires~siunitx~v3}}}
+        {\gradbarsFail{Formatter~siunitx~requires~loading~siunitx~v3~before~use}}}
+   \tl_if_empty:oF{\gradbars@unitcode}
+     {\str_if_eq:eeF{\gradbars@formatter}{siunitx}{\gradbarsFail{Unit~code~requires~formatter=siunitx}}
+      \tl_if_empty:oT{\gradbars@unittext}{\gradbarsFail{Unit~code~requires~readable~unit~text}}
+      \tl_if_empty:oF{\gradbars@unit}{\gradbarsFail{Use~unit~or~unit~code,~not~both}}
+      \str_if_eq:eeT{\gradbars@format}{percent}{\gradbarsFail{Percent~labels~cannot~use~unit~code}}}}
+\cs_new_eq:NN\gradbarsValidateBeforeEight\gradbarsValidate
+\cs_set_protected:Npn\gradbarsValidate{\gradbarsValidateFormatter\gradbarsValidateBeforeEight}
+\cs_new_protected:Npn\gradbarsNumericSuffix
+  {\str_if_eq:eeTF{\gradbars@format}{percent}{\%}
+     {\tl_if_empty:oTF{\gradbars@unitcode}{\gradbars@unit}
+        {\,\exp_args:No\unit{\gradbars@unitcode}}}}
+\cs_new_protected:Npn\gradbarsSIOptions
+  {\sisetup{mode=math,reset-math-version=false,propagate-math-font=true,
+      output-decimal-marker={.},round-mode=places,round-precision=\gradbars@precision,
+      round-pad=true,round-half=up,group-minimum-digits=4,group-separator={\,},exponent-mode=fixed,fixed-exponent=0}
+   \str_if_eq:eeT{\gradbars@numberformat}{scientific}{\sisetup{exponent-mode=scientific}}
+   \str_if_eq:eeT{\gradbars@numberformat}{grouped}{\sisetup{group-separator={,}}}}
+\bool_new:N\l__gradbars_decimal_active_bool
+\bool_new:N\l__gradbars_decimal_measure_bool
+\cs_new_eq:NN\gradbarsSingleLabelBeforeEight\gradbarsSingleLabel
+\cs_set_protected:Npn\gradbarsSingleLabel
+  {\gradbarsValidateFormatter
+   \bool_if:NTF\l__gradbars_decimal_active_bool
+     {\gradbarsDecimalPrint{\gradbars@number}}
+     {\str_if_eq:eeTF{\gradbars@formatter}{siunitx}
+        {\tl_if_empty:oTF{\gradbars@text}
+           {\ifgradbars@missing\gradbars@missingtext\else
+            \group_begin:\gradbarsSIOptions\exp_args:No\num{\gradbars@number}\gradbarsNumericSuffix\group_end:\fi}
+           {\gradbars@text}}
+        {\gradbarsSingleLabelBeforeEight}}}
+\cs_new_eq:NN\gradbarsApplyAltBeforeEight\gradbarsApplyAlt
+\cs_set_protected:Npn\gradbarsApplyAlt
+  {\tl_if_empty:oF{\gradbars@unitcode}
+     {\tl_put_right:Nx\l__gradbars_alt_tl{~Unit:~\exp_not:o{\gradbars@unittext}.}}
+   \gradbarsApplyAltBeforeEight}
+
+\ExplSyntaxOff
+
+\ExplSyntaxOff
+\endinput

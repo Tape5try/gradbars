@@ -1,0 +1,164 @@
+% Author: SuFan; MIT License. Stable version-1 public extension entry points.
+\ProvidesPackage{gradbars-api}[2026/10/30 v1.0.0 gradbars public interfaces]
+\ExplSyntaxOn
+\prop_new:N\g__gradbars_library_files_prop
+\prop_new:N\g__gradbars_library_dependencies_prop
+\prop_new:N\g__gradbars_library_state_prop
+\seq_new:N\g__gradbars_library_stack_seq
+\tl_new:N\l__gradbars_library_file_tl
+\tl_new:N\l__gradbars_library_dependencies_tl
+\bool_new:N\g__gradbars_loader_valid_bool
+\prop_new:N\g__gradbars_type_names_prop
+\prop_new:N\g__gradbars_formatter_names_prop
+\tl_new:N\l__gradbars_public_value_tl
+\seq_new:N\l__gradbars_module_version_seq
+\tl_new:N\g__gradbars_release_version_tl
+\tl_set:Nx\l_tmpa_tl{\use:c{ver@gradbars.sty}}
+\regex_extract_once:nVNTF{v([0-9]+\.[0-9]+\.[0-9]+)}\l_tmpa_tl\l__gradbars_module_version_seq
+  {\tl_gset:Nx\g__gradbars_release_version_tl{\seq_item:Nn\l__gradbars_module_version_seq{2}}}
+  {\PackageError{gradbars}{Load~the~gradbars~entry~package}{Do~not~load~internal~modules~directly.}}
+\cs_generate_variant:Nn\clist_map_inline:nn{Vn}
+\cs_new_protected:Npn\__gradbars_public_error:n #1
+  {\PackageError{gradbars}{#1}{Check~the~public~interface~and~library~requirements.}}
+\cs_new_protected:Npn\__gradbars_check_module:n #1
+  {\tl_set:Nx\l_tmpa_tl{\use:c{ver@#1.sty}}
+   \regex_extract_once:nVNTF{v([0-9]+\.[0-9]+\.[0-9]+)}\l_tmpa_tl\l__gradbars_module_version_seq
+     {\str_if_eq:eeF{\seq_item:Nn\l__gradbars_module_version_seq{2}}{\g__gradbars_release_version_tl}
+        {\bool_gset_false:N\g__gradbars_loader_valid_bool
+         \__gradbars_public_error:n{Mixed~module~versions:~#1~requires~v\g__gradbars_release_version_tl}}}
+     {\bool_gset_false:N\g__gradbars_loader_valid_bool
+      \__gradbars_public_error:n{Missing~module~version:~#1}}}
+\prg_new_protected_conditional:Npnn\__gradbars_name_valid:n #1{TF}
+  {\regex_match:nnTF{\A[a-z][a-z0-9-]*\Z}{#1}{\prg_return_true:}{\prg_return_false:}}
+\NewDocumentCommand\gradbarsdeclarelibrary{m m m}
+  {\__gradbars_name_valid:nTF{#1}
+     {\prop_if_in:NnTF\g__gradbars_library_files_prop{#1}
+        {\__gradbars_public_error:n{Library~already~registered:~#1}}
+        {\prop_gput:Nnn\g__gradbars_library_files_prop{#1}{#3}
+         \prop_gput:Nnn\g__gradbars_library_dependencies_prop{#1}{#2}}}
+     {\__gradbars_public_error:n{Invalid~library~name:~#1}}}
+\cs_new_protected:Npn\__gradbars_load_library:n #1
+  {\prop_get:NnNTF\g__gradbars_library_files_prop{#1}\l__gradbars_library_file_tl
+     {\str_case_e:nnF{\prop_item:Nn\g__gradbars_library_state_prop{#1}}
+        {{loaded}{}{loading}{\bool_gset_false:N\g__gradbars_loader_valid_bool
+           \__gradbars_public_error:n{Circular~library~dependency:~\seq_use:Nn\g__gradbars_library_stack_seq{~->~}~->~#1}}}
+        {\prop_gput:Nnn\g__gradbars_library_state_prop{#1}{loading}
+         \seq_gput_right:Nn\g__gradbars_library_stack_seq{#1}
+         \prop_get:NnN\g__gradbars_library_dependencies_prop{#1}\l__gradbars_library_dependencies_tl
+         \clist_map_inline:Vn\l__gradbars_library_dependencies_tl
+           {\bool_if:NT\g__gradbars_loader_valid_bool{\__gradbars_load_library:n{##1}}}
+         \bool_if:NT\g__gradbars_loader_valid_bool
+           {\prop_get:NnN\g__gradbars_library_files_prop{#1}\l__gradbars_library_file_tl
+            \file_if_exist:VTF\l__gradbars_library_file_tl
+              {\regex_replace_once:nnN{\.sty\Z}{}\l__gradbars_library_file_tl
+               \exp_args:NV\RequirePackage\l__gradbars_library_file_tl
+               \regex_match:nVT{\Agradbars-lib-}\l__gradbars_library_file_tl
+                 {\exp_args:NV\__gradbars_check_module:n\l__gradbars_library_file_tl}
+               \bool_if:NT\g__gradbars_loader_valid_bool
+                 {\prop_gput:Nnn\g__gradbars_library_state_prop{#1}{loaded}}}
+              {\bool_gset_false:N\g__gradbars_loader_valid_bool
+               \__gradbars_public_error:n{Library~file~not~found:~\l__gradbars_library_file_tl}}}
+         \seq_gpop_right:NN\g__gradbars_library_stack_seq\l_tmpa_tl
+         \bool_if:NF\g__gradbars_loader_valid_bool{\prop_gremove:Nn\g__gradbars_library_state_prop{#1}}}}
+     {\bool_gset_false:N\g__gradbars_loader_valid_bool\__gradbars_public_error:n{Unknown~library:~#1}}}
+\NewDocumentCommand\usegradbarslibrary{m}
+  {\bool_gset_true:N\g__gradbars_loader_valid_bool
+   \clist_map_inline:nn{#1}{\bool_if:NT\g__gradbars_loader_valid_bool{\__gradbars_load_library:n{##1}}}}
+\NewDocumentCommand\gradbarsiflibraryloaded{m m m}
+  {\str_if_eq:eeTF{\prop_item:Nn\g__gradbars_library_state_prop{#1}}{loaded}{#2}{#3}}
+\NewDocumentCommand\gradbarsset{m}{\gradbarssetup{#1}}
+\cs_new_protected:Npn\gradbarsCheckFormatter #1
+  {\prop_if_in:NnF\g__gradbars_formatter_names_prop{#1}{\__gradbars_public_error:n{Unknown~formatter:~#1}}}
+\pgfkeys{/gradbars/formatter/.code={\gradbarsCheckFormatter{#1}\def\gradbars@formatter{#1}}}
+\prop_gput:Nnn\g__gradbars_formatter_names_prop{builtin}{builtin}
+\prop_gput:Nnn\g__gradbars_formatter_names_prop{siunitx}{builtin}
+\cs_new_protected:Npn\__gradbars_format_builtin:nnn #1#2#3
+  {\str_if_eq:nnTF{#3}{scientific}
+     {\pgfmathprintnumber[sci,sci~zerofill,precision=#2]{#1}}
+     {\str_if_eq:nnTF{#3}{grouped}
+        {\pgfmathprintnumber[fixed,fixed~zerofill,precision=#2,1000~sep={\mathord{,}}]{#1}}
+        {\pgfmathprintnumber[fixed,fixed~zerofill,precision=#2,1000~sep={\,}]{#1}}}}
+\NewDocumentCommand\gradbarsformatnumber{O{} m}
+  {\group_begin:\pgfkeys{/gradbars,formatter=builtin,precision=1,number~format=fixed,#1}
+   \gradbars@validtrue\gradbarsCheckNumber{#2}{formatter~value}
+   \tl_set:Nx\l_tmpa_tl{\gradbars@precision}
+   \regex_match:nVF{\A[0-6]\Z}\l_tmpa_tl
+     {\gradbarsFail{Precision~must~be~an~integer~from~0~to~6}}
+   \ifgradbars@valid
+     \str_if_eq:eeTF{\gradbars@formatter}{builtin}
+       {\use:x{\exp_not:N\__gradbars_format_builtin:nnn{\fp_eval:n{#2}}{\gradbars@precision}{\gradbars@numberformat}}}
+       {\str_if_eq:eeTF{\gradbars@formatter}{siunitx}
+          {\gradbarsValidateFormatter\gradbarsSIOptions\num{#2}}
+          {\__gradbars_public_error:n{Number~helper~supports~builtin~or~siunitx}}}
+   \fi\group_end:}
+\NewDocumentCommand\gradbarsdeclareformatter{m +m}
+  {\__gradbars_name_valid:nTF{#1}
+     {\prop_if_in:NnTF\g__gradbars_formatter_names_prop{#1}
+        {\__gradbars_public_error:n{Formatter~already~registered:~#1}}
+        {\cs_gset_protected:cpn{__gradbars_formatter_#1:nnn}##1##2##3{#2}
+         \prop_gput:Nnn\g__gradbars_formatter_names_prop{#1}{custom}}}
+     {\__gradbars_public_error:n{Invalid~formatter~name:~#1}}}
+\cs_new_eq:NN\__gradbars_single_label_before_api:\gradbarsSingleLabel
+\cs_set_protected:Npn\gradbarsSingleLabel
+  {\str_if_eq:eeTF{\prop_item:Ne\g__gradbars_formatter_names_prop{\gradbars@formatter}}{custom}
+     {\tl_if_empty:oTF{\gradbars@text}
+        {\ifgradbars@missing\gradbars@missingtext\else
+         \bool_if:NTF\l__gradbars_decimal_active_bool
+           {\__gradbars_public_error:n{Custom~formatters~do~not~support~decimal~alignment}}
+           {\use:x{\exp_not:c{__gradbars_formatter_\gradbars@formatter :nnn}
+                 {\gradbars@number}{\gradbars@precision}{\gradbars@numberformat}}\gradbarsNumericSuffix}\fi}
+        {\gradbars@text}}
+     {\__gradbars_single_label_before_api:}}
+\NewDocumentCommand\gradbarsdeclaretype{m +m}
+  {\__gradbars_name_valid:nTF{#1}
+     {\prop_if_in:NnTF\g__gradbars_type_names_prop{#1}
+        {\__gradbars_public_error:n{Graphic~type~already~registered:~#1}}
+        {\cs_gset_protected:cpn{__gradbars_type_#1:n}##1{#2}
+         \prop_gput:Nnn\g__gradbars_type_names_prop{#1}{custom}}}
+     {\__gradbars_public_error:n{Invalid~graphic~type~name:~#1}}}
+\gradbarsdeclaretype{bar}{\gradbar{#1}}
+\gradbarsdeclaretype{heat}{\gradheat{#1}}
+\NewDocumentCommand\gradgraphic{O{} m m}
+  {\group_begin:\gradbarssetup{#1}
+   \prop_if_in:NnTF\g__gradbars_type_names_prop{#2}
+     {\tl_set:Nn\l__gradbars_public_value_tl{#3}\tl_trim_spaces:N\l__gradbars_public_value_tl
+      \str_if_eq:VnTF\l__gradbars_public_value_tl{NA}
+        {\use:c{__gradbars_type_#2:n}{NA}}
+        {\gradbars@validtrue\gradbarsCheckNumber{#3}{graphic~value}
+         \ifgradbars@valid
+           \use:x{\exp_not:c{__gradbars_type_#2:n}{\fp_eval:n{#3}}}\fi}}
+     {\__gradbars_public_error:n{Unknown~graphic~type:~#2}}
+   \group_end:}
+\cs_new_protected:Npn\__gradbars_unloaded:n #1
+  {\__gradbars_public_error:n{Library~#1~not~loaded;~use~usegradbarslibrary~in~the~preamble}}
+\ProvideDocumentCommand\gradstack{O{} m}{\__gradbars_unloaded:n{stack}}
+\ProvideDocumentCommand\gradspark{O{} m}{\__gradbars_unloaded:n{spark}}
+\ProvideDocumentCommand\gradheat{O{} m}{\__gradbars_unloaded:n{heat}}
+\ProvideDocumentCommand\gradbarscolumn{m m}{\__gradbars_unloaded:n{csv}}
+\ProvideDocumentCommand\gradbarsloadcsv{O{} m m}{\__gradbars_unloaded:n{csv}}
+\ProvideDocumentCommand\gradbarcsv{O{} m m m}{\__gradbars_unloaded:n{csv}}
+\ProvideDocumentCommand\gradbarscsvcell{m m m}{\__gradbars_unloaded:n{csv}}
+\ProvideDocumentCommand\gradbarscsvstyle{m m m}{\__gradbars_unloaded:n{csv}}
+\ProvideDocumentCommand\gradbarscsvtable{O{} m m m}{\__gradbars_unloaded:n{csv}}
+\ProvideDocumentEnvironment{gradtable}{O{} +b}{\__gradbars_unloaded:n{table}}{}
+\ProvideDocumentCommand\gradcolumn{O{} m m}{\__gradbars_unloaded:n{table}}
+\ProvideDocumentCommand\gradrow{m}{\__gradbars_unloaded:n{table}}
+\ProvideDocumentCommand\gradsummary{O{} m}{\__gradbars_unloaded:n{table}}
+\ProvideDocumentCommand\gradgroup{m}{\__gradbars_unloaded:n{table}}
+\ProvideDocumentCommand\gradheader{+m}{\__gradbars_unloaded:n{table}}
+\ProvideDocumentCommand\gradspan{m m}{\__gradbars_unloaded:n{table}}
+\ProvideDocumentCommand\gradtablestyle{m m}{\__gradbars_unloaded:n{table}}
+\ProvideDocumentCommand\gradtableschema{m +m}{\__gradbars_unloaded:n{table}}
+\ProvideDocumentCommand\graduseschema{m}{\__gradbars_unloaded:n{table}}
+\cs_new_protected:Npn\__gradbars_tblr_unloaded:
+  {\__gradbars_public_error:n{Load~the~tabularray~gradbars~library~with~UseTblrLibrary}}
+\ProvideDocumentCommand\gradtblrsetup{m}{\__gradbars_tblr_unloaded:}
+\ProvideDocumentCommand\gradtblrcell{O{} m m}{\__gradbars_tblr_unloaded:}
+\ProvideDocumentCommand\gradbarTblr{O{} m}{\__gradbars_tblr_unloaded:}
+\ProvideDocumentCommand\gradheatTblr{O{} m}{\__gradbars_tblr_unloaded:}
+\ProvideDocumentCommand\gradnumberTblr{O{} m}{\__gradbars_tblr_unloaded:}
+\ProvideDocumentCommand\gradcompareTblr{O{} m}{\__gradbars_tblr_unloaded:}
+\@onlypreamble\usegradbarslibrary
+\@onlypreamble\gradbarsdeclarelibrary
+\ExplSyntaxOff
+\endinput

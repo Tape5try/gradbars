@@ -1,0 +1,53 @@
+\part{Appearance, labels and evaluation}
+
+\section{Appearance, reusable styles and palettes}
+Ten themes are available: blue, teal, solid, gray, lbyellow, viblue, cyblu,
+violet, orange and forest. The three new themes pair violet, warm-orange or
+forest-green gradients with matching pale tracks and dark value labels.
+Nine predefined solid colors are lightgreen, lightyellow, lightblue, lightred,
+rose, skyblue, gold, lavender and peach. Use \key{color} for solid fill and
+\key{left color}/\key{right color} for a gradient. Standard xcolor expressions work.
+
+\begin{demo}{Violet, warm orange and forest green themes}
+\gradbar[theme=violet]{72}
+
+\gradbar[theme=orange]{72}
+
+\gradbar[theme=forest]{72}
+\end{demo}
+
+\begin{demo}{A reusable layout style}
+\gradbarsstyle{paperrow}{preset=paper,width=45mm,max=100,precision=0}
+\gradbar[style=paperrow]{82}
+
+\graddumbbell[style=paperrow]{60}{82}
+
+\gradbar[preset=report,target=90,thresholds={60,80}]{75}
+
+\gradbar[preset=presentation]{92}
+
+\gradbar[preset=outline]{70}
+\end{demo}
+The paper preset uses thin solid bars, a faint track and outside values. Report
+uses thicker rounded bars; supply actual target and threshold values yourself.
+Presentation uses larger type and automatic inside placement. Outline uses hollow
+shapes with fine strokes. Presets do not invent data or scale limits.
+
+Group palettes are categorical (six distinct colors), sequential (five blue levels),
+diverging (orange through neutral to teal), and mono (gray with textures).
+These palettes select by segment position, not by value; short lists cycle.
+Named categories instead preserve identity across reordered or subsetted data:
+\begin{demo}{Stable category identity and a shared legend}
+\gradbarscategory{Compute}{gradbarsBlue}{diagonal}
+\gradbarscategory{Storage}{gradbarsOrange}{dots}
+\gradstack[stack names={Compute,Storage}]{60,30}
+
+\gradstack[stack names={Storage,Compute}]{30,60}
+
+\gradbarslegend[width=50mm]{Compute,Storage}
+\end{demo}
+Registered names override positional colors and patterns; unregistered names fall
+back to the current palette. Definitions are scoped. In print/mono mode, category
+colors use gray while registered patterns remain. Legends use the same mapping.
+Patterns are none, diagonal, reverse, dots, crosshatch, horizontal and vertical.
+Use names or textures alongside color when category distinctions matter.

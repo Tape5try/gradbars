@@ -1,0 +1,5 @@
+% Code typography for the English manual.
+\newcommand{\gradbarscodefont}{\ttfamily}
+\newcommand{\key}[1]{{\gradbarscodefont\detokenize{#1}}}
+\newcommand{\pkg}[1]{{\sffamily #1}}
+\pdfstringdefDisableCommands{\def\key#1{#1}\def\pkg#1{#1}\def\gradbarscodefont{}}

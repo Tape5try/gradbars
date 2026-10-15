@@ -1,0 +1,15 @@
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\begin{document}
+\gradheat[heat palette=diverging,min=-50,max=100,heat center=0]{-25}\par
+\gradspark[spark type=bar]{20,-40,0,NA}\par
+\gradspark[spark type=winloss]{20,-40,0,NA}\par
+\gradbarsloadcsv{results}{docs/data/results.csv}
+\begin{gradtable}[data=results,width=\linewidth,scale=column,
+  sort=score,order=descending,filter={score>=75},limit=2]
+  \gradcolumn[source=Model]{method}{Method}
+  \gradcolumn[type=bar,source=Score]{score}{Score}
+\end{gradtable}
+\end{document}

@@ -1,0 +1,35 @@
+\part{Graphics and comparisons}
+
+\section{Signed bars, targets, intervals and uncertainty}
+\begin{demo}{A signed point estimate and asymmetric uncertainty}
+\gradbar[min=-50,max=100,width=65mm,
+  target=40,band={20,60},error minus=8,error plus=12]{35}
+
+\gradbar[min=-50,max=100,width=65mm,shape=lollipop]{-25}
+
+\gradrange[min=-50,max=100,width=65mm,range point=10]{-20}{35}
+\end{demo}
+Error magnitudes are nonnegative distances from the observation, not absolute
+endpoints. Explain whether they represent standard deviation, standard error or
+confidence intervals in the table caption. Targets and bands are references, not
+automatically estimated uncertainty. A band must have ordered endpoints within
+the scale; invalid reference bands and targets cause errors.
+
+Floating intervals require lower$\le$upper; equal endpoints draw a cap, not an
+inflated bar. Both endpoints must be present or both missing. A range point must
+lie inside the original endpoints. Intervals reject error whiskers and quality
+thresholds. Default labels show the supplied endpoints.
+Lollipops show a point for zero, but no point for missing input.
+
+Negative bars are solid by default. To give the negative side its own gradient,
+set its two endpoints explicitly:
+\begin{demo}{Independent negative gradient}
+\gradbar[min=-100,max=100,width=50mm,
+  left color=teal,right color=teal!25,
+  negative fill=gradient,
+  negative left color=magenta!25,
+  negative right color=magenta]{-60}
+\end{demo}
+The negative left endpoint is the outer side of the bar and the right endpoint is
+the side next to zero. `negative color` remains the fallback solid color; threshold
+and print modes continue to override the gradient.

@@ -1,0 +1,30 @@
+\part{Complete layout examples}
+
+\section{A complete benchmark table}
+Use shared scales within each column, explicit units and a stated ranking rule.
+This example combines a score, latency, before/after change and recent history.
+Best score and lowest latency are bold; missing observations remain missing.
+\begin{demo}{Model comparison with a grouped header}
+\begin{gradtable}[width=\linewidth,header align=c,
+  label width=8mm,column sep=3pt,min text width=12mm,
+  min graphic width=15mm,row stretch=1.7]
+  \gradcolumn{method}{Method}
+  \gradcolumn[type=bar,mark=best,weight=1.2,
+    options={max=100,precision=1}]{score}{Score}
+  \gradcolumn[type=number,width=15mm,mark=best,
+    options={better=lower,precision=1}]{time}{ms}
+  \gradcolumn[type=dumbbell,options={max=100,precision=1,
+    compare label=delta}]{change}{Change}
+  \gradcolumn[type=spark,options={spark range=fixed,
+    min=0,max=100,precision=1}]{trend}{Five periods}
+  \gradheader{\gradspan{1}{Setup}\gradspan{2}{Performance}
+    \gradspan{2}{Comparison}}
+  \gradrow{A,82.4,14.8,68/82.4,{68,74,70,78,82.4}}
+  \gradrow{B,91.6,18.2,76/91.6,{76,81,78,87,91.6}}
+  \gradrow{C,87.3,11.5,80/87.3,{80,72,83,78,87.3}}
+  \gradrow{D,78.9,9.6,83/78.9,{83,72,79,74,78.9}}
+\end{gradtable}
+\end{demo}
+The dumbbell connects reference and current values, and its label shows their
+difference. All trends share 0--100 vertically and equal observation spacing.
+These numbers are demonstrations, not experimental findings.

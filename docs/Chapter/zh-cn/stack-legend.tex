@@ -1,0 +1,48 @@
+\section{堆叠图例与分段标签}
+\key{stack names} 为每一段提供名称，顺序与数值、颜色一致。
+\key{legend=true} 在条形下方自动生成图例；名称较长时在轨道宽度内换行。
+\key{segment labels} 可显示数值、占比、名称或它们的组合。
+
+\begin{example}[text and listing,sidebyside=false]{示例 16：自动图例与小段标签外移}
+\gradstack[
+  width=70mm,height=16pt,precision=0,
+  stack colors={gradbarsBlue,gradbarsTeal,gold},
+  stack names={Train,Validation,Test},
+  segment labels=name percent,legend=true,
+  label=end
+]{80,2,18}
+\end{example}
+
+段内放不下的标签自动移至条形上方，并添加引导线；水平范围相交的外部标签逐层抬高。\par
+\key{segment text color=auto} 默认按段颜色选择黑字或白字。
+\key{segment font} 默认是 \key{\scriptsize}，可按版面修改。
+零值段不绘制标签，但仍保留图例项和配色序号。
+
+\begin{example}[text and listing,sidebyside=false]{示例 17：分段占比与总量占比采用不同分母}
+\gradstack[
+  max=200,width=80mm,height=16pt,precision=0,
+  stack colors={gradbarsBlue,gradbarsTeal},
+  segment labels=percent,value format=percent
+]{20,30}
+\end{example}
+
+这里总量为 50，条长占量程 200 的四分之一，总标签为 25\%。
+两段标签分别是 $20/50=40\%$ 和 $30/50=60\%$。
+分段占比以原始段值的绝对值之和为分母；此处均为正数，因而等于原始总量。
+即使条长被截断，也不会按可见部分重新归一化。
+\key{segment labels=value} 显示原始分段值，沿用数字格式及精度，省略总标签的 \key{unit}。
+
+\begin{example}[text and listing,sidebyside=false]{示例 18：多个堆叠条共用一个图例}
+\gradbarsstyle{parts}{width=55mm,height=14pt,
+  precision=0,stack colors={skyblue,rose,gold}}
+\begin{tabular}{@{}ll@{}}
+  A & \gradstack[style=parts]{50,30,20}\\[3pt]
+  B & \gradstack[style=parts]{65,20,15}
+\end{tabular}
+
+\gradbarslegend[style=parts]{Train,Validation,Test}
+\end{example}
+
+\note{启用自动图例或包含名称的段标签时，必须提供与段数一致的 \key{stack names}。
+\key{segment labels} 可选 none、value、percent、name、name value、name percent。
+独立图例需要和数据条使用相同的 \key{stack colors}，建议通过命名样式统一设置。}

@@ -1,0 +1,62 @@
+\section{Multipage tables and repeated headers}
+\key{long=true} uses longtable to break between data rows. Every page repeats
+the full header, including spanning layers. Widths and ranking are computed for
+the entire table. A group heading stays with its first row; the remaining group
+may continue, but its name is not repeated automatically.
+
+Place long tables directly in single-column body text, outside floats, minipages
+and nonbreakable example boxes. They cannot run in two-column mode. A single row
+cannot split. Use caption for a numbered title, label for referencing (requires
+caption), and continued text for continuation notices (default: (continued)).
+An empty continued text suppresses the notice. Compile twice to settle references.
+
+The following table is typeset directly in this manual and can cross a page
+boundary. Its exact source is printed afterwards. Best values are bold and the
+next distinct values are underlined across all records.
+\begin{filecontents*}[overwrite]{\jobname-long-example.tex}
+\begin{gradtable}[long=true,width=\linewidth,
+  caption={Grouped benchmark},label={tab:english-long},
+  continued text={(continued)},header align=c,
+  label width=12mm,column sep=6pt,row stretch=1.4,row padding=3pt]
+  \gradcolumn[weight=1]{method}{Method}
+  \gradcolumn[type=bar,weight=2,mark=both,
+    options={max=100,precision=1}]{score}{Score}
+  \gradcolumn[type=number,width=18mm,mark=both,
+    options={better=lower,precision=1}]{time}{Time / s}
+  \gradcolumn[type=interval,weight=1.5,
+    options={max=100,precision=0}]{range}{Interval}
+  \gradheader{\gradspan{1}{Setup}\gradspan{3}{Shared evaluation set}}
+  \gradgroup{Experiment group A}
+  \gradrow{Method 01,70.0,8.0,66/70/74}
+  \gradrow{Method 02,77.2,11.1,73/77/81}
+  \gradrow{Method 03,84.4,14.2,80/84/88}
+  \gradrow{Method 04,91.0,17.0,87/91/95}
+  \gradrow{Method 05,70.2,20.1,66/70/74}
+  \gradrow{Method 06,77.4,23.2,73/77/81}
+  \gradrow{Method 07,84.0,9.0,80/84/88}
+  \gradrow{Method 08,91.2,12.1,87/91/95}
+  \gradgroup{Experiment group B}
+  \gradrow{Method 09,70.4,15.2,66/70/74}
+  \gradrow{Method 10,77.0,18.0,73/77/81}
+  \gradrow{Method 11,84.2,21.1,80/84/88}
+  \gradrow{Method 12,91.4,24.2,87/91/95}
+  \gradrow{Method 13,70.0,10.0,66/70/74}
+  \gradrow{Method 14,77.2,13.1,73/77/81}
+  \gradrow{Method 15,84.4,16.2,80/84/88}
+  \gradrow{Method 16,91.0,19.0,87/91/95}
+  \gradgroup{Experiment group C}
+  \gradrow{Method 17,70.2,22.1,66/70/74}
+  \gradrow{Method 18,77.4,8.2,73/77/81}
+  \gradrow{Method 19,84.0,11.0,80/84/88}
+  \gradrow{Method 20,91.2,14.1,87/91/95}
+  \gradrow{Method 21,70.4,17.2,66/70/74}
+  \gradrow{Method 22,77.0,20.0,73/77/81}
+  \gradrow{Method 23,84.2,23.1,80/84/88}
+  \gradrow{Method 24,91.4,9.2,87/91/95}
+\end{gradtable}
+\end{filecontents*}
+\par
+\input{\jobname-long-example.tex}
+\par\medskip
+\textbf{Source of the multipage example}
+\lstinputlisting[style=gradmanual]{\jobname-long-example.tex}

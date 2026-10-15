@@ -1,0 +1,35 @@
+\section{Label placement, printing and practical limits}
+Labels support \key{outside}, \key{left}, \key{inside}, \key{end}, \key{auto}
+and \key{none}. \key{auto} moves a label outside
+when it does not fit. \key{end} places it above the endpoint. Comparisons, lollipops,
+outlined bars and intervals with a range point move internal labels outside.
+Sparklines always use outside labels. \key{text color=auto} chooses black or white.
+\key{label width} reserves an outside slot; use the same sufficiently wide slot
+throughout a column. Long labels may require a wider column or a custom short text.
+
+\begin{demo}{Left labels and inline baselines}
+\gradbar[label=left,unit={\%},baseline=text]{92.7}
+\qquad
+\gradbar[label=left,baseline=bottom]{NA}
+\end{demo}
+\key{label=left} places the formatted label immediately before the track and
+right-aligns it within \key{label width}. It is intended for compact table columns
+where the value should read before the visual bar. \key{baseline=text} uses the
+current label font metrics; \key{baseline=center} and \key{baseline=bottom} are
+useful when a table row deliberately aligns graphics by their visual center or
+lower edge. A positive \key{baseline shift} moves the picture upward.
+
+\key{row padding} reserves extra height above and below a graphic; it does not
+change the document's global row spacing. Use arraystretch or table row spacing
+when appropriate. Marker shapes reserve space consistently even when the first
+or last observation does not have a marker.
+
+\key{print} applies gray fills, textures and white label backgrounds. Mono is a
+group palette using those settings. Provide textual category names and real values
+as well as visual distinctions. Outlined bars and legends are available through
+\key{outline=true} or the outline preset; print clears outline mode.
+
+All collision handling is local to a graphic, not to the whole table. Complex
+axes, date parsing and large general-purpose plots are outside this package's
+scope. Automatic alternative descriptions are available when PDF tagging is enabled;
+see the tagging notes in the interface reference.

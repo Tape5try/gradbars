@@ -1,0 +1,45 @@
+\section{迷你趋势图：折线、柱形与 win-loss}
+\key{\gradspark[选项]{观测列表}} 按输入顺序绘制等间隔数据，默认标签显示最后一个位置的原始值。
+空字段或 NA 保留横向位置并断开连接；末项缺失时标签也显示缺失，不回退到之前的值。
+\begin{example}[text and listing,sidebyside=false]{示例 24：缺失断点与共享纵向范围}
+\gradspark[width=65mm,height=6mm,precision=0,
+  spark range=fixed,min=0,max=100]{25,45,30,NA,65,80}
+
+\gradspark[width=65mm,height=6mm,precision=0,
+  spark range=fixed,min=0,max=100]{45,42,50,60,65,70}
+
+\gradspark[width=65mm,height=6mm,precision=0]{5,5,5}
+\end{example}
+\key{spark range=auto} 默认使用本行最小值与最大值，只适合看形状；不同自动范围的行不能比较绝对波动。
+恒定序列居中，单点居中绘制；全缺失序列仅显示轨道与缺失标签。
+\key{spark range=fixed} 使用统一的 min/max，遵循越界警告截断或报错规则；固定范围要求 min 小于 max。
+默认高度为 4ex，可覆盖。自动范围不支持计算百分比标签。
+
+\key{spark points=extrema} 默认标出全部并列极值及末点；另可选择 all、last、none。
+最低点用 \key{spark low color}，最高点用 \key{spark high color}，两者相同时使用最高点颜色。
+末点若不是极值则使用线条颜色。点色表示位置特征，不表示指标优劣。
+\key{color}、\key{stem width}、\key{marker size} 设置线色、线宽与点半径。
+趋势线不使用面积纹理、柱形目标线、误差线、区间背景或阈值评价；标签始终在外部。
+
+\subsection{柱形趋势：保留每期幅度}
+\key{spark type=bar} 用等宽观测槽绘制正负柱形。自动范围包含零，柱高表示相对零点的原始幅度。
+固定范围仍采用 min/max 与越界策略；跨行比较应共用尺度。
+\begin{example}[text and listing,sidebyside=false]{同一组观测的折线、柱形与 win-loss}
+\gradspark[width=65mm,height=7mm,precision=0]{20,-10,NA,40,0,-30}
+
+\gradspark[spark type=bar,width=65mm,height=7mm,
+  precision=0]{20,-10,NA,40,0,-30}
+
+\gradspark[spark type=winloss,width=65mm,height=7mm,
+  precision=0]{20,-10,NA,40,0,-30}
+\end{example}
+\key{spark bar width} 设置柱宽占观测槽的比例，默认 0.7，范围为大于 0 且不超过 1。
+正柱使用普通填色，负柱使用 negative color；零值用基准线上的短横线表示，缺失槽位留空。
+全零或全缺失的自动柱形采用 [0,1]。
+\subsection{Win-loss：只比较正负类别}
+\key{spark type=winloss} 将正数映射为胜、负数映射为负、零映射为平。
+正负柱各采用固定高度，不表达原始幅度；min/max 和 spark range 不改变分类。
+\key{spark win color}、\key{spark loss color} 和 \key{spark zero color} 分别设置胜、负、平及基准线的颜色。
+柱形与 win-loss 均保留每个观测的位置，末项标签仍是原始值；末项缺失时标签显示缺失。
+win-loss 不支持计算百分比标签。print 使用灰度；spark points 及极值点配色只用于折线。
+在 \key{gradtable} 中使用 \key{type=spark}，并在 options 中设置 \key{spark type=bar} 或 \key{spark type=winloss}。

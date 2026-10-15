@@ -1,0 +1,20 @@
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage{siunitx}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\begin{document}
+\gradbar[formatter=siunitx,precision=2,unit code={\milli\second},
+  unit text={milliseconds}]{1.234567e1}\par
+\gradheat[formatter=siunitx,min=0,max=1e-2,precision=2,number format=scientific,
+  unit code={\joule},unit text={joules}]{1.23e-3}\par
+\begin{gradtable}[style=research,width=\linewidth,formatter=siunitx,theme=teal]
+\gradcolumn{name}{Method}
+\gradcolumn[type=bar,mark=both,aggregate=mean,options={precision=2,
+  unit code={\milli\second},unit text={milliseconds}}]{bar}{Time}
+\gradcolumn[type=number,mark=both,aggregate=mean,options={precision=3}]{number}{Score}
+\gradrow{A,1.234567e1,1.234567e1}\gradrow{B,2.345678e1,2.345678e1}
+\gradsummary{Mean}\end{gradtable}
+\par\gradbar[formatter=siunitx,unit code={\milli\second},unit text={milliseconds},
+  alt={Custom elapsed time description.}]{40}
+\end{document}

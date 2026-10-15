@@ -1,0 +1,33 @@
+\section{黑白纹理填充}
+\key{print} 是一组打印预设：白色填充、浅灰轨道、黑色纹理和文字，
+普通条默认使用斜线，堆叠条默认循环斜线、点阵、网格。
+内部标签增加白底，以免纹理穿过文字；可通过 \key{print labels=false} 取消标签白底。
+
+\begin{example}[text and listing,sidebyside=false]{示例 48：纹理与灰度轨道}
+\gradbar[print,width=50mm,height=16pt,
+  pattern=diagonal,label=auto,precision=0]{80}
+
+\gradbar[print,width=50mm,height=16pt,
+  pattern=dots,label=auto,precision=0]{60}
+
+\gradbar[print,width=50mm,height=16pt,
+  pattern=crosshatch,label=auto,precision=0]{40}
+\end{example}
+
+\key{pattern} 可选 none、diagonal、reverse、dots、crosshatch、horizontal、vertical，
+分别表示无纹理、正斜线、反斜线、点阵、网格、横线和竖线。
+纹理覆盖在填充色之上，保留原来的条长、圆角和截断边界。
+\key{pattern color} 单独指定纹理颜色；纯色或渐变主题也可叠加纹理，不限于打印预设。
+
+\begin{example}[text and listing,sidebyside=false]{示例 49：堆叠条与图例使用一致的纹理}
+\gradstack[print,width=75mm,height=17pt,
+  stack names={Train,Validation,Test},
+  stack patterns={diagonal,dots,crosshatch},
+  legend=true,segment labels=percent,precision=0]{60,25,15}
+\end{example}
+
+\key{stack patterns} 与段序号对应，数量不足时循环使用；零段也占用一个纹理序号。
+
+自动图例以及 \key{\gradbarslegend} 使用相同的纹理列表。
+共享图例时，让图例与条形引用同一个命名样式，以保持颜色和纹理一致。
+纹理只能辅助识别，仍需保留类别名称和可读数值。打印缩放后请检查细线是否清晰。

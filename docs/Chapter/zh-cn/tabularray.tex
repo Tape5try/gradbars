@@ -1,0 +1,95 @@
+\section{tabularray 集成与单元格标签对齐}
+\pkg{tabularray} 适配库需要 2025C（2025-11-27）或更新版本。
+在导言区加载，普通 \pkg{gradbars} 文档不必安装或加载此可选依赖：
+\begin{codeonly}
+\usepackage{tabularray}
+\usepackage{gradbars}
+\UseTblrLibrary{gradbars}
+\end{codeonly}
+库文件是 \key{tblrlibgradbars.sty}，与其余运行文件一起放在 \key{sty/}。
+它按需加载 Heat 和 \pkg{tabularray} 的 hook/varwidth 支持；重复加载无副作用。
+只加载 \pkg{tabularray} 再调用上述库入口时，也会自动加载最小的 \pkg{gradbars} 核心。
+
+\subsection{专用列与单元格命令}
+专用列采用 \key{G[选项]{宽度}}、\key{H[选项]{宽度}}、
+\key{N[选项]{宽度}} 和 \key{D[选项]{宽度}}，分别绘制条形、Heat、
+数字和双层比较条。\key{D} 的数据为 \key{参考值/当前值}；整格为空或 \key{NA} 时表示两个值均缺失。
+宽度指内容区域，不包含 \key{colsep} 或竖线；表头用一对花括号保护，避免被当作数值处理。
+这些列名由本库注册，已有同名自定义列应先改名。
+\begin{example}[text and listing,sidebyside=false]{gradtblr 预设与正负单元格}
+\begingroup
+\gradtblrsetup{min=-10,max=10,precision=1,height=14pt,
+  color=gradbarsTeal!45,negative color=red!35,
+  track color=white,text color=black}
+\begin{gradtblr}{colspec={l G{23mm} H{23mm} N{23mm} D{35mm}}}
+Method & {Change} & {Heat} & {Number} & {Before/after}\\
+A & 0.5 & -5 & 1.25 & -3/7\\
+B & -9.5 & 5 & -2.5 & 4/NA\\
+Pending & NA & NA & NA & NA/NA\\
+\end{gradtblr}
+\endgroup
+\end{example}
+\key{gradtblr} 是提供居中单元格、浅色粗体表头、细横线及适当留白的独立环境；
+\key{tblr} 本身的默认样式不会改变。表头仍须保护。
+\key{\gradtblrsetup} 在当前 TeX 分组内累积适配器默认设置。
+覆盖顺序为普通图形设置、适配器初始设置、\key{\gradtblrsetup}、当前调用选项、最终分配宽度。
+适配器初始设置是 \key{baseline=text,label=inside,label align=cell}。
+
+现有 \key{Q} 或 \key{X} 列可通过 \key{cmd} 选择对应命令：
+\begin{codeonly}
+cmd=\gradbarTblr       % 条形
+cmd=\gradheatTblr      % Heat
+cmd=\gradnumberTblr    % 数字
+cmd=\gradcompareTblr   % 双层比较条
+\end{codeonly}
+直接调用时，在命令后添加可选设置和数据参数。
+通用单元格命令的语法为：
+\begin{codeonly}
+\gradtblrcell[选项]{类型}{数据}
+\end{codeonly}
+支持的类型为
+\key{bar}、\key{heat}、\key{number}、\key{compare}、\key{dumbbell} 和 \key{range}；
+后三种类型均接受两个斜线分隔值，\key{range} 为下界/上界。
+数字列复用精度、格式化器和单位，但不裁剪数值，也不创建图形替代文本。
+\pkg{siunitx} 仍须由用户显式加载。
+
+\subsection{以单元格为基准居中及左侧标签}
+\key{label align=cell} 配合 \key{label=inside} 或 \key{label=auto}，
+使标签位于完整图形宽度的中心，不跟随当前填充段、正负方向或标签长度改变位置。
+\key{label align=graphic} 保留原有图形对齐规则，且是普通图形的默认值。
+\key{label=none}、\key{label=left}、\key{label=outside} 和 \key{label=end} 保留各自位置语义。
+\key{label overflow=allow} 仅允许越界，不选择居中基准。
+
+\key{cell width=auto} 使用当前内容宽度；自然列初次测量以原图形宽度为估计，
+随后使用已分配的宽度。固定列、\key{X} 列和跨列单元格均可使用；
+在表格外直接调用时，建议显式指定 \key{cell width}。
+显式宽度不得超过表格实际分配的内容区域。
+左侧/外侧标签会从总宽度中预留 \key{label width} 与 \key{label gap}。
+文字过长时应增加槽宽、内容宽度或减小字体；默认报错，\key{label overflow=allow} 可允许有意越界。
+\begin{example}[text and listing,sidebyside=false]{左侧百分号与单元格宽度}
+\begingroup
+\gradtblrsetup{min=0,max=.065,precision=5,unit=\%,
+  label=left,label width=16mm,height=8pt}
+\begin{tblr}{colspec={l G{45mm}},row{1}={font=\bfseries}}
+Decade & {Frequency}\\
+1700 & .05942\\
+1710 & .03044\\
+\end{tblr}
+\endgroup
+\end{example}
+
+\subsection{跨页与无障碍边界}
+\key{longtblr} 可复用上述列，用 \key{rowhead=1} 重复受保护的文本表头。
+请直接放在单栏正文中，避免不可分页容器：
+\begin{codeonly}
+\begin{longtblr}{colspec={l G[min=0,max=100]{40mm}},rowhead=1}
+Method & {Score}\\
+A & 72\\
+B & 94\\
+\end{longtblr}
+\end{codeonly}
+本适配层负责单元格图形，不接管 CSV 排序、自动范围、排名和汇总；
+需要这些流程时采用 \key{gradtable}，需要自由合并与 \pkg{tabularray} 布局时采用本库。
+显式 \key{alt}、自动描述及 \key{accessibility=artifact|off} 沿用图形语义。
+测量阶段暂停标记，避免重复替代文本；重复表头应使用文字，含图形表头的逐页替代文本不在当前验证范围。
+图形描述支持不等于 \pkg{tabularray} 表格结构或整份文档满足 PDF/UA。

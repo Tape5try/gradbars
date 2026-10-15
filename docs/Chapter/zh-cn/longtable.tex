@@ -1,0 +1,73 @@
+\section{跨页表格与重复表头}
+\key{long=true} 使用 longtable 排版，允许在数据行之间分页。
+完整的多级表头会在每一页重复；列宽与最优值在整张表中统一计算，不会逐页改变。
+分组标题与首条数据保持在同一页，后续数据可以跨页，续页不自动重复分组名称。
+
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+\multicolumn{1}{c}{选项} & \multicolumn{1}{c}{用法}\\\midrule
+\key{long=true} & 开启跨页；默认 false。直接放在单栏正文中。\\
+\key{caption={标题}} & 长表标题；自动编号，续页沿用同一编号。\\
+\key{label={tab:results}} & 用于标准 ref 引用；须同时提供 caption。\\
+\key{continued text={（续）}} & 续页标题及非末页页脚提示，默认 (continued)，可设为空。\\
+\bottomrule
+\end{tabularx}
+长表不能放在 table 浮动体、minipage、双栏模式或不可分页的示例框中。
+单条数据行本身不能拆分；一个超高单元格应先拆成多条记录。
+跨页表默认靠左放置，width 可设为当前 linewidth。页数和引用通常需要编译两次才稳定。
+
+\subsection{示例 65：多级表头、自动列宽与跨页的组合}
+下表直接在手册正文中分页，随后给出产生它的完整源码。
+图形和标签尺度跨页保持一致；加粗及下划线比较的是全部记录。
+\begin{filecontents*}[overwrite]{\jobname-gradtable-long.tex}
+\begin{gradtable}[long=true,width=\linewidth,
+  caption={分组模型评估},label={tab:gradtable-long},
+  continued text={（续）},header align=c,
+  label width=12mm,column sep=6pt,
+  row stretch=1.4,row padding=3pt]
+  \gradcolumn[weight=1]{method}{方法}
+  \gradcolumn[type=bar,weight=2,mark=both,
+    options={max=100,precision=1}]{score}{得分}
+  \gradcolumn[type=number,width=18mm,mark=both,
+    options={better=lower,precision=1}]{time}{耗时 / 秒}
+  \gradcolumn[type=interval,weight=1.5,
+    options={max=100,precision=0}]{range}{区间}
+  \gradheader{\gradspan{1}{实验设置}
+    \gradspan{3}{同一测试集的评估结果}}
+  \gradgroup{实验组 A}
+  \gradrow{方法 01,70.0,8.0,66/70/74}
+  \gradrow{方法 02,77.2,11.1,73/77/81}
+  \gradrow{方法 03,84.4,14.2,80/84/88}
+  \gradrow{方法 04,91.0,17.0,87/91/95}
+  \gradrow{方法 05,70.2,20.1,66/70/74}
+  \gradrow{方法 06,77.4,23.2,73/77/81}
+  \gradrow{方法 07,84.0,10.0,80/84/88}
+  \gradrow{方法 08,91.2,13.1,87/91/95}
+  \gradgroup{实验组 B}
+  \gradrow{方法 09,70.0,16.0,66/70/74}
+  \gradrow{方法 10,NA,19.1,NA}
+  \gradrow{方法 11,84.4,22.2,80/84/88}
+  \gradrow{方法 12,91.0,9.0,87/91/95}
+  \gradrow{方法 13,70.2,12.1,66/70/74}
+  \gradrow{方法 14,77.4,15.2,73/77/81}
+  \gradrow{方法 15,84.0,18.0,80/84/88}
+  \gradrow{方法 16,91.2,21.1,87/91/95}
+  \gradgroup{实验组 C}
+  \gradrow{方法 17,70.0,8.0,66/70/74}
+  \gradrow{方法 18,77.2,11.1,73/77/81}
+  \gradrow{方法 19,84.4,14.2,80/84/88}
+  \gradrow{方法 20,91.0,17.0,87/91/95}
+  \gradrow{方法 21,70.2,20.1,66/70/74}
+  \gradrow{方法 22,77.4,23.2,73/77/81}
+  \gradrow{方法 23,84.0,10.0,80/84/88}
+  \gradrow{方法 24,91.2,13.1,87/91/95}
+\end{gradtable}
+\end{filecontents*}
+\input{\jobname-gradtable-long.tex}
+表~\ref{tab:gradtable-long} 的数据列在续页沿用相同的位置与宽度。
+
+\clearpage
+\subsection{示例 65 的完整源码}
+以下源码与上面的实际长表来自同一个内容块，修改数据后再次编译即可更新。
+\lstinputlisting[style=manual,backgroundcolor=\color{manualCode},
+  basicstyle=\gradbarscodefont\fontsize{8}{10.2}\selectfont]{\jobname-gradtable-long.tex}

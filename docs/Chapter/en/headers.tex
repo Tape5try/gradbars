@@ -1,0 +1,26 @@
+\section{Multilevel headers and spanning titles}
+\key{\gradheader{...}} adds a header layer. Within it,
+\key{\gradspan{count}{title}} spans consecutive columns. Declare all columns
+first, then header layers, then groups and rows. Each layer must span exactly
+the total number of columns. Column titles form the bottom header layer.
+\begin{demo}{Three header levels}
+\begin{gradtable}[rules=grid,header align=c,
+  header color=gradbarsBlue!8,text width=28mm,
+  column sep=8pt,row padding=3pt]
+  \gradcolumn{method}{Method}
+  \gradcolumn[type=number,width=24mm,
+    options={precision=1}]{accuracy}{Accuracy}
+  \gradcolumn[type=number,width=24mm,
+    options={precision=1}]{fscore}{F1}
+  \gradcolumn[type=number,width=24mm,
+    options={precision=0}]{latency}{ms}
+  \gradheader{\gradspan{4}{Model evaluation}}
+  \gradheader{\gradspan{1}{Setup}\gradspan{2}{Prediction quality}
+    \gradspan{1}{Latency}}
+  \gradrow{A,91.4,89.7,24}
+  \gradrow{B,93.2,91.5,31}
+\end{gradtable}
+\end{demo}
+Spanning titles are centered, follow header color and use the chosen rules.
+An empty title still occupies its declared span. Layers merge horizontally,
+not vertically. Schemas may include headers, but no columns may follow a header.

@@ -1,0 +1,21 @@
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage{tabularray}
+\UseTblrLibrary{gradbars}
+\gradtblrsetup{min=-10,max=10,precision=1}
+\begin{document}
+\begin{tblr}{colspec={G{30mm} H{30mm} N{30mm}}}
+{Bar} & {Heat} & {Number}\\
+1.234 & -2.345 & 3.456\\
+NA & 0 & NA\\
+\end{tblr}
+\par
+\begin{tblr}{colspec={X X},row{2-Z}={cmd=\gradbarTblr}}
+First & Second\\
+4.567 & -5.678\\
+\end{tblr}
+\par
+\gradbarTblr[cell width=30mm,alt={Explicit cell description.}]{6.789}
+\gradbarTblr[cell width=30mm,accessibility=artifact]{7.891}
+\gradbarTblr[cell width=30mm,accessibility=off]{8.912}
+\end{document}

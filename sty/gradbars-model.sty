@@ -1,0 +1,47 @@
+% Author: SuFan; MIT License. Private validated model and layout preparation.
+\ProvidesPackage{gradbars-model}[2026/10/30 v1.0.0 gradbars model]
+\ExplSyntaxOn
+\prop_new:N \l__gradbars_model_prop
+\cs_new_protected:Npn \__gradbars_prepare_model:
+  {
+    \gradbars@validtrue
+    \gradbarsResolveScaleGroup
+    \gradbarsResolveShapeLengths
+    \gradbarsValidate
+    \gradbarsValidateExtras
+    \dim_compare:nNnT {\gradbars@rounded} < {0pt}
+      {\gradbarsFail{Rounded~radius~must~be~nonnegative}}
+    \dim_compare:nNnF {\gradbars@width} > {0pt}
+      {\gradbarsFail{Width~must~be~positive}}
+    \dim_compare:nNnF {\gradbars@height} > {0pt}
+      {\gradbarsFail{Height~must~be~positive}}
+    \prop_clear:N \l__gradbars_model_prop
+    \ifgradbars@valid
+      \prop_put:Nno \l__gradbars_model_prop {raw-value}{\gradbars@value}
+      \clist_map_inline:nn {min,max,zero,start,stop,end,shape}
+        {\prop_put:Nnx \l__gradbars_model_prop {##1}{\use:c{gradbars@##1}}}
+      \prop_put:Nnn \l__gradbars_model_prop {missing}{false}
+      \ifgradbars@missing
+        \prop_put:Nnn \l__gradbars_model_prop {missing}{true}
+      \fi
+    \fi
+  }
+% Projection runs in the drawing font/coordinate context, preserving em/ex sizes.
+\cs_new_protected:Npn \__gradbars_project_layout:
+  {
+    \pgfmathsetlengthmacro\gradbars@xzero{\gradbars@zero*(\gradbars@width)}
+    \pgfmathsetlengthmacro\gradbars@xend{\gradbars@end*(\gradbars@width)}
+    \pgfmathsetlengthmacro\gradbars@xstart{\gradbars@start*(\gradbars@width)}
+    \pgfmathsetlengthmacro\gradbars@xstop{\gradbars@stop*(\gradbars@width)}
+    \pgfmathsetlengthmacro\gradbars@radius
+      {min(\gradbars@rounded,.5*(\gradbars@height),.5*(\gradbars@width))}
+  }
+\cs_new_protected:Npn \__gradbars_render:
+  {
+    \__gradbars_prepare_model:
+    \ifgradbars@valid \__gradbars_render_tikz: \fi
+  }
+\cs_new_eq:NN \gradbarsPrepareLayout \__gradbars_project_layout:
+\cs_new_eq:NN \gradbars@render \__gradbars_render:
+\ExplSyntaxOff
+\endinput

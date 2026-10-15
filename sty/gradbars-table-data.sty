@@ -1,0 +1,548 @@
+% Author: SuFan; MIT License. Private table data layer.
+\ProvidesPackage{gradbars-table-data}[2026/10/30 v1.0.0 gradbars table data]
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableRank
+  {\prop_clear:N\l__gradtable_best_prop\prop_clear:N\l__gradtable_second_prop
+   \int_zero:N\l__gradtable_rank_col_int
+   \seq_map_inline:Nn\l__gradtable_columns_seq
+     {\int_incr:N\l__gradtable_rank_col_int
+      \str_if_eq:eeF{\prop_item:Nn\l__gradtable_marks_prop{##1}}{none}
+        {\group_begin:\gradtableConfigure{##1}
+         \tl_gset:Nx\g__gradtable_rank_direction_tl{\gradbars@better}\group_end:
+         \tl_set_eq:NN\l__gradtable_rank_direction_tl\g__gradtable_rank_direction_tl
+         \str_case:VnF\l__gradtable_rank_direction_tl{{higher}{}{lower}{}}
+           {\gradtableError{Mark~requires~better=higher~or~lower}}
+         \seq_clear:N\l__gradtable_rank_seq
+         \seq_map_inline:Nn\l__gradtable_rows_seq
+           {\clist_set:Nn\l__gradtable_cells_clist{####1}
+            \tl_set:Nx\l__gradtable_rank_value_tl
+              {\clist_item:Nn\l__gradtable_cells_clist{\l__gradtable_rank_col_int}}
+            \tl_trim_spaces:N\l__gradtable_rank_value_tl
+            \gradbarsIfNumber:VT\l__gradtable_rank_value_tl
+              {\seq_put_right:Nx\l__gradtable_rank_seq{\fp_eval:n{\l__gradtable_rank_value_tl}}}}
+         \seq_remove_duplicates:N\l__gradtable_rank_seq
+         \seq_sort:Nn\l__gradtable_rank_seq
+           {\str_if_eq:VnTF\l__gradtable_rank_direction_tl{higher}
+              {\fp_compare:nNnTF{####1}<{####2}{\sort_return_swapped:}{\sort_return_same:}}
+              {\fp_compare:nNnTF{####1}>{####2}{\sort_return_swapped:}{\sort_return_same:}}}
+         \seq_if_empty:NF\l__gradtable_rank_seq
+           {\prop_put:Nnx\l__gradtable_best_prop{##1}{\seq_item:Nn\l__gradtable_rank_seq{1}}}
+         \int_compare:nNnT{\seq_count:N\l__gradtable_rank_seq}>{1}
+           {\prop_put:Nnx\l__gradtable_second_prop{##1}{\seq_item:Nn\l__gradtable_rank_seq{2}}}}}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableImportCSV
+  {\seq_if_empty:NF\l__gradtable_rows_seq
+     {\gradtableError{Data~tables~cannot~also~contain~manual~rows}}
+   \prop_if_exist:cTF{l__gradbars_csv_\l__gradtable_data_tl _prop}
+     {\seq_map_inline:Nn\l__gradtable_columns_seq
+        {\tl_set:Nn\l__gradtable_id_tl{##1}
+         \prop_get:NnN\l__gradtable_sources_prop{##1}\l__gradtable_import_source_tl
+         \exp_args:NVV\gradbarsCSVColumn\l__gradtable_data_tl\l__gradtable_import_source_tl
+         \ifgradbars@valid\else\bool_set_false:N\l__gradtable_valid_bool\fi}
+      \bool_if:NT\l__gradtable_valid_bool
+        {\int_step_inline:nn{\prop_item:cn{l__gradbars_csv_\l__gradtable_data_tl _prop}{rows}}
+           {\int_set:Nn\l__gradtable_import_row_int{##1}
+            \tl_clear:N\l__gradtable_import_row_tl
+            \seq_map_inline:Nn\l__gradtable_columns_seq
+              {\tl_set:Nn\l__gradtable_id_tl{####1}
+               \prop_get:NnN\l__gradtable_sources_prop{####1}\l__gradtable_import_source_tl
+               \use:x{\exp_not:N\gradbarsCSVGet{\l__gradtable_data_tl}{##1}{\l__gradtable_import_source_tl}}
+               \str_if_eq:eeF{\prop_item:Nn\l__gradtable_types_prop{####1}}{text}
+                 {\gradtableMapCSVMissing}
+               \tl_if_empty:NF\l__gradtable_import_row_tl{\tl_put_right:Nn\l__gradtable_import_row_tl{,}}
+               \tl_put_right:Nx\l__gradtable_import_row_tl{{\exp_not:V\l__gradbars_csv_value_tl}}}
+            \exp_args:NV\gradtableRow\l__gradtable_import_row_tl}
+         \seq_set_eq:NN\l__gradtable_data_rows_seq\l__gradtable_rows_seq
+         \gradtableSelectRows}}
+     {\gradtableError{Unknown~CSV~dataset:~\l__gradtable_data_tl}}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableMapCSVMissing
+  {\prop_get:cnN{l__gradbars_csv_\l__gradtable_data_tl _prop}{missing}\l_tmpa_tl
+   \clist_set:NV\l__gradbars_csv_missing_clist\l_tmpa_tl
+   \bool_set_false:N\l_tmpa_bool
+   \tl_if_blank:VT\l__gradbars_csv_value_tl{\bool_set_true:N\l_tmpa_bool}
+   \clist_map_inline:Nn\l__gradbars_csv_missing_clist
+     {\str_if_eq:eeT{\l__gradbars_csv_value_tl}{\tl_to_str:n{##1}}{\bool_set_true:N\l_tmpa_bool}}
+   \bool_if:NT\l_tmpa_bool{\tl_set:Nn\l__gradbars_csv_value_tl{NA}}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableScaleValue #1
+  {\tl_set:Nn\l_tmpb_tl{#1}\tl_trim_spaces:N\l_tmpb_tl
+   \tl_if_empty:NF\l_tmpb_tl
+     {\str_if_eq:VnF\l_tmpb_tl{NA}
+       {\gradbarsIfNumber:VTF\l_tmpb_tl
+         {\bool_if:NTF\l__gradtable_seen_bool
+           {\fp_set:Nn\l__gradtable_min_fp{min(\l__gradtable_min_fp,\l_tmpb_tl)}
+            \fp_set:Nn\l__gradtable_max_fp{max(\l__gradtable_max_fp,\l_tmpb_tl)}}
+           {\fp_set:Nn\l__gradtable_min_fp{\l_tmpb_tl}
+            \fp_set:Nn\l__gradtable_max_fp{\l_tmpb_tl}
+            \bool_set_true:N\l__gradtable_seen_bool}}
+         {\gradtableError{Auto~scale~requires~decimal~or~scientific~numbers~or~NA}}}}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableScaleCell #1
+  {\str_case:VnF\l__gradtable_type_tl
+     {{compare}{\seq_set_split:Nnn\l__gradtable_scale_values_seq{/}{#1}}
+      {dumbbell}{\seq_set_split:Nnn\l__gradtable_scale_values_seq{/}{#1}}
+      {interval}{\seq_set_split:Nnn\l__gradtable_scale_values_seq{/}{#1}}
+      {spark}{\seq_set_split:Nnn\l__gradtable_scale_values_seq{,}{#1}}
+      {stack}{\seq_set_split:Nnn\l__gradtable_scale_values_seq{,}{#1}}}
+     {\seq_set_from_clist:Nn\l__gradtable_scale_values_seq{{#1}}}
+   \str_if_eq:VnTF\l__gradtable_type_tl{stack}
+     {\fp_zero:N\l__gradtable_positive_fp\fp_zero:N\l__gradtable_negative_fp
+      \str_if_eq:nnF{#1}{NA}
+        {\seq_map_inline:Nn\l__gradtable_scale_values_seq
+           {\gradbars@validtrue\gradbarsCheckNumber{##1}{stack~segment}
+            \ifgradbars@valid
+              \fp_compare:nNnTF{##1}<{0}
+                {\fp_add:Nn\l__gradtable_negative_fp{##1}}
+                {\fp_add:Nn\l__gradtable_positive_fp{##1}}
+            \else\bool_set_false:N\l__gradtable_valid_bool\fi}
+         \exp_args:Ne\gradtableScaleValue{\fp_to_decimal:N\l__gradtable_positive_fp}
+         \exp_args:Ne\gradtableScaleValue{\fp_to_decimal:N\l__gradtable_negative_fp}}}
+     {\seq_map_inline:Nn\l__gradtable_scale_values_seq{\gradtableScaleValue{##1}}}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableAutoRanges
+  {\seq_set_eq:NN\l__gradtable_range_rows_seq\l__gradtable_rows_seq
+   \tl_if_empty:NF\l__gradtable_data_tl
+     {\str_if_eq:VnT\l__gradtable_scale_scope_tl{data}
+        {\seq_set_eq:NN\l__gradtable_range_rows_seq\l__gradtable_data_rows_seq}}
+   \int_zero:N\l__gradtable_scale_col_int
+   \seq_map_inline:Nn\l__gradtable_columns_seq
+     {\int_incr:N\l__gradtable_scale_col_int
+      \tl_set:Nn\l__gradtable_id_tl{##1}
+      \prop_get:NnN\l__gradtable_types_prop{##1}\l__gradtable_type_tl
+      \str_if_eq:VnF\l__gradtable_type_tl{text}
+        {\str_if_eq:eeT{\prop_item:Nn\l__gradtable_scales_prop{##1}}{column}
+          {\bool_set_false:N\l__gradtable_seen_bool
+           \int_zero:N\l__gradtable_row_int
+           \seq_map_inline:Nn\l__gradtable_range_rows_seq
+             {\int_incr:N\l__gradtable_row_int
+              \clist_set:Nn\l__gradtable_cells_clist{####1}
+              \exp_args:Ne\gradtableScaleCell
+                {\clist_item:Nn\l__gradtable_cells_clist{\l__gradtable_scale_col_int}}}
+           \bool_if:NTF\l__gradtable_seen_bool
+             {\str_if_eq:eeT{\prop_item:Nn\l__gradtable_zero_prop{##1}}{true}
+                {\fp_set:Nn\l__gradtable_min_fp{min(0,\l__gradtable_min_fp)}
+                 \fp_set:Nn\l__gradtable_max_fp{max(0,\l__gradtable_max_fp)}}
+              \fp_compare:nNnT{\l__gradtable_min_fp}={\l__gradtable_max_fp}
+                {\str_if_eq:eeTF{\prop_item:Nn\l__gradtable_zero_prop{##1}}{true}
+                   {\fp_set:Nn\l__gradtable_max_fp{1}}
+                   {\fp_sub:Nn\l__gradtable_min_fp{.5}
+                    \fp_add:Nn\l__gradtable_max_fp{.5}}}}
+             {\fp_zero:N\l__gradtable_min_fp\fp_set:Nn\l__gradtable_max_fp{1}}
+           \gradtableAdjustRange{##1}
+           \prop_put:Nnx\l__gradtable_ranges_prop{##1}
+             {min=\fp_to_decimal:N\l__gradtable_min_fp,max=\fp_to_decimal:N\l__gradtable_max_fp
+              \str_if_eq:VnT\l__gradtable_type_tl{spark}{,spark~range=fixed}}}}}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableValidateSelection
+  {\tl_if_empty:NT\l__gradtable_data_tl
+     {\bool_if:nT{!\tl_if_empty_p:N\l__gradtable_sort_tl ||
+        !\tl_if_empty_p:N\l__gradtable_filter_tl || \int_compare_p:nNn{\l__gradtable_limit_int}>{0}}
+        {\gradtableError{Sort,~filter~and~limit~require~a~CSV~data~source}}}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableSelectionType #1
+  {\prop_get:NnNTF\l__gradtable_types_prop{#1}\l__gradtable_selection_type_tl
+     {\str_case:VnF\l__gradtable_selection_type_tl{{text}{}{number}{}{bar}{}{bullet}{}{heat}{}}
+       {\gradtableError{Sort~and~filter~require~a~scalar~or~text~column}}}
+     {\gradtableError{Unknown~selection~column:~#1}}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableSelectionValue #1
+  {\tl_set:Nx\l__gradtable_selection_value_tl
+     {\clist_item:Nn\l__gradtable_selection_cells_clist{#1}}
+   \tl_trim_spaces:N\l__gradtable_selection_value_tl}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableColumnIndex #1
+  {\int_zero:N\l__gradtable_selection_col_int
+   \seq_map_inline:Nn\l__gradtable_columns_seq
+     {\int_incr:N\l__gradtable_selection_col_int
+      \str_if_eq:nnT{##1}{#1}{\seq_map_break:}}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtablePrepareFilters
+  {\seq_clear:N\l__gradtable_filters_seq
+   \clist_map_inline:Vn\l__gradtable_filter_tl
+     {\tl_set:Nn\l_tmpa_tl{##1}
+      \regex_extract_once:nVNTF{\A\s*([^<>=!]+?)\s*(>=|<=|!=|=|>|<)\s*(.*?)\s*\Z}
+        \l_tmpa_tl\l__gradtable_filter_parts_seq
+        {\tl_set:Nx\l__gradtable_filter_id_tl{\seq_item:Nn\l__gradtable_filter_parts_seq{2}}
+         \tl_trim_spaces:N\l__gradtable_filter_id_tl
+         \tl_set:Nx\l__gradtable_filter_op_tl{\seq_item:Nn\l__gradtable_filter_parts_seq{3}}
+         \tl_set:Nx\l__gradtable_filter_target_tl{\seq_item:Nn\l__gradtable_filter_parts_seq{4}}
+         \tl_trim_spaces:N\l__gradtable_filter_target_tl
+         \exp_args:NV\gradtableSelectionType\l__gradtable_filter_id_tl
+         \str_if_eq:VnTF\l__gradtable_selection_type_tl{text}
+           {\str_case:VnF\l__gradtable_filter_op_tl{{=}{}{!=}{}}
+              {\gradtableError{Text~filters~support~only~=~and~!=}}}
+           {\str_if_eq:VnTF\l__gradtable_filter_target_tl{NA}
+              {\str_case:VnF\l__gradtable_filter_op_tl{{=}{}{!=}{}}
+                 {\gradtableError{Missing~filters~support~only~=NA~and~!=NA}}}
+              {\gradbars@validtrue\gradbarsCheckNumber{\l__gradtable_filter_target_tl}{filter~value}
+               \ifgradbars@valid\else\bool_set_false:N\l__gradtable_valid_bool\fi}}
+         \bool_if:NT\l__gradtable_valid_bool
+           {\exp_args:NV\gradtableColumnIndex\l__gradtable_filter_id_tl
+            \seq_put_right:Nx\l__gradtable_filters_seq
+              {{\int_use:N\l__gradtable_selection_col_int}
+               {\exp_not:V\l__gradtable_selection_type_tl}{\exp_not:V\l__gradtable_filter_op_tl}
+               {\exp_not:V\l__gradtable_filter_target_tl}}}}
+        {\gradtableError{Filter~requires~column~operator~value}}}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableApplyFilter #1#2#3#4
+  {\gradtableSelectionValue{#1}
+   \str_if_eq:nnTF{#2}{text}
+     {\str_if_eq:eeTF{\tl_to_str:V\l__gradtable_selection_value_tl}{\tl_to_str:n{#4}}
+        {\str_if_eq:nnT{#3}{!=}{\bool_set_false:N\l__gradtable_selected_bool}}
+        {\str_if_eq:nnT{#3}{=}{\bool_set_false:N\l__gradtable_selected_bool}}}
+     {\str_if_eq:nnTF{#4}{NA}
+        {\str_if_eq:VnTF\l__gradtable_selection_value_tl{NA}
+           {\str_if_eq:nnT{#3}{!=}{\bool_set_false:N\l__gradtable_selected_bool}}
+           {\str_if_eq:nnT{#3}{=}{\bool_set_false:N\l__gradtable_selected_bool}}}
+        {\str_if_eq:VnTF\l__gradtable_selection_value_tl{NA}
+           {\bool_set_false:N\l__gradtable_selected_bool}
+           {\gradbars@validtrue\gradbarsCheckNumber{\l__gradtable_selection_value_tl}{filter~cell}
+            \ifgradbars@valid
+              \str_case:nn{#3}
+                {{=}{\fp_compare:nNnF{\l__gradtable_selection_value_tl}={#4}{\bool_set_false:N\l__gradtable_selected_bool}}
+                 {!=}{\fp_compare:nNnT{\l__gradtable_selection_value_tl}={#4}{\bool_set_false:N\l__gradtable_selected_bool}}
+                 {>}{\fp_compare:nNnF{\l__gradtable_selection_value_tl}>{#4}{\bool_set_false:N\l__gradtable_selected_bool}}
+                 {<}{\fp_compare:nNnF{\l__gradtable_selection_value_tl}<{#4}{\bool_set_false:N\l__gradtable_selected_bool}}
+                 {>=}{\fp_compare:nNnT{\l__gradtable_selection_value_tl}<{#4}{\bool_set_false:N\l__gradtable_selected_bool}}
+                 {<=}{\fp_compare:nNnT{\l__gradtable_selection_value_tl}>{#4}{\bool_set_false:N\l__gradtable_selected_bool}}}
+            \else\bool_set_false:N\l__gradtable_valid_bool\bool_set_false:N\l__gradtable_selected_bool\fi}}}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableSortTie #1#2
+  {\int_compare:nNnTF{#1}>{#2}{\sort_return_swapped:}{\sort_return_same:}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableSortCompare #1#2
+  {\str_if_eq:eeTF{\prop_item:Nn\l__gradtable_sort_missing_prop{#1}}{true}
+     {\str_if_eq:eeTF{\prop_item:Nn\l__gradtable_sort_missing_prop{#2}}{true}
+        {\gradtableSortTie{#1}{#2}}{\sort_return_swapped:}}
+     {\str_if_eq:eeTF{\prop_item:Nn\l__gradtable_sort_missing_prop{#2}}{true}
+        {\sort_return_same:}
+        {\tl_set:Nx\l_tmpa_tl{\prop_item:Nn\l__gradtable_sort_values_prop{#1}}
+         \tl_set:Nx\l_tmpb_tl{\prop_item:Nn\l__gradtable_sort_values_prop{#2}}
+         \str_if_eq:VnTF\l__gradtable_selection_type_tl{text}
+           {\str_if_eq:VVTF\l_tmpa_tl\l_tmpb_tl{\gradtableSortTie{#1}{#2}}
+              {\str_if_eq:VnTF\l__gradtable_order_tl{ascending}
+                 {\str_compare:eNeTF{\l_tmpa_tl}>{\l_tmpb_tl}{\sort_return_swapped:}{\sort_return_same:}}
+                 {\str_compare:eNeTF{\l_tmpa_tl}<{\l_tmpb_tl}{\sort_return_swapped:}{\sort_return_same:}}}}
+           {\fp_compare:nNnTF{\l_tmpa_tl}={\l_tmpb_tl}{\gradtableSortTie{#1}{#2}}
+              {\str_if_eq:VnTF\l__gradtable_order_tl{ascending}
+                 {\fp_compare:nNnTF{\l_tmpa_tl}>{\l_tmpb_tl}{\sort_return_swapped:}{\sort_return_same:}}
+                 {\fp_compare:nNnTF{\l_tmpa_tl}<{\l_tmpb_tl}{\sort_return_swapped:}{\sort_return_same:}}}}}}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableSelectRows
+  {\gradtablePrepareFilters
+   \seq_clear:N\l__gradtable_selected_seq
+   \prop_clear:N\l__gradtable_selection_rows_prop
+   \prop_clear:N\l__gradtable_sort_values_prop\prop_clear:N\l__gradtable_sort_missing_prop
+   \int_zero:N\l__gradtable_import_row_int
+   \seq_map_inline:Nn\l__gradtable_data_rows_seq
+     {\int_incr:N\l__gradtable_import_row_int
+      \clist_set:Nn\l__gradtable_selection_cells_clist{##1}
+      \bool_set_true:N\l__gradtable_selected_bool
+      \seq_map_inline:Nn\l__gradtable_filters_seq
+        {\bool_if:NT\l__gradtable_selected_bool{\gradtableApplyFilter####1}}
+      \bool_if:NT\l__gradtable_selected_bool
+        {\seq_put_right:Nx\l__gradtable_selected_seq{\int_use:N\l__gradtable_import_row_int}
+         \prop_put:Nxn\l__gradtable_selection_rows_prop{\int_use:N\l__gradtable_import_row_int}{##1}}}
+   \gradtablePrepareSortKeys
+   \bool_if:NT\l__gradtable_valid_bool
+     {\seq_if_empty:NF\l__gradtable_sort_keys_seq
+        {\seq_sort:Nn\l__gradtable_selected_seq{\gradtableMultiCompare{##1}{##2}}}}
+   \seq_clear:N\l__gradtable_rows_seq
+   \int_zero:N\l__gradtable_row_int
+   \seq_map_inline:Nn\l__gradtable_selected_seq
+     {\bool_if:nT{\int_compare_p:nNn{\l__gradtable_limit_int}={0} ||
+        \int_compare_p:nNn{\l__gradtable_row_int}<{\l__gradtable_limit_int}}
+        {\prop_get:NnN\l__gradtable_selection_rows_prop{##1}\l_tmpa_tl
+         \seq_put_right:NV\l__gradtable_rows_seq\l_tmpa_tl
+         \int_incr:N\l__gradtable_row_int}}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableSetPadding #1#2
+  {\gradbars@validtrue\gradbarsCheckNumber{#2}{scale~padding}
+   \ifgradbars@valid
+     \fp_compare:nNnTF{#2}<{0}{\gradtableError{Scale~padding~must~be~nonnegative}}
+       {\fp_set:Nn#1{#2}}
+   \else\bool_set_false:N\l__gradtable_valid_bool\fi}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableAdjustRange #1
+  {\fp_set:Nn\l__gradtable_padding_amount_fp
+     {(\l__gradtable_max_fp-\l__gradtable_min_fp)*\prop_item:Nn\l__gradtable_scale_padding_prop{#1}/100}
+   \bool_if:nT{\fp_compare_p:nNn{\l__gradtable_padding_amount_fp}>{0} ||
+     \str_if_eq_p:ee{\prop_item:Nn\l__gradtable_scale_nice_prop{#1}}{true}}
+     {\prop_put:Nnx\l__gradtable_percent_bases_prop{#1}{\fp_to_decimal:N\l__gradtable_max_fp}}
+   \fp_compare:nNnF{\l__gradtable_min_fp}={0}
+     {\fp_sub:Nn\l__gradtable_min_fp{\l__gradtable_padding_amount_fp}}
+   \fp_compare:nNnF{\l__gradtable_max_fp}={0}
+     {\fp_add:Nn\l__gradtable_max_fp{\l__gradtable_padding_amount_fp}}
+   \str_if_eq:eeT{\prop_item:Nn\l__gradtable_scale_nice_prop{#1}}{true}
+     {\fp_set:Nn\l__gradtable_nice_step_fp{(\l__gradtable_max_fp-\l__gradtable_min_fp)/5}
+      \fp_set:Nn\l__gradtable_nice_power_fp{10^floor(ln(\l__gradtable_nice_step_fp)/ln(10))}
+      \fp_set:Nn\l__gradtable_nice_step_fp{\l__gradtable_nice_step_fp/\l__gradtable_nice_power_fp}
+      \fp_set:Nn\l__gradtable_nice_step_fp
+        {(\l__gradtable_nice_step_fp<=1?1:(\l__gradtable_nice_step_fp<=2?2:
+          (\l__gradtable_nice_step_fp<=5?5:10)))*\l__gradtable_nice_power_fp}
+      \fp_set:Nn\l__gradtable_min_fp
+        {floor(\l__gradtable_min_fp/\l__gradtable_nice_step_fp)*\l__gradtable_nice_step_fp}
+      \fp_set:Nn\l__gradtable_max_fp
+        {ceil(\l__gradtable_max_fp/\l__gradtable_nice_step_fp)*\l__gradtable_nice_step_fp}}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableBuildSummary
+  {\prop_clear:N\l__gradtable_summary_values_prop
+   \tl_clear:N\l__gradtable_summary_label_id_tl
+   \bool_if:NT\l__gradtable_summary_bool
+     {\seq_set_eq:NN\l__gradtable_summary_rows_seq\l__gradtable_rows_seq
+      \tl_if_empty:NF\l__gradtable_data_tl
+        {\str_if_eq:VnT\l__gradtable_summary_scope_tl{data}
+           {\seq_set_eq:NN\l__gradtable_summary_rows_seq\l__gradtable_data_rows_seq}}
+      \int_zero:N\l__gradtable_summary_col_int
+      \seq_map_inline:Nn\l__gradtable_columns_seq
+        {\int_incr:N\l__gradtable_summary_col_int
+         \tl_set:Nn\l__gradtable_id_tl{##1}
+         \str_if_eq:eeT{\prop_item:Nn\l__gradtable_types_prop{##1}}{text}
+           {\tl_if_empty:NT\l__gradtable_summary_label_id_tl
+              {\tl_set:Nn\l__gradtable_summary_label_id_tl{##1}}}
+         \prop_get:NnN\l__gradtable_aggregates_prop{##1}\l__gradtable_aggregate_tl
+         \str_if_eq:VnF\l__gradtable_aggregate_tl{none}{\gradtableAggregateColumn{##1}}}
+      \tl_if_empty:NF\l__gradtable_summary_label_tl
+        {\tl_if_empty:NT\l__gradtable_summary_label_id_tl
+           {\gradtableError{A~summary~label~requires~a~text~column}}}}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableAggregateColumn #1
+  {\int_zero:N\l__gradtable_summary_count_int\fp_zero:N\l__gradtable_summary_sum_fp
+   \seq_map_inline:Nn\l__gradtable_summary_rows_seq
+     {\clist_set:Nn\l__gradtable_cells_clist{##1}
+      \tl_set:Nx\l__gradtable_summary_value_tl
+        {\clist_item:Nn\l__gradtable_cells_clist{\l__gradtable_summary_col_int}}
+      \tl_trim_spaces:N\l__gradtable_summary_value_tl
+      \tl_if_empty:NF\l__gradtable_summary_value_tl
+        {\str_if_eq:VnF\l__gradtable_summary_value_tl{NA}
+           {\gradbars@validtrue\gradbarsCheckNumber{\l__gradtable_summary_value_tl}{aggregate~value}
+            \ifgradbars@valid
+              \int_incr:N\l__gradtable_summary_count_int
+              \fp_add:Nn\l__gradtable_summary_sum_fp{\l__gradtable_summary_value_tl}
+              \int_compare:nNnTF{\l__gradtable_summary_count_int}={1}
+                {\fp_set:Nn\l__gradtable_summary_min_fp{\l__gradtable_summary_value_tl}
+                 \fp_set_eq:NN\l__gradtable_summary_max_fp\l__gradtable_summary_min_fp}
+                {\fp_set:Nn\l__gradtable_summary_min_fp{min(\l__gradtable_summary_min_fp,\l__gradtable_summary_value_tl)}
+                 \fp_set:Nn\l__gradtable_summary_max_fp{max(\l__gradtable_summary_max_fp,\l__gradtable_summary_value_tl)}}
+            \else\bool_set_false:N\l__gradtable_valid_bool\fi}}}
+   \tl_set:Nn\l__gradtable_summary_value_tl{NA}
+   \str_case:Vn\l__gradtable_aggregate_tl
+     {{count}{\tl_set:Nx\l__gradtable_summary_value_tl{\int_use:N\l__gradtable_summary_count_int}}
+      {sum}{\tl_set:Nx\l__gradtable_summary_value_tl{\fp_to_decimal:N\l__gradtable_summary_sum_fp}}}
+   \int_compare:nNnT{\l__gradtable_summary_count_int}>{0}
+     {\str_case:Vn\l__gradtable_aggregate_tl
+        {{mean}{\tl_set:Nx\l__gradtable_summary_value_tl
+           {\fp_eval:n{\l__gradtable_summary_sum_fp/\l__gradtable_summary_count_int}}}
+         {min}{\tl_set:Nx\l__gradtable_summary_value_tl{\fp_to_decimal:N\l__gradtable_summary_min_fp}}
+         {max}{\tl_set:Nx\l__gradtable_summary_value_tl{\fp_to_decimal:N\l__gradtable_summary_max_fp}}}}
+   \prop_put:NnV\l__gradtable_summary_values_prop{#1}\l__gradtable_summary_value_tl}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_eq:NN\gradtableValidateSelectionBeforeSeven\gradtableValidateSelection
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_set_protected:Npn\gradtableValidateSelection
+  {\gradtableValidateSelectionBeforeSeven
+   \tl_if_empty:NT\l__gradtable_data_tl
+     {\bool_if:nT{!\tl_if_empty_p:N\l__gradtable_sort_keys_tl || !\tl_if_empty_p:N\l__gradtable_group_by_tl}
+        {\gradtableError{Sort~keys~and~group~by~require~a~CSV~data~source}}}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtablePrepareSortKeys
+  {\seq_clear:N\l__gradtable_sort_keys_seq
+   \tl_if_empty:NTF\l__gradtable_sort_keys_tl
+     {\tl_if_empty:NF\l__gradtable_sort_tl
+        {\tl_set_eq:NN\l__gradtable_sort_id_tl\l__gradtable_sort_tl
+         \tl_set_eq:NN\l__gradtable_sort_direction_tl\l__gradtable_order_tl
+         \gradtableAddSortKey}}
+     {\tl_if_empty:NF\l__gradtable_sort_tl{\gradtableError{Use~sort~or~sort~keys,~not~both}}
+      \clist_map_inline:Vn\l__gradtable_sort_keys_tl
+        {\seq_set_split:Nnn\l__gradtable_sort_parts_seq{/}{##1}
+         \int_compare:nNnTF{\seq_count:N\l__gradtable_sort_parts_seq}={2}
+           {\tl_set:Nx\l__gradtable_sort_id_tl{\seq_item:Nn\l__gradtable_sort_parts_seq{1}}
+            \tl_set:Nx\l__gradtable_sort_direction_tl{\seq_item:Nn\l__gradtable_sort_parts_seq{2}}
+            \tl_trim_spaces:N\l__gradtable_sort_id_tl\tl_trim_spaces:N\l__gradtable_sort_direction_tl
+            \str_case:VnF\l__gradtable_sort_direction_tl{{ascending}{}{descending}{}}
+              {\gradtableError{Sort~key~direction~must~be~ascending~or~descending}}
+            \gradtableAddSortKey}
+           {\gradtableError{Sort~keys~require~column/direction}}}}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableAddSortKey
+  {\exp_args:NV\gradtableSelectionType\l__gradtable_sort_id_tl
+   \exp_args:NV\gradtableColumnIndex\l__gradtable_sort_id_tl
+   \bool_if:NT\l__gradtable_valid_bool
+     {\seq_put_right:Nx\l__gradtable_sort_keys_seq
+        {{\int_use:N\l__gradtable_selection_col_int}{\exp_not:V\l__gradtable_selection_type_tl}
+         {\exp_not:V\l__gradtable_sort_direction_tl}}
+      \seq_map_inline:Nn\l__gradtable_selected_seq
+        {\clist_set:Nx\l__gradtable_selection_cells_clist{\prop_item:Nn\l__gradtable_selection_rows_prop{##1}}
+         \gradtableSelectionValue{\l__gradtable_selection_col_int}
+         \str_if_eq:VnF\l__gradtable_selection_type_tl{text}
+           {\bool_if:nF{\tl_if_empty_p:N\l__gradtable_selection_value_tl || \str_if_eq_p:Vn\l__gradtable_selection_value_tl{NA}}
+              {\gradbars@validtrue\gradbarsCheckNumber{\l__gradtable_selection_value_tl}{sort~cell}
+               \ifgradbars@valid\else\bool_set_false:N\l__gradtable_valid_bool\fi}}}}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableMultiCompare #1#2
+  {\clist_set:Nx\l__gradtable_sort_left_clist{\prop_item:Nn\l__gradtable_selection_rows_prop{#1}}
+   \clist_set:Nx\l__gradtable_sort_right_clist{\prop_item:Nn\l__gradtable_selection_rows_prop{#2}}
+   \int_zero:N\l__gradtable_compare_int
+   \seq_map_inline:Nn\l__gradtable_sort_keys_seq
+     {\gradtableCompareKey##1
+      \int_compare:nNnF{\l__gradtable_compare_int}={0}{\seq_map_break:}}
+   \int_compare:nNnTF{\l__gradtable_compare_int}={0}{\gradtableSortTie{#1}{#2}}
+     {\int_compare:nNnTF{\l__gradtable_compare_int}>{0}{\sort_return_swapped:}{\sort_return_same:}}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableCompareKey #1#2#3
+  {\tl_set:Nx\l__gradtable_sort_left_tl{\clist_item:Nn\l__gradtable_sort_left_clist{#1}}
+   \tl_set:Nx\l__gradtable_sort_right_tl{\clist_item:Nn\l__gradtable_sort_right_clist{#1}}
+   \tl_trim_spaces:N\l__gradtable_sort_left_tl\tl_trim_spaces:N\l__gradtable_sort_right_tl
+   \bool_set:Nn\l__gradtable_sort_left_missing_bool{\tl_if_empty_p:N\l__gradtable_sort_left_tl}
+   \bool_set:Nn\l__gradtable_sort_right_missing_bool{\tl_if_empty_p:N\l__gradtable_sort_right_tl}
+   \str_if_eq:nnF{#2}{text}
+     {\str_if_eq:VnT\l__gradtable_sort_left_tl{NA}{\bool_set_true:N\l__gradtable_sort_left_missing_bool}
+      \str_if_eq:VnT\l__gradtable_sort_right_tl{NA}{\bool_set_true:N\l__gradtable_sort_right_missing_bool}}
+   \bool_if:NTF\l__gradtable_sort_left_missing_bool
+     {\bool_if:NF\l__gradtable_sort_right_missing_bool{\int_set:Nn\l__gradtable_compare_int{1}}}
+     {\bool_if:NTF\l__gradtable_sort_right_missing_bool{\int_set:Nn\l__gradtable_compare_int{-1}}
+        {\str_if_eq:nnTF{#2}{text}
+           {\str_if_eq:VVF\l__gradtable_sort_left_tl\l__gradtable_sort_right_tl
+              {\str_compare:eNeTF{\l__gradtable_sort_left_tl}>{\l__gradtable_sort_right_tl}
+                 {\int_set:Nn\l__gradtable_compare_int{1}}{\int_set:Nn\l__gradtable_compare_int{-1}}}}
+           {\fp_compare:nNnF{\l__gradtable_sort_left_tl}={\l__gradtable_sort_right_tl}
+              {\fp_compare:nNnTF{\l__gradtable_sort_left_tl}>{\l__gradtable_sort_right_tl}
+                 {\int_set:Nn\l__gradtable_compare_int{1}}{\int_set:Nn\l__gradtable_compare_int{-1}}}}
+         \str_if_eq:nnT{#3}{descending}{\int_set:Nn\l__gradtable_compare_int{-\l__gradtable_compare_int}}}}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableNewDataGroup
+  {\int_incr:N\l__gradtable_group_count_int
+   \tl_set:Nx\l__gradtable_group_id_tl{\int_use:N\l__gradtable_group_count_int}
+   \prop_put:NVV\l__gradtable_group_ids_prop\l__gradtable_group_key_tl\l__gradtable_group_id_tl
+   \tl_if_empty:NTF\l__gradtable_group_key_tl
+     {\prop_put:NVV\l__gradtable_group_labels_prop\l__gradtable_group_id_tl\l__gradtable_group_missing_label_tl}
+     {\prop_put:NVV\l__gradtable_group_labels_prop\l__gradtable_group_id_tl\l__gradtable_group_key_tl}
+   \seq_clear_new:c{l__gradtable_group_\l__gradtable_group_id_tl _seq}
+   \seq_clear_new:c{l__gradtable_group_data_\l__gradtable_group_id_tl _seq}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableReadGroupKey #1
+  {\clist_set:Nn\l__gradtable_cells_clist{#1}
+   \tl_set:Nx\l__gradtable_group_key_tl{\clist_item:Nn\l__gradtable_cells_clist{\l__gradtable_group_col_int}}
+   \tl_trim_spaces:N\l__gradtable_group_key_tl}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableBuildGroups
+  {\prop_clear:N\l__gradtable_group_ids_prop\prop_clear:N\l__gradtable_group_labels_prop
+   \prop_clear:N\l__gradtable_row_groups_prop\prop_clear:N\l__gradtable_group_ends_prop
+   \int_zero:N\l__gradtable_group_count_int
+   \tl_if_empty:NTF\l__gradtable_group_by_tl
+     {\bool_if:nT{\l__gradtable_group_summary_bool || \str_if_eq_p:Vn\l__gradtable_rank_scope_tl{group}}
+        {\prop_if_empty:NT\l__gradtable_groups_prop{\gradtableError{Group~statistics~require~group~by~or~gradgroup}}
+         \seq_set_eq:NN\l__gradtable_group_input_seq\l__gradtable_rows_seq
+         \int_zero:N\l__gradtable_row_int
+         \seq_map_inline:Nn\l__gradtable_group_input_seq
+           {\int_incr:N\l__gradtable_row_int
+            \prop_get:NxNTF\l__gradtable_groups_prop{\int_use:N\l__gradtable_row_int}\l__gradtable_group_key_tl
+              {\gradtableNewDataGroup}
+              {\int_compare:nNnT{\l__gradtable_group_count_int}={0}
+                 {\tl_clear:N\l__gradtable_group_key_tl\gradtableNewDataGroup
+                  \prop_put:NxV\l__gradtable_groups_prop{1}\l__gradtable_group_missing_label_tl}}
+            \seq_put_right:cn{l__gradtable_group_\l__gradtable_group_id_tl _seq}{##1}
+            \seq_put_right:cn{l__gradtable_group_data_\l__gradtable_group_id_tl _seq}{##1}
+            \prop_put:NxV\l__gradtable_row_groups_prop{\int_use:N\l__gradtable_row_int}\l__gradtable_group_id_tl
+            \prop_put:Nxx\l__gradtable_group_ends_prop{\int_use:N\l__gradtable_row_int}{\l__gradtable_group_id_tl}
+            \prop_remove:Nx\l__gradtable_group_ends_prop{\int_eval:n{\l__gradtable_row_int-1}}
+            \prop_if_in:NxT\l__gradtable_groups_prop{\int_use:N\l__gradtable_row_int}
+              {\int_compare:nNnT{\l__gradtable_row_int}>{1}
+                 {\prop_put:Nxx\l__gradtable_group_ends_prop{\int_eval:n{\l__gradtable_row_int-1}}{\int_eval:n{\l__gradtable_group_count_int-1}}}}}}}
+     {\prop_if_empty:NF\l__gradtable_groups_prop{\gradtableError{Do~not~combine~group~by~with~gradgroup}}
+      \exp_args:NV\gradtableSelectionType\l__gradtable_group_by_tl
+      \str_if_eq:VnF\l__gradtable_selection_type_tl{text}{\gradtableError{Group~by~requires~a~text~column}}
+      \exp_args:NV\gradtableColumnIndex\l__gradtable_group_by_tl
+      \int_set_eq:NN\l__gradtable_group_col_int\l__gradtable_selection_col_int
+      \bool_if:NT\l__gradtable_valid_bool
+        {\seq_map_inline:Nn\l__gradtable_data_rows_seq
+           {\gradtableReadGroupKey{##1}
+            \prop_get:NVNTF\l__gradtable_group_ids_prop\l__gradtable_group_key_tl\l__gradtable_group_id_tl
+              {}{\gradtableNewDataGroup}
+            \seq_put_right:cn{l__gradtable_group_data_\l__gradtable_group_id_tl _seq}{##1}}
+         \seq_map_inline:Nn\l__gradtable_rows_seq
+           {\gradtableReadGroupKey{##1}
+            \prop_get:NVN\l__gradtable_group_ids_prop\l__gradtable_group_key_tl\l__gradtable_group_id_tl
+            \seq_put_right:cn{l__gradtable_group_\l__gradtable_group_id_tl _seq}{##1}}
+         \seq_clear:N\l__gradtable_rows_seq\prop_clear:N\l__gradtable_groups_prop
+         \int_zero:N\l__gradtable_row_int
+         \int_step_inline:nn{\l__gradtable_group_count_int}
+           {\seq_if_empty:cF{l__gradtable_group_##1_seq}
+              {\prop_get:NnN\l__gradtable_group_labels_prop{##1}\l__gradtable_group_key_tl
+               \prop_put:NxV\l__gradtable_groups_prop{\int_eval:n{\l__gradtable_row_int+1}}\l__gradtable_group_key_tl
+               \seq_map_inline:cn{l__gradtable_group_##1_seq}
+                 {\seq_put_right:Nn\l__gradtable_rows_seq{####1}\int_incr:N\l__gradtable_row_int
+                  \prop_put:Nxn\l__gradtable_row_groups_prop{\int_use:N\l__gradtable_row_int}{##1}}
+               \prop_put:Nxn\l__gradtable_group_ends_prop{\int_use:N\l__gradtable_row_int}{##1}}}}}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_eq:NN\gradtableRankBeforeSeven\gradtableRank
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_set_protected:Npn\gradtableRank
+  {\gradtableRankBeforeSeven
+   \prop_clear:N\l__gradtable_group_best_prop\prop_clear:N\l__gradtable_group_second_prop
+   \str_if_eq:VnT\l__gradtable_rank_scope_tl{group}
+     {\int_step_inline:nn{\l__gradtable_group_count_int}
+        {\group_begin:\seq_set_eq:Nc\l__gradtable_rows_seq{l__gradtable_group_##1_seq}
+         \gradtableRankBeforeSeven\prop_gset_eq:NN\g__gradtable_group_result_prop\l__gradtable_best_prop
+         \group_end:
+         \prop_map_inline:Nn\g__gradtable_group_result_prop
+           {\prop_put:Nnn\l__gradtable_group_best_prop{##1/####1}{####2}}
+         \group_begin:\seq_set_eq:Nc\l__gradtable_rows_seq{l__gradtable_group_##1_seq}
+         \gradtableRankBeforeSeven\prop_gset_eq:NN\g__gradtable_group_result_prop\l__gradtable_second_prop
+         \group_end:
+         \prop_map_inline:Nn\g__gradtable_group_result_prop
+           {\prop_put:Nnn\l__gradtable_group_second_prop{##1/####1}{####2}}}}}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_eq:NN\gradtableBuildSummaryBeforeSeven\gradtableBuildSummary
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_set_protected:Npn\gradtableBuildSummary
+  {\gradtableBuildSummaryBeforeSeven
+   \prop_clear:N\l__gradtable_group_summary_values_prop
+   \bool_if:NT\l__gradtable_group_summary_bool
+     {\int_step_inline:nn{\l__gradtable_group_count_int}
+        {\seq_if_empty:cF{l__gradtable_group_##1_seq}
+           {\group_begin:\bool_set_true:N\l__gradtable_summary_bool
+            \tl_set_eq:NN\l__gradtable_summary_label_tl\l__gradtable_group_summary_label_tl
+            \tl_set_eq:NN\l__gradtable_summary_scope_tl\l__gradtable_group_summary_scope_tl
+            \seq_set_eq:Nc\l__gradtable_rows_seq{l__gradtable_group_##1_seq}
+            \seq_set_eq:Nc\l__gradtable_data_rows_seq{l__gradtable_group_data_##1_seq}
+            \gradtableBuildSummaryBeforeSeven
+            \prop_gset_eq:NN\g__gradtable_group_result_prop\l__gradtable_summary_values_prop
+            \group_end:
+            \prop_map_inline:Nn\g__gradtable_group_result_prop
+              {\prop_put:Nnn\l__gradtable_group_summary_values_prop{##1/####1}{####2}}}}}}
+\ExplSyntaxOff
+\ExplSyntaxOff
+\endinput

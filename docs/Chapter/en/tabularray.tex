@@ -1,0 +1,102 @@
+\section{tabularray integration and cell-centered labels}
+The optional adapter requires \pkg{tabularray} 2025C (2025-11-27) or newer.
+Load it in the preamble:
+\begin{source}
+\usepackage{tabularray}
+\usepackage{gradbars}
+\UseTblrLibrary{gradbars}
+\end{source}
+The external library is \key{tblrlibgradbars.sty}, installed with the other files
+from \key{sty/}. It loads Heat and the hook/varwidth support on demand.
+Repeated loading is harmless. With only \pkg{tabularray} loaded, the library
+also loads a minimal \pkg{gradbars} core. Ordinary documents have no tabularray dependency.
+
+\subsection{Columns and cell commands}
+\key{G[options]{width}}, \key{H[options]{width}},
+\key{N[options]{width}} and \key{D[options]{width}} provide bars, heat cells,
+numbers and layered comparisons. D accepts \key{reference/current}; an empty
+cell or \key{NA} marks both endpoints as missing.
+Widths exclude column separation and rules. Protect header text with a pair of
+braces so it bypasses numeric conversion. Rename existing custom G/H/N/D types
+before loading this library if those names are already used.
+\begin{demo}{Signed data in the gradtblr preset}
+\begingroup
+\gradtblrsetup{min=-10,max=10,precision=1,height=14pt,
+  color=gradbarsTeal!45,negative color=red!35,
+  track color=white,text color=black}
+\begin{gradtblr}{colspec={l G{23mm} H{23mm} N{23mm} D{35mm}}}
+Method & {Change} & {Heat} & {Number} & {Before/after}\\
+A & 0.5 & -5 & 1.25 & -3/7\\
+B & -9.5 & 5 & -2.5 & 4/NA\\
+Pending & NA & NA & NA & NA/NA\\
+\end{gradtblr}
+\endgroup
+\end{demo}
+The separate \key{gradtblr} environment adds centered cells, a tinted bold header,
+thin horizontal rules and spacing, without changing ordinary tblr defaults.
+Headers must still be protected. \key{\gradtblrsetup} accumulates defaults within
+the current TeX group. Precedence is graphic settings, adapter initial settings,
+adapter defaults, per-call options, then allocated dimensions. Adapter initial
+settings are \key{baseline=text,label=inside,label align=cell}.
+
+Existing Q/X columns can select a helper with the \key{cmd} key:
+\begin{source}
+cmd=\gradbarTblr       % bar
+cmd=\gradheatTblr      % Heat
+cmd=\gradnumberTblr    % number
+cmd=\gradcompareTblr   % layered comparison
+\end{source}
+Each helper accepts optional settings followed by the data argument.
+The generic cell command has the following syntax:
+\begin{source}
+\gradtblrcell[options]{type}{data}
+\end{source}
+Supported types are \key{bar}, \key{heat},
+\key{number}, \key{compare}, \key{dumbbell} and \key{range}; the last three accept
+two slash-separated endpoints (lower/upper for range). Number cells reuse
+formatting, precision and units without clipping values or producing a Figure
+description. Load optional siunitx explicitly for SI formatting.
+
+\subsection{Cell alignment, widths and left labels}
+With \key{label=inside} or \key{label=auto}, \key{label align=cell} centers labels
+in the full graphic width regardless of the filled segment or sign. Ordinary
+graphics default to \key{label align=graphic}. None, left, outside and end retain
+their placement semantics. \key{label overflow=allow} only permits overflow;
+it does not select an alignment reference.
+
+\key{cell width=auto} uses the available content width. Natural-column trials
+start from the configured graphic width and then use the allocated width.
+Fixed, X and spanning cells are supported. Supply an explicit cell width for
+standalone calls; it must fit the actual column allocation. Left/outside labels
+reserve their slot and gap within that total. Enlarge the slot/cell or reduce the
+font for long text; overflow is an error unless explicitly allowed.
+\begin{demo}{Left labels preserve formatted units}
+\begingroup
+\gradtblrsetup{min=0,max=.065,precision=5,unit=\%,
+  label=left,label width=16mm,height=8pt}
+\begin{tblr}{colspec={l G{45mm}},row{1}={font=\bfseries}}
+Decade & {Frequency}\\
+1700 & .05942\\
+1710 & .03044\\
+\end{tblr}
+\endgroup
+\end{demo}
+
+\subsection{Pagination and accessibility}
+Use the same columns in \key{longtblr} with \key{rowhead=1} for repeated protected
+text headers. Place it in single-column body text outside indivisible containers:
+\begin{source}
+\begin{longtblr}{colspec={l G[min=0,max=100]{40mm}},rowhead=1}
+Method & {Score}\\
+A & 72\\
+B & 94\\
+\end{longtblr}
+\end{source}
+Choose gradtable for CSV selection, automatic column scales, ranks and summaries;
+choose this adapter for tabularray layout and merging. It does not add these
+data-processing operations to tblr. Explicit alt, automatic descriptions and
+artifact/off retain their graphic meaning. Trial measurement suspends tagging
+to prevent duplicate descriptions. Repeated headers should contain text;
+per-page descriptions of graphic headers are outside the tested scope.
+Graphic descriptions do not establish PDF/UA conformance for a complete table
+or document.

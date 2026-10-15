@@ -1,0 +1,108 @@
+\section{报告与黑白表格主题}
+表格 preset 可选 \key{paper}（三线表、纯色细条、紧凑行距）、
+\key{report}（浅色表头、较高条形、宽行距）或 \key{mono}（灰度和纹理）。
+主题先应用，列 options 随后覆盖。表格主题与单图预设分别设置，单图仍可用于普通 tabular。
+
+\begin{example}[text and listing,sidebyside=false]{示例 62：报告型，子弹图与区间列}
+\begin{gradtable}[preset=report,graphic width=32mm,
+  text width=19mm,label width=19mm,header align=c]
+  \gradcolumn{name}{项目}
+  \gradcolumn[type=bullet,options={max=100,precision=0,
+    bullet bands={{60/black!8},{85/black!16},{100/black!25}},
+    target=85}]{actual}{完成度}
+  \gradcolumn[type=interval,options={max=100,precision=0,
+    color=gradbarsTeal}]{estimate}{估计区间}
+  \gradrow{项目 A,78,65/78/90}
+  \gradrow{项目 B,92,80/92/98}
+  \gradrow{项目 C,NA,NA}
+\end{gradtable}
+\end{example}
+interval 列使用 \key{下界/点估计/上界}，点估计为 NA 时仅保留区间。
+整个字段为 NA 表示区间缺失；点估计必须位于原始端点之间。
+子弹图必须显式提供背景等级，本例 target 是完成目标，不表示区间点估计。
+
+\begin{example}[text and listing,sidebyside=false]{示例 63：黑白型，正负变化与区间}
+\begin{gradtable}[preset=mono,graphic width=32mm,
+  text width=19mm,label width=19mm,header align=c]
+  \gradcolumn{name}{组别}
+  \gradcolumn[type=bar,options={min=-40,max=60,precision=0}]{change}{变化量}
+  \gradcolumn[type=interval,options={min=-40,max=60,
+    precision=0,marker shape=diamond}]{range}{区间}
+  \gradrow{组 A,-12,-25/-12/5}
+  \gradrow{组 B,28,15/28/45}
+\end{gradtable}
+\end{example}
+默认 \key{gradtable} 不分页，可放入 table、table* 或 minipage；\key{long=true} 模式直接用于单栏正文。
+表格不自动合计、推断量程或读取数据文件。
+大量行可使用 \key{gradtable} 的 \key{long=true} 模式，或继续使用 longtable 与单图命令。
+
+\subsection{内置表格样式与独立主题}
+\key{style=academic} 使用细线学术风格，\key{style=compact} 使用紧凑列宽与小号文字，\key{style=dashboard} 使用较宽间距、较高行距和行分隔线。
+它们复用 \key{gradtablestyle} 的注册机制；先设置 style，再写显式选项即可覆盖。
+表格 theme 可选 none、blue、teal、violet、orange、forest、mono，默认 none，不改变已有表格外观。
+主题控制图形填色、顺序 Heat 配色及自动表头/汇总底色；列 options 可覆盖图形颜色或选择发散色阶。
+\begin{example}[text and listing,sidebyside=false]{学术样式与紫罗兰主题}
+\begin{gradtable}[style=academic,theme=violet,width=\linewidth,header align=c]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=bar,aggregate=mean]{score}{Score}
+  \gradrow{A,72}\gradrow{B,90}\gradsummary{Mean}
+\end{gradtable}
+\end{example}
+\begin{example}[text and listing,sidebyside=false]{紧凑样式与森林绿主题}
+\begin{gradtable}[style=compact,theme=forest,width=\linewidth,header align=c]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=heat,aggregate=mean]{score}{Score}
+  \gradrow{A,72}\gradrow{B,90}\gradsummary{Mean}
+\end{gradtable}
+\end{example}
+\begin{example}[text and listing,sidebyside=false]{报告样式与暖橙主题}
+\begin{gradtable}[style=dashboard,theme=orange,width=\linewidth,header align=c]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=bar,aggregate=mean]{score}{Score}
+  \gradrow{A,72}\gradrow{B,90}\gradsummary{Mean}
+\end{gradtable}
+\end{example}
+header color 和 summary color 可显式指定颜色或设为空关闭底色。
+font 控制表格文字；图形标签字体可以通过列 options 设置。已有 \key{preset=paper}、report、mono 继续可用。
+这些样式不会自动改变统计范围、零点设置或图形数值尺度。
+
+\subsection{matrix 比较矩阵样式}
+\key{style=matrix} 提供居中单元格、居中表头、逐行细线、
+\key{row stretch=1.35}、\key{column sep=6pt} 和 \key{row padding=1pt}，
+适合紧凑的比较矩阵；配色主题仍可独立选择。
+\begin{example}[text and listing,sidebyside=false]{matrix 样式与缺失值、汇总}
+\begin{gradtable}[style=matrix,theme=teal,width=\linewidth]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=number,aggregate=mean]{value}{Value}
+  \gradrow{A,-5}\gradrow{B,5}\gradrow{Pending,NA}\gradsummary{Mean}
+\end{gradtable}
+\end{example}
+
+\subsection{reference 技术参考表格样式}
+\key{style=reference} 采用 booktabs、居中表头和小数点对齐，
+并设置 \key{row stretch=1.25} 与 \key{column sep=6pt}。
+它不强制颜色主题，也不改变已有样式。
+\begin{example}[text and listing,sidebyside=false]{reference 样式与 teal 主题}
+\begin{gradtable}[style=reference,theme=teal,width=\linewidth]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=number,aggregate=mean,options={precision=3}]{value}{Value}
+  \gradrow{A,-12.125}\gradrow{B,1.25}\gradrow{Pending,NA}\gradsummary{Mean}
+\end{gradtable}
+\end{example}
+
+\clearpage
+
+\subsection{research 科研表格样式}
+新增 research 采用 booktabs 与居中表头。\par
+间距设置为 \key{row stretch=1.3}、\key{column sep=5pt}、\key{row padding=1pt} 和 \key{group sep=5pt}，
+默认对数字列启用小数点对齐；无强制配色或 siunitx 依赖，可组合现有六种表格主题。
+原 academic、compact、dashboard 名称与默认行为保持。先选 style，再写显式覆盖。
+\begin{example}[text and listing,sidebyside=false]{research 样式与 forest 主题}
+\begin{gradtable}[style=research,theme=forest,width=\linewidth,group summary=true,header align=c]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=number,aggregate=mean,mark=both,
+    options={precision=3}]{value}{Value}
+  \gradgroup{Experiment}\gradrow{A,-12.125}\gradrow{B,1.25}\gradrow{Pending,NA}
+  \gradsummary{Overall}
+\end{gradtable}
+\end{example}

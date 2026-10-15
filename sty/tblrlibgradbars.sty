@@ -1,0 +1,111 @@
+% Author: SuFan; MIT License. Optional public tabularray integration.
+\NeedsTeXFormat{LaTeX2e}[2025/11/01]
+\ProvidesPackage{tblrlibgradbars}[2026/10/30 v1.0.0 gradbars tabularray library]
+\RequirePackage{tabularray}[2025/11/27]
+\IfPackageAtLeastTF{tabularray}{2025/11/27}{}{%
+  \PackageError{gradbars}{The gradbars library requires tabularray 2025C or newer}{Update tabularray before loading this library.}}
+\IfPackageLoadedTF{gradbars}{}{\RequirePackage[libraries=none]{gradbars}}
+\usegradbarslibrary{heat}
+\UseTblrLibrary{hook}
+\ExplSyntaxOn
+\__gradbars_check_module:n{tblrlibgradbars}
+\AddToTblrHook{trial/before}[gradbars]
+  {\cs_if_exist:NT\tag_suspend:n{\tag_suspend:n{gradbars-tblr-trial}}}
+\AddToTblrHook{trial/after}[gradbars]
+  {\cs_if_exist:NT\tag_resume:n{\tag_resume:n{gradbars-tblr-trial}}}
+\tl_new:N\l__gradbars_tblr_defaults_tl
+\tl_new:N\l__gradbars_tblr_width_tl
+\tl_set:Nn\l__gradbars_tblr_width_tl{auto}
+\dim_new:N\l__gradbars_tblr_width_dim
+\dim_new:N\l__gradbars_tblr_graphic_dim
+\box_new:N\l__gradbars_tblr_box
+\seq_new:N\l__gradbars_tblr_pair_seq
+\pgfkeys{/gradbars/cell~width/.code={\tl_set:Nn\l__gradbars_tblr_width_tl{#1}}}
+\DeclareDocumentCommand\gradtblrsetup{m}{\tl_put_right:Nn\l__gradbars_tblr_defaults_tl{,#1}}
+\cs_new_protected:Npn\__gradbars_tblr_number:n #1
+  {\gradbars@validtrue\gradbars@missingfalse
+   \gradbarsResolveScaleGroup\gradbarsValidateFormatter
+   \tl_set:Nx\l_tmpa_tl{#1}\tl_trim_spaces:N\l_tmpa_tl
+   \tl_if_empty:NT\l_tmpa_tl{\gradbars@missingtrue}
+   \str_if_eq:VnT\l_tmpa_tl{NA}{\gradbars@missingtrue}
+   \tl_set:Nx\l_tmpa_tl{\gradbars@precision}
+   \regex_match:nVF{\A[0-6]\Z}\l_tmpa_tl
+     {\gradbarsFail{Precision~must~be~an~integer~from~0~to~6}}
+   \ifgradbars@missing\else
+     \gradbarsCheckNumber{#1}{cell~value}
+     \str_if_eq:eeT{\gradbars@format}{percent}
+       {\gradbarsCheckNumber{\gradbars@min}{min}
+        \gradbarsCheckNumber{\gradbars@max}{max}
+        \ifgradbars@valid
+          \fp_compare:nNnF{\gradbars@min}={0}
+            {\gradbarsFail{Percent~format~requires~min=0}}
+          \gradbarsValidatePercentBase
+        \fi}
+     \ifgradbars@valid
+       \cs_set:Npx\gradbars@number{\fp_eval:n
+         {\str_if_eq:eeTF{\gradbars@format}{percent}{100*(#1)/\gradbarsPercentBase}{#1}}}
+     \fi
+   \fi
+   \ifgradbars@valid{\gradbars@font\gradbarsSingleLabel}\fi}
+\cs_new_protected:Npn\__gradbars_tblr_pair:nn #1#2
+  {\tl_set:Nn\l_tmpa_tl{#2}\tl_trim_spaces:N\l_tmpa_tl
+   \tl_if_empty:NT\l_tmpa_tl{\tl_set:Nn\l_tmpa_tl{NA/NA}}
+   \str_if_eq:VnT\l_tmpa_tl{NA}{\tl_set:Nn\l_tmpa_tl{NA/NA}}
+   \exp_args:NNnV\seq_set_split:Nnn\l__gradbars_tblr_pair_seq{/}\l_tmpa_tl
+   \int_compare:nNnTF{\seq_count:N\l__gradbars_tblr_pair_seq}={2}
+     {\use:x{\exp_not:c{grad#1}
+        {\seq_item:Nn\l__gradbars_tblr_pair_seq{1}}
+        {\seq_item:Nn\l__gradbars_tblr_pair_seq{2}}}}
+     {\__gradbars_public_error:n{Tblr~#1~requires~two~values~separated~by~/}}}
+\cs_new_protected:Npn\__gradbars_tblr_draw:nn #1#2
+  {\str_case:nnF{#1}
+     {{bar}{\gradbar{#2}}
+      {heat}{\use:x{\exp_not:N\gradheat[height=\dim_eval:n{\gradbars@height}]{\exp_not:n{#2}}}}
+      {number}{\__gradbars_tblr_number:n{#2}}
+      {compare}{\__gradbars_tblr_pair:nn{compare}{#2}}
+      {dumbbell}{\__gradbars_tblr_pair:nn{dumbbell}{#2}}
+      {range}{\__gradbars_tblr_pair:nn{range}{#2}}}
+     {\__gradbars_public_error:n{Unknown~tblr~graphic~type:~#1}}}
+\DeclareDocumentCommand\gradtblrcell{O{} m m}
+  {\leavevmode\group_begin:
+   \gradbarssetup{baseline=text,label=inside,label~align=cell}
+   \exp_args:NV\gradbarssetup\l__gradbars_tblr_defaults_tl
+   \gradbarssetup{#1}
+   \str_if_eq:VnTF\l__gradbars_tblr_width_tl{auto}
+     {\dim_set:Nn\l__gradbars_tblr_width_dim{\linewidth}
+      % Natural-width trials run inside a paper-wide varwidth box.
+      \dim_compare:nNnF{\linewidth}<{\paperwidth}
+        {\dim_set:Nn\l__gradbars_tblr_width_dim{\gradbars@width}}}
+     {\dim_set:Nn\l__gradbars_tblr_width_dim{\l__gradbars_tblr_width_tl}}
+   \dim_compare:nNnTF{\l__gradbars_tblr_width_dim}>{0pt}
+     {\dim_set_eq:NN\l__gradbars_tblr_graphic_dim\l__gradbars_tblr_width_dim
+      \str_if_eq:nnT{#2}{dumbbell}
+        {\dim_sub:Nn\l__gradbars_tblr_graphic_dim{\gradbars@markersize+\gradbars@markersize}}
+      \str_if_eq:nnF{#2}{number}
+        {\str_if_eq:nnF{#2}{heat}
+          {\str_case_e:nn{\gradbars@label}
+             {{left}{\dim_sub:Nn\l__gradbars_tblr_graphic_dim{\gradbars@labelwidth+\gradbars@gap}}
+              {outside}{\dim_sub:Nn\l__gradbars_tblr_graphic_dim{\gradbars@labelwidth+\gradbars@gap}}}}}
+      \dim_compare:nNnTF{\l__gradbars_tblr_graphic_dim}>{0pt}
+        {\cs_set:Npx\gradbars@width{\dim_use:N\l__gradbars_tblr_graphic_dim}
+         \hbox_set:Nn\l__gradbars_tblr_box{\__gradbars_tblr_draw:nn{#2}{#3}}
+         \str_if_eq:eeF{\gradbars@labeloverflow}{allow}
+           {\dim_compare:nNnT{\box_wd:N\l__gradbars_tblr_box}>{\l__gradbars_tblr_width_dim+.1pt}
+             {\__gradbars_public_error:n{Tblr~content~exceeds~cell~width~(\dim_eval:n{\box_wd:N\l__gradbars_tblr_box}~>~\dim_use:N\l__gradbars_tblr_width_dim);~increase~cell~width~or~label~width}}}
+         \hbox_to_wd:nn{\l__gradbars_tblr_width_dim}{\hss\box_use_drop:N\l__gradbars_tblr_box\hss}}
+        {\__gradbars_public_error:n{Tblr~cell~width~must~exceed~label~width~and~gap}}}
+     {\__gradbars_public_error:n{Tblr~cell~width~must~be~positive}}
+   \group_end:}
+\DeclareDocumentCommand\gradbarTblr{O{} m}{\gradtblrcell[#1]{bar}{#2}}
+\DeclareDocumentCommand\gradheatTblr{O{} m}{\gradtblrcell[#1]{heat}{#2}}
+\DeclareDocumentCommand\gradnumberTblr{O{} m}{\gradtblrcell[#1]{number}{#2}}
+\DeclareDocumentCommand\gradcompareTblr{O{} m}{\gradtblrcell[#1]{compare}{#2}}
+\NewTblrColumnType{G}[2][]{Q[c,m,wd=#2,cmd={\gradbarTblr[cell~width=#2,#1]}]}
+\NewTblrColumnType{H}[2][]{Q[c,m,wd=#2,cmd={\gradheatTblr[cell~width=#2,#1]}]}
+\NewTblrColumnType{N}[2][]{Q[c,m,wd=#2,cmd={\gradnumberTblr[cell~width=#2,#1]}]}
+\NewTblrColumnType{D}[2][]{Q[c,m,wd=#2,cmd={\gradcompareTblr[cell~width=#2,#1]}]}
+\NewTblrEnviron{gradtblr}
+\SetTblrInner[gradtblr]{hlines={.3pt,black!18},colsep=6pt,rowsep=4pt,
+  cells={c,m},row{1}={font=\bfseries,bg=gradbarsTeal!8,cmd=}}
+\ExplSyntaxOff
+\endinput

@@ -1,0 +1,38 @@
+\section{完整案例：模型对比}
+这张表使用两个独立的列范围：准确率最大值为 100，延迟最大值为 50。
+条越长只表示数值越大；准确率通常越高越好，延迟通常越低越好。
+在下面的宽幅案例中，效果放在上方、源码放在下方，避免缩小表格字体。
+
+\begin{example}[text and listing,sidebyside=false]{示例 68：准确率与延迟}
+\begingroup
+\gradbarssetup{
+  width=27mm, height=1.5ex,
+  label width=3.6em, precision=1
+}
+\renewcommand{\arraystretch}{1.65}
+\begin{tabular}{@{}lcc@{}}
+  \toprule
+\multicolumn{1}{c}{Model} & \multicolumn{1}{c}{Accuracy (\%)} & \multicolumn{1}{c}{Latency (ms)}\\
+  \midrule
+  Baseline
+    & \gradbar{72.4}
+    & \gradbar[theme=teal,max=50]{18.2} \\
+  Compact
+    & \gradbar{81.6}
+    & \gradbar[theme=teal,max=50]{12.5} \\
+  Transformer
+    & \gradbar{89.3}
+    & \gradbar[theme=teal,max=50]{42.8} \\
+  \textbf{Proposed}
+    & \gradbar{92.7}
+    & \gradbar[theme=teal,max=50]{24.1} \\
+  \bottomrule
+\end{tabular}
+\endgroup
+\end{example}
+
+\subsection{嵌入自己的论文}
+在主文档导言区加载 \key{booktabs} 和 \key{gradbars}，然后复制上述代码即可。
+需要标题和交叉引用时，再在外层使用普通 \key{table} 环境、
+\key{\caption} 和 \key{\label}。
+同一列应保持相同的最大值、轨道宽度和标签槽宽。

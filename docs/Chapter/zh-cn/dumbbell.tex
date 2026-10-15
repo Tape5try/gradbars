@@ -1,0 +1,19 @@
+\section{哑铃对比图}
+\key{\graddumbbell[选项]{基准值}{当前值}} 用空心圆表示基准、实心圆表示当前值，连接线只连接两个观测位置。
+它与双层条共用范围、数值格式、目标与误差参数。误差线针对当前值。
+默认标签按“当前值 / 基准值”排列；\key{compare label=delta} 显示当前值减去基准值。
+\begin{example}[text and listing,sidebyside=false]{示例 22：位置比较与差值}
+\graddumbbell[width=65mm,palette=categorical,
+  marker size=2.5pt,precision=0]{48}{76}
+
+\graddumbbell[width=65mm,min=-50,max=100,
+  compare label=delta,precision=0]{-20}{35}
+
+\graddumbbell[width=65mm,precision=0]{NA}{65}
+\end{example}
+缺失一端只绘制另一端，连接线不绘制；差值标签在任一端缺失时显示缺失标记。
+两端相同会重合，默认数值标签仍保留两个原始值。内部标签自动外移。
+使用 \key{compare color} 设置基准圆颜色，\key{color} 设置当前圆及连接线颜色。
+\key{marker size} 和 \key{stem width} 控制圆点半径与线宽。
+\key{compare label=delta} 同样可用于双层条。
+哑铃与趋势线的专用命令会保留各自图形类型，命名样式中的排版预设不会将它们改回普通条。

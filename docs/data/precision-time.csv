@@ -1,0 +1,6 @@
+Method,Family,Score,Time
+Reference,Classic,8.125e1,1.25e2
+Compact,Neural,9.15e1,1.2e1
+Fast,Classic,8.6e1,8.375
+Wide,Neural,91.5,2.025e1
+Pending,Neural,NA,NA

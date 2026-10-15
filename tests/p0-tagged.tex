@@ -1,0 +1,14 @@
+% Requires a LaTeX installation supporting DocumentMetadata tagging=on.
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\begin{document}
+\gradheat[min=70,max=90,unit={ms}]{80}\par
+\gradheat{NA}\par
+\gradheat[alt={Custom heat description}]{50}\par
+\begin{gradtable}[scale=column,width=\linewidth]
+  \gradcolumn[type=heat]{score}{Score}
+  \gradrow{70}\gradrow{90}\gradrow{NA}
+\end{gradtable}
+\end{document}

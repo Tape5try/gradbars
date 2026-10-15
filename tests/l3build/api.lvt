@@ -1,0 +1,23 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage[libraries=none]{gradbars}
+\newcount\testRenderCount
+\gradbarsdeclaretype{score}{\gradbar[color=teal]{#1}}
+\gradbarsdeclareformatter{boxed}{\fbox{\gradbarsformatnumber[precision=#2]{#1}}}
+\gradbarsdeclaretype{counted}{\global\advance\testRenderCount1\relax\gradbar{#1}}
+\begin{document}
+\START
+\OMIT
+\setbox0=\hbox{\gradgraphic{score}{72.125}}
+\setbox0=\hbox{\gradgraphic{counted}{72.125}}
+\setbox0=\hbox{\gradbar[formatter=boxed]{72.125}}
+\TIMO
+\TYPE{registered scalar renderer and formatter rendered}
+\TYPE{scalar callbacks=\the\testRenderCount}
+\ExplSyntaxOn
+\gradbarsIfNumber:nTF{1.2E-3}{\TYPE{scientific=valid}}{\TYPE{scientific=invalid}}
+\gradbarsIfNumber:nTF{1e101}{\TYPE{overflow=valid}}{\TYPE{overflow=invalid}}
+\ExplSyntaxOff
+\gradbarsiflibraryloaded{table}{\TYPE{table=loaded}}{\TYPE{table=absent}}
+\END
+\end{document}

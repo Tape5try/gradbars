@@ -1,0 +1,113 @@
+% Author: SuFan; MIT License. Internal implementation unless documented.
+\ProvidesPackage{gradbars-lib-heat}[2026/10/30 v1.0.0 gradbars lib-heat]
+\ExplSyntaxOff
+\def\gradbars@heatlow{gradbarsBlueLight!15}
+\def\gradbars@heathigh{gradbarsBlue}
+\def\gradbars@heattext{auto}
+\def\gradbars@heatmissing{gradbarsTrack}
+\pgfkeys{/gradbars,
+  heat low color/.store in=\gradbars@heatlow,
+  heat high color/.store in=\gradbars@heathigh,
+  heat text color/.store in=\gradbars@heattext,
+  heat missing color/.store in=\gradbars@heatmissing,
+  print/.append style={heat low color=white,heat high color=black!75}}
+\ExplSyntaxOn
+\DeclareDocumentCommand\gradheat{O{} m}
+  {\gradbarsHeatCell{height=3ex,#1}{#2}}
+\cs_new_protected:Npn\gradbarsHeatCell #1#2
+  {\leavevmode\group_begin:
+   \gradbarsCaptureTikzAlt\gradbars@capturealttrue
+   \pgfkeys{/gradbars,#1}\gradbars@capturealtfalse
+   \gradbars@stackfalse\gradbars@sparkfalse\gradbars@comparefalse\gradbars@rangemodefalse
+   \ifpgfpicture
+     \pgfinterruptpicture\font@name
+     \edef\gradbars@resolved{\noexpand\endpgfinterruptpicture
+       \def\noexpand\gradbars@width{\the\dimexpr\gradbars@width\relax}
+       \def\noexpand\gradbars@height{\the\dimexpr\gradbars@height\relax}
+       \def\noexpand\gradbars@rounded{\the\dimexpr\gradbars@rounded\relax}}
+     \gradbars@resolved
+   \fi
+   \gradbars@validtrue\gradbars@missingfalse
+   \gradbarsValidateFormatter
+   \gradbarsResolveScaleGroup
+   \tl_set:Nx\l_tmpa_tl{#2}\tl_trim_spaces:N\l_tmpa_tl
+   \tl_if_empty:NT\l_tmpa_tl{\gradbars@missingtrue}
+   \str_if_eq:VnT\l_tmpa_tl{NA}{\gradbars@missingtrue}
+   \def\gradbars@value{#2}
+   \gradbarsCheckNumber{\gradbars@min}{min}\gradbarsCheckNumber{\gradbars@max}{max}
+   \ifgradbars@missing\else\gradbarsCheckNumber{#2}{heat~value}\fi
+   \tl_set:Nx\l_tmpa_tl{\gradbars@precision}
+   \regex_match:nVF{\A[0-6]\Z}\l_tmpa_tl
+     {\gradbarsFail{Precision~must~be~an~integer~from~0~to~6}}
+   \ifgradbars@valid
+     \fp_compare:nNnF{\gradbars@max}>{\gradbars@min}{\gradbarsFail{Max~must~be~greater~than~min}}
+     \str_if_eq:eeT{\gradbars@format}{percent}
+       {\fp_compare:nNnF{\gradbars@min}={0}{\gradbarsFail{Percent~format~requires~min=0}}
+        \fp_compare:nNnF{\gradbars@max}>{0}{\gradbarsFail{Percent~format~requires~positive~max}}
+        \gradbarsValidatePercentBase}
+     \dim_compare:nNnF{\gradbars@width}>{0pt}{\gradbarsFail{Width~must~be~positive}}
+     \dim_compare:nNnF{\gradbars@height}>{0pt}{\gradbarsFail{Height~must~be~positive}}
+     \str_if_eq:eeT{\gradbars@heatpalette}{diverging}
+       {\gradbarsCheckNumber{\gradbars@heatcenter}{heat~center}
+        \ifgradbars@valid\fp_compare:nF{\gradbars@min<=\gradbars@heatcenter<=\gradbars@max}
+          {\gradbarsFail{Heat~center~must~lie~within~range}}\fi}
+   \fi
+   \ifgradbars@valid
+     \ifgradbars@missing
+       \colorlet{gradbarsHeatCell}{\gradbars@heatmissing}
+     \else
+       \gradbarsRange{Heat~value}{#2}
+       \cs_set:Npx\gradbars@number{\fp_eval:n{\str_if_eq:eeTF{\gradbars@format}{percent}{100*(#2)/\gradbarsPercentBase}{#2}}}
+       \gradbarsHeatColor{#2}
+     \fi
+     \str_if_eq:eeTF{\gradbars@heattext}{auto}
+       {\gradbarsContrast{gradbarsHeatCell}}{\let\gradbars@labelcolor\gradbars@heattext}
+     \tl_set:Nn\l__gradbars_alt_tl{Heat~cell:~}
+     \ifgradbars@missing\tl_put_right:Nn\l__gradbars_alt_tl{missing.}
+     \else\tl_put_right:Nx\l__gradbars_alt_tl
+       {\fp_eval:n{#2}~\gradbars@unit.~Color~scale:~\gradbars@min\c_space_tl to~\gradbars@max.}\fi
+     \str_if_eq:eeT{\gradbars@heatpalette}{diverging}
+       {\tl_put_right:Nx\l__gradbars_alt_tl{~Diverging~center:~\gradbars@heatcenter.}}
+     \ifgradbars@valid
+       \ifpgfpicture\begin{scope}\gradbarsHeatDraw\end{scope}
+       \else\gradbarsApplyAlt\tikz[baseline=(gradbarsheat.base)]{\gradbarsHeatDraw}\fi
+     \fi
+   \fi\group_end:}
+\cs_new_protected:Npn\gradbarsHeatDraw
+  {\node[fill=gradbarsHeatCell,text=\gradbars@labelcolor,inner~sep=2pt,
+     minimum~width=\gradbars@width,minimum~height=\gradbars@height,
+     font=\gradbars@font,rounded~corners=\gradbars@rounded](gradbarsheat)
+     {\str_if_eq:eeF{\gradbars@label}{none}{\gradbars@labelcontent}};}
+\ExplSyntaxOff
+
+\ExplSyntaxOff
+\ExplSyntaxOn
+\fp_new:N\l__gradbars_heat_value_fp
+\cs_new_protected:Npn\gradbarsHeatColor #1
+  {\colorlet{gradbarsHeatLow}{\gradbars@heatlow}
+   \colorlet{gradbarsHeatHigh}{\gradbars@heathigh}
+   \colorlet{gradbarsHeatCenter}{\gradbars@heatcentercolor}
+   \ifgradbars@print
+     \colorlet{gradbarsHeatLow}{white}\colorlet{gradbarsHeatHigh}{black!75}
+     \str_if_eq:eeT{\gradbars@heatpalette}{diverging}
+       {\colorlet{gradbarsHeatLow}{black!75}\colorlet{gradbarsHeatCenter}{white}}
+   \fi
+   \str_if_eq:eeTF{\gradbars@heatpalette}{diverging}
+     {\str_if_eq:eeT{\gradbars@better}{lower}
+        {\colorlet{gradbarsHeatSwap}{gradbarsHeatLow}
+         \colorlet{gradbarsHeatLow}{gradbarsHeatHigh}\colorlet{gradbarsHeatHigh}{gradbarsHeatSwap}}
+      \fp_set:Nn\l__gradbars_heat_value_fp{max(\gradbars@min,min(\gradbars@max,#1))}
+      \fp_compare:nNnTF{\l__gradbars_heat_value_fp}={\gradbars@heatcenter}
+        {\colorlet{gradbarsHeatCell}{gradbarsHeatCenter}}
+        {\fp_compare:nNnTF{\l__gradbars_heat_value_fp}<{\gradbars@heatcenter}
+           {\colorlet{gradbarsHeatCell}{gradbarsHeatLow!\fp_eval:n{
+             100*(\gradbars@heatcenter-\l__gradbars_heat_value_fp)/(\gradbars@heatcenter-\gradbars@min)}!gradbarsHeatCenter}}
+           {\colorlet{gradbarsHeatCell}{gradbarsHeatHigh!\fp_eval:n{
+             100*(\l__gradbars_heat_value_fp-\gradbars@heatcenter)/(\gradbars@max-\gradbars@heatcenter)}!gradbarsHeatCenter}}}}
+     {\colorlet{gradbarsHeatCell}{gradbarsHeatHigh!\fp_eval:n{
+        100*\str_if_eq:eeTF{\gradbars@better}{lower}{(1-\gradbarsPosition{#1})}{\gradbarsPosition{#1}}}!gradbarsHeatLow}}}
+
+\ExplSyntaxOff
+
+\ExplSyntaxOff
+\endinput

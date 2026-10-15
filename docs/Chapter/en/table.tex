@@ -1,0 +1,35 @@
+\part{Visual tables and data interfaces}
+
+
+\section{Dedicated visual tables: gradtable}
+Declare columns, then supply data rows. No alignment separators or row-ending
+commands are needed.
+
+\key{\gradcolumn[options]{id}{title}} requires a unique id;
+\key{\gradrow{cells}} provides comma-separated cells in declaration order.
+Protect text containing commas with braces. Use explicit NA for missing numbers.
+\begin{demo}{Text, numbers and bars in one table}
+\begin{gradtable}[preset=paper,graphic width=48mm,
+  text width=24mm,label width=14mm,header align=c]
+  \gradcolumn{method}{Method}
+  \gradcolumn[type=number,options={precision=0}]{n}{Samples}
+  \gradcolumn[type=bar,options={max=100,precision=1}]{score}{Score}
+  \gradrow{Method A,120,82.4}
+  \gradrow{Method B,12500,91.2}
+  \gradrow{Method C,NA,NA}
+\end{gradtable}
+\end{demo}
+Column \key{options={...}} accepts drawing options such as min, max, precision,
+unit, theme, target and references. All rows share those options. Number columns
+format values without clipping them to a drawing scale.
+
+All outside labels in a column are measured before rendering. The label slot is
+the greater of label width and the widest actual label, and aligns values right.
+Wider labels do not change the graphic scale. Equal fixed precision naturally
+can align decimal points; use number \key{align=decimal} for explicit sign/exponent-aware alignment.
+Defaults are \key{graphic width=32mm}, \key{text width=22mm} and \key{label width=18mm}.
+
+Declare every column before any group or data row. Every row must contain exactly
+one cell per column. Do not omit a missing field. Validation identifies the row
+and column id. Text wraps in text columns. By default the table uses its natural
+width; an explicit total width enables allocation as described below.

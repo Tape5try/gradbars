@@ -1,0 +1,27 @@
+\section{多级表头与跨列标题}
+\key{\gradheader{...}} 添加一层表头，内部用 \key{\gradspan{列数}{标题}} 依次声明合并区域。
+多次调用 \key{gradheader} 时按声明顺序从上到下排列，最下层仍显示各 \key{gradcolumn} 的标题。
+先声明全部列，再声明表头，最后填写分组和数据。每层合并列数之和必须恰好等于总列数。
+
+\begin{example}[text and listing,sidebyside=false]{示例 59：三级表头组织不同指标}
+\begin{gradtable}[rules=grid,header align=c,
+  header color=gradbarsBlue!8,text width=28mm,
+  column sep=8pt,row padding=3pt]
+  \gradcolumn{method}{方法}
+  \gradcolumn[type=number,width=24mm,
+    options={precision=1}]{accuracy}{准确率}
+  \gradcolumn[type=number,width=24mm,
+    options={precision=1}]{fscore}{F1}
+  \gradcolumn[type=number,width=24mm,
+    options={precision=0}]{latency}{毫秒}
+  \gradheader{\gradspan{4}{模型评估}}
+  \gradheader{\gradspan{1}{方法信息}
+    \gradspan{2}{预测质量}\gradspan{1}{推理耗时}}
+  \gradrow{方法 A,91.4,89.7,24}
+  \gradrow{方法 B,93.2,91.5,31}
+\end{gradtable}
+\end{example}
+跨列标题默认居中，底色跟随 header color，分隔线跟随 rules。
+空标题可写成 \key{\gradspan{1}{}}，该单元格仍占指定列数。
+本接口合并同一行中的连续列；各层标题独立排布，不执行跨行合并。
+命名列定义中也可保存 \key{gradheader}，但在表头之后不能再追加列声明。

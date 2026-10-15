@@ -1,0 +1,144 @@
+% Author: SuFan; MIT License. Internal implementation unless documented.
+\ProvidesPackage{gradbars-lib-spark}[2026/10/30 v1.0.0 gradbars lib-spark]
+\ExplSyntaxOn
+\seq_new:N \l__gradbars_series_seq
+\seq_new:N \l__gradbars_series_clean_seq
+\fp_new:N \l__gradbars_series_min_fp
+\fp_new:N \l__gradbars_series_max_fp
+\fp_new:N \l__gradbars_series_low_fp
+\fp_new:N \l__gradbars_series_high_fp
+\bool_new:N \l__gradbars_series_any_bool
+\bool_new:N \l__gradbars_series_prev_bool
+\bool_new:N \l__gradbars_series_mark_bool
+\int_new:N \l__gradbars_series_index_int
+\cs_new_protected:Npn \gradbarsParseSpark #1
+  {
+    \fp_zero:N \l__gradbars_series_min_fp
+    \fp_zero:N \l__gradbars_series_max_fp
+    \seq_set_split:Nnn \l__gradbars_series_seq {,}{#1}
+    \seq_clear:N \l__gradbars_series_clean_seq
+    \bool_set_false:N \l__gradbars_series_any_bool
+    \seq_map_inline:Nn \l__gradbars_series_seq
+      {\tl_set:Nx \l_tmpa_tl {##1}\tl_trim_spaces:N \l_tmpa_tl
+       \tl_if_empty:NT \l_tmpa_tl {\tl_set:Nn \l_tmpa_tl {NA}}
+       \str_if_eq:VnF \l_tmpa_tl {NA}
+         {\gradbarsCheckNumber{\l_tmpa_tl}{spark~observation}
+          \ifgradbars@valid
+            \bool_if:NTF \l__gradbars_series_any_bool
+              {\fp_set:Nn \l__gradbars_series_min_fp {min(\l__gradbars_series_min_fp,\l_tmpa_tl)}
+               \fp_set:Nn \l__gradbars_series_max_fp {max(\l__gradbars_series_max_fp,\l_tmpa_tl)}}
+              {\fp_set:Nn \l__gradbars_series_min_fp {\l_tmpa_tl}
+               \fp_set:Nn \l__gradbars_series_max_fp {\l_tmpa_tl}
+               \bool_set_true:N \l__gradbars_series_any_bool}
+          \fi}
+       \seq_put_right:NV \l__gradbars_series_clean_seq \l_tmpa_tl}
+    \seq_set_eq:NN \l__gradbars_series_seq \l__gradbars_series_clean_seq
+    \cs_set:Npx \gradbars@sparklast {\seq_item:Nn \l__gradbars_series_seq {-1}}
+  }
+\DeclareDocumentCommand\gradspark{O{} m}
+  {\group_begin:\gradbars@validtrue\gradbarsParseSpark{#2}
+   \ifgradbars@valid
+     \gradbars@sparktrue
+     \gradbar[height=4ex,#1,shape=sparkline]{\gradbars@sparklast}
+   \fi\group_end:}
+\cs_new_protected:Npn \gradbarsValidateSpark
+  {
+    \str_if_eq:eeTF {\gradbars@sparktype}{winloss}
+      {\fp_set:Nn\l__gradbars_series_low_fp{-1}\fp_set:Nn\l__gradbars_series_high_fp{1}}
+      {\str_if_eq:eeTF {\gradbars@sparkrange}{fixed}
+      {\fp_set:Nn \l__gradbars_series_low_fp {\gradbars@min}
+       \fp_set:Nn \l__gradbars_series_high_fp {\gradbars@max}
+       \seq_map_inline:Nn \l__gradbars_series_seq
+         {\str_if_eq:nnF {##1}{NA}{\gradbarsRange{Spark~observation}{##1}}}}
+      {\fp_set_eq:NN \l__gradbars_series_low_fp \l__gradbars_series_min_fp
+       \fp_set_eq:NN \l__gradbars_series_high_fp \l__gradbars_series_max_fp
+       \str_if_eq:eeT{\gradbars@sparktype}{bar}
+         {\fp_set:Nn\l__gradbars_series_low_fp{min(0,\l__gradbars_series_min_fp)}
+          \fp_set:Nn\l__gradbars_series_high_fp{max(0,\l__gradbars_series_max_fp)}
+          \fp_compare:nNnT{\l__gradbars_series_low_fp}={\l__gradbars_series_high_fp}
+            {\fp_set:Nn\l__gradbars_series_high_fp{1}}}}}
+    \str_if_eq:eeF{\gradbars@sparktype}{line}
+      {\gradbarsCheckNumber{\gradbars@sparkbarwidth}{spark~bar~width}
+       \ifgradbars@valid\fp_compare:nF{0<\gradbars@sparkbarwidth<=1}
+         {\gradbarsFail{Spark~bar~width~must~be~in~(0,1]}}\fi}
+  }
+\cs_new_protected:Npn \gradbarsDrawSpark
+  {
+    \gradbarsMarkerBounds
+    \bool_set_false:N \l__gradbars_series_prev_bool
+    \int_zero:N \l__gradbars_series_index_int
+    \seq_map_inline:Nn \l__gradbars_series_seq
+      {\int_incr:N \l__gradbars_series_index_int
+       \str_if_eq:nnTF {##1}{NA}
+         {\bool_set_false:N \l__gradbars_series_prev_bool}
+         {\pgfmathsetlengthmacro\gradbars@sparkx
+            {\fp_eval:n {\seq_count:N \l__gradbars_series_seq=1 ? .5 :
+              (\l__gradbars_series_index_int-1)/max(1,\seq_count:N \l__gradbars_series_seq-1)}*\gradbars@width}
+          \fp_compare:nNnTF {\l__gradbars_series_low_fp} = {\l__gradbars_series_high_fp}
+            {\pgfmathsetlengthmacro\gradbars@sparky{.5*\gradbars@height}}
+            {\pgfmathsetlengthmacro\gradbars@sparky
+              {\fp_eval:n {max(0,min(1,(##1-\l__gradbars_series_low_fp)/
+                (\l__gradbars_series_high_fp-\l__gradbars_series_low_fp)))}*\gradbars@height}}
+          \bool_if:NT \l__gradbars_series_prev_bool
+            {\draw[draw=\gradbars@left,line~width=\gradbars@stemwidth]
+              (\gradbars@sparkprevx,\gradbars@sparkprevy)--(\gradbars@sparkx,\gradbars@sparky);}
+          \bool_set_false:N \l__gradbars_series_mark_bool
+          \let\gradbars@pointcolor\gradbars@left
+          \str_case_e:nn {\gradbars@sparkpoints}
+            {{all}{\bool_set_true:N \l__gradbars_series_mark_bool}
+             {extrema}{\fp_compare:nNnT {##1} = {\l__gradbars_series_min_fp}
+                {\bool_set_true:N \l__gradbars_series_mark_bool\let\gradbars@pointcolor\gradbars@sparklow}
+               \fp_compare:nNnT {##1} = {\l__gradbars_series_max_fp}
+                {\bool_set_true:N \l__gradbars_series_mark_bool\let\gradbars@pointcolor\gradbars@sparkhigh}}}
+          \str_if_eq:eeF {\gradbars@sparkpoints}{none}
+            {\int_compare:nNnT {\l__gradbars_series_index_int} = {\seq_count:N \l__gradbars_series_seq}
+               {\bool_set_true:N \l__gradbars_series_mark_bool}}
+          \bool_if:NT \l__gradbars_series_mark_bool
+            {\gradbarsDrawMarker{\gradbars@sparkx}{\gradbars@sparky}
+               {\gradbars@pointcolor}{\gradbars@markerfill}}
+          \let\gradbars@sparkprevx\gradbars@sparkx\let\gradbars@sparkprevy\gradbars@sparky
+          \bool_set_true:N \l__gradbars_series_prev_bool}}
+  }
+
+\ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_eq:NN\gradbarsDrawSparkLine\gradbarsDrawSpark
+\cs_set_protected:Npn\gradbarsDrawSpark
+  {\str_if_eq:eeTF{\gradbars@sparktype}{line}{\gradbarsDrawSparkLine}{\gradbarsDrawSparkBars}}
+\cs_new_protected:Npn\gradbarsDrawSparkBars
+  {\int_zero:N\l__gradbars_series_index_int
+   \pgfmathsetlengthmacro\gradbars@sparkhalf
+     {\gradbars@sparkbarwidth/(2*\seq_count:N\l__gradbars_series_seq)*\gradbars@width}
+   \pgfmathsetlengthmacro\gradbars@sparkbase
+     {\fp_eval:n{max(0,min(1,-\l__gradbars_series_low_fp/
+       (\l__gradbars_series_high_fp-\l__gradbars_series_low_fp)))}*\gradbars@height}
+   \draw[draw=\gradbars@sparkzerocolor,line~width=.3pt]
+     (0,\gradbars@sparkbase)--(\gradbars@width,\gradbars@sparkbase);
+   \seq_map_inline:Nn\l__gradbars_series_seq
+     {\int_incr:N\l__gradbars_series_index_int
+      \str_if_eq:nnF{##1}{NA}
+        {\pgfmathsetlengthmacro\gradbars@sparkx
+           {(\l__gradbars_series_index_int-.5)/\seq_count:N\l__gradbars_series_seq*\gradbars@width}
+         \str_if_eq:eeTF{\gradbars@sparktype}{winloss}
+           {\pgfmathsetlengthmacro\gradbars@sparky{\fp_eval:n{(sign(##1)+1)/2}*\gradbars@height}
+            \let\gradbars@sparkfill\gradbars@sparkwincolor
+            \fp_compare:nNnT{##1}<{0}{\let\gradbars@sparkfill\gradbars@sparklosscolor}}
+           {\pgfmathsetlengthmacro\gradbars@sparky
+              {\fp_eval:n{max(0,min(1,(##1-\l__gradbars_series_low_fp)/
+                (\l__gradbars_series_high_fp-\l__gradbars_series_low_fp)))}*\gradbars@height}
+            \let\gradbars@sparkfill\gradbars@left
+            \fp_compare:nNnT{##1}<{0}{\let\gradbars@sparkfill\gradbars@negativecolor}}
+         \ifgradbars@print\def\gradbars@sparkfill{black!65}
+           \fp_compare:nNnT{##1}<{0}{\def\gradbars@sparkfill{black!35}}\fi
+         \dim_compare:nNnTF{\gradbars@sparky}={\gradbars@sparkbase}
+           {\draw[draw=\gradbars@sparkzerocolor,line~width=.8pt]
+              ([xshift=-\gradbars@sparkhalf]\gradbars@sparkx,\gradbars@sparkbase)--
+              ([xshift=\gradbars@sparkhalf]\gradbars@sparkx,\gradbars@sparkbase);}
+           {\path[fill=\gradbars@sparkfill,draw=none]
+              ([xshift=-\gradbars@sparkhalf]\gradbars@sparkx,\gradbars@sparkbase) rectangle
+              ([xshift=\gradbars@sparkhalf]\gradbars@sparkx,\gradbars@sparky);}}}}
+
+\ExplSyntaxOff
+
+\ExplSyntaxOff
+\endinput

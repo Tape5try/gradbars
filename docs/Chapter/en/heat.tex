@@ -1,0 +1,64 @@
+\section{Heat cells and continuous color scales}
+\label{sec:heat}
+Heat encodes one scalar through fill color and retains its formatted value inside
+the rectangle. Use \key{\gradheat[options]{value}} in text, ordinary tables or
+existing TikZ pictures. Color is interpolated linearly over min/max.
+\begin{demo}{Continuous colors and a neutral missing cell}
+\gradheat[min=0,max=100]{0}\quad
+\gradheat[min=0,max=100]{50}\quad
+\gradheat[min=0,max=100]{100}\quad
+\gradheat{NA}
+\end{demo}
+\subsection{Colors, text and missing observations}
+\begin{sloppypar}
+\key{heat low color} and \key{heat high color} specify the endpoint colors;
+better=lower reverses their direction. \key{heat text color=auto} chooses black
+or white by contrast, or accepts an explicit color. \key{heat missing color}
+provides a neutral missing fill, distinct from zero. Precision, units, number
+formatting, custom text, rounded corners, print grayscale and alternative text
+work. Labels are inside; \key{label=none} hides a standalone cell's label. Bar targets,
+errors, patterns and threshold bins are not drawn.
+\end{sloppypar}
+\subsection{Diverging colors and a center value}
+\key{heat palette=diverging} selects orange/white/teal. Heat center defaults to
+0 and heat center color to white; the center may instead be a target value.
+It must lie within min/max, including their boundaries.
+\begin{demo}{Zero and target centers in asymmetric ranges}
+\gradheat[heat palette=diverging,
+  min=-50,max=100,heat center=0]{-25}\quad
+\gradheat[heat palette=diverging,
+  min=-50,max=100,heat center=0]{0}\quad
+\gradheat[heat palette=diverging,
+  min=-50,max=100,heat center=0]{50}
+
+\gradheat[heat palette=diverging,
+  min=20,max=80,heat center=50]{35}\quad
+\gradheat[heat palette=diverging,
+  min=20,max=80,heat center=50]{50}\quad
+\gradheat[heat palette=diverging,
+  min=20,max=80,heat center=50]{65}
+\end{demo}
+Each side interpolates independently, so the center stays neutral in asymmetric
+ranges. Better=lower swaps endpoints, retaining the center color. Print uses
+gray endpoints and a white center. Place custom heat low/center/high color keys
+after the palette; \key{heat palette=sequential} retains the earlier blue scale.
+Automatic ranges do not expand to include a center outside the data range.
+Keep \key{include zero=true} for a zero center, or set appropriate fixed limits.
+Missing retains its separate fill; raw labels remain unchanged and alternative
+text also describes the center.
+
+\subsection{Declaring a heat column in gradtable}
+Use \key{type=heat} with one scalar or NA per cell. Fill covers content width,
+retaining column spacing. Best/second-best marking uses \key{mark=best|both}.
+This example uses a fixed range; see Section~\ref{sec:column-scale} for automatic
+scales and Section~\ref{sec:csv-input} for CSV data sources.
+\begin{demo}{A fixed-scale heat column}
+\begin{gradtable}[width=\linewidth,header align=c]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=heat,mark=both,
+    options={min=0,max=100,precision=0}]{score}{Score}
+  \gradrow{A,70}
+  \gradrow{B,90}
+  \gradrow{Pending,NA}
+\end{gradtable}
+\end{demo}

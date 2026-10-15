@@ -1,0 +1,64 @@
+\part{图形与比较方式}
+
+
+\section{正负双向条与误差标记}
+\key{min} 默认是零。设置负的下限后，零线位于
+$W(-\mathrm{min})/(\mathrm{max}-\mathrm{min})$，
+负值向左、正值向右。非对称范围的零线不在轨道中心。
+显示零点两侧时应让量程包含零；v0.0.8 的一般量程只要求下限小于上限。
+
+\begin{example}{示例 10：共用零线的双向条}
+\gradbarssetup{
+  min=-50,max=50,
+  width=30mm,
+  negative color=lightred
+}
+\gradbar{-30}
+
+\gradbar{0}
+
+\gradbar{30}
+\end{example}
+
+负值默认使用 \key{negative color=lightred} 的纯色；正值使用所选主题。
+也可以为负值独立指定渐变：
+\begin{example}{示例 10a：负值独立渐变}
+\gradbar[min=-100,max=100,width=30mm,label width=3em,
+  left color=teal,right color=teal!25,
+  negative fill=gradient,
+  negative left color=magenta!25,
+  negative right color=magenta]{-60}
+\end{example}
+负值的 \key{left} 端是远离零点的一端，\key{right} 端靠近零点；\key{negative color}
+仍是未指定渐变时的后备纯色，条件配色和 \key{print} 模式继续优先。
+
+跨零范围不接受 \key{value format=percent}，
+避免把位置比例当作有意义的百分比；百分数变化可直接使用 \key{unit}。
+
+\begin{example}{示例 11：对称与非对称误差}
+\gradbar[error=5]{72}
+
+\gradbar[error minus=4,
+  error plus=9]{72}
+
+\gradbar[min=-50,max=50,
+  error minus=8,error plus=12]{-5}
+\end{example}
+
+\key{error=e} 表示区间 $[v-e,v+e]$；
+\key{error minus} 和 \key{error plus} 分别指定非负的上下误差幅度，
+不是区间端点。只指定一侧时，另一侧默认为零。
+误差单位与数据相同，\key{error color} 控制线色；
+\key{error={}} 清除两侧误差。误差含义由用户说明，宏包不计算置信区间。
+
+\begin{example}{示例 12：组合效果}
+\gradbar[
+  min=-50,max=50,width=30mm,
+  rounded=2pt,target=20,
+  error=5,label=end
+]{-25}
+\end{example}
+
+\note{数值及误差端点超出范围时，默认发出警告并截断显示，
+原始标签保持不变。截断的误差端点不代表真实端点。
+严谨的区间图建议使用 \key{overflow=error}，或扩大范围以显示完整误差。}

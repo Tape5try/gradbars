@@ -1,0 +1,121 @@
+\section{Libraries and public extension interfaces}
+\subsection{Full loading or the minimal mode}
+\key{\usepackage{gradbars}} retains full loading and previous public commands.
+Alternatively, list all feature libraries explicitly:
+\begin{source}
+\usepackage[libraries={stack,spark,heat,csv,table}]{gradbars}
+\end{source}
+This is equivalent to default full loading; shorten the list to select fewer libraries.
+Select only the shared engine, then load features in the preamble:
+\begin{source}
+\usepackage[libraries=none]{gradbars}
+\usegradbarslibrary{stack,spark}
+\end{source}
+The package option \key{libraries={heat,spark}} is also available. Core contains
+ordinary bars, comparisons/ranges, references, quality controls and legends.
+\key{stack}, \key{spark}, \key{heat} and \key{csv} add their respective engines;
+\key{table} adds native visual tables and all four dependencies. Repeated loading
+is safe. Unknown libraries, missing files, cycles and unloaded frontends produce
+clear errors. Load libraries in the preamble; siunitx v3 remains explicitly optional.
+\subsection{Complete list of built-in libraries}
+Version 1.0.0 registers six built-in library names. Core is always loaded;
+the other five provide optional features:
+\begin{description}
+\item[\key{core}] Basic bars, comparisons, dumbbells, ranges, reference marks,
+quality controls and legends, plus number handling, settings and accessibility
+tagging. Always loaded automatically; no explicit selection is needed.
+\item[\key{stack}] Signed stacked bars, segment labels and stacked legends.
+The main command is \key{\gradstack}; depends on core.
+\item[\key{spark}] Miniature line, bar and win-loss series.
+The main command is \key{\gradspark}; depends on core.
+\item[\key{heat}] Sequential and diverging heat cells with a configurable center.
+The main command is \key{\gradheat}; depends on core.
+\item[\key{csv}] CSV import, cell access, CSV tables and collected columns in
+existing tables. Main commands include \key{\gradbarsloadcsv} and
+\key{\gradbarscolumn}; depends on core.
+\item[\key{table}] Native \key{gradtable} tables with columns, groups, summaries,
+shared scales, ranking, styles and pagination. Automatically loads core,
+\key{stack}, \key{spark}, \key{heat} and \key{csv}.
+\end{description}
+List all six names as follows. Explicitly selecting core is valid but unnecessary:
+\begin{source}
+\usepackage[libraries={core,stack,spark,heat,csv,table}]{gradbars}
+\end{source}
+Alternatively, start in minimal mode and load the libraries in the preamble:
+\begin{source}
+\usepackage[libraries=none]{gradbars}
+\usegradbarslibrary{core,stack,spark,heat,csv,table}
+\end{source}
+The values \key{all} and \key{none} are modes of the package option
+\key{libraries}, not library names. Select \key{libraries=table} for native
+tables; the loader supplies all dependencies. The files named \key{keys},
+\key{numbers}, \key{render-tikz}, \key{tagging}, \key{api}, \key{table-data}
+and \key{table-layout}, as well as \key{model}, are internal modules, not separately loadable public libraries.
+Register contributed libraries with \key{\gradbarsdeclarelibrary} first.
+The \key{demo} library in this chapter is a companion example, not built in.
+
+\subsection{Unified settings}
+\key{\gradbarsset} and \key{\gradbarssetup} share options, grouping and precedence.
+Local settings and per-graphic overrides retain their previous scope.
+\begin{demo}{Settings with a local override}
+\gradbarsset{max=100,precision=2}
+\gradbar{72.125}
+{\gradbarsset{color=teal}\gradbar{50}}
+\end{demo}
+\subsection{Stable registration callbacks}
+These public interfaces follow the version 1 stability contract:
+\begin{itemize}
+\item Graphics: \key{\gradbarsdeclaretype} and \key{\gradgraphic}.
+\item Formatting: \key{\gradbarsdeclareformatter} and \key{\gradbarsformatnumber}.
+\item Libraries: \key{\gradbarsdeclarelibrary}.
+\end{itemize}
+A scalar callback receives one validated value or \key{NA}
+and should delegate to public graphics. A formatter receives display value,
+precision and number-format mode; return just the number, with the engine adding
+unit/percent suffixes. Registration is global and duplicate names are errors.
+Names start with a lower-case letter and use letters, digits and hyphens.
+\begin{source}
+\gradbarsdeclaretype{score}{\gradbar[color=teal]{#1}}
+\gradbarsdeclareformatter{boxed}{%
+  \fbox{\gradbarsformatnumber[precision=#2,number format=#3]{#1}}}
+\gradgraphic{score}{72.125}
+\gradbar[formatter=boxed]{72.125}
+\end{source}
+Custom scalar types do not add new native \key{gradcolumn} types. Custom formatters
+work in graphics and ordinary number columns, but do not support
+\key{number align=decimal}. Data calculations never consume formatted strings.
+\subsection{A public-only contributed library}
+The companion \key{docs/libraries/gradbars-contrib-demo.sty} registers a renderer,
+formatter and table style. Register its dependencies and load it in the preamble:
+\begin{source}
+\gradbarsdeclarelibrary{demo}{table}{docs/libraries/gradbars-contrib-demo.sty}
+\usegradbarslibrary{demo}
+\end{source}
+\begin{demo}{Renderer, formatter and reusable table style}
+\gradgraphic{demo-score}{72.125}\par
+\gradbar[formatter=demo-boxed]{72.125}\par
+\begin{gradtable}[style=demo-report,width=\linewidth,header align=c]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=number,formatter=demo-boxed,aggregate=mean]{value}{Score}
+  \gradrow{A,72}\gradrow{B,90}\gradsummary{Mean}
+\end{gradtable}
+\end{demo}
+The example uses no private variables. See \key{docs/developer.md} and
+\key{docs/migration-v1.0.0.md} for callback limits, dependencies and migration.
+\subsection{Install the complete release}
+Install all matching
+\key{.sty} files from \key{sty/} together, including \key{tblrlibgradbars.sty}; replacing only the entry file is insufficient.
+Native versions must match. Use \key{l3build check},
+\key{l3build doc}, \key{l3build ctan} and the detailed
+\key{python tests/run_tests.py} regressions.
+\subsection{Version 1 compatibility contract}
+The documented public commands, keys, defaults and dependency rules are stable.
+Compatible additions use a minor release; removals or changes to defaults/data
+semantics require a major release. Deprecated interfaces remain available
+throughout version 1. Internal module files and private variables are excluded.
+See \key{docs/stability.md} for scope, precedence and callback restrictions.
+The supported baseline is LaTeX 2025-11-01, expl3 2025-12-29 and PGF/TikZ
+3.1.11a or newer. Install the fifteen base runtime files and matching optional tabularray adapter together.
+The generated \key{gradbars.dtx} and \key{gradbars.ins} reproduce those modules
+using docstrip; \key{python scripts/build_source.py --check} verifies consistency.
+The l3doc source guide complements the illustrated manuals.

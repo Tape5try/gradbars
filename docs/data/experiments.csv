@@ -1,0 +1,6 @@
+Run,Batch,Change,Duration
+Trial A,First,-4,12
+Trial B,Second,6,15
+Trial C,First,2,10
+Trial D,Second,0,11
+Pending,First,NA,NA

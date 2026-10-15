@@ -1,0 +1,63 @@
+\section{Research number columns and semantic units}
+\subsection{Optional siunitx formatting}
+\begin{sloppypar}
+Formatter=builtin preserves existing output. Load siunitx v3 explicitly and
+select \key{formatter=siunitx}; tables and columns also have formatter defaults and
+overrides, independent of standalone setup. Drawing keys in column options can
+override them. The adapter maps precision and fixed/grouped/scientific display
+using public num and unit interfaces, without passing a graphic to an S column.
+Missing v3 dependencies produce an error. This is a defined subset of siunitx,
+not support for every formatting option or uncertainty input.
+\end{sloppypar}
+\begin{source}
+\usepackage{siunitx}
+\usepackage{gradbars}
+\gradbar[formatter=siunitx,precision=3,
+  unit code={\milli\second},unit text={milliseconds}]{1.23456e1}
+\end{source}
+Legacy unit remains a literal suffix. Unit code requires the SI formatter and
+readable unit text; do not combine both unit forms or attach semantic units to
+computed-percent labels. Missing has no suffix and count summaries suppress
+units. Automatic descriptions retain raw values and readable unit text rather
+than unit macros; explicit alt still replaces the complete description.
+\subsection{Decimal points, signs and exponents}
+Number \key{align=decimal} applies only to number columns. A table default leaves
+text/graphic columns unchanged; explicitly selecting it for a graphic errors.
+Both sides are measured across displayed data and group/overall summaries before
+width allocation. Align locates the whole number block. Scientific displays
+align mantissas and reserve exponent/unit space; \key{precision=0} aligns integer
+endpoints and missing labels are centered. Display rounding ties go away from
+zero while statistics retain raw values. Increase explicitly insufficient
+column widths. Long tables retain the same anchors across pages.
+\begin{demo}{Complete example: precision and elapsed time}
+\gradbarsloadcsv{precision}{docs/data/precision-time.csv}
+\begin{gradtable}[data=precision,width=\linewidth,style=research,theme=teal,
+  formatter=siunitx,group by=family,rank scope=group,group summary=true,
+  sort keys={score/descending,time/ascending},header align=c]
+  \gradcolumn[source=Method]{name}{Method}
+  \gradcolumn[source=Family]{family}{Family}
+  \gradcolumn[type=bar,source=Score,aggregate=mean,mark=both,
+    options={precision=2}]{score}{Score}
+  \gradcolumn[type=number,source=Time,aggregate=min,mark=both,
+    options={precision=3,better=lower,
+    unit code={\milli\second},unit text={milliseconds}}]{time}{Time}
+  \gradsummary{Overall}
+\end{gradtable}
+\end{demo}
+Group minimum times are 8.375 and 12 milliseconds. Both Neural scores of 91.5
+are group bests, and the missing row acquires no unit.
+\begin{demo}{Complete example: metrics of different magnitudes}
+\gradbarsloadcsv{magnitudes}{docs/data/magnitudes.csv}
+\begin{gradtable}[data=magnitudes,width=\linewidth,style=research,theme=violet,header align=c]
+  \gradcolumn[source=Method]{name}{Method}
+  \gradcolumn[type=number,source=Residual,aggregate=mean,mark=both,
+    options={precision=2,number format=scientific,better=lower}]{residual}{Residual}
+  \gradcolumn[type=number,source=Count,aggregate=sum,formatter=siunitx,
+    options={precision=2,number format=scientific}]{count}{Count}
+  \gradcolumn[type=number,source=Rate,aggregate=mean,
+    options={precision=3,unit={\,s}}]{rate}{Rate}
+  \gradsummary{Summary}
+\end{gradtable}
+\end{demo}
+The residual mean is approximately $-7.9167\times10^{-4}$ and the Count sum is
+$4.175\times10^6$. Display precision changes neither statistic.

@@ -1,0 +1,78 @@
+\part{快速开始与数据基础}
+
+
+\section{安装与快速开始}
+\subsection{安装宏包}
+支持环境为 LaTeX 2025-11-01、expl3 2025-12-29、PGF/TikZ 3.1.11a 或更新版本。
+较旧发行版应先更新，再安装本版宏包。
+\pkg{gradbars} 已被 \href{https://ctan.org/pkg/gradbars}{CTAN} 收录，并以 \pkg{gradbars} 包名进入 TeX Live。
+使用由 tlmgr 管理的 TeX Live（包括 MacTeX）时，可在终端安装：
+\begin{lstlisting}[style=manual,language={}]
+tlmgr install gradbars
+\end{lstlisting}
+已安装时可更新，或查看宏包信息：
+\begin{lstlisting}[style=manual,language={}]
+tlmgr update gradbars
+tlmgr info gradbars
+\end{lstlisting}
+安装后在导言区写入 \key{\usepackage{gradbars}}，无需把 sty 文件复制到项目。
+tlmgr 提供所配置 TeX Live 仓库中的版本，新 CTAN 版本可能尚未同步；使用本手册的新功能前请核对版本。
+需要使用尚未同步的发行包时，把其中 \key{sty/} 目录下的全部 \key{.sty} 文件一起放在主文档旁边，
+包括可选的 \key{tblrlibgradbars.sty} 适配库。
+项目中的同名文件会优先于系统安装版加载。参见 \href{https://tug.org/texlive/doc/tlmgr.html}{TeX Live 包管理说明}。
+无需手动创建 \key{tikzpicture}，
+也无需开启 shell escape。宏包依赖 TikZ、xparse、expl3、collcell（含 array）、booktabs、colortbl 和 longtable，不强制加载 ctex。
+中文文档可自行使用 ctexart；本手册使用 XeLaTeX 编译。
+
+\subsection{按需加载库}
+在导言区通过 \key{libraries} 选项指定需要的功能库：
+\begin{codeonly}
+\usepackage[libraries={stack,spark,heat,csv,table}]{gradbars}
+\end{codeonly}
+这段示例显式加载全部五个功能库，与默认的 \key{\usepackage{gradbars}} 等效。
+只需部分功能时可缩减列表，例如：
+\begin{codeonly}
+\usepackage[libraries={stack,spark,heat}]{gradbars}
+\end{codeonly}
+\key{table} 会自动加载 \key{stack}、\key{spark}、\key{heat} 和 \key{csv} 依赖；
+\key{libraries=none} 只加载核心与公开接口。库加载须在导言区完成，详见后面的库加载章节。
+
+\subsection{最小完整文档}
+安装宏包后，将下面代码保存为一个 \key{.tex} 文件即可编译；手动安装时将全部运行 sty 文件放在同一目录。
+\begin{codeonly}
+\documentclass{article}
+\usepackage{gradbars}
+\begin{document}
+\gradbarssetup{max=100, width=24mm, precision=1}
+\gradbar{72.4}
+
+\gradbar{92.7}
+\end{document}
+\end{codeonly}
+
+\subsection{统一设置与图形入口}
+\key{\gradbarssetup{参数列表}} 设置当前作用域的默认值；
+\key{\gradbar[参数列表]{数值}} 绘制一个数据条，其中可选参数只覆盖本次绘制。
+数值与最大值可用十进制或 e/E 科学计数数字，不接受逗号、单位或计算表达式。
+
+\begin{example}{示例 1：统一设置与单次覆盖}
+\gradbarssetup{width=23mm,
+  max=100,precision=1,theme=blue}
+\gradbar{72.4}
+
+\gradbar[theme=teal]{92.7}
+
+\gradbar{81.6}
+\end{example}
+
+\subsection{作用域}
+设置遵循普通 TeX 分组规则。在导言区调用会影响整篇文档；
+在一对花括号中调用只影响该组。表格单元格也有自己的分组，
+因此整列共用的设置应放在表格环境之前。
+
+\begin{example}{示例 2：局部设置不会泄漏}
+{\gradbarssetup{theme=gray,max=10}
+ \gradbar{8}}
+
+\gradbar{80}
+\end{example}

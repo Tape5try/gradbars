@@ -1,0 +1,65 @@
+\section{标签、尺寸与正文内嵌}
+\begin{example}{示例 31：标签位置}
+\gradbar[label=outside]{64}
+
+\gradbar[label=inside,
+  height=2.5ex,
+  right color=white]{64}
+
+\gradbar[label=none]{64}
+\end{example}
+
+外部标签采用右对齐的槽位，默认在文字过长时扩展；同列应统一设置足够大的槽宽。
+内部标签位于整条轨道右端附近，不跟随彩色条的末端移动。
+\key{label=none} 则只显示轨道和填充。
+
+\begin{example}{示例 32：单位、精度和字体}
+\gradbar[max=5000,
+  width=18mm,label width=6em,
+  precision=0,unit={\,ms}]{1250}
+
+\gradbar[width=18mm,
+  precision=2,
+  font={\small\bfseries}]{86.537}
+\end{example}
+
+\begin{example}{示例 33：宽度与高度}
+\gradbar[width=18mm,
+  height=1ex]{70}
+
+\gradbar[width=26mm,
+  height=2ex]{70}
+
+\gradbar[width=26mm,
+  label gap=1em,
+  label width=3em]{70}
+\end{example}
+
+\key{width} 只指定轨道宽度。带外部标签时，总宽度约为轨道宽度、
+\key{label gap} 和 \key{label width} 三者之和。
+这些长度支持 mm、pt、em、ex 等单位。
+
+\begin{example}{示例 33a：左侧标签与基线}
+\gradbar[label=left,unit={\%},baseline=text]{92.7}
+\qquad
+\gradbar[label=left,baseline=bottom]{NA}
+\end{example}
+
+\key{label=left} 把格式化后的标签放在轨道左侧，并在 \key{label width} 槽位内右对齐。
+它适合需要“数值在前、图形在后”的紧凑表格列；精度、单位、字体和缺失值规则保持不变。
+\key{baseline=text} 按当前标签字体的度量对齐，\key{baseline=center} 和
+\key{baseline=bottom} 分别按图形中心或轨道下边缘对齐；正的 \key{baseline shift}
+会把图形向上移动。
+
+\begin{example}{示例 34：直接放入正文}
+Completion:
+\gradbar[width=15mm,
+  height=1.2ex,
+  label width=3em,
+  unit={\%},precision=0]{64}
+
+The task is progressing.
+\end{example}
+
+\note{标签默认沿用周围文字的字体。普通表格行高仍由表格本身控制；
+需要更宽松的行距时设置 \key{\arraystretch}。宏包不会修改整张表格的行距。}

@@ -1,0 +1,76 @@
+\section{Automatic column scales and zero baselines}
+\label{sec:column-scale}
+Column width controls available space; the numerical scale controls where values
+appear within that space. Table and column keys \key{scale=fixed|column} and
+\key{include zero=true|false} control ranges independently of width.
+Fixed is the default and retains min/max in drawing options. Column mode scans
+every row before layout and overrides those limits. Column settings override
+table settings; text columns ignore scaling. Manual and CSV rows use the same
+rules, with consistent ranges across pages. CSV selection defaults to full-data
+ranges; \key{scale scope=visible} selects the displayed rows instead.
+\begin{demo}{Shared ranges with per-column zero settings}
+\begin{gradtable}[width=\linewidth,scale=column,include zero=false,header align=c]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=bar,include zero=true]{score}{Score}
+  \gradcolumn[type=bar]{time}{Time}
+  \gradrow{A,70,70}
+  \gradrow{B,90,90}
+  \gradrow{Pending,NA,NA}
+\end{gradtable}
+\end{demo}
+Score uses [0,90]; Time uses [70,90].
+\subsection{Including zero or retaining a fixed range}
+Missing values are ignored; zero remains an observation and is included by
+default. Without zero, positive-only and negative-only ranges are valid; a bar's
+zero baseline is clipped to the nearest range border. Keep zero when lengths
+must describe magnitudes from zero. Percent labels still require \key{min=0} and max>0.
+Use \key{scale=fixed} with the same limits when comparing different datasets. Targets,
+references and error magnitudes are not observations used for scaling; choose a
+fixed range when those annotations need additional space.
+\subsection{Missing, constant and compound data}
+All-missing or header-only columns use [0,1]; zero-inclusive all-zero columns
+also use [0,1]. A constant column without zero uses [value-0.5,value+0.5].
+Number, bar, bullet and heat columns use scalar extrema. Pair and interval
+columns use endpoints and point estimates; spark columns share every observation
+and select a fixed range; stacks use signed cumulative totals with zero baselines.
+
+\subsection{Shared named scales across tables}
+\key{\gradscale{name}{min=lo,max=hi}} declares explicit limits with min<max.
+Scale group references work in standalone graphics or table columns. Definitions
+follow TeX grouping; redefinition replaces the current scope's value. Groups
+override drawing min/max options and do not depend on table order.
+\begin{demo}{A graphic and table sharing an accuracy scale}
+\gradscale{accuracy}{min=0,max=100}
+\gradbar[scale group=accuracy,theme=violet]{72}
+
+\begin{gradtable}[style=academic,theme=violet,width=\linewidth,header align=c]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=bar,scale group=accuracy]{score}{Score}
+  \gradrow{A,72}\gradrow{B,90}
+\end{gradtable}
+\end{demo}
+Table/column groups require \key{scale=fixed}; \key{scale=column} is a conflict. Columns
+inherit table groups and can clear them with an empty scale group. Ordinary
+sparks select fixed group ranges; win-loss retains sign categories. Unknown
+groups are errors. This release does not automatically collect future tables.
+\subsection{Padding, nice bounds and percent denominators}
+Scale padding and scale nice apply only to automatic column ranges and default
+to 0 and false. Padding is a percentage of the original span at each nonzero
+endpoint, retaining zero anchors. Nice bounds round outward to a 1/2/5 step,
+targeting about five intervals. Column settings override table settings; fixed
+or named limits are unchanged.
+\begin{demo}{Expanded drawing limits with the original percent basis}
+\begin{gradtable}[style=compact,theme=forest,width=\linewidth,
+  scale=column,scale padding=10,scale nice=true,header align=c]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=bar,aggregate=mean,
+    options={value format=percent}]{score}{Score}
+  \gradrow{A,63}\gradrow{B,87}
+  \gradsummary{Mean}
+\end{gradtable}
+\end{demo}
+The range starts at [0,87], expands to [0,95.7] and rounds to [0,100]. Percent
+labels still use 87, so the old maximum stays 100\%. Drawing key percent base
+can explicitly select another positive denominator. Without adjustment the
+existing max-based behavior remains. Graphic percent formatting requires \key{min=0}.
+Ranks and aggregates use raw values; heat centers must remain inside the range.

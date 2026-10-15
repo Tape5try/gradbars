@@ -1,0 +1,53 @@
+\section{智能标签与数值列}
+\subsection{自动黑白文字、长标签与碰撞避让}
+\key{label=auto} 优先将总标签放在已填充部分的中央，空间不足时移至轨道右侧。
+\key{text color=auto} 根据标签中心处的背景选择黑白文字；渐变按中心颜色估算。
+主题会设置文字颜色，因此把 \key{text color=auto} 放在 \key{theme} 后面。
+
+\begin{example}[text and listing,sidebyside=false]{示例 35：深浅背景与长标签}
+\gradbar[color=black,width=45mm,height=15pt,
+  label=auto,text color=auto,precision=0]{90}
+
+\gradbar[color=gold,width=45mm,height=15pt,
+  label=auto,text color=auto,precision=0]{90}
+
+\gradbar[width=25mm,height=15pt,label=inside,
+  text={A label wider than the track}]{60}
+\end{example}
+
+默认 \key{label overflow=auto} 会将过宽的内部或条尾标签外移，
+并按实际文字宽度扩展外部标签槽；过高的内部标签也会外移。
+\key{label overflow=allow} 允许手工布局时保留越界标签。
+目标线穿过内部标签时标签外移；带误差线的内部总标签移至右侧。
+堆叠条启用段标签后，内部总标签也移至右侧，条尾总标签则位于外移段标签上方。
+
+\note{避让发生在同一数据条内部，不会重新排版相邻单元格或相邻数据条。
+外部文字默认按浅色页面选择黑字；深色页面请显式指定文字颜色。
+自动颜色基于标签中心，不能保证跨越多种颜色的长标签处处对比度相同。}
+
+\clearpage
+\subsection{单元格只填写数字}
+\key{\gradbarscolumn{G}{...}} 定义一个收集单元格内容的数值列。
+选择尚未使用的单个英文字母作为列名，整列共用范围、样式与标签格式。
+普通文本表头必须用 \key{\multicolumn} 绕过数值解析。
+
+\begin{example}[text and listing,sidebyside=false]{示例 36：统一列样式、缺失值和零值}
+\gradbarsstyle{score}{max=100,width=35mm,precision=0}
+\gradbarscolumn{G}{style=score}
+\begin{tabular}{@{}lG@{}}
+  \toprule
+\multicolumn{1}{c}{Model} & \multicolumn{1}{c}{Score / 100}\\
+  \midrule
+  Alpha & 82\\
+  Beta & 65\\
+  Pending & NA\\
+  Empty & \\
+  Zero & 0\\
+  \bottomrule
+\end{tabular}
+\end{example}
+
+该接口基于 array 与 collcell，适用于这里演示的 tabular 和 longtable。
+表格命令、文本、单位或已绘制的数据条不能直接作为 G 列的数值输入；
+需要特殊单元格时使用 \key{\multicolumn{1}{l}{...}}。
+它不会扫描整列或自动计算最大值，也不是 siunitx 的 S 列。

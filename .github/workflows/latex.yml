@@ -7,12 +7,28 @@ permissions:
 
 jobs:
   check:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    container: ghcr.io/xu-cheng/texlive-full:latest
+    env:
+      GRADBARS_PYTHON: python3
     steps:
       - uses: actions/checkout@v4
-      - name: Install XeLaTeX
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y texlive-latex-extra texlive-pictures texlive-fonts-recommended texlive-xetex texlive-lang-chinese lmodern
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install PDF structure inspection dependency
+        run: python3 -m pip install pypdf
+      - name: Verify docstrip source consistency
+        run: python3 scripts/build_source.py --check
+      - name: Check modular interfaces with l3build
+        run: l3build check
+      - name: Test modules, public extensions and existing graphics
+        run: python3 tests/run_tests.py
+      - name: Inspect Tagged PDF descriptions and measurement suppression
+        run: python3 scripts/check_tagging.py
       - name: Build layouts and illustrated manual
-        run: python3 scripts/build_manual.py
+        run: GRADBARS_PYTHON=python3 l3build doc
+      - name: Build and validate the CTAN archive
+        run: GRADBARS_PYTHON=python3 l3build ctan
+      - name: Test the isolated archived runtime
+        run: python3 scripts/check_release.py

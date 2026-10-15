@@ -1,0 +1,20 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage[libraries=none]{gradbars}
+\begin{document}
+\START
+\gradbarsiflibraryloaded{core}{\TYPE{core=loaded}}{\TYPE{core=missing}}
+\gradbarsiflibraryloaded{table}{\TYPE{table=loaded}}{\TYPE{table=absent}}
+\makeatletter
+\@ifpackageloaded{longtable}{\TYPE{longtable=loaded}}{\TYPE{longtable=absent}}
+\@ifpackageloaded{collcell}{\TYPE{collcell=loaded}}{\TYPE{collcell=absent}}
+\gradbarsset{max=100,precision=2}
+{\gradbarssetup{max=200}}
+\TYPE{max=\gradbars@max}
+\makeatother
+\OMIT
+\setbox0=\hbox{\gradbar{72.125}}
+\TIMO
+\TYPE{basic graphic rendered}
+\END
+\end{document}

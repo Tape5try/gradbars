@@ -1,0 +1,32 @@
+% Author and maintainer: SuFan (GitHub: Tape5try)
+% Copyright (c) 2026 SuFan. MIT License; see LICENSE.
+\NeedsTeXFormat{LaTeX2e}[2025/11/01]
+\ProvidesPackage{gradbars}[2026/10/30 v1.0.0 Modular inline data graphics]
+\RequirePackage{expl3}[2025/12/29]
+\RequirePackage{xparse}
+\ExplSyntaxOn
+\tl_new:N\g__gradbars_requested_libraries_tl
+\tl_gset:Nn\g__gradbars_requested_libraries_tl{all}
+\keys_define:nn{gradbars/package}
+  {libraries .tl_gset:N=\g__gradbars_requested_libraries_tl,
+   unknown .code:n={\PackageError{gradbars}{Unknown~package~option:~\l_keys_key_str}{Use~libraries=all,~none,~or~a~braced~list.}}}
+\DeclareOption*{\exp_args:Nno\keys_set:nn{gradbars/package}{\CurrentOption}}
+\ProcessOptions*\relax
+\ExplSyntaxOff
+\RequirePackage{gradbars-core}
+\RequirePackage{gradbars-api}
+\ExplSyntaxOn
+\clist_map_inline:nn{core,keys,numbers,model,render-tikz,tagging,api}
+  {\__gradbars_check_module:n{gradbars-#1}}
+\gradbarsdeclarelibrary{core}{}{gradbars-core.sty}
+\prop_gput:Nnn\g__gradbars_library_state_prop{core}{loaded}
+\gradbarsdeclarelibrary{stack}{core}{gradbars-lib-stack.sty}
+\gradbarsdeclarelibrary{spark}{core}{gradbars-lib-spark.sty}
+\gradbarsdeclarelibrary{heat}{core}{gradbars-lib-heat.sty}
+\gradbarsdeclarelibrary{csv}{core}{gradbars-lib-csv.sty}
+\gradbarsdeclarelibrary{table}{core,stack,spark,heat,csv}{gradbars-lib-table.sty}
+\str_case:VnF\g__gradbars_requested_libraries_tl
+  {{all}{\usegradbarslibrary{stack,spark,heat,csv,table}}{none}{}}
+  {\exp_args:NV\usegradbarslibrary\g__gradbars_requested_libraries_tl}
+\ExplSyntaxOff
+\endinput

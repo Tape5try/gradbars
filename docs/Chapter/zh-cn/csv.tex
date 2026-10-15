@@ -1,0 +1,135 @@
+\section{CSV 数据导入}
+\label{sec:csv-input}
+\key{\gradbarsloadcsv[选项]{数据集名}{文件名}} 将 CSV 读入当前 TeX 作用域，
+随后可生成数据表、逐行取值，或从指定数值列计算共享量程。
+文件以 UTF-8 保存，首行是列名；列名区分大小写。
+以下所有命令从仓库根目录编译，使用配套文件 \key{docs/data/results.csv}。
+
+\textbf{示例数据文件}\par
+\lstinputlisting[style=manual,language={}]{docs/data/results.csv}
+
+\subsection{绑定 gradtable 原生数据源}
+\label{sec:csv-native}
+先用 \key{\gradbarsloadcsv} 读取文件，再通过 \key{data=results} 把数据集绑定到 gradtable。
+\key{source=Score} 指定精确的 CSV 表头，默认采用列 id；列顺序可以调整，同一字段可以复用。
+导入表格省略 \key{gradrow}，数据按文件顺序生成；缺失值采用读取数据时的映射，文本字段保持字面字符。
+\begin{example}[text and listing,sidebyside=false]{CSV 字段绑定与多指标表格}
+\gradbarsloadcsv{results}{docs/data/results.csv}
+\begin{gradtable}[data=results,width=\linewidth,scale=column,header align=c]
+  \gradcolumn[source=Model]{method}{Method}
+  \gradcolumn[type=bar,source=Score,mark=both]{score}{Score}
+  \gradcolumn[type=number,source=Latency,
+    options={precision=0}]{time}{Latency}
+\end{gradtable}
+\end{example}
+这里只声明列，不手写数据行；CSV 数据源不能与手写 \key{gradrow} 混用。
+未知数据集或字段会报错。列表型字段含逗号时必须用 CSV 双引号包裹，
+复合字段内的缺失观测或端点使用 NA。
+原生数据源支持 \key{long=true}，跨页沿用同一套列宽、尺度、排名与重复表头。
+自动范围规则见第~\ref{sec:column-scale}~章；将列类型改为 \key{type=heat} 可使用第~\ref{sec:heat}~章的色阶显示。
+
+\subsection{排序、筛选与显示前几行}
+sort 指定已声明的列标识，\key{order=ascending} 或 descending 选择升序或降序。
+数值排序使用原始值，缺失值始终置后，并列值保持文件中的先后顺序。
+filter 支持多个用逗号分隔的条件，所有条件同时成立才保留该行。
+limit 为非负整数，0 表示不限行数；处理顺序是筛选、稳定排序、截取前几行。
+\begin{example}[text and listing,sidebyside=false]{筛选有效得分，再按延迟选择前两行}
+\gradbarsloadcsv{results}{docs/data/results.csv}
+\begin{gradtable}[data=results,width=\linewidth,scale=column,
+  filter={score>=75},sort=time,order=ascending,limit=2,header align=c]
+  \gradcolumn[source=Model]{method}{Method}
+  \gradcolumn[type=bar,source=Score]{score}{Score}
+  \gradcolumn[type=bar,source=Latency,
+    options={better=lower,precision=0}]{time}{Latency}
+\end{gradtable}
+\end{example}
+数值条件支持 =、!=、<、<=、>、>=；例如 \key{filter={score>=75,time<100}}。
+普通数值比较不保留缺失值，包括 !=；使用 score=NA 或 score!=NA 检查映射后的缺失状态。
+文本条件仅支持精确的 = 和 !=；空文本可用 method= 匹配。
+条件包含逗号时保护整个条件，例如 \key{filter={{method=Compact, tuned}}}。
+文本排序采用区分大小写的字符顺序，不采用地区排序；空文本置后。
+这些操作要求 data 数据源，列类型必须是 text、number、bar、bullet 或 heat。
+排序和筛选不改变已加载的数据集，也不根据舍入后的标签判断。
+
+\subsection{多字段排序与分组执行顺序}
+\key{sort keys={score/descending,time/ascending}} 先按得分降序，再按时间升序。
+每个键必须给出列标识和方向；不能同时设置非空 sort 与 sort keys。
+order 只影响旧版单列 sort，不覆盖多字段各自方向。
+每个键的缺失值都置后；键相同或均缺失时继续比较下一键，全部相同则保留 CSV 原序。
+\begin{example}[text and listing,sidebyside=false]{多指标排序后限制总行数}
+\gradbarsloadcsv{families}{docs/data/families.csv}
+\begin{gradtable}[data=families,width=\linewidth,
+  sort keys={score/descending,time/ascending},limit=3,group by=family,header align=c]
+  \gradcolumn[source=Method]{method}{Method}
+  \gradcolumn[source=Family]{family}{Family}
+  \gradcolumn[type=number,source=Score]{score}{Score}
+  \gradcolumn[type=number,source=Time]{time}{Time}
+\end{gradtable}
+\end{example}
+执行顺序为筛选、全局稳定排序、全局 limit、分组排列。例中先选择 Compact、Wide、Fast，
+再按原文件组序显示 Classic 的 Fast 与 Neural 的 Compact、Wide。
+limit 始终限制整表数据行数，不是每组行数。分组后整表不再保持全局得分次序，但各组内部保留该次序。
+
+\subsection{筛选后的尺度与排名}
+\key{scale scope=data} 是默认值：自动范围仍包含完整导入数据。
+
+上例延迟范围仍为 [0,125]；改为 \key{scale scope=visible} 时按截取后的两行计算，延迟范围为 [0,88]。
+排名始终依据显示行。筛选后为空且采用 visible 时，自动范围采用 [0,1]。
+\key{long=true} 在筛选和排序完成后分页，各页保留同一尺度和排名规则。
+
+\subsection{生成简短的双列数据条表格}
+\begin{example}[text and listing,sidebyside=false]{示例 66：从 CSV 直接生成数据条表格}
+\gradbarsloadcsv{results}{docs/data/results.csv}
+\gradbarscsvtable[width=40mm,precision=1]{results}{Model}{Score}
+\end{example}
+
+表格按文件顺序显示 Model 与 Score 两列。数值列自动采用同一范围：
+下限为零和有效值最小值的较小者，上限为零和有效值最大值的较大者。
+若上限为零，则使用 1，保证全零、全缺失或全负数列仍有有效量程。
+空值与缺失标记不参与范围计算。
+
+默认缺失标记为 \key{NA}、\key{N/A}、\key{null}，区分大小写；空字段始终表示缺失。
+加载时可用 \key{missing={NA,N/A,null,--}} 替换缺失标记列表。
+映射仅作用于数值读取，文本列中的相同字符串保留原样。
+零值仍是有效观测，不能用缺失标记替代。
+
+\note{CSV 支持逗号分隔、双引号包裹字段、字段内逗号、用两个双引号表示一个引号，
+以及文件开头的 UTF-8 BOM。字段首尾空白会被去除，空白行会跳过。
+不支持字段内换行、分号或制表符分隔；未闭合引号、重复或空列名、行列数不匹配会报错。
+文件内容按普通字符读取，不执行其中的 TeX 命令。}
+
+\clearpage
+\subsection{按列建立共享样式，保留自己的表格布局}
+\key{\gradbarscsvstyle{样式名}{数据集名}{列名}} 扫描指定列，
+生成包含 min 和 max 的命名样式。生成样式会覆盖同名旧样式，
+使用时可继续追加宽度、单位等显示选项。
+\key{\gradbarcsv[选项]{数据集名}{行号}{列名}} 绘制单个数据条，行号从 1 开始，不包含表头。
+\key{\gradbarscsvcell{数据集名}{行号}{列名}} 显示原始文本字段。
+
+\begin{example}[text and listing,sidebyside=false]{示例 67：共享耗时范围与自定义表格}
+\gradbarsloadcsv{results}{docs/data/results.csv}
+\gradbarscsvstyle{csvLatency}{results}{Latency}
+\gradbarssetup{style=csvLatency,width=40mm,
+  unit={\,ms},precision=0}
+\begin{tabular}{@{}ll@{}}
+  \toprule
+\multicolumn{1}{c}{Model} & \multicolumn{1}{c}{Latency}\\
+  \midrule
+  \gradbarscsvcell{results}{1}{Model} &
+    \gradbarcsv{results}{1}{Latency}\\
+  \gradbarscsvcell{results}{3}{Model} &
+    \gradbarcsv{results}{3}{Latency}\\
+  \gradbarscsvcell{results}{4}{Model} &
+    \gradbarcsv{results}{4}{Latency}\\
+  \bottomrule
+\end{tabular}
+\end{example}
+
+本例共享范围为 0--125。自动范围包含整个数值列，而不是仅包含表中选取的几行。
+修改 CSV 后重新编译，数据与范围都会更新。若要跨批次比较，建议明确覆盖固定的
+\key{min} 和 \key{max}，避免每批数据的最大值变化导致视觉尺度漂移。
+
+\key{\gradbarscsvtable} 生成普通双列表格，适合简短展示；不会自动分页。
+需要长表、多列或复杂表头时，可使用本章的原生 \key{gradtable} 数据源；也可保留自己的 longtable/tabular 布局，通过取值命令逐行填入。
+数值可用十进制或 e/E 科学计数字面量，不支持千位分隔、公式或输入单位后缀。
+其他非数字内容会报错，不会静默丢弃。数据集名使用英文字母开头，可包含字母、数字、下划线和连字符。

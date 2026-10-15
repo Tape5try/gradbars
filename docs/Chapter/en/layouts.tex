@@ -1,0 +1,49 @@
+
+\section{Two-column papers, print and slides}
+\subsection{A narrow paper column}
+Use width=\key{\linewidth} in the local column or minipage; reduce horizontal
+padding and the reserved label slot before reducing font size. A normal \key{gradtable}
+can be inside a table float; a wide table* can span both paper columns.
+\begin{demo}{A table fitted to an 80mm column}
+\begin{minipage}{80mm}
+\begin{gradtable}[width=\linewidth,preset=paper,header align=c,
+  label width=8mm,column sep=3pt,min text width=12mm,
+  min graphic width=15mm]
+  \gradcolumn{method}{Method}
+  \gradcolumn[type=bar,mark=best,
+    options={max=100,precision=1}]{score}{Score}
+  \gradrow{Baseline,82.4}
+  \gradrow{Proposed,91.6}
+\end{gradtable}
+\end{minipage}
+\end{demo}
+Use the multipage example in the preceding part for long results lists. Long mode
+must be outside floats and two-column text, rather than shrinking an entire long table.
+
+\subsection{Monochrome printing}
+Use \key{preset=mono} for tables, print for individual graphics, and registered textures
+for categories. Keep numeric labels and category names. Explain bold and underline
+marking. Print a sample at its final scale: very fine textures may disappear.
+\begin{demo}{Category shares with a matching print legend}
+\gradstack[print,width=75mm,height=17pt,
+  stack names={Train,Validation,Test},
+  stack patterns={diagonal,dots,crosshatch},
+  legend=true,segment labels=percent,precision=0]{60,25,15}
+\end{demo}
+
+\subsection{Beamer slides}
+Use fewer rows, larger text and stronger contrast. Individual graphics support
+\key{preset=presentation}. The following is a complete source for a separate slide:
+\begin{source}
+\documentclass{beamer}
+\usepackage{gradbars}
+\begin{document}
+\begin{frame}{Progress toward the target}
+\gradbarssetup{preset=presentation,width=.6\linewidth,
+  max=100,precision=0,target=90}
+\gradbar{82}
+\end{frame}
+\end{document}
+\end{source}
+Ordinary tables can be placed in a frame. Long mode is not a mechanism for
+splitting a visual table into slides; choose the rows for each frame explicitly.

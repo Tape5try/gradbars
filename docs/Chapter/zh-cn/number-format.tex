@@ -1,0 +1,37 @@
+\section{数字格式与区间背景}
+\key{value format} 决定显示原值还是计算占比；
+\key{number format} 决定数字的排版形式，不改变条长。
+\key{fixed} 为默认定点格式，千位使用细空格；\key{grouped} 使用逗号分组；
+\key{scientific} 使用科学计数法。\key{precision} 指定小数位数，科学计数法中指尾数的小数位数。
+
+\begin{example}{示例 8：分组数字与科学计数法}
+\gradbar[max=200000,
+  number format=grouped,
+  precision=0]{125000}
+
+\gradbar[max=1,
+  number format=scientific,
+  precision=2]{0.00001234}
+\end{example}
+
+科学计数法也支持 e/E 输入；普通小数输入仍可使用。
+极小数不会先按定点精度四舍五入成零；标签较长时应增大 \key{label width}。
+
+\begin{example}{示例 9：参考区间与目标线}
+\gradbar[band={60,80},
+  band color=lightgreen,
+  target=70]{75}
+
+\gradbar[min=-50,max=50,
+  band={-10,15},
+  band color=skyblue,
+  band opacity=0.4]{-25}
+\end{example}
+
+\key{band={下限,上限}} 使用与数据相同的单位，要求两个端点严格递增且位于量程内。
+背景在轨道上下各延伸 2pt，填充经过区间时仍可看见参考范围。
+\key{band color} 默认为 gold，\key{band opacity} 默认为 0.3，取值为 0 到 1。
+使用 \key{band={}} 清除区间。
+
+\note{区间背景表示人为给定的参考范围，不代表统计误差。
+误差区间仍使用 \key{error}；参考区间的越界端点会直接报错，不自动截断。}

@@ -1,0 +1,14 @@
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\begin{document}
+\begin{gradtable}[width=\linewidth,theme=teal,scale=column,scale padding=10,
+  group summary=true,rank scope=group]
+\gradcolumn{name}{Method}
+\gradcolumn[type=bar,mark=both,aggregate=mean,options={value format=percent}]{score}{Score}
+\gradgroup{First}\gradrow{A,63}\gradrow{B,87}
+\gradgroup{Second}\gradrow{C,NA}
+\gradsummary{Overall}
+\end{gradtable}
+\end{document}
