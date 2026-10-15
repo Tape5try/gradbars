@@ -180,7 +180,7 @@ while preserving the original label. Use \key{overflow=error} for strict checkin
 
 \gradbar[missing text={N/A}]{NA}
 \end{demo}
-\key{unit} appends text. \key{value format=percent} computes $100v/\mathrm{max}$,
+\key{unit} appends text. \key{value format=percent} computes $100v/\mathrm{max}$ (where $v$ is the numeric value of a segment),
 ignores unit, and requires min=0. For values already expressed as percentages,
 use \key{unit={\%}}. \key{text} overrides the complete label without changing geometry.
 \key{precision} accepts integers from 0 to 6. \key{number format} is fixed, grouped
@@ -223,8 +223,8 @@ The default total is the algebraic sum; \key{stack totals=separate} shows positi
 and negative subtotals. A zero net does not erase nonzero contributions.
 
 Segment labels can be none, value, percent, name, name value or name percent.
-The percentage of a segment is
-\[100|v_i|/\sum_j|v_j|,\]
+The percentage of a segment $i$ is
+\[100|v_i|/\sum_j|v_j|,\text{ where $v_j$ is the value of the segment $j$,}\]
 including clipped contributions. These percentages
 represent shares of absolute activity, not shares of a potentially zero net.
 All-zero stacks do not calculate percentages. Stacks are not normalized to full
