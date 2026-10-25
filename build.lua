@@ -147,7 +147,7 @@ uploadconfig = {
   email = os.getenv("CTAN_EMAIL"), license = "mit",
   summary = "Compact data graphics for LaTeX tables and inline text",
   description = "Bars, comparisons, sparklines, heat cells and distribution summaries with shared scales and native table interfaces.",
-  ctanPath = "/macros/latex/contrib/gradbars",
+  ctanPath = "/graphics/pgf/contrib/gradbars/",
   repository = "https://github.com/Tape5try/gradbars",
   home = "https://github.com/Tape5try/gradbars",
   bugtracker = "https://github.com/Tape5try/gradbars/issues",
