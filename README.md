@@ -197,5 +197,3 @@ l3build doc
 作者与维护者：SuFan（GitHub：Tape5try）。采用 [MIT 许可证](LICENSE)。
 
 [分布统计](docs/distributions.md) · [共享图例](docs/legends.md) · [无障碍支持范围](docs/accessibility.md)
-
-GitHub 仓库不保存 `.dtx/.ins` 或 CTAN README 模板；`l3build` 与 CI 从 `sty/` 自动生成发行源码，CTAN 英文入口由 `README.en.md` 准备。
