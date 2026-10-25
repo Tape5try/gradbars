@@ -1,0 +1,116 @@
+% Rebuild from the repository root (TeX Live and Poppler required):
+% TEXINPUTS=./sty//: latexmk -pdf -outdir=build/readme docs/images/readme-gallery.tex
+% pdftoppm -r 160 -png build/readme/readme-gallery.pdf build/readme/gallery
+% Pages 1--4 correspond to readme-graphics, readme-reports,
+% readme-distributions and readme-palettes.png in this directory.
+\documentclass[border=5mm,multi=minipage]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{gradbars}
+\usegradbarslibrary{distribution,legend,reports}
+\newcommand{\gallerytitle}[2]{%
+  {\LARGE\bfseries\color{gradbarsInk}#1}\par\smallskip
+  {\small\color{black!65}#2}\par\bigskip}
+\gradbarssetup{max=100,width=66mm,height=3ex,precision=0}
+\begin{document}
+\begin{minipage}{166mm}
+\sffamily\centering
+\gallerytitle{Small graphics, real numbers}{Inline graphics for ordinary tables and text}
+\renewcommand{\arraystretch}{1.8}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Graphic & Example \\\midrule
+Gradient bar & \gradbar{76}\\
+Signed bar & \gradbar[min=-50,max=100]{-28}\\
+Target and interval & \gradbar[band={55,80},target=85]{72}\\
+Layered comparison & \gradcompare{58}{82}\\
+Dumbbell comparison & \graddumbbell[track color=black!35,stem width=.9pt]{48}{79}\\
+Floating range & \gradrange[range point=62]{35}{84}\\
+Stacked composition & \gradstack[height=3ex,palette=categorical]{32,24,18}\\
+Trend / line & \gradspark[height=7mm,spark range=fixed]{25,40,35,58,72,88}\\
+Trend / bars & \gradspark[height=7mm,spark range=fixed,spark type=bar]{25,40,35,58,72,88}\\
+\bottomrule
+\end{tabular}
+\end{minipage}
+
+\begin{minipage}{166mm}
+\sffamily\centering
+\gallerytitle{Tables that carry the comparison}{Shared scales, explicit directions and domain presets}
+\begin{gradtable}[align=c,header align=c,style=metrics,width=\linewidth,
+  column sep=5pt,row stretch=1.6]
+\gradcolumn{name}{Model}
+\gradmetriccolumn{accuracy}{Accuracy}
+\gradmetriccolumn[options={style=report-metric,better=lower,unit={ ms},precision=1}]{latency}{Latency}
+\gradcolumn[type=spark,options={spark range=fixed,min=0,max=100,height=7mm}]{trend}{Training trend}
+\gradrow{Baseline,72.4,35,{30,42,48,60,68,72}}
+\gradrow{Model A,85.6,28,{38,52,65,72,80,86}}
+\gradrow{Proposed,93.8,19,{45,62,74,86,91,94}}
+\end{gradtable}
+\par\bigskip
+\begin{tabular}{@{}c@{\hspace{8mm}}c@{}}
+\textbf{Correlation matrix} & \textbf{Ablation: shared range 60--100}\\[4pt]
+\begin{minipage}{64mm}\centering
+\begin{gradtable}[align=c,header align=c,style=correlation,width=\linewidth,row stretch=1.6]
+\gradcolumn{name}{Variable}
+\gradcorrelationcolumn{a}{A}
+\gradcorrelationcolumn{b}{B}
+\gradcorrelationcolumn{c}{C}
+\gradrow{A,1,.72,-.38}
+\gradrow{B,.72,1,-.61}
+\gradrow{C,-.38,-.61,1}
+\end{gradtable}
+\end{minipage} &
+\begin{minipage}{90mm}\centering
+\begin{gradtable}[align=c,header align=c,style=ablation,width=\linewidth,row stretch=1.6]
+\gradcolumn{name}{Variant}
+\gradablationcolumn[scale=fixed,options={style=report-ablation,
+  min=60,max=100,track color=black!35,stem width=.9pt}]{score}{Score change}
+\gradrow{Without augmentation,80/76}
+\gradrow{Extra data,80/87}
+\gradrow{Full model,80/94}
+\end{gradtable}
+\end{minipage}
+\end{tabular}
+\end{minipage}
+
+\begin{minipage}{166mm}
+\sffamily\centering
+\gallerytitle{Distributions inside a table}{Quartiles, median, observed whiskers and explicit outliers}
+\begin{gradtable}[align=c,header align=c,style=distribution,width=\linewidth,
+  scale=column,column sep=6pt,row stretch=2]
+\gradcolumn{name}{Method}
+\gradcolumn[type=boxplot,options={height=5ex,palette=accessible}]{samples}{Distribution / shared scale}
+\gradrow{Alpha,{0,2,3,4,5,6,7,8,16}}
+\gradrow{Beta,{-3,0,2,5,9,12,14}}
+\gradrow{Gamma,{2,3,4,5,5,6,7,8,9}}
+\gradrow{Missing,NA}
+\end{gradtable}
+\par\bigskip
+\gradcomputesummary{0,2,3,4,5,6,7,8,16}{%
+  \textbf{Alpha:} n=\gradstat{n}\quad
+  Q1=\gradstat{q1}\quad median=\gradstat{median}\quad
+  Q3=\gradstat{q3}\quad outliers=\gradstat{outlier count}}
+\par\medskip
+{\small\color{black!65}Type-7 quartiles; whiskers use observed values within 1.5 IQR fences.}
+\end{minipage}
+
+\begin{minipage}{166mm}
+\sffamily\centering
+\gallerytitle{One key, a complete color scale}{Eight built-in Heat palettes with matching continuous legends}
+\begin{tabular}{@{}c@{\hspace{12mm}}c@{}}
+\gradheatlegend[width=61mm,height=3mm,min=0,max=100,heat palette=blue,legend title={blue},legend missing=false]&
+\gradheatlegend[width=61mm,height=3mm,min=0,max=100,heat palette=teal,legend title={teal},legend missing=false]\\[8mm]
+\gradheatlegend[width=61mm,height=3mm,min=0,max=100,heat palette=purple,legend title={purple},legend missing=false]&
+\gradheatlegend[width=61mm,height=3mm,min=0,max=100,heat palette=orange,legend title={orange},legend missing=false]\\[8mm]
+\gradheatlegend[width=61mm,height=3mm,min=-1,max=1,precision=0,heat center=0,heat palette=purple-teal,legend title={purple-teal},legend missing=false]&
+\gradheatlegend[width=61mm,height=3mm,min=-1,max=1,precision=0,heat center=0,heat palette=blue-red,legend title={blue-red},legend missing=false]\\[8mm]
+\gradheatlegend[width=61mm,height=3mm,min=-1,max=1,precision=0,heat center=0,heat palette=orange-blue,legend title={orange-blue},legend missing=false]&
+\gradheatlegend[width=61mm,height=3mm,min=-1,max=1,precision=0,heat center=0,heat palette=brown-teal,legend title={brown-teal},legend missing=false]
+\end{tabular}
+\par\bigskip
+\gradheat[min=-1,max=1,heat palette=purple-teal,width=23mm,precision=1]{-.8}\quad
+\gradheat[min=-1,max=1,heat palette=purple-teal,width=23mm,precision=1]{0}\quad
+\gradheat[min=-1,max=1,heat palette=purple-teal,width=23mm,precision=1]{.8}\quad
+\gradheat[min=-1,max=1,heat palette=purple-teal,width=23mm,precision=1]{NA}
+\end{minipage}
+\end{document}

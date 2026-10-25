@@ -20,6 +20,40 @@ gradbars 基于 PGF/TikZ，既可将单个图形嵌入现有 `tabular`，也可�
 - **数字与外观**：科学计数输入、可选 siunitx 格式化、小数点对齐、主题、纹理、表格样式与图例。
 - **无障碍与扩展**：启用 LaTeX PDF tagging 后自动生成图形替代文本，支持 `alt` 覆盖；提供稳定的图形、格式化器和第三方库注册接口。
 
+## 效果展示
+
+以下图片均由当前宏包实际编译生成，使用演示数据。图形保留数值标签，可直接嵌入正文或表格；点击图片可查看大图。
+
+### 内嵌图形：数值、比较、组成与趋势
+
+![九种内嵌图形：渐变条、正负条、目标与区间、双层比较、哑铃、浮动区间、堆叠、折线趋势和柱形趋势](docs/images/readme-graphics.png)
+
+单个数据条只需 `\gradbar[max=100]{76}`；比较用 `\graddumbbell{48}{79}`，组成用 `\gradstack{32,24,18}`。相同宽度与范围便于在多行之间比较。
+
+### 可视化表格：模型指标、相关矩阵与消融实验
+
+![模型指标与训练趋势表、发散色阶相关矩阵，以及参考值与当前值的消融比较表](docs/images/readme-reports.png)
+
+同一张表可同时呈现指标条、数值和训练趋势。可选 `reports` 库提供相关矩阵、消融实验和指标表预设；准确率越高越好、延迟越低越好，分别按原始数值判断。
+
+[领域报告接口](docs/reports.md) · [完整报告示例](docs/examples/domain-reports.tex) · [普通表格只写数字的示例](docs/examples/precision-recall.tex)
+
+### 分布统计：箱线图与统计摘要
+
+![三组样本在共享尺度上的箱线图，展示四分位数、中位数、须、离群点和独立的缺失值行，下方列出 Alpha 的统计摘要](docs/images/readme-distributions.png)
+
+加载 `distribution` 后，`\gradboxplot{0,2,3,4,5,6,7,8,16}` 即可从样本绘制箱线图，也可直接填入表格列。四分位数采用 type-7 定义；须取 1.5 IQR 围栏内的实际观测，空心点表示离群点。`NA` 与零明确区分。
+
+[统计定义与接口](docs/distributions.md)
+
+### 配色与图例：一项设置切换完整色阶
+
+![八种内置连续色阶：blue、teal、purple、orange、purple-teal、blue-red、orange-blue、brown-teal，以及负值、零、正值和缺失单元格](docs/images/readme-palettes.png)
+
+例如 `heat palette=purple-teal` 自动设置紫—白—青的发散配色，不必逐一指定两端和中心颜色。单元格与图例可通过命名组共享尺度和颜色，使用 `legend missing=false` 可隐藏图例中的缺失项。
+
+[共享图例接口](docs/legends.md) · [上述四张展示图的完整源码与重建命令](docs/images/readme-gallery.tex)
+
 ## 安装
 
 支持 LaTeX 2025-11-01+、expl3 2025-12-29+ 和 PGF/TikZ 3.1.11a+。较旧发行版请先更新。
