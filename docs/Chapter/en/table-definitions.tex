@@ -14,19 +14,23 @@ preamble. Redefinition replaces an earlier definition and follows TeX grouping.
   \gradcolumn[type=bar,mark=both,
     options={max=100,precision=1}]{score}{Score}
 }
-\begin{gradtable}[style=benchmark,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=benchmark]
   \graduseschema{benchmark}
   \gradgroup{Validation}
   \gradrow{A,81.5}
   \gradrow{B,88.2}
 \end{gradtable}
+\end{center}
 
-\begin{gradtable}[style=benchmark,rules=grid,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=benchmark,rules=grid]
   \graduseschema{benchmark}
   \gradgroup{Test}
   \gradrow{A,79.6}
   \gradrow{B,85.3}
 \end{gradtable}
+\end{center}
 \end{demo}
 Options after style override it. Styles may reference other styles and schemas
 may compose schemas; cycles cause errors. Ids must remain unique. Apply schemas

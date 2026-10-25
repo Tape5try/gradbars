@@ -1,11 +1,22 @@
 % Author: SuFan; MIT License. Internal implementation unless documented.
-\ProvidesPackage{gradbars-lib-heat}[2026/10/30 v1.0.0 gradbars lib-heat]
+\ProvidesPackage{gradbars-lib-heat}[2026/10/25 v1.1.0 gradbars lib-heat]
 \ExplSyntaxOff
 \def\gradbars@heatlow{gradbarsBlueLight!15}
 \def\gradbars@heathigh{gradbarsBlue}
 \def\gradbars@heattext{auto}
 \def\gradbars@heatmissing{gradbarsTrack}
+% Named palettes select both interpolation mode and color roles.
+\definecolor{gradbarsHeatRed}{HTML}{B91C1C}
+\definecolor{gradbarsHeatBrown}{HTML}{92400E}
 \pgfkeys{/gradbars,
+  heat palette/blue/.style={heat palette=sequential,heat low color=white,heat center color=white,heat high color=gradbarsBlue,heat text color=auto},
+  heat palette/teal/.style={heat palette=sequential,heat low color=white,heat center color=white,heat high color=gradbarsTeal,heat text color=auto},
+  heat palette/purple/.style={heat palette=sequential,heat low color=white,heat center color=white,heat high color=gradbarsPurple,heat text color=auto},
+  heat palette/orange/.style={heat palette=sequential,heat low color=white,heat center color=white,heat high color=gradbarsWarmOrange,heat text color=auto},
+  heat palette/purple-teal/.style={heat palette=diverging,heat low color=gradbarsPurple,heat center color=white,heat high color=gradbarsTeal,heat text color=auto},
+  heat palette/blue-red/.style={heat palette=diverging,heat low color=gradbarsBlue,heat center color=white,heat high color=gradbarsHeatRed,heat text color=auto},
+  heat palette/orange-blue/.style={heat palette=diverging,heat low color=gradbarsWarmOrange,heat center color=white,heat high color=gradbarsBlue,heat text color=auto},
+  heat palette/brown-teal/.style={heat palette=diverging,heat low color=gradbarsHeatBrown,heat center color=white,heat high color=gradbarsTeal,heat text color=auto},
   heat low color/.store in=\gradbars@heatlow,
   heat high color/.store in=\gradbars@heathigh,
   heat text color/.store in=\gradbars@heattext,
@@ -68,9 +79,12 @@
        {\fp_eval:n{#2}~\gradbars@unit.~Color~scale:~\gradbars@min\c_space_tl to~\gradbars@max.}\fi
      \str_if_eq:eeT{\gradbars@heatpalette}{diverging}
        {\tl_put_right:Nx\l__gradbars_alt_tl{~Diverging~center:~\gradbars@heatcenter.}}
+     \str_if_eq:eeT{\gradbars@format}{percent}{\tl_put_right:Nx\l__gradbars_alt_tl{~Percent~base:~\gradbarsPercentBase.}}
+     \tl_put_right:Nx\l__gradbars_alt_tl{~Direction:~\gradbars@better.}
      \ifgradbars@valid
-       \ifpgfpicture\begin{scope}\gradbarsHeatDraw\end{scope}
-       \else\gradbarsApplyAlt\tikz[baseline=(gradbarsheat.base)]{\gradbarsHeatDraw}\fi
+       \__gradbars_backend_draw:nn{heat}
+        {\ifpgfpicture\begin{scope}\gradbarsHeatDraw\end{scope}
+       \else\gradbarsApplyAlt\tikz[baseline=(gradbarsheat.base)]{\gradbarsHeatDraw}\fi}
      \fi
    \fi\group_end:}
 \cs_new_protected:Npn\gradbarsHeatDraw

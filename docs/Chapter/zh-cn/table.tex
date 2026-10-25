@@ -10,8 +10,9 @@ v0.0.8 提供统一的数据表格入口。先声明列，再填写每行数据�
 带逗号的文本应加花括号保护，缺失数值请显式写 NA。
 
 \begin{example}[text and listing,sidebyside=false]{示例 52：论文型，文本、数字与普通条}
-\begin{gradtable}[preset=paper,graphic width=48mm,
-  text width=24mm,label width=14mm,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,preset=paper,graphic width=48mm,
+  text width=24mm,label width=14mm]
   \gradcolumn{method}{方法}
   \gradcolumn[type=number,options={precision=0}]{n}{样本量}
   \gradcolumn[type=bar,options={max=100,precision=1}]{score}{得分}
@@ -19,6 +20,7 @@ v0.0.8 提供统一的数据表格入口。先声明列，再填写每行数据�
   \gradrow{方法 B,12500,91.2}
   \gradrow{方法 C,NA,NA}
 \end{gradtable}
+\end{center}
 \end{example}
 列选项中的 \key{options={...}} 接受原有 gradbars 参数，如 min、max、precision、unit、
 theme、target 和 references。每列共用同一组参数，单元格不单独修改尺度。

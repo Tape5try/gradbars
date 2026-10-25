@@ -14,10 +14,10 @@ The following table is typeset directly in this manual and can cross a page
 boundary. Its exact source is printed afterwards. Best values are bold and the
 next distinct values are underlined across all records.
 \begin{filecontents*}[overwrite]{\jobname-long-example.tex}
-\begin{gradtable}[long=true,width=\linewidth,
+\begin{center}
+\begin{gradtable}[align=c,header align=c,long=true,width=\linewidth,
   caption={Grouped benchmark},label={tab:english-long},
-  continued text={(continued)},header align=c,
-  label width=12mm,column sep=6pt,row stretch=1.4,row padding=3pt]
+  continued text={(continued)},label width=12mm,column sep=6pt,row stretch=1.4,row padding=3pt]
   \gradcolumn[weight=1]{method}{Method}
   \gradcolumn[type=bar,weight=2,mark=both,
     options={max=100,precision=1}]{score}{Score}
@@ -54,6 +54,7 @@ next distinct values are underlined across all records.
   \gradrow{Method 23,84.2,23.1,80/84/88}
   \gradrow{Method 24,91.4,9.2,87/91/95}
 \end{gradtable}
+\end{center}
 \end{filecontents*}
 \par
 \input{\jobname-long-example.tex}

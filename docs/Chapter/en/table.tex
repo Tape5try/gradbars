@@ -9,8 +9,9 @@ commands are needed.
 \key{\gradrow{cells}} provides comma-separated cells in declaration order.
 Protect text containing commas with braces. Use explicit NA for missing numbers.
 \begin{demo}{Text, numbers and bars in one table}
-\begin{gradtable}[preset=paper,graphic width=48mm,
-  text width=24mm,label width=14mm,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,preset=paper,graphic width=48mm,
+  text width=24mm,label width=14mm]
   \gradcolumn{method}{Method}
   \gradcolumn[type=number,options={precision=0}]{n}{Samples}
   \gradcolumn[type=bar,options={max=100,precision=1}]{score}{Score}
@@ -18,6 +19,7 @@ Protect text containing commas with braces. Use explicit NA for missing numbers.
   \gradrow{Method B,12500,91.2}
   \gradrow{Method C,NA,NA}
 \end{gradtable}
+\end{center}
 \end{demo}
 Column \key{options={...}} accepts drawing options such as min, max, precision,
 unit, theme, target and references. All rows share those options. Number columns

@@ -1,6 +1,6 @@
 # Version 1 Stability Contract
 
-This contract applies to the documented public interfaces of gradbars 1.0.0.
+This contract applies to the documented public interfaces of gradbars 1.1.0, including the preserved 1.0.0 contract.
 It covers their arguments, option meaning, scope, library dependencies, data
 semantics and documented errors. It does not promise identical PDF bytes,
 font metrics across engines, compilation speed or private implementation names.
@@ -12,7 +12,7 @@ newer and PGF/TikZ 3.1.11a or newer. pdfLaTeX, XeLaTeX and LuaLaTeX are supporte
 for PDF output. These requirements are based on the tested TeX Live installation
 rather than the older, unverified 2020 minimum. Optional siunitx formatting
 requires siunitx v3 loaded explicitly. Chinese manual builds require XeLaTeX and
-ctex/Fandol. Python, pypdf and l3build are development tools only.
+ctex/Fandol. texlua, l3build and latexmk are build tools; no Python files are required.
 
 ## Stable Public Interfaces
 
@@ -21,7 +21,7 @@ ctex/Fandol. Python, pypdf and l3build are development tools only.
 | Settings | `\gradbarssetup`, its alias `\gradbarsset`, `\gradbarsstyle`, `\gradscale` |
 | Graphics | `\gradbar`, `\gradstack`, `\gradspark`, `\gradheat`, `\gradcompare`, `\graddumbbell`, `\gradrange`, `\gradbullet`, `\gradintervals` |
 | Categories | `\gradbarscategory`, `\gradbarslegend` |
-| CSV and existing tables | `\gradbarsloadcsv`, `\gradbarcsv`, `\gradbarscsvcell`, `\gradbarscsvstyle`, `\gradbarscsvtable`, `\gradbarscolumn` |
+| CSV and existing tables | `\gradbarsloadcsv`, `\gradbarcsv`, `\gradbarscsvcell`, `\gradbarscsvstyle`, `\gradbarscsvtable`, `\gradbarscolumn` (including `*`), `\gradbarshead` |
 | Native tables | `gradtable`, `\gradcolumn`, `\gradrow`, `\gradsummary`, `\gradgroup`, `\gradheader`, `\gradspan`, `\gradtablestyle`, `\gradtableschema`, `\graduseschema` |
 | Library extensions | `\gradbarsdeclarelibrary`, `\usegradbarslibrary`, `\gradbarsiflibraryloaded` |
 | Scalar extensions | `\gradbarsdeclaretype`, `\gradgraphic` |
@@ -93,7 +93,10 @@ code. An outer TikZ picture owns the whole-picture description. Table measuremen
 suspends tags to avoid duplicate descriptions. These features do not certify a
 complete table or document as PDF/UA conformant.
 
-PGF/TikZ remains the sole supplied backend. The model/backend boundary is private.
+PGF/TikZ remains the sole supplied drawing implementation. Schema-1 scalar backend
+registration and read-only records are public; private model storage remains
+private. See [the backend contract](backends.md). Unsupported compound/legend
+requests require explicit native fallback.
 The optional tabularray 2025C+ adapter loads with `\UseTblrLibrary{gradbars}`;
 its documented commands and columns are stable. It does not load with the five
 native feature libraries, modify ordinary tblr defaults, or add native table
@@ -101,3 +104,18 @@ statistics to tblr. Header text must be protected from numeric column commands;
 repeated graphic headers and complete tagged table structure are outside the
 tested accessibility scope. pgfplots and pgfplotstable may contain ordinary
 inline graphics but have no dedicated supplied adapter.
+
+## Version 1.1 additions
+
+Distribution and shared-legend commands, new native boxplot columns, accessible
+styles/palettes, new tabularray helpers/columns and explicit table-tagging settings
+are covered by their documented contracts in [distributions.md](distributions.md),
+[legends.md](legends.md) and [accessibility.md](accessibility.md). Unsupported
+combinations are diagnosed. Private tagging hooks and viewer-level behavior are
+not a universal table-tagging protocol. No interface is deprecated in 1.1.0.
+
+## Domain and contributor interfaces
+
+The opt-in reports commands/styles are documented in [reports.md](reports.md).
+The semantic version query/guard and schema-1 backend commands are public.
+The [starter](libraries/starter/README.md) uses public interfaces only.

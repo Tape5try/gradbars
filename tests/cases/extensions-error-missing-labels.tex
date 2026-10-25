@@ -1,0 +1,14 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\usegradbarslibrary{reports,distribution}
+\setlength{\parindent}{0pt}
+\gradbarsdeclarebackend{small}{bar}{\gradbarsbackenddefault}
+
+\gradbarsdeclarebackend{twice}{bar}{\gradbarsbackenddefault\gradbarsbackenddefault}
+\gradbarsdeclarebackend{recursive}{bar}{\gradbar[fill=solid,label=none]{1}}
+\gradbarsdeclarebackend{badfield}{bar}{\typeout{\gradbarsbackendvalue{typo}}}
+
+\begin{document}
+\gradbar[backend=small,fill=solid]{1}
+\end{document}

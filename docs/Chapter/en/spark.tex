@@ -2,7 +2,8 @@
 \begin{demo}{Comparable monthly observations}
 \gradbarsstyle{monthly}{width=65mm,height=7mm,min=0,max=100,
   spark range=fixed,precision=0,row padding=3pt}
-\begin{tabular}{@{}ll@{}}
+\begin{center}
+\begin{tabular}{@{}cc@{}}
 \toprule
 \multicolumn{1}{c}{Series} & \multicolumn{1}{c}{Jan--Jun / June value}\\\midrule
 North & \gradspark[style=monthly]{35,48,42,60,72,80}\\
@@ -11,6 +12,7 @@ West & \gradspark[style=monthly]{45,45,45,45,45,45}\\
 East & \gradspark[style=monthly]{30,40,55,60,70,NA}\\
 \bottomrule
 \end{tabular}
+\end{center}
 \end{demo}
 Observations are equally spaced. Empty fields and NA keep their horizontal
 position and break connections. The last label is the last position, not the last

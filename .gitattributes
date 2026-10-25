@@ -7,3 +7,12 @@
 .gitignore export-ignore
 .gitattributes export-ignore
 .github export-ignore
+
+*.py export-ignore
+*.pyc export-ignore
+*.pdf export-ignore
+
+UPLOAD-RESTRICTIONS.md export-ignore
+README.ctan.md export-ignore
+gradbars.dtx export-ignore
+gradbars.ins export-ignore

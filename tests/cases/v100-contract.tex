@@ -1,0 +1,27 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage[libraries=none]{gradbars}
+\setlength{\parindent}{0pt}
+
+\usegradbarslibrary{table}
+\newcount\callbacks
+\gradbarsdeclaretype{probe}{\global\advance\callbacks by1\relax\gradbar{#1}}
+\gradbarsdeclareformatter{probe}{\gradbarsformatnumber[precision=#2,number format=#3]{#1}}
+\gradbarsstyle{base}{color=teal,precision=2}
+\gradbarsstyle{nested}{style=base,precision=3}
+
+\begin{document}
+\gradbarsset{max=100,precision=1}
+{\gradbarsset{style=nested}\gradgraphic[formatter=probe]{probe}{7.125}}\par
+\gradgraphic{probe}{NA}\par
+\ifnum\callbacks=2\else\errmessage{Scalar callback count changed}\fi
+\makeatletter
+\ifnum\gradbars@precision=1\else\errmessage{Style scope leaked}\fi
+\ifnum\gradbars@max=100\else\errmessage{Range scope leaked}\fi
+\makeatother
+\begin{gradtable}[style=reference,width=\linewidth,theme=teal]
+\gradcolumn{name}{Method}
+\gradcolumn[type=number,aggregate=mean,options={precision=3}]{value}{Value}
+\gradrow{A,-12.125}\gradrow{B,1.25}\gradrow{Pending,NA}\gradsummary{Mean}
+\end{gradtable}
+\end{document}

@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Private table data layer.
-\ProvidesPackage{gradbars-table-data}[2026/10/30 v1.0.0 gradbars table data]
+\ProvidesPackage{gradbars-table-data}[2026/10/25 v1.1.0 gradbars table data]
 \ExplSyntaxOn
 \cs_new_protected:Npn\gradtableRank
   {\prop_clear:N\l__gradtable_best_prop\prop_clear:N\l__gradtable_second_prop
@@ -87,6 +87,7 @@
      {{compare}{\seq_set_split:Nnn\l__gradtable_scale_values_seq{/}{#1}}
       {dumbbell}{\seq_set_split:Nnn\l__gradtable_scale_values_seq{/}{#1}}
       {interval}{\seq_set_split:Nnn\l__gradtable_scale_values_seq{/}{#1}}
+      {boxplot}{\seq_set_split:Nnn\l__gradtable_scale_values_seq{,}{#1}}
       {spark}{\seq_set_split:Nnn\l__gradtable_scale_values_seq{,}{#1}}
       {stack}{\seq_set_split:Nnn\l__gradtable_scale_values_seq{,}{#1}}}
      {\seq_set_from_clist:Nn\l__gradtable_scale_values_seq{{#1}}}
@@ -131,8 +132,7 @@
               \fp_compare:nNnT{\l__gradtable_min_fp}={\l__gradtable_max_fp}
                 {\str_if_eq:eeTF{\prop_item:Nn\l__gradtable_zero_prop{##1}}{true}
                    {\fp_set:Nn\l__gradtable_max_fp{1}}
-                   {\fp_sub:Nn\l__gradtable_min_fp{.5}
-                    \fp_add:Nn\l__gradtable_max_fp{.5}}}}
+                   {\__gradbars_constant_range:NN\l__gradtable_min_fp\l__gradtable_max_fp}}}
              {\fp_zero:N\l__gradtable_min_fp\fp_set:Nn\l__gradtable_max_fp{1}}
            \gradtableAdjustRange{##1}
            \prop_put:Nnx\l__gradtable_ranges_prop{##1}

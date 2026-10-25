@@ -1,0 +1,18 @@
+
+\documentclass{article}\usepackage[libraries=csv]{gradbars}
+\gradbarscolumn*{G}{max=1,width=30mm,precision=3}
+\begin{document}
+\setbox0=\hbox{\begin{tabular}{@{}G@{}} \\ \end{tabular}}
+\ExplSyntaxOn\dim_compare:nNnT{\dim_abs:n{\wd0-30mm}}>{2sp}{\errmessage{Blank~column~width~changed}}\ExplSyntaxOff
+\setbox0=\hbox{\begin{tabular}{@{}G@{}}0\\\end{tabular}}
+\ExplSyntaxOn\dim_compare:nNnT{\dim_abs:n{\wd0-30mm}}>{2sp}{\errmessage{Zero~column~width~changed}}\ExplSyntaxOff
+\gradbarscolumn*{K}{width=6em,font=\scriptsize,label=none}
+\setbox0=\hbox{\begin{tabular}{@{}K@{}} \\ \end{tabular}}
+\setbox1=\hbox{\begin{tabular}{@{}K@{}}0\\\end{tabular}}
+\ExplSyntaxOn\dim_compare:nNnT{\dim_abs:n{\wd0-\wd1}}>{2sp}{\errmessage{Relative~column~width~changed}}\ExplSyntaxOff
+\makeatletter
+\def\expectedlabel{outside}\ifx\gradbars@label\expectedlabel\else\errmessage{Column settings leaked}\fi
+\makeatother
+{\gradbarscolumn*{J}{width=20mm}\begin{tabular}{J}1\\\end{tabular}}
+\gradbarscolumn*{J}{width=25mm}\begin{tabular}{J}1\\\end{tabular}
+\end{document}

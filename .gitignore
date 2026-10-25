@@ -21,9 +21,6 @@ build/
 gradbars_CTAN/
 
 *.pdf
-!gradbars-manual-v1.0.0.pdf
-!gradbars-manual-en-v1.0.0.pdf
-!gradbars-source-v1.0.0.pdf
 
 
 wiki-v0.0.4/
@@ -36,3 +33,16 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Keep local legacy tools; publish only TeX/Lua/shell sources.
+*.py
+*.pyc
+__pycache__/
+*.zip
+*.curlopt
+
+# Local release notes and generated CTAN sources are not GitHub source files.
+/UPLOAD-RESTRICTIONS.md
+/README.ctan.md
+/gradbars.dtx
+/gradbars.ins

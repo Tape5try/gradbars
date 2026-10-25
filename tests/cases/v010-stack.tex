@@ -1,0 +1,7 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage[libraries=none]{gradbars}
+\setlength{\parindent}{0pt}
+\usegradbarslibrary{stack}
+\gradbarsiflibraryloaded{stack}{}{\errmessage{Library not recorded}}\gradbarsiflibraryloaded{table}{\errmessage{Unwanted table dependency}}{}
+\begin{document}\gradstack[min=-50,max=100]{20,-10,30}\end{document}

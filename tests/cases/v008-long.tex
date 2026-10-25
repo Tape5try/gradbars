@@ -1,0 +1,113 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\makeatletter
+\ExplSyntaxOn
+\cs_new_eq:NN\testOriginalRanges\gradtableAutoRanges
+\tl_new:N\l_test_checks_tl
+\cs_set_protected:Npn\gradtableAutoRanges
+  {\testOriginalRanges\tl_use:N\l_test_checks_tl}
+\NewDocumentCommand\checks{m}{\tl_set:Nn\l_test_checks_tl{#1}}
+\NewDocumentCommand\assertcol{m m m}
+  {\group_begin:\gradtableConfigure{#1}
+   \fp_compare:nNnF{\gradbars@min}={#2}{\errmessage{Incorrect~minimum~for~#1}}
+   \fp_compare:nNnF{\gradbars@max}={#3}{\errmessage{Incorrect~maximum~for~#1}}
+   \group_end:}
+\NewDocumentCommand\assertrows{m}
+  {\int_compare:nNnF{\seq_count:N\l__gradtable_rows_seq}={#1}{\errmessage{Incorrect~CSV~row~count}}}
+\NewDocumentCommand\assertcell{m m m}
+  {\clist_set:Nx\l_tmpa_clist{\seq_item:Nn\l__gradtable_rows_seq{#1}}
+   \tl_set:Nx\l_tmpa_tl{\clist_item:Nn\l_tmpa_clist{#2}}
+   \str_if_eq:eeF{\tl_to_str:V\l_tmpa_tl}{\tl_to_str:n{#3}}{\errmessage{Incorrect~selected~cell}}}
+\NewDocumentCommand\assertheat{m m m}
+  {\group_begin:\gradbarssetup{#1}\gradbarsHeatColor{#2}
+   \convertcolorspec{named}{gradbarsHeatCell}{rgb}\testActualRGB
+   \convertcolorspec{named}{#3}{rgb}\testExpectedRGB
+   \clist_set:Nx\l_tmpa_clist{\testActualRGB}\clist_set:Nx\l_tmpb_clist{\testExpectedRGB}
+   \int_step_inline:nn{3}
+     {\fp_compare:nNnT{abs(\clist_item:Nn\l_tmpa_clist{##1}-\clist_item:Nn\l_tmpb_clist{##1})}>{.0002}
+       {\errmessage{Incorrect~heat~interpolation}}}\group_end:}
+\ExplSyntaxOff
+\makeatother
+\begin{document}
+\begin{gradtable}[long=true,style=research,width=\linewidth,theme=teal,group summary=true,rank scope=group,caption={Research pages}]\gradcolumn{name}{Name}\gradcolumn[type=number,aggregate=mean,mark=both,options={precision=4,number format=scientific}]{value}{Value}\gradgroup{Research group}\gradrow{Row-001,-1.25e-3}
+\gradrow{Row-002,1.25e1}
+\gradrow{Row-003,-1.25e-3}
+\gradrow{Row-004,1.25e1}
+\gradrow{Row-005,-1.25e-3}
+\gradrow{Row-006,1.25e1}
+\gradrow{Row-007,-1.25e-3}
+\gradrow{Row-008,1.25e1}
+\gradrow{Row-009,-1.25e-3}
+\gradrow{Row-010,1.25e1}
+\gradrow{Row-011,-1.25e-3}
+\gradrow{Row-012,1.25e1}
+\gradrow{Row-013,-1.25e-3}
+\gradrow{Row-014,1.25e1}
+\gradrow{Row-015,-1.25e-3}
+\gradrow{Row-016,1.25e1}
+\gradrow{Row-017,-1.25e-3}
+\gradrow{Row-018,1.25e1}
+\gradrow{Row-019,-1.25e-3}
+\gradrow{Row-020,1.25e1}
+\gradrow{Row-021,-1.25e-3}
+\gradrow{Row-022,1.25e1}
+\gradrow{Row-023,-1.25e-3}
+\gradrow{Row-024,1.25e1}
+\gradrow{Row-025,-1.25e-3}
+\gradrow{Row-026,1.25e1}
+\gradrow{Row-027,-1.25e-3}
+\gradrow{Row-028,1.25e1}
+\gradrow{Row-029,-1.25e-3}
+\gradrow{Row-030,1.25e1}
+\gradrow{Row-031,-1.25e-3}
+\gradrow{Row-032,1.25e1}
+\gradrow{Row-033,-1.25e-3}
+\gradrow{Row-034,1.25e1}
+\gradrow{Row-035,-1.25e-3}
+\gradrow{Row-036,1.25e1}
+\gradrow{Row-037,-1.25e-3}
+\gradrow{Row-038,1.25e1}
+\gradrow{Row-039,-1.25e-3}
+\gradrow{Row-040,1.25e1}
+\gradrow{Row-041,-1.25e-3}
+\gradrow{Row-042,1.25e1}
+\gradrow{Row-043,-1.25e-3}
+\gradrow{Row-044,1.25e1}
+\gradrow{Row-045,-1.25e-3}
+\gradrow{Row-046,1.25e1}
+\gradrow{Row-047,-1.25e-3}
+\gradrow{Row-048,1.25e1}
+\gradrow{Row-049,-1.25e-3}
+\gradrow{Row-050,1.25e1}
+\gradrow{Row-051,-1.25e-3}
+\gradrow{Row-052,1.25e1}
+\gradrow{Row-053,-1.25e-3}
+\gradrow{Row-054,1.25e1}
+\gradrow{Row-055,-1.25e-3}
+\gradrow{Row-056,1.25e1}
+\gradrow{Row-057,-1.25e-3}
+\gradrow{Row-058,1.25e1}
+\gradrow{Row-059,-1.25e-3}
+\gradrow{Row-060,1.25e1}
+\gradrow{Row-061,-1.25e-3}
+\gradrow{Row-062,1.25e1}
+\gradrow{Row-063,-1.25e-3}
+\gradrow{Row-064,1.25e1}
+\gradrow{Row-065,-1.25e-3}
+\gradrow{Row-066,1.25e1}
+\gradrow{Row-067,-1.25e-3}
+\gradrow{Row-068,1.25e1}
+\gradrow{Row-069,-1.25e-3}
+\gradrow{Row-070,1.25e1}
+\gradrow{Row-071,-1.25e-3}
+\gradrow{Row-072,1.25e1}
+\gradrow{Row-073,-1.25e-3}
+\gradrow{Row-074,1.25e1}
+\gradrow{Row-075,-1.25e-3}
+\gradrow{Row-076,1.25e1}
+\gradrow{Row-077,-1.25e-3}
+\gradrow{Row-078,1.25e1}
+\gradrow{Row-079,-1.25e-3}
+\gradrow{Row-080,1.25e1}\gradsummary{Final summary}\end{gradtable}\end{document}

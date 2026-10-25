@@ -1,0 +1,39 @@
+\section{Third-party libraries and backend providers}
+The independent starter lives in \key{docs/libraries/starter/}. It contains a
+public-only library, an example, a three-engine checker and compatibility guidance.
+\begin{source}
+\usepackage[libraries=none]{gradbars}
+\gradbarsdeclarelibrary{starter}{table}{gradbars-contrib-starter.sty}
+\usegradbarslibrary{starter}
+\end{source}
+Keep the contributed file on the TeX search path. Rename starter package/type/
+formatter/style/backend names when making your own library. Declare dependencies
+in the registry and check them in the library. \key{\gradbarsversion} reports the
+package version; \key{\gradbarsrequireversion{1.1.0}} checks a minimum semantic version.
+Run the standalone checker with texlua and the installed TeX engines:
+\begin{source}
+texlua docs/libraries/starter/check.lua --gradbars-root .
+\end{source}
+\subsection{Public scalar backend contract}
+\key{\gradbarsbackendversion} is schema 1. It provides a scoped read-only record
+for bar and Heat callbacks while keeping private model storage private.
+\begin{source}
+\gradbarsdeclarebackend{my-backend}
+ {bar,heat,missing,signed,gradient,print,labels,units,clip,
+  decorations,embedded,tagging,artifact}
+ {\gradbarsbackenddefault}
+\gradbar[backend=my-backend]{72.125}
+\end{source}
+The callback receives bar or heat as its first argument. Declare only implemented
+or delegated capabilities. \key{\gradbarsbackendvalue{field}} exposes canonical
+values, normalized positions, physical dimensions, options and descriptions during
+the callback. \key{\gradbarsbackendlabel} typesets the existing formatted label.
+\key{\gradbarsbackenddefault} draws the captured native continuation once.
+\key{\gradbarsifbackendcapable{name}{feature}{yes}{no}} queries a declaration.
+Unknown backends, missing capabilities, recursive callbacks and out-of-scope
+record reads are diagnosed. Unsupported compound/legend kinds require explicit
+\key{backend fallback=tikz}; default error prevents silent changes. Default
+rendering still uses TikZ. This contract does not supply a second renderer.
+Callbacks may run during discarded table measurements: avoid external writes,
+respect suspended tagging and preserve raw data, units, clipping and baselines.
+The complete field and capability contract is in \key{docs/backends.md}.

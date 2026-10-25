@@ -1,0 +1,376 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\makeatletter
+\ExplSyntaxOn
+\cs_new_eq:NN\testOriginalRanges\gradtableAutoRanges
+\tl_new:N\l_test_checks_tl
+\cs_set_protected:Npn\gradtableAutoRanges
+  {\testOriginalRanges\tl_use:N\l_test_checks_tl}
+\NewDocumentCommand\checks{m}{\tl_set:Nn\l_test_checks_tl{#1}}
+\NewDocumentCommand\assertcol{m m m}
+  {\group_begin:\gradtableConfigure{#1}
+   \fp_compare:nNnF{\gradbars@min}={#2}{\errmessage{Incorrect~minimum~for~#1}}
+   \fp_compare:nNnF{\gradbars@max}={#3}{\errmessage{Incorrect~maximum~for~#1}}
+   \group_end:}
+\NewDocumentCommand\assertrows{m}
+  {\int_compare:nNnF{\seq_count:N\l__gradtable_rows_seq}={#1}{\errmessage{Incorrect~CSV~row~count}}}
+\NewDocumentCommand\assertcell{m m m}
+  {\clist_set:Nx\l_tmpa_clist{\seq_item:Nn\l__gradtable_rows_seq{#1}}
+   \tl_set:Nx\l_tmpa_tl{\clist_item:Nn\l_tmpa_clist{#2}}
+   \str_if_eq:eeF{\tl_to_str:V\l_tmpa_tl}{\tl_to_str:n{#3}}{\errmessage{Incorrect~selected~cell}}}
+\NewDocumentCommand\assertheat{m m m}
+  {\group_begin:\gradbarssetup{#1}\gradbarsHeatColor{#2}
+   \convertcolorspec{named}{gradbarsHeatCell}{rgb}\testActualRGB
+   \convertcolorspec{named}{#3}{rgb}\testExpectedRGB
+   \clist_set:Nx\l_tmpa_clist{\testActualRGB}\clist_set:Nx\l_tmpb_clist{\testExpectedRGB}
+   \int_step_inline:nn{3}
+     {\fp_compare:nNnT{abs(\clist_item:Nn\l_tmpa_clist{##1}-\clist_item:Nn\l_tmpb_clist{##1})}>{.0002}
+       {\errmessage{Incorrect~heat~interpolation}}}\group_end:}
+\ExplSyntaxOff
+\makeatother
+\begin{document}
+\makeatletter\ExplSyntaxOn
+\tl_new:N\l_vsix_checks_tl
+\cs_new_eq:NN\vsixOriginalSummary\gradtableBuildSummary
+\cs_set_protected:Npn\gradtableBuildSummary{\vsixOriginalSummary\tl_use:N\l_vsix_checks_tl}
+\NewDocumentCommand\summarychecks{m}{\tl_set:Nn\l_vsix_checks_tl{#1}}
+\NewDocumentCommand\assertsummary{m m}
+  {\tl_set:Nx\l_tmpa_tl{\prop_item:Nn\l__gradtable_summary_values_prop{#1}}
+   \str_if_eq:nnTF{#2}{NA}
+     {\str_if_eq:VnF\l_tmpa_tl{NA}{\errmessage{Expected~missing~summary}}}
+     {\fp_compare:nNnF{\l_tmpa_tl}={#2}{\errmessage{Incorrect~summary~statistic}}}}
+\NewDocumentCommand\assertbasis{m m}
+  {\group_begin:\gradtableConfigure{#1}
+   \fp_compare:nNnF{\gradbarsPercentBase}={#2}{\errmessage{Changed~percent~basis}}\group_end:}
+\NewDocumentCommand\assertgroup{m m m}
+  {\group_begin:\gradbarssetup{min=-999,max=999,scale~group=#1}\gradbarsResolveScaleGroup
+   \fp_compare:nNnF{\gradbars@min}={#2}{\errmessage{Incorrect~group~minimum}}
+   \fp_compare:nNnF{\gradbars@max}={#3}{\errmessage{Incorrect~group~maximum}}\group_end:}
+\ExplSyntaxOff\makeatother
+
+\checks{\assertrows{5}\assertcol{value}{-3}{5}}
+\summarychecks{\assertsummary{value}{4}}
+\begin{gradtable}[scale=column]
+\gradcolumn{name}{Item}
+\gradcolumn[type=bar,aggregate=count,mark=both]{value}{Value}
+\gradrow{A,0}\gradrow{B,-3}\gradrow{C,2}\gradrow{D,NA}\gradrow{E,5}
+\gradsummary{count}
+\end{gradtable}\par\bigskip
+
+\checks{\assertrows{5}\assertcol{value}{-3}{5}}
+\summarychecks{\assertsummary{value}{4}}
+\begin{gradtable}[scale=column]
+\gradcolumn{name}{Item}
+\gradcolumn[type=bar,aggregate=sum,mark=both]{value}{Value}
+\gradrow{A,0}\gradrow{B,-3}\gradrow{C,2}\gradrow{D,NA}\gradrow{E,5}
+\gradsummary{sum}
+\end{gradtable}\par\bigskip
+
+\checks{\assertrows{5}\assertcol{value}{-3}{5}}
+\summarychecks{\assertsummary{value}{1}}
+\begin{gradtable}[scale=column]
+\gradcolumn{name}{Item}
+\gradcolumn[type=bar,aggregate=mean,mark=both]{value}{Value}
+\gradrow{A,0}\gradrow{B,-3}\gradrow{C,2}\gradrow{D,NA}\gradrow{E,5}
+\gradsummary{mean}
+\end{gradtable}\par\bigskip
+
+\checks{\assertrows{5}\assertcol{value}{-3}{5}}
+\summarychecks{\assertsummary{value}{-3}}
+\begin{gradtable}[scale=column]
+\gradcolumn{name}{Item}
+\gradcolumn[type=bar,aggregate=min,mark=both]{value}{Value}
+\gradrow{A,0}\gradrow{B,-3}\gradrow{C,2}\gradrow{D,NA}\gradrow{E,5}
+\gradsummary{min}
+\end{gradtable}\par\bigskip
+
+\checks{\assertrows{5}\assertcol{value}{-3}{5}}
+\summarychecks{\assertsummary{value}{5}}
+\begin{gradtable}[scale=column]
+\gradcolumn{name}{Item}
+\gradcolumn[type=bar,aggregate=max,mark=both]{value}{Value}
+\gradrow{A,0}\gradrow{B,-3}\gradrow{C,2}\gradrow{D,NA}\gradrow{E,5}
+\gradsummary{max}
+\end{gradtable}\par\bigskip
+
+\checks{}
+\summarychecks{\assertsummary{n}{0}\assertsummary{sum}{0}\assertsummary{mean}{NA}\assertsummary{min}{NA}\assertsummary{max}{NA}}
+\begin{gradtable}[width=\linewidth,style=compact]
+\gradcolumn{name}{Item}
+\gradcolumn[type=number,aggregate=count]{n}{Count}
+\gradcolumn[type=number,aggregate=sum]{sum}{Sum}
+\gradcolumn[type=number,aggregate=mean]{mean}{Mean}
+\gradcolumn[type=number,aggregate=min]{min}{Min}
+\gradcolumn[type=number,aggregate=max]{max}{Max}
+\gradsummary{Summary}\end{gradtable}\par\bigskip
+\checks{}
+\summarychecks{\assertsummary{n}{0}\assertsummary{sum}{0}\assertsummary{mean}{NA}\assertsummary{min}{NA}\assertsummary{max}{NA}}
+\begin{gradtable}[width=\linewidth,style=compact]
+\gradcolumn{name}{Item}
+\gradcolumn[type=number,aggregate=count]{n}{Count}
+\gradcolumn[type=number,aggregate=sum]{sum}{Sum}
+\gradcolumn[type=number,aggregate=mean]{mean}{Mean}
+\gradcolumn[type=number,aggregate=min]{min}{Min}
+\gradcolumn[type=number,aggregate=max]{max}{Max}
+\gradrow{Missing,NA,NA,NA,NA,NA}\gradsummary{Summary}\end{gradtable}\par\bigskip
+\gradbarsloadcsv{select}{build/tests/select.csv}
+\checks{\assertrows{2}}
+\summarychecks{\assertsummary{value}{65}}
+\begin{gradtable}[data=select,sort=value,order=descending,limit=2]
+\gradcolumn[source=Label]{label}{Label}
+\gradcolumn[type=number,source=Score,aggregate=mean]{value}{Mean}
+\gradsummary{Visible}
+\end{gradtable}\par\bigskip
+\summarychecks{\assertsummary{value}{185/7}}
+\begin{gradtable}[data=select,sort=value,order=descending,limit=2]
+\gradcolumn[source=Label]{label}{Label}
+\gradcolumn[type=number,source=Score,aggregate=mean]{value}{Mean}
+\gradsummary[scope=data]{All}
+\end{gradtable}\par\bigskip
+\summarychecks{}
+\gradscale{shared}{min=-50,max=100}
+\assertgroup{shared}{-50}{100}
+{\gradscale{shared}{min=10,max=20}\assertgroup{shared}{10}{20}}
+\assertgroup{shared}{-50}{100}
+\gradbar[scale group=shared,min=-999,max=999]{-25}\par
+\gradheat[scale group=shared,min=-999,max=999]{50}\par
+\gradspark[spark range=fixed,scale group=shared]{-20,0,80}\par
+\checks{\assertcol{value}{-50}{100}}
+\begin{gradtable}[scale group=shared]
+\gradcolumn{name}{Item}
+\gradcolumn[type=bar,options={min=-999,max=999}]{value}{Value}
+\gradrow{A,50}
+\end{gradtable}\par\bigskip
+
+\checks{\assertcol{value}{0}{95.7}\assertbasis{value}{87}}
+\begin{gradtable}[scale=column,scale padding=10]
+\gradcolumn{name}{Item}\gradcolumn[type=number]{value}{Value}
+\gradrow{A,63}
+\gradrow{A,87}
+\end{gradtable}\par\bigskip
+\checks{\assertcol{value}{0}{100}\assertbasis{value}{87}}
+\begin{gradtable}[scale=column,scale padding=10,scale nice=true]
+\gradcolumn{name}{Item}\gradcolumn[type=number]{value}{Value}
+\gradrow{A,63}
+\gradrow{A,87}
+\end{gradtable}\par\bigskip
+\checks{\assertcol{value}{-33}{0}\assertbasis{value}{0}}
+\begin{gradtable}[scale=column,scale padding=10]
+\gradcolumn{name}{Item}\gradcolumn[type=number]{value}{Value}
+\gradrow{A,-30}
+\gradrow{A,-10}
+\end{gradtable}\par\bigskip
+\checks{\assertcol{value}{68}{92}\assertbasis{value}{90}}
+\begin{gradtable}[scale=column,include zero=false,scale padding=10]
+\gradcolumn{name}{Item}\gradcolumn[type=number]{value}{Value}
+\gradrow{A,70}
+\gradrow{A,90}
+\end{gradtable}\par\bigskip
+\checks{\assertcol{value}{-4}{6}\assertbasis{value}{5}}
+\begin{gradtable}[scale=column,scale padding=10,scale nice=true]
+\gradcolumn{name}{Item}\gradcolumn[type=number]{value}{Value}
+\gradrow{A,-3}
+\gradrow{A,5}
+\end{gradtable}\par\bigskip
+\checks{\assertcol{value}{0}{1}\assertbasis{value}{1}}
+\begin{gradtable}[scale=column,scale nice=true]
+\gradcolumn{name}{Item}\gradcolumn[type=number]{value}{Value}
+\gradrow{A,0}
+\gradrow{A,0}
+\end{gradtable}\par\bigskip
+\checks{\assertcol{value}{0}{1}\assertbasis{value}{1}}
+\begin{gradtable}[scale=column,scale nice=true]
+\gradcolumn{name}{Item}\gradcolumn[type=number]{value}{Value}
+\gradrow{A,NA}
+\gradrow{A,NA}
+\end{gradtable}\par\bigskip
+\checks{\assertcol{value}{6.4}{7.6}\assertbasis{value}{7.5}}
+\begin{gradtable}[scale=column,include zero=false,scale nice=true]
+\gradcolumn{name}{Item}\gradcolumn[type=number]{value}{Value}
+\gradrow{A,7}
+\gradrow{A,7}
+\end{gradtable}\par\bigskip
+\checks{\assertcol{value}{0}{8e-06}\assertbasis{value}{7e-06}}
+\begin{gradtable}[scale=column,scale nice=true]
+\gradcolumn{name}{Item}\gradcolumn[type=number]{value}{Value}
+\gradrow{A,.000003}
+\gradrow{A,.000007}
+\end{gradtable}\par\bigskip
+\checks{\assertcol{value}{0}{800000}\assertbasis{value}{700000}}
+\begin{gradtable}[scale=column,scale nice=true]
+\gradcolumn{name}{Item}\gradcolumn[type=number]{value}{Value}
+\gradrow{A,300000}
+\gradrow{A,700000}
+\end{gradtable}\par\bigskip
+\checks{}\summarychecks{\assertsummary{bar}{81}\assertsummary{heat}{2}}
+\begin{gradtable}[style=academic,theme=blue,width=\linewidth]
+\gradcolumn{name}{Method}\gradcolumn[type=bar,aggregate=mean]{bar}{Score}\gradcolumn[type=heat,aggregate=count]{heat}{Heat}
+\gradrow{A,72,72}\gradrow{B,90,90}\gradsummary{Summary}\end{gradtable}\par\bigskip
+\checks{}\summarychecks{\assertsummary{bar}{81}\assertsummary{heat}{2}}
+\begin{gradtable}[style=academic,theme=teal,width=\linewidth]
+\gradcolumn{name}{Method}\gradcolumn[type=bar,aggregate=mean]{bar}{Score}\gradcolumn[type=heat,aggregate=count]{heat}{Heat}
+\gradrow{A,72,72}\gradrow{B,90,90}\gradsummary{Summary}\end{gradtable}\par\bigskip
+\checks{}\summarychecks{\assertsummary{bar}{81}\assertsummary{heat}{2}}
+\begin{gradtable}[style=academic,theme=violet,width=\linewidth]
+\gradcolumn{name}{Method}\gradcolumn[type=bar,aggregate=mean]{bar}{Score}\gradcolumn[type=heat,aggregate=count]{heat}{Heat}
+\gradrow{A,72,72}\gradrow{B,90,90}\gradsummary{Summary}\end{gradtable}\par\bigskip
+\checks{}\summarychecks{\assertsummary{bar}{81}\assertsummary{heat}{2}}
+\begin{gradtable}[style=academic,theme=orange,width=\linewidth]
+\gradcolumn{name}{Method}\gradcolumn[type=bar,aggregate=mean]{bar}{Score}\gradcolumn[type=heat,aggregate=count]{heat}{Heat}
+\gradrow{A,72,72}\gradrow{B,90,90}\gradsummary{Summary}\end{gradtable}\par\bigskip
+\checks{}\summarychecks{\assertsummary{bar}{81}\assertsummary{heat}{2}}
+\begin{gradtable}[style=academic,theme=forest,width=\linewidth]
+\gradcolumn{name}{Method}\gradcolumn[type=bar,aggregate=mean]{bar}{Score}\gradcolumn[type=heat,aggregate=count]{heat}{Heat}
+\gradrow{A,72,72}\gradrow{B,90,90}\gradsummary{Summary}\end{gradtable}\par\bigskip
+\checks{}\summarychecks{\assertsummary{bar}{81}\assertsummary{heat}{2}}
+\begin{gradtable}[style=academic,theme=mono,width=\linewidth]
+\gradcolumn{name}{Method}\gradcolumn[type=bar,aggregate=mean]{bar}{Score}\gradcolumn[type=heat,aggregate=count]{heat}{Heat}
+\gradrow{A,72,72}\gradrow{B,90,90}\gradsummary{Summary}\end{gradtable}\par\bigskip
+\checks{}\summarychecks{\assertsummary{bar}{81}\assertsummary{heat}{2}}
+\begin{gradtable}[style=compact,theme=blue,width=\linewidth]
+\gradcolumn{name}{Method}\gradcolumn[type=bar,aggregate=mean]{bar}{Score}\gradcolumn[type=heat,aggregate=count]{heat}{Heat}
+\gradrow{A,72,72}\gradrow{B,90,90}\gradsummary{Summary}\end{gradtable}\par\bigskip
+\checks{}\summarychecks{\assertsummary{bar}{81}\assertsummary{heat}{2}}
+\begin{gradtable}[style=compact,theme=teal,width=\linewidth]
+\gradcolumn{name}{Method}\gradcolumn[type=bar,aggregate=mean]{bar}{Score}\gradcolumn[type=heat,aggregate=count]{heat}{Heat}
+\gradrow{A,72,72}\gradrow{B,90,90}\gradsummary{Summary}\end{gradtable}\par\bigskip
+\checks{}\summarychecks{\assertsummary{bar}{81}\assertsummary{heat}{2}}
+\begin{gradtable}[style=compact,theme=violet,width=\linewidth]
+\gradcolumn{name}{Method}\gradcolumn[type=bar,aggregate=mean]{bar}{Score}\gradcolumn[type=heat,aggregate=count]{heat}{Heat}
+\gradrow{A,72,72}\gradrow{B,90,90}\gradsummary{Summary}\end{gradtable}\par\bigskip
+\checks{}\summarychecks{\assertsummary{bar}{81}\assertsummary{heat}{2}}
+\begin{gradtable}[style=compact,theme=orange,width=\linewidth]
+\gradcolumn{name}{Method}\gradcolumn[type=bar,aggregate=mean]{bar}{Score}\gradcolumn[type=heat,aggregate=count]{heat}{Heat}
+\gradrow{A,72,72}\gradrow{B,90,90}\gradsummary{Summary}\end{gradtable}\par\bigskip
+\checks{}\summarychecks{\assertsummary{bar}{81}\assertsummary{heat}{2}}
+\begin{gradtable}[style=compact,theme=forest,width=\linewidth]
+\gradcolumn{name}{Method}\gradcolumn[type=bar,aggregate=mean]{bar}{Score}\gradcolumn[type=heat,aggregate=count]{heat}{Heat}
+\gradrow{A,72,72}\gradrow{B,90,90}\gradsummary{Summary}\end{gradtable}\par\bigskip
+\checks{}\summarychecks{\assertsummary{bar}{81}\assertsummary{heat}{2}}
+\begin{gradtable}[style=compact,theme=mono,width=\linewidth]
+\gradcolumn{name}{Method}\gradcolumn[type=bar,aggregate=mean]{bar}{Score}\gradcolumn[type=heat,aggregate=count]{heat}{Heat}
+\gradrow{A,72,72}\gradrow{B,90,90}\gradsummary{Summary}\end{gradtable}\par\bigskip
+\checks{}\summarychecks{\assertsummary{bar}{81}\assertsummary{heat}{2}}
+\begin{gradtable}[style=dashboard,theme=blue,width=\linewidth]
+\gradcolumn{name}{Method}\gradcolumn[type=bar,aggregate=mean]{bar}{Score}\gradcolumn[type=heat,aggregate=count]{heat}{Heat}
+\gradrow{A,72,72}\gradrow{B,90,90}\gradsummary{Summary}\end{gradtable}\par\bigskip
+\checks{}\summarychecks{\assertsummary{bar}{81}\assertsummary{heat}{2}}
+\begin{gradtable}[style=dashboard,theme=teal,width=\linewidth]
+\gradcolumn{name}{Method}\gradcolumn[type=bar,aggregate=mean]{bar}{Score}\gradcolumn[type=heat,aggregate=count]{heat}{Heat}
+\gradrow{A,72,72}\gradrow{B,90,90}\gradsummary{Summary}\end{gradtable}\par\bigskip
+\checks{}\summarychecks{\assertsummary{bar}{81}\assertsummary{heat}{2}}
+\begin{gradtable}[style=dashboard,theme=violet,width=\linewidth]
+\gradcolumn{name}{Method}\gradcolumn[type=bar,aggregate=mean]{bar}{Score}\gradcolumn[type=heat,aggregate=count]{heat}{Heat}
+\gradrow{A,72,72}\gradrow{B,90,90}\gradsummary{Summary}\end{gradtable}\par\bigskip
+\checks{}\summarychecks{\assertsummary{bar}{81}\assertsummary{heat}{2}}
+\begin{gradtable}[style=dashboard,theme=orange,width=\linewidth]
+\gradcolumn{name}{Method}\gradcolumn[type=bar,aggregate=mean]{bar}{Score}\gradcolumn[type=heat,aggregate=count]{heat}{Heat}
+\gradrow{A,72,72}\gradrow{B,90,90}\gradsummary{Summary}\end{gradtable}\par\bigskip
+\checks{}\summarychecks{\assertsummary{bar}{81}\assertsummary{heat}{2}}
+\begin{gradtable}[style=dashboard,theme=forest,width=\linewidth]
+\gradcolumn{name}{Method}\gradcolumn[type=bar,aggregate=mean]{bar}{Score}\gradcolumn[type=heat,aggregate=count]{heat}{Heat}
+\gradrow{A,72,72}\gradrow{B,90,90}\gradsummary{Summary}\end{gradtable}\par\bigskip
+\checks{}\summarychecks{\assertsummary{bar}{81}\assertsummary{heat}{2}}
+\begin{gradtable}[style=dashboard,theme=mono,width=\linewidth]
+\gradcolumn{name}{Method}\gradcolumn[type=bar,aggregate=mean]{bar}{Score}\gradcolumn[type=heat,aggregate=count]{heat}{Heat}
+\gradrow{A,72,72}\gradrow{B,90,90}\gradsummary{Summary}\end{gradtable}\par\bigskip
+\checks{}
+\summarychecks{\assertsummary{value}{40.5}}
+\begin{gradtable}[long=true,width=\linewidth,style=compact,theme=teal,caption={Summary pages}]
+\gradcolumn{name}{Method}\gradcolumn[type=number,aggregate=mean]{value}{Value}
+\gradrow{Row 1,1}
+\gradrow{Row 2,2}
+\gradrow{Row 3,3}
+\gradrow{Row 4,4}
+\gradrow{Row 5,5}
+\gradrow{Row 6,6}
+\gradrow{Row 7,7}
+\gradrow{Row 8,8}
+\gradrow{Row 9,9}
+\gradrow{Row 10,10}
+\gradrow{Row 11,11}
+\gradrow{Row 12,12}
+\gradrow{Row 13,13}
+\gradrow{Row 14,14}
+\gradrow{Row 15,15}
+\gradrow{Row 16,16}
+\gradrow{Row 17,17}
+\gradrow{Row 18,18}
+\gradrow{Row 19,19}
+\gradrow{Row 20,20}
+\gradrow{Row 21,21}
+\gradrow{Row 22,22}
+\gradrow{Row 23,23}
+\gradrow{Row 24,24}
+\gradrow{Row 25,25}
+\gradrow{Row 26,26}
+\gradrow{Row 27,27}
+\gradrow{Row 28,28}
+\gradrow{Row 29,29}
+\gradrow{Row 30,30}
+\gradrow{Row 31,31}
+\gradrow{Row 32,32}
+\gradrow{Row 33,33}
+\gradrow{Row 34,34}
+\gradrow{Row 35,35}
+\gradrow{Row 36,36}
+\gradrow{Row 37,37}
+\gradrow{Row 38,38}
+\gradrow{Row 39,39}
+\gradrow{Row 40,40}
+\gradrow{Row 41,41}
+\gradrow{Row 42,42}
+\gradrow{Row 43,43}
+\gradrow{Row 44,44}
+\gradrow{Row 45,45}
+\gradrow{Row 46,46}
+\gradrow{Row 47,47}
+\gradrow{Row 48,48}
+\gradrow{Row 49,49}
+\gradrow{Row 50,50}
+\gradrow{Row 51,51}
+\gradrow{Row 52,52}
+\gradrow{Row 53,53}
+\gradrow{Row 54,54}
+\gradrow{Row 55,55}
+\gradrow{Row 56,56}
+\gradrow{Row 57,57}
+\gradrow{Row 58,58}
+\gradrow{Row 59,59}
+\gradrow{Row 60,60}
+\gradrow{Row 61,61}
+\gradrow{Row 62,62}
+\gradrow{Row 63,63}
+\gradrow{Row 64,64}
+\gradrow{Row 65,65}
+\gradrow{Row 66,66}
+\gradrow{Row 67,67}
+\gradrow{Row 68,68}
+\gradrow{Row 69,69}
+\gradrow{Row 70,70}
+\gradrow{Row 71,71}
+\gradrow{Row 72,72}
+\gradrow{Row 73,73}
+\gradrow{Row 74,74}
+\gradrow{Row 75,75}
+\gradrow{Row 76,76}
+\gradrow{Row 77,77}
+\gradrow{Row 78,78}
+\gradrow{Row 79,79}
+\gradrow{Row 80,80}
+\gradsummary{Final summary}
+\end{gradtable}
+\checks{}\summarychecks{}
+\begin{gradtable}[scale=column,scale padding=10,scale nice=true]
+\gradcolumn{name}{Item}
+\gradcolumn[type=bar,aggregate=mean,options={value format=percent,percent base=100}]{value}{Percent}
+\gradrow{A,63}\gradrow{B,87}\gradsummary{Mean}
+\end{gradtable}
+\begin{gradtable}[scale=column,scale padding=10,scale nice=true]
+\gradcolumn{name}{Item}
+\gradcolumn[type=heat,aggregate=mean,options={value format=percent}]{value}{Percent}
+\gradrow{A,63}\gradrow{B,87}\gradsummary{Mean}
+\end{gradtable}
+\end{document}

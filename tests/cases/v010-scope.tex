@@ -1,0 +1,11 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage[libraries=none]{gradbars}
+\setlength{\parindent}{0pt}
+
+\begin{document}\gradbarsset{max=100,precision=2}
+{\gradbarssetup{max=200}\gradbar{150}}
+\makeatletter\ifnum\gradbars@max=100\else\errmessage{Settings leaked}\fi\makeatother
+\gradbar{50}\par\gradgraphic{bar}{NA}
+\gradbarsiflibraryloaded{unknown}{\errmessage{Unknown library is loaded}}{}
+\end{document}

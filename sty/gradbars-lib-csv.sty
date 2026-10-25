@@ -1,9 +1,10 @@
 % Author: SuFan; MIT License. Internal implementation unless documented.
-\ProvidesPackage{gradbars-lib-csv}[2026/10/30 v1.0.0 gradbars lib-csv]
+\ProvidesPackage{gradbars-lib-csv}[2026/10/25 v1.1.0 gradbars lib-csv]
 \RequirePackage{collcell}
 \ExplSyntaxOff
-\DeclareDocumentCommand\gradbarscolumn{m m}{%
-  \gradbarsDefineColumn{#1}{#2}}
+\DeclareDocumentCommand\gradbarscolumn{s m m}{%
+  \IfBooleanTF{#1}{\gradbarsDefineCompactColumn{#2}{#3}}{%
+    \gradbarsDefineColumn{#2}{#3}}}
 \ExplSyntaxOn
 \cs_new_protected:Npn \gradbarsDefineColumn #1#2
   {
@@ -13,8 +14,29 @@
       {\PackageError{gradbars}{Column~name~must~be~one~ASCII~letter}
         {Choose~a~single~unused~letter,~for~example~G.}}
   }
-\ExplSyntaxOff
 
+% Expand directly to \multicolumn: alignment must see \omit before any setup.
+\cs_set:Npn \gradbarshead #1 {\multicolumn{1}{c}{#1}}
+\dim_new:N \l__gradbars_column_blank_dim
+\cs_new_protected:Npn \__gradbars_compact_cell:nn #1#2
+  {\tl_if_blank:nTF {#2}
+     {\group_begin:
+      \gradbarssetup{#1}
+      \dim_set:Nn\l__gradbars_column_blank_dim{\gradbars@width}
+      \dim_compare:nNnTF{\l__gradbars_column_blank_dim}>{0pt}
+        {\hbox_to_wd:nn{\l__gradbars_column_blank_dim}{\hfil}}
+        {\gradbarsFail{Width~must~be~positive}}
+      \group_end:}
+     {\gradbar[baseline=text,label=inside,label~align=cell,#1]{#2}}}
+\cs_new_protected:Npn \gradbarsDefineCompactColumn #1#2
+  {\regex_match:nnTF {\A[A-Za-z]\Z}{#1}
+     {\clist_if_in:nnTF{c,l,r,p,m,b,w,W}{#1}
+        {\__gradbars_public_error:n{Column~already~defined~or~reserved:~#1}}
+        {\cs_if_exist:cTF{NC@find@#1}
+          {\__gradbars_public_error:n{Column~already~defined~or~reserved:~#1}}
+          {\newcolumntype{#1}
+            {>{\collectcell{\__gradbars_compact_cell:nn{#2}}}c<{\endcollectcell}}}}}
+     {\__gradbars_public_error:n{Column~name~must~be~one~ASCII~letter}}}
 
 \ExplSyntaxOff
 \ExplSyntaxOn

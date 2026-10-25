@@ -1,5 +1,5 @@
 % !TeX program = pdflatex
-% Build from the repository root: python scripts/build_manual.py
+% Build from the repository root: l3build doc
 \makeatletter
 \def\input@path{{docs/}}
 \makeatother
@@ -11,10 +11,11 @@
 \usepackage{gradbars,booktabs,array,tabularx,amsmath}
 \usepackage{tabularray}
 \UseTblrLibrary{gradbars}
+\usegradbarslibrary{distribution,legend,reports}
 \usepackage{tcolorbox,fancyhdr}
 \tcbuselibrary{listings,skins,breakable}
 \usepackage[colorlinks=true,linkcolor=gradbarsBlue,urlcolor=gradbarsTeal,
-  pdftitle={gradbars v1.0.0 English manual},pdfauthor={SuFan}]{hyperref}
+  pdftitle={gradbars v1.1.0 English manual},pdfauthor={SuFan}]{hyperref}
 \setcounter{tocdepth}{1}
 \usepackage{indentfirst}
 \setlength{\parindent}{2em}
@@ -26,7 +27,7 @@
 \renewcommand{\arraystretch}{1.25}
 \pagestyle{fancy}\fancyhf{}
 \fancyhead[L]{\sffamily gradbars --- English manual}
-\fancyhead[R]{v1.0.0}\fancyfoot[C]{\thepage}
+\fancyhead[R]{v1.1.0}\fancyfoot[C]{\thepage}
 \input{Chapter/en/code-style}
 \lstdefinestyle{gradmanual}{language=[LaTeX]TeX,basicstyle=\gradbarscodefont\fontsize{8}{10}\selectfont,
   columns=fullflexible,keepspaces=true,breaklines=true,showstringspaces=false,
@@ -82,6 +83,7 @@ the same interfaces; their section and example numbers are independent.
 % Chapters, in reading order.
 \include{Chapter/en/install}
 \include{Chapter/en/libraries}
+\include{Chapter/en/extensions}
 \include{Chapter/en/selection}
 \include{Chapter/en/values}
 \include{Chapter/en/signed-bars}
@@ -89,8 +91,10 @@ the same interfaces; their section and example numbers are independent.
 \include{Chapter/en/compare}
 \include{Chapter/en/change}
 \include{Chapter/en/spark}
+\include{Chapter/en/distribution}
 \include{Chapter/en/references}
 \include{Chapter/en/heat}
+\include{Chapter/en/legends}
 \include{Chapter/en/themes}
 \include{Chapter/en/overflow}
 \include{Chapter/en/quality}
@@ -105,6 +109,7 @@ the same interfaces; their section and example numbers are independent.
 \include{Chapter/en/summaries}
 \include{Chapter/en/table-themes}
 \include{Chapter/en/table-definitions}
+\include{Chapter/en/reports}
 \include{Chapter/en/longtable}
 \include{Chapter/en/tabularray}
 \include{Chapter/en/csv}

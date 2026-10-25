@@ -4,8 +4,10 @@
 Ten themes are available: blue, teal, solid, gray, lbyellow, viblue, cyblu,
 violet, orange and forest. The three new themes pair violet, warm-orange or
 forest-green gradients with matching pale tracks and dark value labels.
-Nine predefined solid colors are lightgreen, lightyellow, lightblue, lightred,
-rose, skyblue, gold, lavender and peach. Use \key{color} for solid fill and
+Nine predefined solid colors are \manualColor{lightgreen}, \manualColor{lightyellow},
+\manualColor{lightblue}, \manualColor{lightred}, \manualColor{rose},
+\manualColor{skyblue}, \manualColor{gold}, \manualColor{lavender} and
+\manualColor{peach}. Use \key{color} for solid fill and
 \key{left color}/\key{right color} for a gradient. Standard xcolor expressions work.
 
 \begin{demo}{Violet, warm orange and forest green themes}
@@ -51,3 +53,23 @@ back to the current palette. Definitions are scoped. In print/mono mode, categor
 colors use gray while registered patterns remain. Legends use the same mapping.
 Patterns are none, diagonal, reverse, dots, crosshatch, horizontal and vertical.
 Use names or textures alongside color when category distinctions matter.
+
+\subsection{Color roles with redundant cues}
+\key{palette=accessible} supplies seven Okabe--Ito color roles with cyclic stack
+textures; \key{theme=accessible} selects its solid-bar roles. Heat provides
+\key{heat palette} (\key{accessible-sequential}, \key{accessible-diverging}). Native tables
+accept \key{theme=accessible} and \key{style=accessible}. Existing defaults remain.
+\begin{demo}{Colors, text, texture and monochrome output}
+\gradstack[palette=accessible,width=45mm,height=16pt,
+  stack names={A,B,C},segment labels=name]{30,20,50}
+\par\medskip
+\gradstack[palette=accessible,print,width=45mm,height=16pt,
+  stack names={A,B,C},segment labels=name]{30,20,50}
+\end{demo}
+Colors and textures cycle; keep category text, especially beyond seven categories.
+For gradients, center-based automatic contrast is only an estimate; use solid
+fills, an external label or a white label background if needed. Heat computes
+black/white contrast for the actual cell fill. Missing markers, hollow outlier
+circles and printed patterns carry meaning without relying on color alone.
+Alternative text retains raw data and explicit units; deliberate \key{alt} can
+replace a long description while adjacent text provides the full data.

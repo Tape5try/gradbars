@@ -1,0 +1,15 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\usegradbarslibrary{reports,distribution}
+\setlength{\parindent}{0pt}
+\ExplSyntaxOn\gradbarsdeclarebackend{records}{bar,heat,missing,signed,gradient,print,labels,units,clip,decorations,embedded,tagging,artifact}{\ExplSyntaxOn
+\str_if_eq:eeTF{\gradbarsbackendvalue{missing}}{true}
+ {\str_if_eq:eeF{\gradbarsbackendvalue{value}}{NA}{\errmessage{Missing~value~lost}}}
+ {\fp_compare:nNnF{\gradbarsbackendvalue{value}}={5}{\errmessage{Raw~value~changed}}
+  \fp_compare:nNnF{\gradbarsbackendvalue{position}}={1}{\errmessage{Clip~position~changed}}
+  \fp_compare:nNnF{\gradbarsbackendvalue{zero}}={0}{\errmessage{Zero~position~changed}}}
+\ExplSyntaxOff\gradbarsbackenddefault}\ExplSyntaxOff\newcount\clipWarnings\makeatletter\let\savedWarning\PackageWarning\def\PackageWarning#1#2{\def\actualPackage{#1}\def\gradbarsPackage{gradbars}\ifx\actualPackage\gradbarsPackage\global\advance\clipWarnings1\relax\else\savedWarning{#1}{#2}\fi}\makeatother
+\begin{document}
+\gradbar[backend=records,min=0,max=1]{5}\gradbar[backend=records]{NA}\ifnum\clipWarnings=1\else\errmessage{Expected one clipping warning}\fi
+\end{document}

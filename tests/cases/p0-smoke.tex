@@ -1,0 +1,39 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\begin{document}
+\gradbarsloadcsv{results}{docs/data/results.csv}
+\begin{gradtable}[data=results,width=\linewidth,scale=column]
+  \gradcolumn[source=Model]{method}{Method}
+  \gradcolumn[type=bar,source=Score,mark=both]{score}{Score}
+  \gradcolumn[type=heat,source=Latency,include zero=false,
+    options={precision=0,better=lower}]{latency}{Latency}
+\end{gradtable}
+
+\bigskip
+\begin{gradtable}[width=\linewidth,scale=column,include zero=false]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=bar]{positive}{Positive}
+  \gradcolumn[type=bar]{negative}{Negative}
+  \gradcolumn[type=heat,mark=both]{heat}{Heat}
+  \gradrow{A,70,-30,70}
+  \gradrow{B,90,-10,90}
+  \gradrow{C,NA,NA,NA}
+\end{gradtable}
+
+\bigskip
+\gradheat[min=-10,max=10]{-10}\quad
+\gradheat[min=-10,max=10]{0}\quad
+\gradheat[min=-10,max=10]{10}\quad
+\gradheat{NA}
+
+\bigskip
+\begin{gradtable}[scale=column,graphic width=25mm,label width=12mm]
+  \gradcolumn[type=stack]{stack}{Stack}
+  \gradcolumn[type=compare]{pair}{Pair}
+  \gradcolumn[type=spark]{spark}{Spark}
+  \gradrow{{20,30,-10},40/60,{20,NA,60}}
+  \gradrow{{5,10,-40},NA/80,{-20,40,50}}
+\end{gradtable}
+\end{document}

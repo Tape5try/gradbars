@@ -1,7 +1,7 @@
 % Author and maintainer: SuFan (GitHub: Tape5try)
 % Copyright (c) 2026 SuFan. MIT License; see LICENSE.
 \NeedsTeXFormat{LaTeX2e}[2025/11/01]
-\ProvidesPackage{gradbars}[2026/10/30 v1.0.0 Modular inline data graphics]
+\ProvidesPackage{gradbars}[2026/10/25 v1.1.0 Modular inline data graphics]
 \RequirePackage{expl3}[2025/12/29]
 \RequirePackage{xparse}
 \ExplSyntaxOn
@@ -14,9 +14,11 @@
 \ProcessOptions*\relax
 \ExplSyntaxOff
 \RequirePackage{gradbars-core}
+\RequirePackage{gradbars-accessible}
 \RequirePackage{gradbars-api}
+\RequirePackage{gradbars-backend}
 \ExplSyntaxOn
-\clist_map_inline:nn{core,keys,numbers,model,render-tikz,tagging,api}
+\clist_map_inline:nn{core,keys,numbers,model,render-tikz,tagging,accessible,api,backend}
   {\__gradbars_check_module:n{gradbars-#1}}
 \gradbarsdeclarelibrary{core}{}{gradbars-core.sty}
 \prop_gput:Nnn\g__gradbars_library_state_prop{core}{loaded}
@@ -24,6 +26,9 @@
 \gradbarsdeclarelibrary{spark}{core}{gradbars-lib-spark.sty}
 \gradbarsdeclarelibrary{heat}{core}{gradbars-lib-heat.sty}
 \gradbarsdeclarelibrary{csv}{core}{gradbars-lib-csv.sty}
+\gradbarsdeclarelibrary{distribution}{core}{gradbars-lib-distribution.sty}
+\gradbarsdeclarelibrary{legend}{core,heat}{gradbars-lib-legend.sty}
+\gradbarsdeclarelibrary{reports}{table,legend}{gradbars-lib-reports.sty}
 \gradbarsdeclarelibrary{table}{core,stack,spark,heat,csv}{gradbars-lib-table.sty}
 \str_case:VnF\g__gradbars_requested_libraries_tl
   {{all}{\usegradbarslibrary{stack,spark,heat,csv,table}}{none}{}}

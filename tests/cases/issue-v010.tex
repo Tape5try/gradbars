@@ -1,0 +1,97 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{booktabs}
+\usepackage{tabularray}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\makeatletter
+\newsavebox{\testA}
+\newsavebox{\testB}
+\ExplSyntaxOn
+\cs_new_protected:Npn\assertdim #1#2
+  {\dim_compare:nNnT{\dim_abs:n{#1-(#2)}}>{.01pt}
+     {\errmessage{Dimension~mismatch:~\dim_eval:n{#1}~versus~\dim_eval:n{#2}}}}
+\cs_new_eq:NN\testBaseline\gradbarsResolveBaseline
+\cs_set_protected:Npn\gradbarsResolveBaseline
+  {\testBaseline
+   \cs_gset:Npx\testY{\gradbars@baseliney}
+   \cs_gset:Npx\testLabelHeight{\the\ht\gradbars@labelbox}
+   \cs_gset:Npx\testLabelDepth{\the\dp\gradbars@labelbox}
+   \cs_gset:Npx\testLeft{\gradbars@left}
+   \cs_gset:Npx\testRight{\gradbars@right}
+   \ifgradbars@gradient\gdef\testGradient{yes}\else\gdef\testGradient{no}\fi}
+\cs_new_protected:Npn\assertcolor #1#2
+  {\str_if_eq:eeF{#1}{#2}{\errmessage{Incorrect~resolved~color}}}
+\ExplSyntaxOff
+\makeatother
+\begin{document}
+\gradbarssetup{width=30mm,min=-100,max=100,precision=1}
+\edef\testIfLevel{\the\currentiflevel}
+% Outside slots must take the same space on either side of the track.
+\sbox{\testA}{\gradbar[label=outside,label width=45pt,unit=\%]{60}}
+\sbox{\testB}{\gradbar[label=left,unit=\%]{60}}
+\assertdim{\wd\testA}{\wd\testB}
+\sbox{\testA}{\gradbar[label=left,unit=\%]{0}}
+\assertdim{\wd\testA}{\wd\testB}
+\sbox{\testA}{\gradbar[label=left]{NA}}
+\assertdim{\wd\testA}{\wd\testB}
+\sbox{\testA}{\gradbar[label=left,text={An unusually long label},label width=1pt]{60}}
+\sbox{\testB}{\gradbar[label=outside,text={An unusually long label},label width=1pt]{60}}
+\assertdim{\wd\testA}{\wd\testB}
+% A text baseline follows the actual label box, including its declared font.
+\sbox{\testA}{\gradbar[label=left,baseline=text,height=18pt,font=\Large,text={gyp}]{60}}
+\assertdim{\testY}{9pt-(\testLabelHeight-\testLabelDepth)/2}
+\sbox{\testA}{\gradbar[label=none,baseline=center,height=18pt]{60}}
+\assertdim{\ht\testA}{\dp\testA}
+\sbox{\testB}{\gradbar[label=none,baseline=center,height=18pt,baseline shift=2pt]{60}}
+\assertdim{\ht\testB-\ht\testA}{2pt}
+\assertdim{\dp\testA-\dp\testB}{2pt}
+\sbox{\testA}{\gradbar[label=none,baseline=bottom,height=18pt]{60}}
+\assertdim{\testY}{0pt}
+\sbox{\testA}{\gradbar[label=none,baseline=auto,height=18pt]{60}}
+\assertdim{\testY}{9pt-.5ex}
+\sbox{\testA}{\gradbar[negative left color=magenta!25,negative right color=magenta]{-60}}
+\assertcolor{\testLeft}{magenta!25}\assertcolor{\testRight}{magenta}\assertcolor{\testGradient}{yes}
+\sbox{\testA}{\gradbar[negative left color=magenta,negative fill=solid,negative color=red]{-60}}
+\assertcolor{\testLeft}{red}\assertcolor{\testGradient}{no}
+\sbox{\testA}{\gradbar[negative fill=gradient,negative color=red]{-60}}
+\assertcolor{\testLeft}{red}\assertcolor{\testRight}{red}
+\sbox{\testA}{\gradbar[negative left color=magenta!25,negative right color=magenta,print]{-60}}
+\assertcolor{\testLeft}{white}\assertcolor{\testGradient}{no}
+\sbox{\testA}{\gradbar[negative fill=gradient,negative left color=magenta,thresholds={-20,20},threshold colors={red,yellow,green}]{-60}}
+\assertcolor{\testLeft}{red}\assertcolor{\testGradient}{no}
+\sbox{\testA}{\gradbar[negative color=red]{-60}}
+\assertcolor{\testLeft}{red}\assertcolor{\testGradient}{no}
+\sbox{\testA}{\gradbar[left color=teal,right color=teal!25,negative left color=magenta]{60}}
+\assertcolor{\testLeft}{teal}\assertcolor{\testRight}{teal!25}
+\ifnum\currentiflevel=\numexpr\testIfLevel+1\relax\else\errmessage{Unbalanced conditionals}\fi
+
+\section*{Left labels and text baselines}
+\begin{tabular}{lcl}
+\toprule
+Model & Number & Graphic\\\midrule
+Baseline & 72.4 & \gradbar[baseline=text]{72.4}\\
+Proposed & 92.7 & \gradbar[baseline=text,label=left,unit=\%]{92.7}\\
+Missing & -- & \gradbar[baseline=text,label=left]{NA}\\
+\bottomrule
+\end{tabular}
+\par\medskip
+{\gradbarssetup{min=0,max=.065,precision=5,label=left,unit=\%,width=18mm,baseline=text}
+\begin{tblr}{colspec={lc},cells={cmd=\relax},cell{2-Z}{2}={cmd=\gradbar}}
+Decade & Frequency\\
+1700 & .05942\\
+1710 & .03044\\
+\end{tblr}}
+\section*{Independent negative gradients}
+{\gradbarssetup{width=50mm,left color=teal,right color=teal!25,
+  negative left color=magenta!25,negative right color=magenta}
+\gradbar{60}\par\medskip\gradbar{-60}\par\medskip
+\gradbar[label=left,baseline=text,unit=\%]{-100}}
+\par\medskip
+\gradbar[label=left,baseline=text,number format=scientific]{1.2e1}
+\par\medskip
+\gradbar[label=left,baseline=text,label overflow=allow,label width=3em,text={Allow}]{50}
+\par\medskip
+{\small\gradbar[label=left,baseline=text,font=\bfseries]{-25}}\quad
+{\Large\gradbar[label=left,baseline=text,label width=2em]{25}}
+\end{document}

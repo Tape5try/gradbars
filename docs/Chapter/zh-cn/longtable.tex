@@ -3,7 +3,8 @@
 完整的多级表头会在每一页重复；列宽与最优值在整张表中统一计算，不会逐页改变。
 分组标题与首条数据保持在同一页，后续数据可以跨页，续页不自动重复分组名称。
 
-\begin{tabularx}{\linewidth}{@{}lX@{}}
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}c>{\centering\arraybackslash}X@{}}
 \toprule
 \multicolumn{1}{c}{选项} & \multicolumn{1}{c}{用法}\\\midrule
 \key{long=true} & 开启跨页；默认 false。直接放在单栏正文中。\\
@@ -12,6 +13,7 @@
 \key{continued text={（续）}} & 续页标题及非末页页脚提示，默认 (continued)，可设为空。\\
 \bottomrule
 \end{tabularx}
+\end{center}
 长表不能放在 table 浮动体、minipage、双栏模式或不可分页的示例框中。
 单条数据行本身不能拆分；一个超高单元格应先拆成多条记录。
 跨页表默认靠左放置，width 可设为当前 linewidth。页数和引用通常需要编译两次才稳定。
@@ -20,10 +22,10 @@
 下表直接在手册正文中分页，随后给出产生它的完整源码。
 图形和标签尺度跨页保持一致；加粗及下划线比较的是全部记录。
 \begin{filecontents*}[overwrite]{\jobname-gradtable-long.tex}
-\begin{gradtable}[long=true,width=\linewidth,
+\begin{center}
+\begin{gradtable}[align=c,header align=c,long=true,width=\linewidth,
   caption={分组模型评估},label={tab:gradtable-long},
-  continued text={（续）},header align=c,
-  label width=12mm,column sep=6pt,
+  continued text={（续）},label width=12mm,column sep=6pt,
   row stretch=1.4,row padding=3pt]
   \gradcolumn[weight=1]{method}{方法}
   \gradcolumn[type=bar,weight=2,mark=both,
@@ -62,6 +64,7 @@
   \gradrow{方法 23,84.0,10.0,80/84/88}
   \gradrow{方法 24,91.2,13.1,87/91/95}
 \end{gradtable}
+\end{center}
 \end{filecontents*}
 \input{\jobname-gradtable-long.tex}
 表~\ref{tab:gradtable-long} 的数据列在续页沿用相同的位置与宽度。

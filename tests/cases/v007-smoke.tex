@@ -1,0 +1,31 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\begin{document}
+\section*{Algorithm families}
+\gradbarsloadcsv{families}{docs/data/families.csv}
+\begin{gradtable}[data=families,width=\linewidth,style=academic,theme=teal,
+  scale=column,group by=family,rank scope=group,group summary=true,
+  sort keys={score/descending,time/ascending}]
+\gradcolumn[source=Method]{method}{Method}
+\gradcolumn[source=Family]{family}{Family}
+\gradcolumn[type=bar,source=Score,mark=both,aggregate=mean]{score}{Score}
+\gradcolumn[type=number,source=Time,mark=both,aggregate=min,
+  options={better=lower,precision=0,unit={\,ms}}]{time}{Time}
+\gradsummary{All visible}
+\end{gradtable}
+\section*{Grouped experiments with shared ranges}
+\gradscale{change}{min=-10,max=10}
+\gradbarsloadcsv{experiments}{docs/data/experiments.csv}
+\begin{gradtable}[data=experiments,width=\linewidth,theme=violet,
+  group by=batch,group summary=true,group summary label={Group mean},
+  sort keys={change/descending,duration/ascending}]
+\gradcolumn[source=Run]{run}{Run}
+\gradcolumn[source=Batch]{batch}{Batch}
+\gradcolumn[type=heat,source=Change,aggregate=mean,scale group=change,
+  options={heat palette=diverging,heat center=0}]{change}{Change}
+\gradcolumn[type=number,source=Duration,aggregate=count]{duration}{Duration}
+\gradsummary{All visible}
+\end{gradtable}
+\end{document}

@@ -1,0 +1,21 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\usegradbarslibrary{distribution,legend}
+\setlength{\parindent}{0pt}
+
+\begin{document}
+\gradscale{test}{min=-10,max=30}
+\gradlegenddefine{test}{scale group=test,palette=accessible,heat palette=accessible-diverging,legend title={Score}}
+\gradlegenduse[width=65mm,height=3mm]{test}\par\bigskip
+\gradheat[legend group=test]{-10}\gradheat[legend group=test]{0}\gradheat[legend group=test]{30}\par\bigskip
+\gradheatlegend[width=50mm,height=3mm,min=-10,max=30,heat palette=diverging,better=lower]\par\bigskip
+\gradheatlegend[width=50mm,height=3mm,min=0,max=30,heat palette=diverging]\par\bigskip
+\gradheatlegend[width=50mm,height=3mm,min=-10,max=0,heat palette=diverging]\par\bigskip
+\gradheatlegend[width=35mm,height=3mm,legend orientation=vertical,min=-10,max=30,heat palette=accessible-diverging]\par\bigskip
+\gradlegenddefine{categories}{legend kind=categorical,palette=accessible,legend names={A,B,C}}
+\gradlegenduse{categories}\par\bigskip
+{\gradlegenddefine{local}{min=0,max=1}\gradlegenduse{local}}\par
+\gradlegenddefine{local}{min=0,max=2}\gradlegenduse{local}
+
+\end{document}

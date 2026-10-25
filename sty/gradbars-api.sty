@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Stable version-1 public extension entry points.
-\ProvidesPackage{gradbars-api}[2026/10/30 v1.0.0 gradbars public interfaces]
+\ProvidesPackage{gradbars-api}[2026/10/25 v1.1.0 gradbars public interfaces]
 \ExplSyntaxOn
 \prop_new:N\g__gradbars_library_files_prop
 \prop_new:N\g__gradbars_library_dependencies_prop
@@ -30,6 +30,26 @@
       \__gradbars_public_error:n{Missing~module~version:~#1}}}
 \prg_new_protected_conditional:Npnn\__gradbars_name_valid:n #1{TF}
   {\regex_match:nnTF{\A[a-z][a-z0-9-]*\Z}{#1}{\prg_return_true:}{\prg_return_false:}}
+
+\NewExpandableDocumentCommand\gradbarsversion{}{\tl_use:N\g__gradbars_release_version_tl}
+\seq_new:N\l__gradbars_required_version_seq
+\seq_new:N\l__gradbars_current_version_seq
+\int_new:N\l__gradbars_version_order_int
+\NewDocumentCommand\gradbarsrequireversion{m}
+ {\regex_match:nnTF{\A(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\Z}{#1}
+   {\seq_set_split:Nnn\l__gradbars_required_version_seq{.}{#1}
+    \exp_args:NNnV\seq_set_split:Nnn\l__gradbars_current_version_seq{.}\g__gradbars_release_version_tl
+    \int_zero:N\l__gradbars_version_order_int
+    \int_step_inline:nn{3}
+     {\int_compare:nNnT{\l__gradbars_version_order_int}={0}
+       {\int_compare:nNnT{\seq_item:Nn\l__gradbars_current_version_seq{##1}}>
+         {\seq_item:Nn\l__gradbars_required_version_seq{##1}}{\int_set:Nn\l__gradbars_version_order_int{1}}
+        \int_compare:nNnT{\seq_item:Nn\l__gradbars_current_version_seq{##1}}<
+         {\seq_item:Nn\l__gradbars_required_version_seq{##1}}{\int_set:Nn\l__gradbars_version_order_int{-1}}}}
+    \int_compare:nNnT{\l__gradbars_version_order_int}<{0}
+     {\__gradbars_public_error:n{Library~requires~gradbars~#1~or~newer;~installed~\gradbarsversion}}}
+   {\__gradbars_public_error:n{Invalid~required~version:~#1}}}
+
 \NewDocumentCommand\gradbarsdeclarelibrary{m m m}
   {\__gradbars_name_valid:nTF{#1}
      {\prop_if_in:NnTF\g__gradbars_library_files_prop{#1}
@@ -134,7 +154,8 @@
 \ProvideDocumentCommand\gradstack{O{} m}{\__gradbars_unloaded:n{stack}}
 \ProvideDocumentCommand\gradspark{O{} m}{\__gradbars_unloaded:n{spark}}
 \ProvideDocumentCommand\gradheat{O{} m}{\__gradbars_unloaded:n{heat}}
-\ProvideDocumentCommand\gradbarscolumn{m m}{\__gradbars_unloaded:n{csv}}
+\ProvideDocumentCommand\gradbarscolumn{s m m}{\__gradbars_unloaded:n{csv}}
+\ProvideDocumentCommand\gradbarshead{m}{\__gradbars_unloaded:n{csv}}
 \ProvideDocumentCommand\gradbarsloadcsv{O{} m m}{\__gradbars_unloaded:n{csv}}
 \ProvideDocumentCommand\gradbarcsv{O{} m m m}{\__gradbars_unloaded:n{csv}}
 \ProvideDocumentCommand\gradbarscsvcell{m m m}{\__gradbars_unloaded:n{csv}}
@@ -158,6 +179,21 @@
 \ProvideDocumentCommand\gradheatTblr{O{} m}{\__gradbars_tblr_unloaded:}
 \ProvideDocumentCommand\gradnumberTblr{O{} m}{\__gradbars_tblr_unloaded:}
 \ProvideDocumentCommand\gradcompareTblr{O{} m}{\__gradbars_tblr_unloaded:}
+\ProvideDocumentCommand\gradcorrelation{O{} m}{\__gradbars_unloaded:n{reports}}
+\ProvideDocumentCommand\gradablation{O{} m m}{\__gradbars_unloaded:n{reports}}
+\ProvideDocumentCommand\gradmetric{O{} m}{\__gradbars_unloaded:n{reports}}
+\ProvideDocumentCommand\gradcorrelationcolumn{O{} m m}{\__gradbars_unloaded:n{reports}}
+\ProvideDocumentCommand\gradablationcolumn{O{} m m}{\__gradbars_unloaded:n{reports}}
+\ProvideDocumentCommand\gradmetriccolumn{O{} m m}{\__gradbars_unloaded:n{reports}}
+\ProvideDocumentCommand\gradboxplot{O{} m}{\__gradbars_unloaded:n{distribution}}
+\ProvideDocumentCommand\gradboxsummary{O{} m}{\__gradbars_unloaded:n{distribution}}
+\ProvideDocumentCommand\gradcomputesummary{m +m}{\__gradbars_unloaded:n{distribution}}
+\ProvideDocumentCommand\gradsummarytext{O{} m}{\__gradbars_unloaded:n{distribution}}
+\ProvideDocumentCommand\gradheatlegend{O{}}{\__gradbars_unloaded:n{legend}}
+\ProvideDocumentCommand\gradreferencelegend{O{} m}{\__gradbars_unloaded:n{legend}}
+\ProvideDocumentCommand\gradlegenddefine{m m}{\__gradbars_unloaded:n{legend}}
+\ProvideDocumentCommand\gradlegenduse{O{} m}{\__gradbars_unloaded:n{legend}}
+\ProvideDocumentCommand\gradtblrtagging{m}{\__gradbars_tblr_unloaded:}
 \@onlypreamble\usegradbarslibrary
 \@onlypreamble\gradbarsdeclarelibrary
 \ExplSyntaxOff

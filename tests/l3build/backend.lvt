@@ -1,0 +1,21 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage[libraries=none]{gradbars}
+\newcount\backendCount
+\gradbarsdeclarebackend{logger}{bar,gradient,labels}
+ {\global\advance\backendCount1\relax
+  \xdef\backendValue{\gradbarsbackendvalue{value}}
+  \xdef\backendPosition{\gradbarsbackendvalue{position}}
+  \gradbarsbackenddefault}
+\gradbarsrequireversion{1.0.9999}
+\begin{document}
+\START
+\TYPE{package=\gradbarsversion; schema=\gradbarsbackendversion}
+\gradbarsifbackendcapable{logger}{bar}{\TYPE{bar=yes}}{\TYPE{bar=no}}
+\gradbarsifbackendcapable{logger}{stack}{\TYPE{stack=yes}}{\TYPE{stack=no}}
+\OMIT
+\setbox0=\hbox{\gradbar[backend=logger,min=0,max=1]{.5}}
+\TIMO
+\TYPE{callbacks=\the\backendCount; value=\backendValue; position=\backendPosition}
+\END
+\end{document}

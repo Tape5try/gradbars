@@ -2,4 +2,7 @@
 \newcommand{\gradbarscodefont}{\ttfamily}
 \newcommand{\key}[1]{{\gradbarscodefont\detokenize{#1}}}
 \newcommand{\pkg}[1]{{\sffamily #1}}
+\DeclareRobustCommand{\manualTikZ}{Ti\textit{k}Z}
+\newcommand{\manualColor}[1]{\mbox{\key{#1}\,(\textcolor{#1}{\rule{.75em}{.75em}})}}
+\pdfstringdefDisableCommands{\def\manualTikZ{TikZ}}
 \pdfstringdefDisableCommands{\def\key#1{#1}\def\pkg#1{#1}\def\gradbarscodefont{}}

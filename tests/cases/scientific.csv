@@ -1,0 +1,5 @@
+Name,Family,Value,Time
+A,First,1e-3,4
+B,First,.001,2
+C,Second,-2.5E-3,3
+D,Second,NA,NA

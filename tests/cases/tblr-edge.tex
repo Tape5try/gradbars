@@ -1,0 +1,21 @@
+\documentclass{article}
+\usepackage{tabularray}
+\UseTblrLibrary{gradbars}
+\newsavebox{\heatShort}
+\newsavebox{\heatTall}
+\newsavebox{\cellProbe}
+\begin{document}
+\sbox{\heatShort}{\gradheatTblr[cell width=80pt,height=10pt]{50}}
+\sbox{\heatTall}{\gradheatTblr[cell width=80pt,height=24pt]{50}}
+\ifdim\dimexpr\ht\heatTall+\dp\heatTall\relax>
+  \dimexpr\ht\heatShort+\dp\heatShort+13pt\relax
+\else\errmessage{Heat cell ignored its configured height}\fi
+\sbox{\cellProbe}{\gradcompareTblr[cell width=80pt]{NA}}
+\ifdim\wd\cellProbe=80pt\else\errmessage{Missing pair changed cell width}\fi
+\gradtblrcell[cell width=80pt]{dumbbell}{NA}
+\gradtblrcell[cell width=80pt]{range}{}
+\gradtblrcell[cell width=80pt]{compare}{ }
+\sbox{\cellProbe}{\gradbarTblr[cell width=20pt,
+  text={A deliberately long label},label overflow=allow]{1}}
+\ifdim\wd\cellProbe=20pt\else\errmessage{Allowed label overflow changed cell width}\fi
+\end{document}

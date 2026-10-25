@@ -1,0 +1,21 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage[libraries=none]{gradbars}
+\usegradbarslibrary{distribution,legend}
+\begin{document}
+\START
+\gradcomputesummary{0,1,2,3,100,NA}{%
+  \TYPE{n=\gradstat{n}; missing=\gradstat{missing}}%
+  \TYPE{quartiles=\gradstat{q1},\gradstat{median},\gradstat{q3}}%
+  \TYPE{whiskers=\gradstat{low},\gradstat{high}; outliers=\gradstat{outliers}}}
+\gradcomputesummary{1,3}{\TYPE{two samples=\gradstat{q1},\gradstat{median},\gradstat{q3}}}
+\gradcomputesummary{NA}{\TYPE{all missing: n=\gradstat{n}; median=\gradstat{median}}}
+\gradlegenddefine{score}{min=-10,max=30,palette=accessible}
+\OMIT
+\setbox0=\hbox{\gradheat[legend group=score]{10}}
+\TIMO
+\gradbarsiflibraryloaded{distribution}{\TYPE{distribution=loaded}}{\TYPE{distribution=missing}}
+\gradbarsiflibraryloaded{legend}{\TYPE{legend=loaded}}{\TYPE{legend=missing}}
+\gradbarsiflibraryloaded{table}{\TYPE{table=unexpected}}{\TYPE{table=not loaded}}
+\END
+\end{document}

@@ -1,0 +1,38 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{siunitx}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\begin{document}
+\section*{Precision and time}
+\gradbarsloadcsv{precision}{docs/data/precision-time.csv}
+\begin{gradtable}[data=precision,width=\linewidth,style=research,theme=teal,
+  formatter=siunitx,group by=family,rank scope=group,group summary=true,
+  sort keys={score/descending,time/ascending}]
+\gradcolumn[source=Method]{name}{Method}
+\gradcolumn[source=Family]{family}{Family}
+\gradcolumn[type=bar,source=Score,aggregate=mean,mark=both,
+  options={precision=2}]{score}{Score}
+\gradcolumn[type=number,source=Time,aggregate=min,mark=both,
+  options={precision=3,better=lower,unit code={\milli\second},unit text={milliseconds}}]{time}{Time}
+\gradsummary{Overall}
+\end{gradtable}
+\section*{Different orders of magnitude}
+\gradbarsloadcsv{magnitudes}{docs/data/magnitudes.csv}
+\begin{gradtable}[data=magnitudes,width=\linewidth,style=research,theme=violet]
+\gradcolumn[source=Method]{name}{Method}
+\gradcolumn[type=number,source=Residual,aggregate=mean,mark=both,
+  options={precision=2,number format=scientific,better=lower}]{residual}{Residual}
+\gradcolumn[type=number,source=Count,aggregate=sum,
+  formatter=siunitx,options={precision=2,number format=scientific}]{count}{Count}
+\gradcolumn[type=number,source=Rate,aggregate=mean,
+  options={precision=3,unit={\,s}}]{rate}{Rate}
+\gradsummary{Summary}
+\end{gradtable}
+\section*{Standalone graphics}
+\gradscale{tiny}{min=-1e-2,max=1e-2}
+\gradbar[scale group=tiny,number format=scientific,precision=2]{1.25e-3}\par
+\gradheat[scale group=tiny,formatter=siunitx,number format=scientific,
+  unit code={\joule},unit text={joules}]{-2.5e-3}\par
+\gradspark[spark type=bar,formatter=siunitx,number format=scientific]{1e-4,-2E-4,0,NA}\par
+\end{document}

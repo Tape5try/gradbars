@@ -1,0 +1,64 @@
+\section{Continuous and shared legends}
+Load \key{legend} in the preamble; it depends on Heat. Unlike category swatches,
+a continuous legend describes a numeric scale and uses the same color interpolation.
+\begin{demo}{Two values sharing a frozen scale and legend}
+\begingroup
+\gradscale{legend-score}{min=-10,max=30}
+\gradlegenddefine{legend-score}{scale group=legend-score,
+  heat palette=purple-teal,
+  heat center=0,legend title={Score}}
+\gradheat[legend group=legend-score]{-5}
+\gradheat[legend group=legend-score]{20}
+\par\medskip
+\gradlegenduse[width=60mm,height=3mm,legend missing=false]{legend-score}
+\endgroup
+\end{demo}
+\key{\gradheatlegend} accepts ordinary graphic keys plus \key{legend title},
+\key{legend ticks}.\par
+\key{legend missing=false} hides the missing-value item and its automatic description;
+\key{true} is the default. Both legend commands accept this switch.\par
+Set \key{legend orientation} to \key{horizontal} or \key{vertical}.
+Width is ramp length; height is thickness. Endpoints and an interior neutral
+center are default ticks; custom ticks must increase within the range. The smooth
+ramp uses 256 vector strips. Increase precision or spacing if tick text overlaps.
+\key{\gradlegenddefine} freezes scale, direction, unit and color roles in the
+current group. Use \key{legend group=name} in standalone graphics or column
+options. Unknown names, duplicate declarations and contradictory scale/color/unit
+settings are errors. \key{\gradlegenduse} only accepts layout, tick formatting,
+font and accessibility overrides, leaving subsequent graphics unchanged.
+\begin{demo}{Reference symbols have different statistical meanings}
+\gradreferencelegend{target/Declared target,
+  reference/Reference value,band/Reference range,
+  error/Error distances,box/Quartiles and observed whiskers}
+\end{demo}
+Reference descriptions declare their actual meaning; neither error distances
+nor box whiskers automatically denote confidence intervals.
+For shared category or reference legends, set \key{legend kind=categorical|reference}
+and \key{legend names}. Repeated decoration may use \key{accessibility=artifact}.
+
+
+\subsection{Built-in Heat palettes}
+One \key{heat palette=name} selects endpoint colors, a white center and the interpolation mode.
+Sequential palettes \key{blue}, \key{teal}, \key{purple} and \key{orange} run from white to that color.
+Diverging palettes \key{purple-teal}, \key{blue-red}, \key{orange-blue} and \key{brown-teal}
+run from the first color through white to the second; \key{heat center} still sets the numeric center.
+These are color shortcuts, not accessibility certifications; existing accessible palettes remain available.
+Explicit low, center and high colors placed after the preset still override it.
+\begin{demo}{Built-in continuous palettes}
+\gradheatlegend[width=45mm,height=2mm,min=-10,max=30,heat center=0,
+  heat palette=blue,legend title={blue},legend missing=false]\quad
+\gradheatlegend[width=45mm,height=2mm,min=-10,max=30,heat center=0,
+  heat palette=teal,legend title={teal},legend missing=false]\par\medskip
+\gradheatlegend[width=45mm,height=2mm,min=-10,max=30,heat center=0,
+  heat palette=purple,legend title={purple},legend missing=false]\quad
+\gradheatlegend[width=45mm,height=2mm,min=-10,max=30,heat center=0,
+  heat palette=orange,legend title={orange},legend missing=false]\par\medskip
+\gradheatlegend[width=45mm,height=2mm,min=-10,max=30,heat center=0,
+  heat palette=purple-teal,legend title={purple-teal},legend missing=false]\quad
+\gradheatlegend[width=45mm,height=2mm,min=-10,max=30,heat center=0,
+  heat palette=blue-red,legend title={blue-red},legend missing=false]\par\medskip
+\gradheatlegend[width=45mm,height=2mm,min=-10,max=30,heat center=0,
+  heat palette=orange-blue,legend title={orange-blue},legend missing=false]\quad
+\gradheatlegend[width=45mm,height=2mm,min=-10,max=30,heat center=0,
+  heat palette=brown-teal,legend title={brown-teal},legend missing=false]
+\end{demo}

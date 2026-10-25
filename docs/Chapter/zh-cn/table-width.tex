@@ -4,8 +4,8 @@
 再为文字列和图形区域分配剩余宽度。图形的数值尺度保持不变，字体不会被整体缩小。
 
 \begin{example}[text and listing,sidebyside=false]{示例 58：固定数值列与可伸缩图形列}
-\begin{gradtable}[width=\linewidth,header align=c,
-  label width=12mm,column sep=6pt,row padding=2pt,
+\begin{center}
+\begin{gradtable}[align=c,header align=c,width=\linewidth,label width=12mm,column sep=6pt,row padding=2pt,
   min text width=18mm,min graphic width=15mm]
   \gradcolumn[weight=1]{method}{方法名称}
   \gradcolumn[type=bar,weight=2,mark=both,
@@ -18,8 +18,10 @@
   \gradrow{基础方法,84.6,320}
   \gradrow{待测方法,NA,80}
 \end{gradtable}
+\end{center}
 \end{example}
-\begin{tabularx}{\linewidth}{@{}lX@{}}
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}c>{\centering\arraybackslash}X@{}}
 \toprule
 \multicolumn{1}{c}{参数} & \multicolumn{1}{c}{分配规则}\\\midrule
 \key{width=0pt} & 默认值，保持按内容排版；正值启用总宽度分配。\\
@@ -29,6 +31,7 @@
 列选项 \key{width} & 总宽度模式下固定文字或图形列的单元格宽度；数字列仍至少容纳全部标签。\\
 \bottomrule
 \end{tabularx}
+\end{center}
 权重作用于满足最低宽度之后的剩余空间，因此 weight=2 不代表最终列宽恰为另一列的两倍。
 数字列按标签所需宽度排版，不参与伸缩。图形列的最终图区宽度由分配结果决定，
 优先于 graphic width 或图形 options 内的 width；同一列的所有行始终共享同一图区宽度。

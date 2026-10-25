@@ -1,0 +1,10 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+n=5; missing=1
+quartiles=1,2,3
+whiskers=0,3; outliers=100
+two samples=1.5,2,2.5
+all missing: n=0; median=NA
+distribution=loaded
+legend=loaded
+table=not loaded

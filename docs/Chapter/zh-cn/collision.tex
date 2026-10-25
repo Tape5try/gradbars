@@ -34,7 +34,8 @@
 \begin{example}[text and listing,sidebyside=false]{示例 36：统一列样式、缺失值和零值}
 \gradbarsstyle{score}{max=100,width=35mm,precision=0}
 \gradbarscolumn{G}{style=score}
-\begin{tabular}{@{}lG@{}}
+\begin{center}
+\begin{tabular}{@{}cG@{}}
   \toprule
 \multicolumn{1}{c}{Model} & \multicolumn{1}{c}{Score / 100}\\
   \midrule
@@ -45,9 +46,34 @@
   Zero & 0\\
   \bottomrule
 \end{tabular}
+\end{center}
 \end{example}
 
 该接口基于 array 与 collcell，适用于这里演示的 tabular 和 longtable。
 表格命令、文本、单位或已绘制的数据条不能直接作为 G 列的数值输入；
 需要特殊单元格时使用 \key{\multicolumn{1}{l}{...}}。
 它不会扫描整列或自动计算最大值，也不是 siunitx 的 S 列。
+
+
+\subsection{紧凑数值列：配置一次，单元格只写数字}
+\key{\gradbarscolumn*{G}{选项}} 为普通表格提供文字基线、格内居中数字和空白处理。
+该入口属于默认已加载的 csv 库，不需要 CSV 文件，也不需要手写 collectcell 或叠加标签。
+用户选项可继续覆盖默认设置；\key{\gradbarshead{文字}} 生成居中的单格文字表头并跳过数值转换。
+\begin{example}[text and listing,sidebyside=false]{一行定义图形列，数据区只填写数字}
+\gradbarscolumn*{G}{max=1,width=14mm,precision=3,
+  theme=gray,height=3ex,font=\small}
+\begin{center}
+\begin{tabular}{@{}cGG@{}}
+\toprule
+Method & \gradbarshead{Precision} & \gradbarshead{Recall}\\\midrule
+Alpha & 1.000 & 0.968\\
+Beta & & 0.750\\
+Zero & 0 & NA\\\bottomrule
+\end{tabular}
+\end{center}
+\end{example}
+空白单元格保留图形宽度但不绘制；NA 仍明确表示缺失，零值正常显示。
+不带星号的旧接口保持既有默认值与空白按缺失处理的行为。
+星号接口会拒绝已占用或保留的列名，请选择未使用的单个英文字母。
+分组表头继续使用标准 multicolumn；该接口不自动推断范围、排名或汇总。
+完整的四工具 Precision/Recall 表格见 \key{docs/examples/precision-recall.tex}。

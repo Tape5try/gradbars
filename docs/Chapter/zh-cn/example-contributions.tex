@@ -9,7 +9,8 @@
   min=-60,max=100,precision=0,palette=mono,
   stack names={Revenue,Materials,Service},
   stack totals=separate}
-\begin{tabular}{@{}ll@{}}
+\begin{center}
+\begin{tabular}{@{}cc@{}}
 \toprule
 \multicolumn{1}{c}{Period} & \multicolumn{1}{c}{Positive / Negative (units)}\\\midrule
 Q1 & \gradstack[style=ledger]{80,-35,-10}\\
@@ -17,6 +18,7 @@ Q2 & \gradstack[style=ledger]{95,-30,-15}\\
 Q3 & \gradstack[style=ledger]{70,-40,-20}\\
 \bottomrule
 \end{tabular}
+\end{center}
 
 \gradbarslegend[palette=mono,width=65mm]{Revenue,Materials,Service}
 \end{example}

@@ -1,0 +1,22 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage[libraries=none]{gradbars}
+\gradbarsdeclarelibrary{starter}{table}{gradbars-contrib-starter.sty}
+\usegradbarslibrary{starter,starter}
+\gradbarsifbackendcapable{starter-tikz}{bar}{}
+ {\PackageError{starter-example}{Missing backend capability}{Check library loading.}}
+\setlength{\parindent}{0pt}
+\begin{document}
+\section*{Third-party extension starter}
+\gradgraphic[max=100,precision=2]{starter-score}{72.125}\par\medskip
+\gradbar[backend=starter-tikz,formatter=starter-number,precision=2]{72.125}\par
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=starter-report,width=\linewidth]
+\gradcolumn{name}{Method}
+\gradcolumn[type=number,formatter=starter-number,aggregate=mean]{score}{Score}
+\gradrow{Alpha,72.125}\gradrow{Beta,90}\gradsummary{Mean}
+\end{gradtable}
+\end{center}
+\gradbarsiflibraryloaded{starter}{\typeout{STARTER-CHECK:OK}}
+ {\PackageError{starter-example}{Library did not load}{Check registration.}}
+\end{document}

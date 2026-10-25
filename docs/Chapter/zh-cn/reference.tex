@@ -1,6 +1,7 @@
 \section{参数速查与使用限制}
 \begingroup\small
-\begin{tabularx}{\linewidth}{@{}p{31mm}p{25mm}X@{}}
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}>{\centering\arraybackslash}p{31mm}>{\centering\arraybackslash}p{25mm}>{\centering\arraybackslash}X@{}}
 \toprule
 \multicolumn{1}{c}{\textbf{参数}} & \multicolumn{1}{c}{\textbf{默认值}} & \multicolumn{1}{c}{\textbf{含义与可选值}}\\
 \midrule
@@ -37,11 +38,13 @@
 \key{stack colors} & 蓝、青绿、金黄 & 堆叠条分段颜色列表，可循环使用。\\
 \bottomrule
 \end{tabularx}
+\end{center}
 \endgroup
 
 
 \subsection{数据、标签与图例参数}
-\begin{tabularx}{\linewidth}{@{}p{36mm}p{23mm}X@{}}
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}>{\centering\arraybackslash}p{36mm}>{\centering\arraybackslash}p{23mm}>{\centering\arraybackslash}X@{}}
 \toprule
 \multicolumn{1}{c}{\textbf{参数}} & \multicolumn{1}{c}{\textbf{默认值}} & \multicolumn{1}{c}{\textbf{含义}}\\
 \midrule
@@ -59,6 +62,7 @@
 \key{print labels} & \key{false} & 内部标签白底；print 会开启此项。\\
 \bottomrule
 \end{tabularx}
+\end{center}
 \key{\gradbarslegend[选项]{名称列表}} 生成可共享的独立图例；
 \key{\gradbarscolumn{G}{选项}} 定义统一样式的数值列。
 
@@ -67,7 +71,8 @@ CSV 命令包括 \key{\gradbarsloadcsv}、\key{\gradbarscsvtable}、\key{\gradba
 完整参数与范围计算规则见“CSV 数据导入”一节。
 
 \subsection{图形与排版参数}
-\begin{tabularx}{\linewidth}{@{}p{32mm}p{22mm}X@{}}
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}>{\centering\arraybackslash}p{32mm}>{\centering\arraybackslash}p{22mm}>{\centering\arraybackslash}X@{}}
 \toprule
 \multicolumn{1}{c}{\textbf{图形参数}} & \multicolumn{1}{c}{\textbf{默认值}} & \multicolumn{1}{c}{\textbf{说明}}\\
 \midrule
@@ -83,10 +88,12 @@ CSV 命令包括 \key{\gradbarsloadcsv}、\key{\gradbarscsvtable}、\key{\gradba
 \key{preset} & 未应用 & paper、report、presentation、outline。\\
 \bottomrule
 \end{tabularx}
+\end{center}
 
 
 \subsection{图形与评价接口}
-\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{43mm}X@{}}
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}>{\centering\arraybackslash}p{43mm}>{\centering\arraybackslash}X@{}}
 \toprule
 \multicolumn{1}{c}{接口或选项} & \multicolumn{1}{c}{说明}\\\midrule
 \key{\graddumbbell[o]{a}{b}} & 基准 a、当前 b；空心与实心圆。\\
@@ -107,10 +114,12 @@ CSV 命令包括 \key{\gradbarsloadcsv}、\key{\gradbarscsvtable}、\key{\gradba
 \key{\gradintervals[o]{list}} & 多组区间：名称/下界/点估计/上界/颜色。\\
 \bottomrule
 \end{tabularx}
+\end{center}
 
 \clearpage
 \subsection{表格与标注接口}
-\begin{tabularx}{\linewidth}{@{}lX@{}}
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}c>{\centering\arraybackslash}X@{}}
 \toprule
 \multicolumn{1}{c}{接口} & \multicolumn{1}{c}{含义}\\\midrule
 \key{gradtable} & 表格环境：外观、列宽与分页设置。\\
@@ -134,6 +143,7 @@ CSV 命令包括 \key{\gradbarsloadcsv}、\key{\gradbarscsvtable}、\key{\gradba
 \key{compare label=percent} & 相对于基准绝对值的百分比变化。\\
 \bottomrule
 \end{tabularx}
+\end{center}
 
 \clearpage
 \subsection{Tagged PDF 与替代文本}

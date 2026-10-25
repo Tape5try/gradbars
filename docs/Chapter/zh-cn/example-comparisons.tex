@@ -4,20 +4,27 @@
 \begin{example}[text and listing,sidebyside=false]{示例 71：实验前后对比表}
 \gradbarsstyle{study}{preset=paper,width=48mm,
   min=0,max=100,precision=0,palette=categorical}
-\begin{tabular}{@{}lll@{}}
+\gradbarsstyle{study-change}{style=study,
+  track color=black!40,stem width=.9pt}
+\begin{center}
+\begin{tabular}{@{}ccc@{}}
 \toprule
 \multicolumn{1}{c}{Method} & \multicolumn{1}{c}{After / Before} & \multicolumn{1}{c}{Target 80}\\\midrule
-A & \graddumbbell[style=study]{58}{76}
+A & \graddumbbell[style=study-change]{58}{76}
   & \gradbar[style=study,width=23mm,better=target,
     quality target=80,thresholds={5,15}]{76}\\
-B & \graddumbbell[style=study]{63}{84}
+B & \graddumbbell[style=study-change]{63}{84}
   & \gradbar[style=study,width=23mm,better=target,
     quality target=80,thresholds={5,15}]{84}\\
-C & \graddumbbell[style=study]{65}{65}
+C & \graddumbbell[style=study-change]{65}{65}
   & \gradbar[style=study,width=23mm,better=target,
     quality target=80,thresholds={5,15}]{65}\\
 \bottomrule
 \end{tabular}
+\end{center}
 \end{example}
 空心圆为 Before，实心圆为 After；目标评价条越长仍表示数值越大。
 颜色表示到 80 的偏差，而非“越长越好”。
+
+背景轨道采用 \key{track color=black!40} 加深，并以 \key{stem width=.9pt} 增强连线；
+灰线表示完整的 0--100 量程，蓝线仅连接前后两个观测值。

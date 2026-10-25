@@ -5,8 +5,8 @@ Use shared scales within each column, explicit units and a stated ranking rule.
 This example combines a score, latency, before/after change and recent history.
 Best score and lowest latency are bold; missing observations remain missing.
 \begin{demo}{Model comparison with a grouped header}
-\begin{gradtable}[width=\linewidth,header align=c,
-  label width=8mm,column sep=3pt,min text width=12mm,
+\begin{center}
+\begin{gradtable}[align=c,header align=c,width=\linewidth,label width=8mm,column sep=3pt,min text width=12mm,
   min graphic width=15mm,row stretch=1.7]
   \gradcolumn{method}{Method}
   \gradcolumn[type=bar,mark=best,weight=1.2,
@@ -24,6 +24,7 @@ Best score and lowest latency are bold; missing observations remain missing.
   \gradrow{C,87.3,11.5,80/87.3,{80,72,83,78,87.3}}
   \gradrow{D,78.9,9.6,83/78.9,{83,72,79,74,78.9}}
 \end{gradtable}
+\end{center}
 \end{demo}
 The dumbbell connects reference and current values, and its label shows their
 difference. All trends share 0--100 vertically and equal observation spacing.

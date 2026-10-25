@@ -6,7 +6,8 @@
 \begin{example}[text and listing,sidebyside=false]{示例 44：相同数值，不同评价方向}
 \gradbarssetup{max=100,width=35mm,
   thresholds={60,80},precision=0}
-\begin{tabular}{@{}lcc@{}}
+\begin{center}
+\begin{tabular}{@{}ccc@{}}
   \toprule
 \multicolumn{1}{c}{Value} & \multicolumn{1}{c}{Higher is better} & \multicolumn{1}{c}{Lower is better}\\
   \midrule
@@ -15,6 +16,7 @@
   90 & \gradbar[better=higher]{90} & \gradbar[better=lower]{90}\\
   \bottomrule
 \end{tabular}
+\end{center}
 \end{example}
 
 \key{threshold colors} 的三个颜色始终按“差、中、好”排列。

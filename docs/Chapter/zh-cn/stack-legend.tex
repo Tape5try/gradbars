@@ -35,10 +35,12 @@
 \begin{example}[text and listing,sidebyside=false]{示例 18：多个堆叠条共用一个图例}
 \gradbarsstyle{parts}{width=55mm,height=14pt,
   precision=0,stack colors={skyblue,rose,gold}}
-\begin{tabular}{@{}ll@{}}
+\begin{center}
+\begin{tabular}{@{}cc@{}}
   A & \gradstack[style=parts]{50,30,20}\\[3pt]
   B & \gradstack[style=parts]{65,20,15}
 \end{tabular}
+\end{center}
 
 \gradbarslegend[style=parts]{Train,Validation,Test}
 \end{example}

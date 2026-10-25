@@ -1,0 +1,9 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\usegradbarslibrary{distribution,legend}
+\setlength{\parindent}{0pt}
+
+\begin{document}
+\gradbarsloadcsv{d}{build/tests/distributions.csv}\begin{gradtable}[data=d,scale=column,width=\linewidth]\gradcolumn[source=Name]{name}{Method}\gradcolumn[type=boxplot,source=Samples]{samples}{Distribution}\end{gradtable}
+\end{document}

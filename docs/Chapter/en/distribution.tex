@@ -1,0 +1,52 @@
+\section{Box plots and distribution summaries}
+Load the optional \key{distribution} library in the preamble:
+\begin{source}
+\usegradbarslibrary{distribution}
+\end{source}
+Samples are comma-separated. Empty fields and \key{NA} are missing; zero is
+retained. Statistics use unsorted, unrounded observations, then sort internally.
+Quartiles use type-7 linear interpolation: for sorted $x_1,\ldots,x_n$, let
+$h=1+(n-1)p$, $j=\lfloor h\rfloor$ and $g=h-j$; then
+$Q(p)=(1-g)x_j+gx_{j+1}$, taking $x_n$ at $h=n$.
+Use $p=0.25,0.5,0.75$ for Q1, median and Q3. Whiskers are the extreme actual
+observations inside $[Q1-1.5\,IQR,Q3+1.5\,IQR]$, inclusive. Hollow points are
+observations outside this interval, not data automatically excluded from analysis.
+\begin{demo}{One record, two input paths}
+\gradboxplot[width=52mm,height=5ex,palette=accessible]{0,2,3,4,5,6,7,8,16}
+\quad
+\gradboxsummary[width=52mm,height=5ex]{n=9,q1=3,median=5,q3=7,
+  low=0,high=8,outliers={16}}
+\end{demo}
+The example keeps the box, whiskers, median and outlier distinguishable,
+with \key{height=5ex} for readability. With \key{0,1,2,3,100}, the outlier
+at 100 compresses the main 0--3 range to about 3\% of the total width.
+Increasing width alone does not resolve this linear-scale effect. Report
+extreme outliers separately with an explicit explanation when needed; never
+silently remove them or change their positions.
+The default \key{box range=auto} includes outliers; a constant range expands
+only for drawing. Use \key{box range=fixed,min=...,max=...} or a named scale
+for comparisons. n=0 displays missing; n=1 is constant; n=2 follows the same
+formula. Coincident outliers overlap but keep their count in alternative text.
+Box whiskers are not confidence intervals. Percent formatting is rejected.
+\begin{demo}{Readable statistics and native columns}
+\gradcomputesummary{0,2,3,4,5,6,7,8,16}{%
+  n=\gradstat{n}; median=\gradstat{median};
+  outliers=\gradstat{outlier count}}
+\par\medskip
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=distribution,width=\linewidth,scale=column]
+\gradcolumn{name}{Method}
+\gradcolumn[type=boxplot,options={height=5ex,palette=accessible}]{samples}{Distribution}
+\gradrow{Alpha,{0,2,3,4,5,6,7,8,16}}
+\gradrow{Beta,{-3,0,2,5,9,12,14}}
+\gradrow{Missing,NA}
+\end{gradtable}
+\end{center}
+\end{demo}
+\key{\gradstat} is available within the callback of \key{\gradcomputesummary}.
+Fields include n, missing, min, max, mean, q1, median, q3, iqr, low, high,
+outliers, outlier count and method. \key{\gradsummarytext} prints the main
+statistics. Precomputed records require n, q1, median, q3, low and high;
+unknown missing/outlier counts remain unknown. No algorithm can be verified
+without the samples. Optional extrema, mean and outliers are checked for
+consistency. Raw samples are not silently pooled across rows or groups.

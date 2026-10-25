@@ -1,0 +1,28 @@
+% Author: SuFan; MIT License. Opt-in color roles; existing defaults unchanged.
+\ProvidesPackage{gradbars-accessible}[2026/10/25 v1.1.0 Accessible color roles]
+% Okabe--Ito Color Universal Design palette; see docs/accessibility.md.
+\definecolor{gradbarsCudBlue}{HTML}{0072B2}
+\definecolor{gradbarsCudOrange}{HTML}{E69F00}
+\definecolor{gradbarsCudTeal}{HTML}{009E73}
+\definecolor{gradbarsCudSky}{HTML}{56B4E9}
+\definecolor{gradbarsCudVermillion}{HTML}{D55E00}
+\definecolor{gradbarsCudPurple}{HTML}{CC79A7}
+\definecolor{gradbarsCudYellow}{HTML}{F0E442}
+\pgfkeys{/gradbars,
+ .accessible heat roles/.code={\pgfkeysifdefined{/gradbars/heat low color/.@cmd}
+   {\pgfkeysalso{/gradbars/heat low color=white,/gradbars/heat high color=gradbarsCudBlue}}{}},
+ theme/accessible/.style={fill=solid,left color=gradbarsCudBlue,right color=gradbarsCudBlue,
+   track color=black!6,text color=auto,negative color=gradbarsCudVermillion},
+ palette/accessible/.style={theme=accessible,
+   stack colors={gradbarsCudBlue,gradbarsCudOrange,gradbarsCudTeal,gradbarsCudPurple,gradbarsCudSky,gradbarsCudVermillion,gradbarsCudYellow},
+   stack patterns={none,diagonal,dots,crosshatch,none,diagonal,dots},
+   threshold colors={gradbarsCudVermillion,black!15,gradbarsCudBlue},
+   compare color=gradbarsCudOrange,spark high color=gradbarsCudBlue,spark low color=gradbarsCudVermillion,
+   spark win color=gradbarsCudBlue,spark loss color=gradbarsCudVermillion,spark zero color=black,
+   heat center color=white,.accessible heat roles},
+ heat palette/accessible-sequential/.style={heat palette=sequential,
+   heat low color=white,heat high color=gradbarsCudBlue,heat text color=auto},
+ heat palette/accessible-diverging/.style={heat palette=diverging,
+   heat low color=gradbarsCudVermillion,heat high color=gradbarsCudBlue,
+   heat center color=white,heat text color=auto}}
+\endinput

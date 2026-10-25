@@ -6,8 +6,8 @@ padding and the reserved label slot before reducing font size. A normal \key{gra
 can be inside a table float; a wide table* can span both paper columns.
 \begin{demo}{A table fitted to an 80mm column}
 \begin{minipage}{80mm}
-\begin{gradtable}[width=\linewidth,preset=paper,header align=c,
-  label width=8mm,column sep=3pt,min text width=12mm,
+\begin{center}
+\begin{gradtable}[align=c,header align=c,width=\linewidth,preset=paper,label width=8mm,column sep=3pt,min text width=12mm,
   min graphic width=15mm]
   \gradcolumn{method}{Method}
   \gradcolumn[type=bar,mark=best,
@@ -15,6 +15,7 @@ can be inside a table float; a wide table* can span both paper columns.
   \gradrow{Baseline,82.4}
   \gradrow{Proposed,91.6}
 \end{gradtable}
+\end{center}
 \end{minipage}
 \end{demo}
 Use the multipage example in the preceding part for long results lists. Long mode

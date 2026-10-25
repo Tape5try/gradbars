@@ -4,8 +4,9 @@ spark and heat. Compare and dumbbell cells use reference/current order; default 
 display current/reference, while delta displays current minus reference.
 NA means both missing; 40/NA and NA/60 represent one missing endpoint.
 \begin{demo}{Two views of the same comparison}
-\begin{gradtable}[text width=22mm,graphic width=32mm,
-  label width=12mm,header align=c,column sep=6pt,row stretch=1.8]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,text width=22mm,graphic width=32mm,
+  label width=12mm,column sep=6pt,row stretch=1.8]
   \gradcolumn{name}{Method}
   \gradcolumn[type=compare,options={max=100,precision=0}]{bars}{Values}
   \gradcolumn[type=dumbbell,options={max=100,precision=0,
@@ -14,14 +15,16 @@ NA means both missing; 40/NA and NA/60 represent one missing endpoint.
   \gradrow{B,75/60,75/60}
   \gradrow{C,50/NA,50/NA}
 \end{gradtable}
+\end{center}
 \end{demo}
 Stack and spark cells contain lists, so enclose each cell's list in braces.
 Whole-cell NA is supported. Missing individual stack contributions are not zero
 and must not be included in a total. A spark's missing last position retains a
 missing label rather than borrowing an earlier observation.
 \begin{demo}{Composition and a common-scale trend}
-\begin{gradtable}[text width=22mm,graphic width=32mm,
-  label width=12mm,header align=c,column sep=6pt,row stretch=1.8]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,text width=22mm,graphic width=32mm,
+  label width=12mm,column sep=6pt,row stretch=1.8]
   \gradcolumn{name}{Project}
   \gradcolumn[type=stack,options={max=100,precision=0,
     stack colors={gradbarsBlue,gradbarsTeal,gold}}]{mix}{Composition}
@@ -31,6 +34,7 @@ missing label rather than borrowing an earlier observation.
   \gradrow{B,{30,20,15},{80,70,65,NA,NA}}
   \gradrow{C,NA,NA}
 \end{gradtable}
+\end{center}
 \end{demo}
 Keep stack categories in a consistent order or register named categories.
 Use a negative min for negative contributions. Use fixed spark ranges to compare

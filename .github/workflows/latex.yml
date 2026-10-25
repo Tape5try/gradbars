@@ -1,34 +1,92 @@
-name: LaTeX checks
+name: LaTeX build and release
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  check:
+  build:
     runs-on: ubuntu-latest
     container: ghcr.io/xu-cheng/texlive-full:latest
-    env:
-      GRADBARS_PYTHON: python3
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Generate CTAN documented sources from the tracked runtime
+        run: texlua scripts/source.lua
+      - name: Validate a release tag
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: texlua scripts/release.lua --tag "$RELEASE_TAG"
+      - name: Test all engines, typeset with latexmk and create the CTAN source archive
+        run: l3build ctan
+      - name: Replay static regressions on all three engines
+        run: texlua scripts/check.lua
+      - name: Check accessible palette contrast
+        run: texlua scripts/accessible.lua
+      - name: Inspect actual Tagged PDF structures with TeX Live pdfe
+        run: texlua scripts/pdf-check.lua
+      - name: Check the independent third-party starter
+        run: texlua docs/libraries/starter/check.lua --gradbars-root .
+      - name: Inspect archive and test isolated source installation
+        run: |
+          texlua scripts/release.lua --verify
+          texlua scripts/install-check.lua
+      - name: Prepare release assets
+        run: |
+          cp gradbars-ctan.zip build/release/
+          cd build/release
+          sha256sum *.pdf *.zip > SHA256SUMS
+      - uses: actions/upload-artifact@v4
         with:
-          python-version: '3.12'
-      - name: Install PDF structure inspection dependency
-        run: python3 -m pip install pypdf
-      - name: Verify docstrip source consistency
-        run: python3 scripts/build_source.py --check
-      - name: Check modular interfaces with l3build
-        run: l3build check
-      - name: Test modules, public extensions and existing graphics
-        run: python3 tests/run_tests.py
-      - name: Inspect Tagged PDF descriptions and measurement suppression
-        run: python3 scripts/check_tagging.py
-      - name: Build layouts and illustrated manual
-        run: GRADBARS_PYTHON=python3 l3build doc
-      - name: Build and validate the CTAN archive
-        run: GRADBARS_PYTHON=python3 l3build ctan
-      - name: Test the isolated archived runtime
-        run: python3 scripts/check_release.py
+          name: gradbars-release
+          path: build/release/
+          if-no-files-found: error
+
+  github-release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: gradbars-release
+          path: release
+      - name: Publish verified assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" release/* --clobber
+          else
+            gh release create "$RELEASE_TAG" release/* --verify-tag --title "$RELEASE_TAG" --generate-notes
+          fi
+
+  ctan-upload:
+    needs: github-release
+    if: startsWith(github.ref, 'refs/tags/v') && vars.CTAN_UPLOAD == 'true'
+    runs-on: ubuntu-latest
+    container: ghcr.io/xu-cheng/texlive-full:latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: gradbars-release
+          path: release
+      - name: Submit the exact verified archive to CTAN
+        env:
+          CTAN_EMAIL: ${{ secrets.CTAN_EMAIL }}
+          CTAN_ANNOUNCEMENT: ${{ vars.CTAN_ANNOUNCEMENT }}
+          CTAN_NOTE: ${{ vars.CTAN_NOTE }}
+          GRADBARS_CTAN_UPLOAD: '1'
+        run: |
+          test -n "$CTAN_EMAIL" || { echo 'Configure the CTAN_EMAIL repository secret.'; exit 1; }
+          cp release/gradbars-ctan.zip .
+          l3build upload

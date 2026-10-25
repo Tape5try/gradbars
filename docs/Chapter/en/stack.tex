@@ -12,9 +12,13 @@ The default total is the algebraic sum; \key{stack totals=separate} shows positi
 and negative subtotals. A zero net does not erase nonzero contributions.
 
 Segment labels can be none, value, percent, name, name value or name percent.
-The percentage of a segment is
-\[100|v_i|/\sum_j|v_j|,\]
-including clipped contributions. These percentages
+The percentage of segment $i$ is
+\[
+  p_i=\frac{100|v_i|}{\sum_j|v_j|},
+\]
+where $v_i$ is the original signed value of segment $i$, and $v_j$ is the
+original signed value of segment $j$. The sum runs over all input segments,
+including contributions clipped by the display range. These percentages
 represent shares of absolute activity, not shares of a potentially zero net.
 All-zero stacks do not calculate percentages. Stacks are not normalized to full
 width. Missing segments, empty lists, quality thresholds and error whiskers are rejected.

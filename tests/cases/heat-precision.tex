@@ -1,0 +1,34 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\makeatletter
+\ExplSyntaxOn
+\cs_new_eq:NN\testOriginalRanges\gradtableAutoRanges
+\tl_new:N\l_test_checks_tl
+\cs_set_protected:Npn\gradtableAutoRanges
+  {\testOriginalRanges\tl_use:N\l_test_checks_tl}
+\NewDocumentCommand\checks{m}{\tl_set:Nn\l_test_checks_tl{#1}}
+\NewDocumentCommand\assertcol{m m m}
+  {\group_begin:\gradtableConfigure{#1}
+   \fp_compare:nNnF{\gradbars@min}={#2}{\errmessage{Incorrect~minimum~for~#1}}
+   \fp_compare:nNnF{\gradbars@max}={#3}{\errmessage{Incorrect~maximum~for~#1}}
+   \group_end:}
+\NewDocumentCommand\assertrows{m}
+  {\int_compare:nNnF{\seq_count:N\l__gradtable_rows_seq}={#1}{\errmessage{Incorrect~CSV~row~count}}}
+\NewDocumentCommand\assertcell{m m m}
+  {\clist_set:Nx\l_tmpa_clist{\seq_item:Nn\l__gradtable_rows_seq{#1}}
+   \tl_set:Nx\l_tmpa_tl{\clist_item:Nn\l_tmpa_clist{#2}}
+   \str_if_eq:eeF{\tl_to_str:V\l_tmpa_tl}{\tl_to_str:n{#3}}{\errmessage{Incorrect~selected~cell}}}
+\NewDocumentCommand\assertheat{m m m}
+  {\group_begin:\gradbarssetup{#1}\gradbarsHeatColor{#2}
+   \convertcolorspec{named}{gradbarsHeatCell}{rgb}\testActualRGB
+   \convertcolorspec{named}{#3}{rgb}\testExpectedRGB
+   \clist_set:Nx\l_tmpa_clist{\testActualRGB}\clist_set:Nx\l_tmpb_clist{\testExpectedRGB}
+   \int_step_inline:nn{3}
+     {\fp_compare:nNnT{abs(\clist_item:Nn\l_tmpa_clist{##1}-\clist_item:Nn\l_tmpb_clist{##1})}>{.0002}
+       {\errmessage{Incorrect~heat~interpolation}}}\group_end:}
+\ExplSyntaxOff
+\makeatother
+\begin{document}
+\gradheat[precision=7]{50}\end{document}

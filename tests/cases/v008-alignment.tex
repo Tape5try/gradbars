@@ -1,0 +1,46 @@
+\documentclass{article}
+\usepackage{siunitx}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\makeatletter
+\ExplSyntaxOn
+\int_new:N\g_veight_position_int
+\cs_new_eq:NN\veightOriginalParts\gradbarsDecimalParts
+\cs_set_protected:Npn\gradbarsDecimalParts #1
+  {\veightOriginalParts{#1}
+   \bool_if:NF\l__gradbars_decimal_measure_bool
+     {\prop_if_in:NVT\l__gradtable_decimal_left_prop\l__gradtable_id_tl
+        {\int_gincr:N\g_veight_position_int
+         \hbox_set:Nn\l__gradbars_decimal_right_box
+           {\exp_args:Ne\pgfsys@markposition{veight-decimal-\int_use:N\g_veight_position_int}
+            \box_use:N\l__gradbars_decimal_right_box}}}}
+\cs_new_protected:Npn\veightCheckPositions
+  {\int_compare:nNnF{\g_veight_position_int}={15}{\errmessage{Unexpected~rendered~decimal~count}}
+   \int_step_inline:nn{3}
+     {\pgfsys@getposition{veight-decimal-##1}\veightPosA
+      \cs_if_eq:NNTF\veightPosA\relax{\typeout{Rerun~to~check~decimal~positions}}
+        {\pgf@process{\veightPosA}\dim_set:Nn\l_tmpa_dim{\pgf@x}
+         \int_step_inline:nn{4}
+           {\exp_args:Ne\pgfsys@getposition{veight-decimal-\int_eval:n{##1+3*####1}}\veightPosB
+            \pgf@process{\veightPosB}
+            \fp_compare:nNnT{abs(\dim_to_fp:n{\pgf@x-\l_tmpa_dim})}>{.02}
+              {\errmessage{Rendered~decimal~points~are~not~aligned}}}}}}
+\ExplSyntaxOff
+\makeatother
+\begin{document}
+\begin{gradtable}[style=research,width=\linewidth,theme=teal]
+\gradcolumn{name}{Name}
+\gradcolumn[type=number,mark=both,aggregate=mean,options={precision=3}]{fixed}{Fixed}
+\gradcolumn[type=number,mark=both,aggregate=mean,formatter=siunitx,
+  options={precision=3}]{si}{SI}
+\gradcolumn[type=number,mark=both,aggregate=mean,
+  options={precision=2,number format=scientific}]{scientific}{Scientific}
+\gradrow{A,-12.125,-12.125,-1.2125e2}
+\gradrow{B,1.25,1.25,1.25e-3}
+\gradrow{C,125.005,125.005,1.25005e5}
+\gradrow{D,0,0,0}
+\gradrow{Missing,NA,NA,NA}
+\gradsummary{Mean}
+\end{gradtable}
+\csname veightCheckPositions\endcsname
+\end{document}

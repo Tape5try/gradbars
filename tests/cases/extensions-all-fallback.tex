@@ -1,0 +1,15 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\usegradbarslibrary{reports,distribution}
+\setlength{\parindent}{0pt}
+\gradbarsdeclarebackend{small}{bar}{\gradbarsbackenddefault}
+
+\begin{document}
+\gradbarssetup{backend=small,backend fallback=tikz}
+\gradbar{10}\par\gradheat{20}\par\gradstack{10,20}\par\gradspark{1,2}\par
+\gradcompare{10}{20}\par\graddumbbell{10}{20}\par\gradrange{10}{20}\par
+\gradbullet[bullet bands={50/gray,100/white}]{20}\par
+\gradboxplot{1,2,3}\par\gradheatlegend[width=45mm,legend missing=false]\par
+\gradreferencelegend{target/Target}\par\gradbarslegend{A,B}\par
+\end{document}

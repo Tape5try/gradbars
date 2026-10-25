@@ -2,7 +2,7 @@
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{4pt}
 \thispagestyle{empty}
-{\small\sffamily\color{gradbarsTeal}TECHNICAL REFERENCE\hfill GRADBARS / 1.0.0}\par
+{\small\sffamily\color{gradbarsTeal}TECHNICAL REFERENCE\hfill GRADBARS / 1.1.0}\par
 \vspace{8mm}
 {\fontsize{50}{54}\selectfont\sffamily\bfseries\color{gradbarsInk}gradbars}\par
 \vspace{3mm}
@@ -17,9 +17,9 @@
   colback=white,colbacklower=manualCode,colframe=gradbarsInk!20,
   boxrule=.4pt,arc=0pt,left=3mm,right=3mm,top=3mm,bottom=3mm,
   before upper={\small\setlength{\parindent}{0pt}}}
-\begin{gradtable}[width=\linewidth,align=c,header align=c,
-  column sep=4pt,row stretch=1.5,label width=7mm]
-  \gradcolumn[align=l,header align=c]{name}{Method}
+\begin{center}
+\begin{gradtable}[align=c,header align=c,width=\linewidth,column sep=4pt,row stretch=1.5,label width=7mm]
+  \gradcolumn[align=c,header align=c]{name}{Method}
   \gradcolumn[type=bar,options={max=100,precision=0}]{score}{Score}
   \gradcolumn[type=stack,options={max=100,label=none}]{mix}{Mix}
   \gradcolumn[type=spark,options={spark range=fixed,
@@ -30,14 +30,15 @@
   \gradrow{Model B,86,{30,32,24},{48,65,72,86},86}
   \gradrow{Proposed,94,{34,35,25},{55,70,83,94},94}
 \end{gradtable}
+\end{center}
 \end{tcblisting}
 \vspace{3mm}
 {\small\sffamily\color{gradbarsTeal}数据条 / 堆叠构成 / 趋势线 / 色阶单元格}\par
-{\small\color{black!55}PGF/TikZ\quad /\quad CSV\quad /\quad Tagged PDF}\par
+{\small\color{black!55}PGF/\manualTikZ{}\quad /\quad CSV\quad /\quad Tagged PDF}\par
 \vfill
 {\color{gradbarsInk!20}\hrule height .4pt}
 \vspace{4mm}
-{\small\sffamily\color{gradbarsInk}用户手册与示例\hfill v1.0.0 / 2026-10-30}\par
+{\small\sffamily\color{gradbarsInk}用户手册与示例\hfill v1.1.0 / 2026-10-25}\par
 {\small\sffamily SuFan / Tape5try}\par
 {\footnotesize\href{https://github.com/Tape5try/gradbars}{github.com/Tape5try/gradbars}
 \hfill\href{https://ctan.org/pkg/gradbars}{ctan.org/pkg/gradbars}}\par

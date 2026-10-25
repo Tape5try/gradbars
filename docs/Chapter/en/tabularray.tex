@@ -24,12 +24,14 @@ before loading this library if those names are already used.
 \gradtblrsetup{min=-10,max=10,precision=1,height=14pt,
   color=gradbarsTeal!45,negative color=red!35,
   track color=white,text color=black}
-\begin{gradtblr}{colspec={l G{23mm} H{23mm} N{23mm} D{35mm}}}
+\begin{center}
+\begin{gradtblr}{columns={halign=c},colspec={c G{23mm} H{23mm} N{23mm} D{35mm}}}
 Method & {Change} & {Heat} & {Number} & {Before/after}\\
 A & 0.5 & -5 & 1.25 & -3/7\\
 B & -9.5 & 5 & -2.5 & 4/NA\\
 Pending & NA & NA & NA & NA/NA\\
 \end{gradtblr}
+\end{center}
 \endgroup
 \end{demo}
 The separate \key{gradtblr} environment adds centered cells, a tinted bold header,
@@ -74,11 +76,13 @@ font for long text; overflow is an error unless explicitly allowed.
 \begingroup
 \gradtblrsetup{min=0,max=.065,precision=5,unit=\%,
   label=left,label width=16mm,height=8pt}
-\begin{tblr}{colspec={l G{45mm}},row{1}={font=\bfseries}}
+\begin{center}
+\begin{tblr}{columns={halign=c},colspec={c G{45mm}},row{1}={font=\bfseries}}
 Decade & {Frequency}\\
 1700 & .05942\\
 1710 & .03044\\
 \end{tblr}
+\end{center}
 \endgroup
 \end{demo}
 
@@ -86,17 +90,69 @@ Decade & {Frequency}\\
 Use the same columns in \key{longtblr} with \key{rowhead=1} for repeated protected
 text headers. Place it in single-column body text outside indivisible containers:
 \begin{source}
-\begin{longtblr}{colspec={l G[min=0,max=100]{40mm}},rowhead=1}
+\begin{center}
+\begin{longtblr}{columns={halign=c},colspec={c G[min=0,max=100]{40mm}},rowhead=1}
 Method & {Score}\\
 A & 72\\
 B & 94\\
 \end{longtblr}
+\end{center}
 \end{source}
 Choose gradtable for CSV selection, automatic column scales, ranks and summaries;
 choose this adapter for tabularray layout and merging. It does not add these
 data-processing operations to tblr. Explicit alt, automatic descriptions and
 artifact/off retain their graphic meaning. Trial measurement suspends tagging
-to prevent duplicate descriptions. Repeated headers should contain text;
-per-page descriptions of graphic headers are outside the tested scope.
+to prevent duplicate descriptions. With the basic adapter alone, repeated headers should contain text. For graphic
+headers and full table structure, enable the explicit interface below.
 Graphic descriptions do not establish PDF/UA conformance for a complete table
 or document.
+
+\subsection{Additional graphic columns and explicit table semantics}
+J/R/V/K/U/B provide dumbbell/range/spark/stack/bullet/boxplot columns with the
+same optional keys and mandatory width. The matching commands are
+\key{\graddumbbellTblr}, \key{\gradrangeTblr}, \key{\gradsparkTblr},
+\key{\gradstackTblr}, \key{\gradbulletTblr} and \key{\gradboxplotTblr}.
+The adapter loads stack, spark and distribution in addition to Heat. Keep
+comma-containing series inside a guarded cell and call its helper explicitly.
+Spark/stack suppress the default main label; bullet columns require declared bands.
+\begin{demo}{Range and distribution in native tabularray layout}
+\begin{center}
+\begin{tblr}{columns={halign=c},colspec={c R{30mm} B{40mm}},hlines}
+Method & {Range} & {Samples}\\
+Alpha & 10/30 & {\gradboxplotTblr[cell width=40mm]{0,1,2,3,100}}\\
+Beta & NA & NA\\
+\end{tblr}
+\end{center}
+\end{demo}
+For a tagged document, \key{\gradtblrtagging} opts into Table/TR/TH/TD,
+scoped headers, RowSpan/ColSpan and Caption. The command belongs in a local
+group before the table. The source document must enable tagging itself.
+\begin{source}
+% Before documentclass:
+\DocumentMetadata{tagging=on,lang=en-US}
+% Inside the document:
+{\gradtblrtagging{head rows=1,row headers={1},caption={Scores}}
+\begin{center}
+\begin{tblr}{columns={halign=c},colspec={c G{30mm}}}
+{Method} & {Score}\\
+A & 42\\
+\end{tblr}
+\end{center}}
+\end{source}
+Short tables support all three engines. Repeated tagged longtblr headers require
+LuaLaTeX: the first logical header is retained and subsequent copies are artifacts.
+The explicit \key{header repeat=describe} mode rebuilds each repeated header
+with fresh marked content beneath its original logical cells. Header callbacks
+are re-executed, while data rows remain unique. Explicit multilevel associations
+use \key{cell headers}; \key{header cells} declares irregular header cells.
+Addresses are 1-based row/column pairs, and references must point to real TH
+cells; unknown/covered cells and cycles are errors. Ordinary untagged longtblr
+works on all engines. Nested tagged tables and cross-page spanning cells remain
+outside the verified scope. Use the tagged caption option
+instead of native repeated captions for the tested structure. Structural tests
+are not reader-level certification or a claim of whole-document PDF/UA compliance.
+
+\begin{source}
+\gradtblrtagging{head rows=2,row headers={1},
+  header cells={3/3},cell headers={3/2={1/2,2/2,3/1}}}
+\end{source}

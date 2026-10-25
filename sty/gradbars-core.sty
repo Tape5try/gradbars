@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Internal implementation unless documented.
-\ProvidesPackage{gradbars-core}[2026/10/30 v1.0.0 gradbars core]
+\ProvidesPackage{gradbars-core}[2026/10/25 v1.1.0 gradbars core]
 \RequirePackage{tikz}
 \RequirePackage{xparse}
 \RequirePackage{expl3}
@@ -507,8 +507,9 @@
     \gradbarsValidatePatterns
     \ifdim\gradbars@width>14pt\else\gradbarsFail{Legend~width~must~exceed~14pt}\fi
     \ifgradbars@valid
-      \ifpgfpicture \gradbarsDrawLegend
-      \else\gradbarsPrepareLegendAlt\tikz[baseline=0pt]{\gradbarsDrawLegend}\fi
+      \__gradbars_backend_draw:nn{category-legend}
+       {\ifpgfpicture \gradbarsDrawLegend
+      \else\gradbarsPrepareLegendAlt\tikz[baseline=0pt]{\gradbarsDrawLegend}\fi}
     \fi
   }
 \ExplSyntaxOff

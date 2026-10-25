@@ -53,26 +53,26 @@ change any existing style or force a color theme.
 Keep editable runtime changes in `sty/`, then run:
 
 ```sh
-python scripts/build_source.py
-python scripts/build_source.py --check
+texlua scripts/source.lua
+texlua scripts/source.lua --check
 l3build check
-python tests/run_tests.py
-python scripts/check_tagging.py
-python scripts/build_manual.py
+texlua scripts/check.lua
+texlua scripts/pdf-check.lua
+l3build doc
 ```
 
 `gradbars.dtx` and `gradbars.ins` are generated distribution sources. The source
 check extracts every module with docstrip and compares it with `sty/`. Do not
 edit both copies independently. `tex gradbars.ins` extracts a matching module
-set for users without Python. The source guide uses l3doc; the bilingual
+set without an external scripting runtime. The source guide uses l3doc; the bilingual
 illustrated manuals retain their chapter files.
 
-Tagged PDF inspection needs the development dependency `pypdf` and a current
+Tagged PDF inspection uses TeX Live texlua/pdfe and a current
 tagging-capable LaTeX installation. It checks real structure-tree descriptions,
 raw precision, explicit/outer descriptions and measurement suppression.
 
 CTAN packaging remains a separate explicit step through `l3build ctan` or
-`python scripts/build_release.py`. Updating sources and manuals does not refresh
+`l3build ctan`. Updating sources and manuals does not refresh
 any existing zip automatically. Dedicated tabularray integration is included
 in 1.0.0: load `\UseTblrLibrary{gradbars}` with tabularray 2025C+ in the preamble.
 Existing ordinary `\gradbar` calls inside `tblr` retain their behavior. Adopt
@@ -81,6 +81,6 @@ center labels with `label align=cell`. Protect header text with braces. Existing
 custom G/H/N/D column names must be renamed before loading the adapter.
 `gradtblr` and native `style=matrix` are optional presets, not changed defaults.
 
-Without creating a zip, run `python scripts/build_release.py --validate-only`
-and `python scripts/check_release.py --source-tree` to validate the complete
+Without creating a zip, run `texlua scripts/release.lua --verify`
+and `texlua scripts/install-check.lua` to validate the complete
 payload and compile a separately copied installation with all three engines.

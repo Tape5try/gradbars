@@ -1,5 +1,6 @@
 \section{Table and annotation reference}
-\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{55mm}X@{}}
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}>{\centering\arraybackslash}p{55mm}>{\centering\arraybackslash}X@{}}
 \toprule
 \multicolumn{1}{c}{Interface / option} & \multicolumn{1}{c}{Purpose}\\\midrule
 \key{\gradcolumn[...]{id}{title}} & Declare a unique column before rows.\\
@@ -21,6 +22,7 @@
 \key{bullet bands} & Increasing upper-bound/color records ending at max.\\
 \bottomrule
 \end{tabularx}
+\end{center}
 Neither table buffering nor the drawing commands infer scientific meaning from
 your data. Set scales, units, uncertainty interpretation, category identity and
 quality direction explicitly. Horizontal header spans are supported; vertical
@@ -53,7 +55,7 @@ do not change visible output when tagging is disabled.
 Descriptions use raw values before rounding. The text option only changes the
 visual label; use alt to change its semantic description. Table measurement does
 not produce tags, so each rendered graphic cell has one description. Inside an
-existing TikZ picture, describe the complete graphic using the outer picture's alt.
+existing \manualTikZ{} picture, describe the complete graphic using the outer picture's alt.
 Automatic descriptions do not establish document-wide PDF/UA conformance: validate
 table headers, reading order, fonts and other content separately.
 

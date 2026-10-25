@@ -2,13 +2,13 @@
 
 **在 LaTeX 正文和表格中呈现数值、比较、组成与趋势。**
 
-**v1.0.0 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
+**v1.1.0 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
 
-计划发布日期：2026-10-30。
+正式版本，发布于 2026-10-25。新增箱线图、分布摘要、共享图例、色觉友好配色与可选表格结构标记。
 
-[English](README.en.md) · [中文手册](gradbars-manual-v1.0.0.pdf) · [英文手册](gradbars-manual-en-v1.0.0.pdf) · [CTAN](https://ctan.org/pkg/gradbars)
+[English](README.en.md) · [中文手册](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-v1.1.0.pdf) · [英文手册](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-en-v1.1.0.pdf) · [CTAN](https://ctan.org/pkg/gradbars)
 
-![gradbars：数据条、堆叠、趋势与色阶表格](docs/images/overview-v1.0.0.svg)
+![gradbars：数据条、堆叠、趋势与色阶表格](docs/images/overview-v1.1.0.svg)
 
 gradbars 基于 PGF/TikZ，既可将单个图形嵌入现有 `tabular`，也可通过 `gradtable` 声明列并填写数据，生成可视化表格。无需手动包裹 `tikzpicture`，无需开启 shell escape。
 
@@ -92,6 +92,19 @@ TeX Live 仓库中的版本可能晚于 CTAN 或仓库开发版，请核对安�
 
 `all` 和 `none` 是 `libraries` 的模式值，不是库名。`\gradbarsset` 与 `\gradbarssetup` 均可设置当前作用域的默认选项。
 
+## 普通表格：单元格只写数字
+
+```latex
+\gradbarscolumn*{G}{max=1,width=14mm,precision=3,theme=gray}
+\begin{tabular}{lGG}
+Method & \gradbarshead{Precision} & \gradbarshead{Recall}\\
+Alpha & 1.000 & 0.968\\
+Beta & & 0.750\\
+\end{tabular}
+```
+
+星号接口提供格内居中标签；空白保持空白，`NA` 表示缺失。无需手写 `collectcell`。详见[普通表格说明](docs/tabular-columns.md)及[完整示例](docs/examples/precision-recall.tex)。
+
 ## tabularray 集成
 
 需要 tabularray 2025C（2025-11-27）或更新版本，在导言区加载：
@@ -113,6 +126,8 @@ TeX Live 仓库中的版本可能晚于 CTAN 或仓库开发版，请核对安�
 - `long=true` 支持专属表格跨页；跨页表格应放在单栏正文中，不能置于浮动体或 `minipage`。
 - 自动替代文本只覆盖图形；完整文档的阅读顺序、表格结构和其他无障碍要求需另行验证。
 
+可选 `reports` 库提供相关系数矩阵、消融实验与指标表预设，详见[领域报告](docs/reports.md)。开发者可使用[第三方库模板](docs/libraries/starter/README.md)及[公开后端契约](docs/backends.md)扩展宏包。
+
 ## 文档与开发
 
 中英文手册均提供效果与源码对照，包含入门、图形、外观、表格、应用案例和参考。
@@ -121,26 +136,32 @@ TeX Live 仓库中的版本可能晚于 CTAN 或仓库开发版，请核对安�
 - [英文主文件](docs/gradbars-manual-en.tex)与[英文章节](docs/Chapter/en/README.md)。
 - [API 参考](docs/api.md)、[开发者指南](docs/developer.md)和[迁移指南](docs/migration-v1.0.0.md)。
 - [稳定接口契约](docs/stability.md)：公开接口范围、覆盖顺序、兼容性和弃用约定。
-- [源码说明](gradbars-source-v1.0.0.pdf)：l3doc 文档与 docstrip 源码流程。
+- [源码说明](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-source-v1.1.0.pdf)：l3doc 文档与 docstrip 源码流程。
 - [变更记录](CHANGELOG.md)：版本新增、修复与兼容性变化。
 
 运行模块集中在 `sty/`，第三方库示例位于 `docs/libraries/`。从仓库根目录执行：
 
 ```sh
 l3build check
-python tests/run_tests.py
-python scripts/build_source.py --check
-python scripts/build_manual.py
+texlua scripts/check.lua
+texlua scripts/source.lua --check
+l3build doc
 ```
 
-构建脚本自动设置模块搜索路径，生成配套布局和中英文 PDF。中文手册需要 XeLaTeX、ctex/Fandol；英文手册使用 pdfLaTeX。Python 仅用于开发与构建，使用宏包时不需要。
+构建使用 TeX Live 自带的 texlua、l3build 和 latexmk，不依赖 Python。中文手册使用 XeLaTeX，英文手册与源码说明使用 pdfLaTeX；latexmk 自动判断重编译次数。PDF 不提交到 Git，通过 GitHub Release 下载。
 
 `gradbars.dtx` 与 `gradbars.ins` 是可复现的发行源码；`tex gradbars.ins` 提取完整运行模块。
-开发时修改 `sty/` 后运行 `python scripts/build_source.py` 同步发行源码。
-使用 `python scripts/check_tagging.py` 检查 PDF 结构中的替代文本，开发环境需安装 `pypdf`。
+开发时修改 `sty/` 后运行 `texlua scripts/source.lua` 同步发行源码。
+使用 `texlua scripts/pdf-check.lua` 检查实际 PDF 的替代文本、表格表头及跨行跨列结构。
+
+发行与 CI 配置见 [上传限制及发布流程](docs/developer.md#release-configuration)。CTAN 源码包不含 Python 文件或由 `.dtx` 提取的运行时 `.sty`；GitHub 仓库保留完整 `sty/` 方便开发。
 
 ## 反馈与许可
 
 通过 [GitHub Issues](https://github.com/Tape5try/gradbars/issues) 报告问题，请附最小 `.tex` 示例、编译引擎、宏包版本和相关日志。
 
 作者与维护者：SuFan（GitHub：Tape5try）。采用 [MIT 许可证](LICENSE)。
+
+[分布统计](docs/distributions.md) · [共享图例](docs/legends.md) · [无障碍支持范围](docs/accessibility.md)
+
+GitHub 仓库不保存 `.dtx/.ins` 或 CTAN README 模板；`l3build` 与 CI 从 `sty/` 自动生成发行源码，CTAN 英文入口由 `README.en.md` 准备。

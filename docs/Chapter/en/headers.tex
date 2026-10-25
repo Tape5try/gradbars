@@ -4,8 +4,8 @@
 first, then header layers, then groups and rows. Each layer must span exactly
 the total number of columns. Column titles form the bottom header layer.
 \begin{demo}{Three header levels}
-\begin{gradtable}[rules=grid,header align=c,
-  header color=gradbarsBlue!8,text width=28mm,
+\begin{center}
+\begin{gradtable}[align=c,header align=c,rules=grid,header color=gradbarsBlue!8,text width=28mm,
   column sep=8pt,row padding=3pt]
   \gradcolumn{method}{Method}
   \gradcolumn[type=number,width=24mm,
@@ -20,6 +20,7 @@ the total number of columns. Column titles form the bottom header layer.
   \gradrow{A,91.4,89.7,24}
   \gradrow{B,93.2,91.5,31}
 \end{gradtable}
+\end{center}
 \end{demo}
 Spanning titles are centered, follow header color and use the chosen rules.
 An empty title still occupies its declared span. Layers merge horizontally,

@@ -1,0 +1,256 @@
+% Author: SuFan; MIT License. Continuous and shared semantic legends.
+\ProvidesPackage{gradbars-lib-legend}[2026/10/25 v1.1.0 Shared legends]
+\ExplSyntaxOn
+\cs_generate_variant:Nn\seq_set_from_clist:Nn{NV}
+\cs_generate_variant:Nn\prop_to_keyval:N{c}
+\tl_new:N\l__gradbars_legend_title_tl
+\tl_new:N\l__gradbars_legend_ticks_tl
+\tl_new:N\l__gradbars_legend_names_tl
+\tl_new:N\l__gradbars_legend_orientation_tl
+\tl_new:N\l__gradbars_legend_missing_tl
+\tl_new:N\l__gradbars_legend_kind_tl
+\tl_new:N\l__gradbars_legend_group_tl
+\tl_new:N\l__gradbars_legend_snapshot_tl
+\tl_new:N\l__gradbars_legend_signature_tl
+\prop_new:N\l__gradbars_legends_prop
+\prop_new:N\l__gradbars_legend_signatures_prop
+\int_new:N\g__gradbars_legend_scale_int
+\tl_new:N\l__gradbars_legend_scale_name_tl
+\cs_new_protected:Npn\__gradbars_legend_scale_name:
+  {\int_gincr:N\g__gradbars_legend_scale_int
+   \tl_set:Nx\l__gradbars_legend_scale_name_tl{gradbars-internal-legend-\int_use:N\g__gradbars_legend_scale_int}
+   \prop_if_in:NVTF\l__gradbars_scale_groups_prop\l__gradbars_legend_scale_name_tl
+     {\__gradbars_legend_scale_name:}{}}
+
+\seq_new:N\l__gradbars_legend_ticks_seq
+\fp_new:N\l__gradbars_legend_previous_fp
+\fp_new:N\l__gradbars_legend_value_fp
+\seq_new:N\l__gradbars_legend_tick_rows_seq
+\box_new:N\l__gradbars_legend_tick_box
+\dim_new:N\l__gradbars_legend_tick_left_dim
+\dim_new:N\l__gradbars_legend_tick_right_dim
+\dim_new:N\l__gradbars_legend_lane_a_dim
+\dim_new:N\l__gradbars_legend_lane_b_dim
+\cs_new_protected:Npn\__gradbars_legend_tick_layout:
+  {\seq_clear:N\l__gradbars_legend_tick_rows_seq
+   \dim_set:Nn\l__gradbars_legend_lane_a_dim{-10000pt}
+   \dim_set:Nn\l__gradbars_legend_lane_b_dim{-10000pt}
+   \seq_map_inline:Nn\l__gradbars_legend_ticks_seq
+     {\gradbarsSuspendMeasurementTagging
+      \hbox_set:Nn\l__gradbars_legend_tick_box{\gradbars@font\gradbarsFormatEndpoint{##1}}
+      \gradbarsResumeMeasurementTagging
+      \dim_set:Nn\l__gradbars_legend_tick_left_dim
+        {\fp_to_dim:n{\gradbarsPosition{##1}*\dim_to_fp:n{\gradbars@width}}-\box_wd:N\l__gradbars_legend_tick_box/2}
+      \dim_set:Nn\l__gradbars_legend_tick_right_dim
+        {\l__gradbars_legend_tick_left_dim+\box_wd:N\l__gradbars_legend_tick_box+2pt}
+      \dim_compare:nNnTF{\l__gradbars_legend_tick_left_dim}>{\l__gradbars_legend_lane_a_dim}
+        {\seq_put_right:Nn\l__gradbars_legend_tick_rows_seq{0}
+         \dim_set_eq:NN\l__gradbars_legend_lane_a_dim\l__gradbars_legend_tick_right_dim}
+        {\dim_compare:nNnTF{\l__gradbars_legend_tick_left_dim}>{\l__gradbars_legend_lane_b_dim}
+          {\seq_put_right:Nn\l__gradbars_legend_tick_rows_seq{1}
+           \dim_set_eq:NN\l__gradbars_legend_lane_b_dim\l__gradbars_legend_tick_right_dim}
+          {\gradbarsFail{Legend~tick~labels~overlap;~increase~width~or~reduce~ticks}}}}}
+\tl_set:Nn\l__gradbars_legend_orientation_tl{horizontal}
+\tl_set:Nn\l__gradbars_legend_missing_tl{true}
+\tl_set:Nn\l__gradbars_legend_kind_tl{heat}
+\pgfkeys{/gradbars,
+ legend~title/.store~in=\l__gradbars_legend_title_tl,
+ legend~ticks/.store~in=\l__gradbars_legend_ticks_tl,
+ legend~names/.store~in=\l__gradbars_legend_names_tl,
+ legend~orientation/.is~choice,
+ legend~orientation/horizontal/.code={\tl_set:Nn\l__gradbars_legend_orientation_tl{horizontal}},
+ legend~orientation/vertical/.code={\tl_set:Nn\l__gradbars_legend_orientation_tl{vertical}},
+ legend~missing/.is~choice,
+ legend~missing/true/.code={\tl_set:Nn\l__gradbars_legend_missing_tl{true}},
+ legend~missing/false/.code={\tl_set:Nn\l__gradbars_legend_missing_tl{false}},
+ legend~missing/.default=true,
+ legend~kind/.is~choice,
+ legend~kind/heat/.code={\tl_set:Nn\l__gradbars_legend_kind_tl{heat}},
+ legend~kind/categorical/.code={\tl_set:Nn\l__gradbars_legend_kind_tl{categorical}},
+ legend~kind/reference/.code={\tl_set:Nn\l__gradbars_legend_kind_tl{reference}},
+ legend~group/.code={\__gradbars_legend_apply:n{#1}}}
+\cs_new_protected:Npn\__gradbars_legend_signature:
+  {\tl_set:Nx\l__gradbars_legend_signature_tl
+    {\gradbars@min/\gradbars@max/\gradbars@heatlow/\gradbars@heathigh/
+     \gradbars@heatpalette/\gradbars@heatcenter/\gradbars@heatcentercolor/\gradbars@better/
+     \exp_not:o{\gradbars@unit}/\exp_not:o{\gradbars@unitcode}/\exp_not:o{\gradbars@unittext}/\gradbars@left/\gradbars@right/\gradbars@negativecolor/
+     \gradbars@comparecolor/\gradbars@stackcolors/\gradbars@stackpatterns/
+     \ifgradbars@print true\else false\fi}
+   \clist_map_inline:nn{heatmissing,targetcolor,bandcolor,bandopacity,errorcolor,thresholdcolors,target,band,references,errorminus,errorplus,thresholds,bulletbands,format,percentbase,sparkhigh,sparklow,sparkwincolor,sparklosscolor,sparkzerocolor}
+     {\tl_put_right:Nx\l__gradbars_legend_signature_tl{##1={\exp_not:v{gradbars@##1}}}}}
+\cs_new_protected:Npn\__gradbars_legend_check:
+  {\tl_if_empty:NF\l__gradbars_legend_group_tl
+     {\__gradbars_legend_signature:
+      \str_if_eq:eeF{\l__gradbars_legend_signature_tl}
+        {\prop_item:NV\l__gradbars_legend_signatures_prop\l__gradbars_legend_group_tl}
+        {\gradbarsFail{Conflicting~scale,~unit~or~palette~for~shared~legend}}}}
+\cs_new_eq:NN\__gradbars_resolve_before_legend:\gradbarsResolveScaleGroup
+\cs_set_protected:Npn\gradbarsResolveScaleGroup
+  {\__gradbars_legend_check:\__gradbars_resolve_before_legend:\__gradbars_legend_check:
+   \tl_if_empty:NF\l__gradbars_legend_group_tl
+     {\ifgradbars@spark
+       \str_if_eq:eeT{\gradbars@sparktype}{winloss}
+         {\fp_compare:nF{\gradbars@min=-1 && \gradbars@max=1}
+           {\gradbarsFail{Shared~win-loss~legend~requires~min=-1,max=1}}}
+      \fi}}
+\cs_new_protected:Npn\__gradbars_legend_validate:
+  {\gradbarsResolveScaleGroup\gradbarsValidateFormatter
+   \tl_set:Nx\l_tmpa_tl{\gradbars@precision}
+   \regex_match:nVF{\A[0-6]\Z}\l_tmpa_tl{\gradbarsFail{Precision~must~be~an~integer~from~0~to~6}}
+   \gradbarsCheckNumber{\gradbars@min}{min}\gradbarsCheckNumber{\gradbars@max}{max}
+   \ifgradbars@valid
+     \str_if_eq:eeT{\gradbars@format}{percent}
+       {\fp_compare:nNnF{\gradbars@min}={0}{\gradbarsFail{Percent~legend~requires~min=0}}
+        \gradbarsValidatePercentBase}
+     \fp_compare:nNnF{\gradbars@max}>{\gradbars@min}{\gradbarsFail{Max~must~be~greater~than~min}}
+     \dim_compare:nNnF{\gradbars@width}>{0pt}{\gradbarsFail{Width~must~be~positive}}
+     \dim_compare:nNnF{\gradbars@height}>{0pt}{\gradbarsFail{Height~must~be~positive}}
+     \str_if_eq:eeT{\gradbars@heatpalette}{diverging}
+       {\gradbarsCheckNumber{\gradbars@heatcenter}{heat~center}
+        \ifgradbars@valid\fp_compare:nF{\gradbars@min<=\gradbars@heatcenter<=\gradbars@max}
+          {\gradbarsFail{Heat~center~must~lie~within~range}}\fi}
+   \fi}
+\DeclareDocumentCommand\gradlegenddefine{m m}
+  {\prop_if_in:NnTF\l__gradbars_legends_prop{#1}
+     {\__gradbars_public_error:n{Legend~already~defined:~#1}}
+     {\__gradbars_name_valid:nTF{#1}
+       {\group_begin:\gradbars@validtrue
+        \tl_if_empty:NF\l__gradbars_legend_group_tl{\def\gradbars@scalegroup{}}
+        \tl_clear:N\l__gradbars_legend_group_tl
+        \gradbarssetup{#2}\__gradbars_legend_validate:
+        \__gradbars_legend_scale_name:
+        \tl_clear:N\l__gradbars_legend_snapshot_tl
+        \clist_map_inline:nn{min,max,heatlow,heathigh,heatpalette,heatcenter,heatcentercolor,
+          better,unit,unitcode,unittext,left,right,negativecolor,comparecolor,stackcolors,stackpatterns,
+          targetcolor,bandcolor,bandopacity,errorcolor,heatmissing,thresholdcolors,
+          target,band,references,errorminus,errorplus,thresholds,bulletbands,formatter,numberformat,format,percentbase,
+          sparkhigh,sparklow,sparkwincolor,sparklosscolor,sparkzerocolor}
+          {\tl_put_right:Nx\l__gradbars_legend_snapshot_tl
+             {\exp_not:N\def\exp_not:c{gradbars@##1}{\exp_not:v{gradbars@##1}}}}
+        \tl_put_right:Nx\l__gradbars_legend_snapshot_tl
+          {\ifgradbars@print\exp_not:N\gradbars@printtrue\else\exp_not:N\gradbars@printfalse\fi}
+        \clist_map_inline:nn{kind,names,title,ticks,orientation,missing}
+          {\tl_put_right:Nx\l__gradbars_legend_snapshot_tl
+            {\exp_not:N\tl_set:Nn\exp_not:c{l__gradbars_legend_##1_tl}
+              {\exp_not:v{l__gradbars_legend_##1_tl}}}}
+        \clist_map_inline:nn{colors,patterns}
+          {\tl_put_right:Nx\l__gradbars_legend_snapshot_tl
+             {\exp_not:N\prop_set_from_keyval:Nn\exp_not:c{l__gradbars_category_##1_prop}
+               {\exp_not:e{\prop_to_keyval:c{l__gradbars_category_##1_prop}}}}}
+        \__gradbars_legend_signature:
+        \ifgradbars@valid
+          \use:x{\group_end:
+            \prop_put:Nnn\exp_not:N\l__gradbars_scale_groups_prop{\l__gradbars_legend_scale_name_tl}
+              {min=\gradbars@min,max=\gradbars@max}
+            \prop_put:Nnn\exp_not:N\l__gradbars_legends_prop{#1}
+              {\exp_not:N\def\exp_not:N\gradbars@scalegroup{\l__gradbars_legend_scale_name_tl}
+               \exp_not:V\l__gradbars_legend_snapshot_tl}
+            \prop_put:Nnn\exp_not:N\l__gradbars_legend_signatures_prop{#1}
+              {\exp_not:V\l__gradbars_legend_signature_tl}}
+        \else\group_end:\fi}
+       {\__gradbars_public_error:n{Invalid~legend~name:~#1}}}}
+% Snapshots are executable assignments, not key lists.
+\cs_new_protected:Npn\__gradbars_legend_apply:n #1
+  {\tl_if_blank:nTF{#1}
+     {\tl_clear:N\l__gradbars_legend_group_tl\def\gradbars@scalegroup{}}
+     {\prop_get:NnNTF\l__gradbars_legends_prop{#1}\l__gradbars_legend_snapshot_tl
+       {\tl_use:N\l__gradbars_legend_snapshot_tl\tl_set:Nn\l__gradbars_legend_group_tl{#1}}
+       {\gradbarsFail{Unknown~legend~group:~#1}}}}
+\keys_define:nn{gradbars/legend/layout}
+  {width .code:n=\gradbarssetup{width=#1},height .code:n=\gradbarssetup{height=#1},
+   legend~missing .code:n=\gradbarssetup{legend~missing=#1},
+   legend~missing .default:n=true,
+   title .tl_set:N=\l__gradbars_legend_title_tl,
+   ticks .tl_set:N=\l__gradbars_legend_ticks_tl,
+   orientation .choices:nn={horizontal,vertical}
+     {\tl_set_eq:NN\l__gradbars_legend_orientation_tl\l_keys_choice_tl},
+   precision .code:n=\gradbarssetup{precision=#1},
+   number~format .code:n=\gradbarssetup{number~format=#1},
+   font .code:n=\gradbarssetup{font={#1}},
+   accessibility .code:n=\gradbarssetup{accessibility=#1},alt .code:n=\gradbarssetup{alt={#1}}}
+\DeclareDocumentCommand\gradlegenduse{O{} m}
+  {\group_begin:\gradbars@validtrue\gradbarssetup{width=50mm,height=3mm}
+   \__gradbars_legend_apply:n{#2}\keys_set:nn{gradbars/legend/layout}{#1}
+   \ifgradbars@valid
+     \str_case:Vn\l__gradbars_legend_kind_tl
+       {{heat}{\gradheatlegend}
+        {categorical}{\exp_args:NV\gradbarslegend\l__gradbars_legend_names_tl}
+        {reference}{\exp_args:NV\gradreferencelegend\l__gradbars_legend_names_tl}}
+   \fi\group_end:}
+\DeclareDocumentCommand\gradheatlegend{O{}}
+  {\group_begin:\gradbars@validtrue\gradbarssetup{#1}\__gradbars_legend_validate:
+   \ifgradbars@valid
+     \tl_if_empty:NTF\l__gradbars_legend_ticks_tl
+       {\seq_clear:N\l__gradbars_legend_ticks_seq
+        \seq_put_right:Nx\l__gradbars_legend_ticks_seq{\gradbars@min}
+        \str_if_eq:eeT{\gradbars@heatpalette}{diverging}
+          {\fp_compare:nT{\gradbars@min<\gradbars@heatcenter<\gradbars@max}
+            {\seq_put_right:Nx\l__gradbars_legend_ticks_seq{\gradbars@heatcenter}}}
+        \seq_put_right:Nx\l__gradbars_legend_ticks_seq{\gradbars@max}}
+       {\seq_set_from_clist:NV\l__gradbars_legend_ticks_seq\l__gradbars_legend_ticks_tl}
+     \fp_set:Nn\l__gradbars_legend_previous_fp{-inf}
+     \seq_map_inline:Nn\l__gradbars_legend_ticks_seq
+       {\gradbarsCheckNumber{##1}{legend~tick}
+        \ifgradbars@valid\fp_compare:nF{\l__gradbars_legend_previous_fp<##1 && \gradbars@min<=##1<=\gradbars@max}
+          {\gradbarsFail{Legend~ticks~must~increase~within~range}}\fp_set:Nn\l__gradbars_legend_previous_fp{##1}\fi}
+     \str_if_eq:VnT\l__gradbars_legend_orientation_tl{horizontal}{\ifgradbars@valid\__gradbars_legend_tick_layout:\fi}
+     \tl_set:Nx\l__gradbars_alt_tl{Continuous~\gradbars@heatpalette\c_space_tl color~legend.~
+       Scale:~\gradbars@min\c_space_tl to~\gradbars@max.~Direction:~\gradbars@better.}
+     \str_if_eq:VnT\l__gradbars_legend_missing_tl{true}
+       {\tl_put_right:Nx\l__gradbars_alt_tl{~Missing:~\gradbars@missingtext.}}
+     \tl_if_empty:oF{\gradbars@unit}{\tl_put_right:Nx\l__gradbars_alt_tl{~Unit:~\exp_not:o{\gradbars@unit}.}}
+     \str_if_eq:eeT{\gradbars@format}{percent}{\tl_put_right:Nx\l__gradbars_alt_tl{~Percent~base:~\gradbarsPercentBase.}}
+     \str_if_eq:eeT{\gradbars@heatpalette}{diverging}
+       {\tl_put_right:Nx\l__gradbars_alt_tl{~Neutral~center:~\gradbars@heatcenter.}}
+     \tl_if_empty:NF\l__gradbars_legend_title_tl
+       {\tl_put_left:Nx\l__gradbars_alt_tl{\exp_not:V\l__gradbars_legend_title_tl.~}}
+     \ifgradbars@valid\__gradbars_backend_draw:nn{heat-legend}{\gradbarsApplyAlt
+       \leavevmode\tikz[baseline=0pt]
+        {\str_if_eq:VnTF\l__gradbars_legend_orientation_tl{horizontal}
+          {\begin{scope}[x=\gradbars@width,y=\gradbars@height]
+           \int_step_inline:nn{256}
+             {\gradbarsHeatColor{\fp_eval:n{\gradbars@min+(##1-.5)/256*(\gradbars@max-\gradbars@min)}}
+              \path[fill=gradbarsHeatCell,draw=none](\fp_eval:n{(##1-1)/256},0)rectangle(\fp_eval:n{##1/256},1);}
+           \draw[draw=black!65,line~width=.3pt](0,0)rectangle(1,1);
+           \seq_map_indexed_inline:Nn\l__gradbars_legend_ticks_seq
+             {\draw(\gradbarsPosition{##2},0)--++(0,-.25);
+              \node[anchor=north,font=\gradbars@font,inner~sep=2pt,
+                yshift={-\int_eval:n{5*\seq_item:Nn\l__gradbars_legend_tick_rows_seq{##1}}mm}]
+                at(\gradbarsPosition{##2},-.25){\gradbarsFormatEndpoint{##2}};}
+           \node[anchor=south,font=\gradbars@font,text~width=\gradbars@width,align=center]at(.5,1){\l__gradbars_legend_title_tl};
+           \end{scope}}
+          {\begin{scope}[x=\gradbars@height,y=\gradbars@width]
+           \int_step_inline:nn{256}
+             {\gradbarsHeatColor{\fp_eval:n{\gradbars@min+(##1-.5)/256*(\gradbars@max-\gradbars@min)}}
+              \path[fill=gradbarsHeatCell,draw=none](0,\fp_eval:n{(##1-1)/256})rectangle(1,\fp_eval:n{##1/256});}
+           \draw[draw=black!65,line~width=.3pt](0,0)rectangle(1,1);
+           \seq_map_inline:Nn\l__gradbars_legend_ticks_seq
+             {\node[anchor=west,font=\gradbars@font]at(1,\gradbarsPosition{##1}){\gradbarsFormatEndpoint{##1}};}
+           \node[anchor=south,font=\gradbars@font,text~width=\gradbars@width,align=center]at(.5,1){\l__gradbars_legend_title_tl};\end{scope}}
+         \str_if_eq:VnT\l__gradbars_legend_missing_tl{true}
+          {\path[fill=\gradbars@heatmissing,draw=black!50](0,-16mm)rectangle(4mm,-13mm);
+         \node[anchor=west,font=\gradbars@font]at(5mm,-14.5mm){\gradbars@missingtext :~missing};}}
+     }\fi
+   \fi\group_end:}
+\DeclareDocumentCommand\gradreferencelegend{O{} m}
+  {\group_begin:\gradbarssetup{#1}\gradbars@validtrue
+   \tl_set:Nn\l__gradbars_alt_tl{Reference~symbols:~#2.}
+   \__gradbars_backend_draw:nn{reference-legend}{\gradbarsApplyAlt\leavevmode\tikz[baseline=0pt]
+    {\int_zero:N\l_tmpa_int
+     \clist_map_inline:nn{#2}
+       {\seq_set_split:Nnn\l_tmpa_seq{/}{##1}
+        \int_compare:nNnTF{\seq_count:N\l_tmpa_seq}={2}
+          {\begin{scope}[yshift=-\int_eval:n{\l_tmpa_int}*5mm]
+           \str_case_e:nnF{\seq_item:Nn\l_tmpa_seq{1}}
+             {{target}{\draw[draw=\gradbars@targetcolor,line~width=1pt](3mm,-1.5mm)--(3mm,1.5mm);}
+              {reference}{\draw[dashed,draw=\gradbars@targetcolor](3mm,-1.5mm)--(3mm,1.5mm);}
+              {band}{\fill[\gradbars@bandcolor,opacity=\gradbars@bandopacity](0,-1.5mm)rectangle(6mm,1.5mm);}
+              {error}{\draw[draw=\gradbars@errorcolor](0,0)--(6mm,0)(0,-1mm)--(0,1mm)(6mm,-1mm)--(6mm,1mm);}
+              {box}{\draw(0,0)--(6mm,0)(1.5mm,-1mm)rectangle(4.5mm,1mm)(3mm,-1mm)--(3mm,1mm);}}
+             {\gradbarsFail{Unknown~reference~legend~symbol}}
+           \node[anchor=west,font=\gradbars@font]at(8mm,0){\seq_item:Nn\l_tmpa_seq{2}};\end{scope}
+           \int_incr:N\l_tmpa_int}
+          {\gradbarsFail{Reference~legend~requires~type/description}}}}
+   }\group_end:}
+\ExplSyntaxOff
+\endinput

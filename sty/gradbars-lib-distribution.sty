@@ -1,0 +1,213 @@
+% Author: SuFan; MIT License. Distribution statistics and inline box plots.
+\ProvidesPackage{gradbars-lib-distribution}[2026/10/25 v1.1.0 Distribution graphics]
+\ExplSyntaxOn
+\prop_new:N \l__gradbars_stats_prop
+\seq_new:N \l__gradbars_samples_seq
+\seq_new:N \l__gradbars_outliers_seq
+\int_new:N \l__gradbars_sample_missing_int
+\fp_new:N \l__gradbars_sample_sum_fp
+\fp_new:N \l__gradbars_quantile_h_fp
+\int_new:N \l__gradbars_quantile_j_int
+\tl_new:N \l__gradbars_quantile_tl
+\fp_new:N\l__gradbars_box_low_fp
+\fp_new:N\l__gradbars_box_high_fp
+\tl_new:N \l__gradbars_distribution_range_tl
+\tl_set:Nn \l__gradbars_distribution_range_tl {auto}
+\pgfkeys{/gradbars/box~range/.is~choice,
+ /gradbars/box~range/auto/.code={\tl_set:Nn\l__gradbars_distribution_range_tl{auto}},
+ /gradbars/box~range/fixed/.code={\tl_set:Nn\l__gradbars_distribution_range_tl{fixed}}}
+\cs_new:Npn \gradstat #1 {\prop_item:Nn\l__gradbars_stats_prop{#1}}
+\cs_new_protected:Npn \__gradbars_quantile:nN #1#2
+  {\fp_set:Nn\l__gradbars_quantile_h_fp{1+(\seq_count:N\l__gradbars_samples_seq-1)*(#1)}
+   \int_set:Nn\l__gradbars_quantile_j_int{\fp_eval:n{floor(\l__gradbars_quantile_h_fp)}}
+   \tl_set:Nx#2{\seq_item:Nn\l__gradbars_samples_seq{\l__gradbars_quantile_j_int}}
+   \int_compare:nNnT{\l__gradbars_quantile_j_int}<{\seq_count:N\l__gradbars_samples_seq}
+     {\tl_set:Nx#2{\fp_eval:n{#2+(\l__gradbars_quantile_h_fp-\l__gradbars_quantile_j_int)*
+       (\seq_item:Nn\l__gradbars_samples_seq{\l__gradbars_quantile_j_int+1}-#2)}}}}
+\cs_new_protected:Npn \__gradbars_distribution_parse:n #1
+  {\prop_clear:N\l__gradbars_stats_prop
+   \seq_clear:N\l__gradbars_samples_seq\seq_clear:N\l__gradbars_outliers_seq
+   \int_zero:N\l__gradbars_sample_missing_int\fp_zero:N\l__gradbars_sample_sum_fp
+   \tl_if_blank:nF{#1}
+     {\seq_set_split:Nnn\l_tmpa_seq{,}{#1}
+      \seq_map_inline:Nn\l_tmpa_seq
+        {\tl_set:Nn\l_tmpa_tl{##1}\tl_trim_spaces:N\l_tmpa_tl
+         \bool_lazy_or:nnTF{\tl_if_empty_p:N\l_tmpa_tl}{\str_if_eq_p:Vn\l_tmpa_tl{NA}}
+           {\int_incr:N\l__gradbars_sample_missing_int}
+           {\gradbarsCheckNumber{\l_tmpa_tl}{distribution~sample}
+            \ifgradbars@valid
+              \seq_put_right:Nx\l__gradbars_samples_seq{\fp_eval:n{\l_tmpa_tl}}
+              \fp_add:Nn\l__gradbars_sample_sum_fp{\l_tmpa_tl}
+            \fi}}}
+   \seq_sort:Nn\l__gradbars_samples_seq
+     {\fp_compare:nNnTF{##1}>{##2}{\sort_return_swapped:}{\sort_return_same:}}
+   \prop_put:Nnx\l__gradbars_stats_prop{n}{\seq_count:N\l__gradbars_samples_seq}
+   \prop_put:Nnx\l__gradbars_stats_prop{missing}{\int_use:N\l__gradbars_sample_missing_int}
+   \prop_put:Nnn\l__gradbars_stats_prop{method}{type-7;~1.5~IQR~observed~whiskers}
+   \seq_if_empty:NTF\l__gradbars_samples_seq
+     {\clist_map_inline:nn{min,max,q1,median,q3,iqr,low,high,mean}
+        {\prop_put:Nnn\l__gradbars_stats_prop{##1}{NA}}}
+     {\clist_map_inline:nn{q1/.25,median/.5,q3/.75}
+        {\seq_set_split:Nnn\l_tmpb_seq{/}{##1}
+         \__gradbars_quantile:nN{\seq_item:Nn\l_tmpb_seq{2}}\l__gradbars_quantile_tl
+         \prop_put:Nxx\l__gradbars_stats_prop{\seq_item:Nn\l_tmpb_seq{1}}{\l__gradbars_quantile_tl}}
+      \prop_put:Nnx\l__gradbars_stats_prop{min}{\seq_item:Nn\l__gradbars_samples_seq{1}}
+      \prop_put:Nnx\l__gradbars_stats_prop{max}{\seq_item:Nn\l__gradbars_samples_seq{-1}}
+      \prop_put:Nnx\l__gradbars_stats_prop{mean}{\fp_eval:n{\l__gradbars_sample_sum_fp/\gradstat{n}}}
+      \prop_put:Nnx\l__gradbars_stats_prop{iqr}{\fp_eval:n{\gradstat{q3}-\gradstat{q1}}}
+      \prop_put:Nnn\l__gradbars_stats_prop{low}{}
+      \seq_map_inline:Nn\l__gradbars_samples_seq
+        {\fp_compare:nTF{##1<\gradstat{q1}-1.5*\gradstat{iqr} || ##1>\gradstat{q3}+1.5*\gradstat{iqr}}
+           {\seq_put_right:Nn\l__gradbars_outliers_seq{##1}}
+           {\tl_if_empty:eT{\gradstat{low}}{\prop_put:Nnn\l__gradbars_stats_prop{low}{##1}}
+            \prop_put:Nnn\l__gradbars_stats_prop{high}{##1}}}}
+   \prop_put:Nnx\l__gradbars_stats_prop{outliers}{\seq_use:Nn\l__gradbars_outliers_seq{,}}
+   \prop_put:Nnx\l__gradbars_stats_prop{outlier~count}{\seq_count:N\l__gradbars_outliers_seq}}
+\DeclareDocumentCommand\gradcomputesummary{m +m}
+  {\group_begin:\gradbars@validtrue\__gradbars_distribution_parse:n{#1}
+   \ifgradbars@valid#2\fi\group_end:}
+\DeclareDocumentCommand\gradsummarytext{O{} m}
+  {\group_begin:\gradbarssetup{#1}\gradbars@validtrue\gradbarsValidateFormatter
+   \tl_set:Nx\l_tmpa_tl{\gradbars@precision}
+   \regex_match:nVF{\A[0-6]\Z}\l_tmpa_tl{\gradbarsFail{Precision~must~be~an~integer~from~0~to~6}}
+   \str_if_eq:eeF{\gradbars@format}{value}{\gradbarsFail{Distribution~summaries~require~value~format=value}}
+   \ifgradbars@valid\gradcomputesummary{#2}
+    {n=\gradstat{n};~missing=\gradstat{missing};~
+     \int_compare:nNnTF{\gradstat{n}}={0}{\gradbars@missingtext}
+       {Q1=\gradbarsFormatEndpoint{\gradstat{q1}};~
+        median=\gradbarsFormatEndpoint{\gradstat{median}};~
+        Q3=\gradbarsFormatEndpoint{\gradstat{q3}};~
+        IQR=\gradbarsFormatEndpoint{\gradstat{iqr}};~
+        whiskers=\gradbarsFormatEndpoint{\gradstat{low}}--\gradbarsFormatEndpoint{\gradstat{high}};~
+        outliers=\gradstat{outlier~count}}}\fi\group_end:}
+\keys_define:nn{gradbars/distribution/summary}
+  {n .code:n=\prop_put:Nnn\l__gradbars_stats_prop{n}{#1},
+   missing .code:n=\prop_put:Nnn\l__gradbars_stats_prop{missing}{#1},
+   q1 .code:n=\prop_put:Nnn\l__gradbars_stats_prop{q1}{#1},
+   median .code:n=\prop_put:Nnn\l__gradbars_stats_prop{median}{#1},
+   q3 .code:n=\prop_put:Nnn\l__gradbars_stats_prop{q3}{#1},
+   low .code:n=\prop_put:Nnn\l__gradbars_stats_prop{low}{#1},
+   high .code:n=\prop_put:Nnn\l__gradbars_stats_prop{high}{#1},
+   min .code:n=\prop_put:Nnn\l__gradbars_stats_prop{min}{#1},
+   max .code:n=\prop_put:Nnn\l__gradbars_stats_prop{max}{#1},
+   mean .code:n=\prop_put:Nnn\l__gradbars_stats_prop{mean}{#1},
+   outliers .code:n={\seq_set_from_clist:Nn\l__gradbars_outliers_seq{#1}
+     \prop_put:Nnn\l__gradbars_stats_prop{outliers}{#1}
+     \prop_put:Nnx\l__gradbars_stats_prop{outlier~count}{\seq_count:N\l__gradbars_outliers_seq}}}
+\cs_new_protected:Npn\__gradbars_distribution_record:n #1
+  {\prop_clear:N\l__gradbars_stats_prop\seq_clear:N\l__gradbars_outliers_seq
+   \prop_put:Nnn\l__gradbars_stats_prop{missing}{unknown}
+   \prop_put:Nnn\l__gradbars_stats_prop{outlier~count}{unknown}
+   \prop_put:Nnn\l__gradbars_stats_prop{outliers}{not~supplied}
+   \prop_put:Nnn\l__gradbars_stats_prop{method}{precomputed;~algorithm~not~verified}
+   \keys_set:nn{gradbars/distribution/summary}{#1}
+   \clist_map_inline:nn{n,q1,median,q3,low,high}
+     {\prop_if_in:NnF\l__gradbars_stats_prop{##1}{\gradbarsFail{Missing~summary~field:~##1}}}
+   \ifgradbars@valid
+     \tl_set:Nx\l_tmpa_tl{\gradstat{n}}
+     \regex_match:nVF{\A[1-9][0-9]*\Z}\l_tmpa_tl{\gradbarsFail{Summary~n~must~be~a~positive~integer}}
+     \clist_map_inline:nn{q1,median,q3,low,high,min,max,mean}
+       {\prop_if_in:NnT\l__gradbars_stats_prop{##1}{\gradbarsCheckNumber{\gradstat{##1}}{summary~##1}}}
+   \fi
+   \ifgradbars@valid
+     \fp_compare:nF{\gradstat{low}<=\gradstat{q1}<=\gradstat{median}<=\gradstat{q3}<=\gradstat{high}}
+       {\gradbarsFail{Summary~requires~low<=q1<=median<=q3<=high}}
+     \prop_put:Nnx\l__gradbars_stats_prop{iqr}{\fp_eval:n{\gradstat{q3}-\gradstat{q1}}}
+     \tl_set:Nx\l_tmpa_tl{\gradstat{missing}}
+     \str_if_eq:VnF\l_tmpa_tl{unknown}
+       {\regex_match:nVF{\A[0-9]+\Z}\l_tmpa_tl{\gradbarsFail{Summary~missing~must~be~a~nonnegative~integer}}}
+     \int_set:Nn\l_tmpa_int{1}
+     \fp_compare:nNnF{\gradstat{low}}={\gradstat{high}}{\int_set:Nn\l_tmpa_int{2}}
+     \int_compare:nNnT{\seq_count:N\l__gradbars_outliers_seq+\l_tmpa_int}>{\gradstat{n}}
+       {\gradbarsFail{Summary~n~cannot~contain~the~outliers~and~observed~whiskers}}
+     \prop_if_in:NnT\l__gradbars_stats_prop{min}
+       {\fp_compare:nNnT{\gradstat{min}}>{\gradstat{low}}{\gradbarsFail{Summary~minimum~exceeds~lower~whisker}}}
+     \prop_if_in:NnT\l__gradbars_stats_prop{max}
+       {\fp_compare:nNnT{\gradstat{max}}<{\gradstat{high}}{\gradbarsFail{Summary~maximum~below~upper~whisker}}}
+     \int_compare:nNnT{\gradstat{n}}={1}
+       {\fp_compare:nNnF{\gradstat{low}}={\gradstat{high}}{\gradbarsFail{Single~sample~summary~must~be~constant}}}
+
+     \seq_map_inline:Nn\l__gradbars_outliers_seq
+       {\gradbarsCheckNumber{##1}{summary~outlier}
+        \ifgradbars@valid
+          \prop_if_in:NnT\l__gradbars_stats_prop{min}
+            {\fp_compare:nNnT{##1}<{\gradstat{min}}{\gradbarsFail{Summary~outlier~below~declared~minimum}}}
+          \prop_if_in:NnT\l__gradbars_stats_prop{max}
+            {\fp_compare:nNnT{##1}>{\gradstat{max}}{\gradbarsFail{Summary~outlier~above~declared~maximum}}}
+        \fi
+        \ifgradbars@valid\fp_compare:nF{##1<\gradstat{low} || ##1>\gradstat{high}}
+          {\gradbarsFail{Summary~outlier~must~lie~outside~whiskers}}\fi}
+     \clist_map_inline:nn{min,max}
+       {\prop_if_in:NnF\l__gradbars_stats_prop{##1}
+          {\prop_put:Nnx\l__gradbars_stats_prop{##1}{\str_if_eq:nnTF{##1}{min}{\gradstat{low}}{\gradstat{high}}}}}
+     \seq_map_inline:Nn\l__gradbars_outliers_seq
+       {\prop_put:Nnx\l__gradbars_stats_prop{min}{\fp_eval:n{min(##1,\gradstat{min})}}
+        \prop_put:Nnx\l__gradbars_stats_prop{max}{\fp_eval:n{max(##1,\gradstat{max})}}}
+     \prop_if_in:NnT\l__gradbars_stats_prop{mean}
+       {\fp_compare:nF{\gradstat{min}<=\gradstat{mean}<=\gradstat{max}}
+          {\gradbarsFail{Summary~mean~must~lie~within~extrema}}}
+   \fi}
+\cs_new:Npn\__gradbars_box_x:n #1{\fp_eval:n{max(0,min(1,((#1)-\gradbars@min)/(\gradbars@max-\gradbars@min)))}}
+\cs_new_protected:Npn\__gradbars_distribution_draw:
+  {\gradbarsResolveScaleGroup\gradbarsValidateFormatter
+   \tl_set:Nx\l_tmpa_tl{\gradbars@precision}
+   \regex_match:nVF{\A[0-6]\Z}\l_tmpa_tl{\gradbarsFail{Precision~must~be~an~integer~from~0~to~6}}
+   \str_if_eq:eeF{\gradbars@format}{value}{\gradbarsFail{Box~plots~require~value~format=value}}
+   \int_compare:nNnT{\gradstat{n}}>{0}
+     {\tl_if_empty:oT{\gradbars@scalegroup}
+        {\str_if_eq:VnT\l__gradbars_distribution_range_tl{auto}
+          {\cs_set:Npx\gradbars@min{\gradstat{min}}\cs_set:Npx\gradbars@max{\gradstat{max}}
+           \fp_compare:nNnT{\gradbars@min}={\gradbars@max}
+             {\fp_set:Nn\l__gradbars_box_low_fp{\gradstat{min}}
+              \fp_set_eq:NN\l__gradbars_box_high_fp\l__gradbars_box_low_fp
+              \__gradbars_constant_range:NN\l__gradbars_box_low_fp\l__gradbars_box_high_fp
+              \cs_set:Npx\gradbars@min{\fp_use:N\l__gradbars_box_low_fp}
+              \cs_set:Npx\gradbars@max{\fp_use:N\l__gradbars_box_high_fp}}}}}
+   \gradbarsCheckNumber{\gradbars@min}{min}\gradbarsCheckNumber{\gradbars@max}{max}
+   \ifgradbars@valid
+     \fp_compare:nNnF{\gradbars@max}>{\gradbars@min}{\gradbarsFail{Max~must~be~greater~than~min}}
+     \dim_compare:nNnF{\gradbars@width}>{0pt}{\gradbarsFail{Width~must~be~positive}}
+     \dim_compare:nNnF{\gradbars@height}>{0pt}{\gradbarsFail{Height~must~be~positive}}
+   \fi
+   \ifgradbars@valid
+     \int_compare:nNnT{\gradstat{n}}>{0}
+       {\gradbarsRange{Box~minimum}{\gradstat{min}}\gradbarsRange{Box~maximum}{\gradstat{max}}}
+     \tl_set:Nx\l__gradbars_alt_tl{Box~plot:~n=\gradstat{n};~missing=\gradstat{missing};~
+       Q1=\gradstat{q1};~median=\gradstat{median};~Q3=\gradstat{q3};~IQR=\gradstat{iqr};~
+       whiskers=\gradstat{low}~to~\gradstat{high};~outlier~count=\gradstat{outlier~count};~
+       outliers=\tl_if_empty:eTF{\gradstat{outliers}}{none}{\gradstat{outliers}}.~Method:~\gradstat{method}.~Scale:~\gradbars@min\c_space_tl to~\gradbars@max.}
+     \tl_if_empty:oF{\gradbars@unit}{\tl_put_right:Nx\l__gradbars_alt_tl{~Unit:~\exp_not:o{\gradbars@unit}.}}
+     \ifgradbars@print\def\gradbars@left{black}\fi
+     \str_if_eq:eeT{\gradbars@textcolor}{auto}{\def\gradbars@textcolor{black}}
+     \__gradbars_backend_draw:nn{boxplot}
+      {\gradbarsApplyAlt
+     \leavevmode\tikz[baseline=-.5ex,x=\gradbars@width,y=\gradbars@height]
+       {\path[use~as~bounding~box](0,0)rectangle(1,1);
+        \int_compare:nNnTF{\gradstat{n}}={0}
+          {\node[font=\gradbars@font]at(.5,.5){\gradbars@missingtext};}
+          {\draw[draw=\gradbars@left,line~width=.5pt]
+             (\__gradbars_box_x:n{\gradstat{low}},.5)--(\__gradbars_box_x:n{\gradstat{high}},.5);
+           \draw[draw=\gradbars@left,fill=\gradbars@left!15,line~width=.5pt]
+             (\__gradbars_box_x:n{\gradstat{q1}},.2)rectangle(\__gradbars_box_x:n{\gradstat{q3}},.8);
+           \draw[draw=\gradbars@textcolor,line~width=.8pt]
+             (\__gradbars_box_x:n{\gradstat{median}},.2)--(\__gradbars_box_x:n{\gradstat{median}},.8);
+           \clist_map_inline:nn{low,high}
+             {\draw[draw=\gradbars@left,line~width=.5pt]
+               (\__gradbars_box_x:n{\gradstat{##1}},.3)--(\__gradbars_box_x:n{\gradstat{##1}},.7);}
+           \seq_map_inline:Nn\l__gradbars_outliers_seq
+             {\draw[draw=\gradbars@left,fill=white](\__gradbars_box_x:n{##1},.5)circle[radius=1.2pt];}
+           \str_if_eq:eeF{\gradbars@label}{none}
+             {\node[anchor=west,font=\gradbars@font,inner~sep=0pt]
+               at([xshift=\gradbars@gap]1,.5){\gradbarsFormatEndpoint{\gradstat{median}}};}}}
+      }
+   \fi}
+\DeclareDocumentCommand\gradboxplot{O{} m}
+  {\group_begin:\gradbars@validtrue\gradbarsCaptureTikzAlt\gradbars@capturealttrue
+   \gradbarssetup{height=3ex,label=none,#1}\gradbars@capturealtfalse
+   \__gradbars_distribution_parse:n{#2}\ifgradbars@valid\__gradbars_distribution_draw:\fi\group_end:}
+\DeclareDocumentCommand\gradboxsummary{O{} m}
+  {\group_begin:\gradbars@validtrue\gradbarsCaptureTikzAlt\gradbars@capturealttrue
+   \gradbarssetup{height=3ex,label=none,#1}\gradbars@capturealtfalse
+   \__gradbars_distribution_record:n{#2}\ifgradbars@valid\__gradbars_distribution_draw:\fi\group_end:}
+\ExplSyntaxOff
+\endinput

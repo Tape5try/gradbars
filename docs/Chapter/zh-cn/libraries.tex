@@ -83,25 +83,27 @@ v1.0.0 注册了以下六个内置库名。核心始终加载，另外五个为�
 \begin{example}[text and listing,sidebyside=false]{公开库的图形、格式化与样式复用}
 \gradgraphic{demo-score}{72.125}\par
 \gradbar[formatter=demo-boxed]{72.125}\par
-\begin{gradtable}[style=demo-report,width=\linewidth,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=demo-report,width=\linewidth]
   \gradcolumn{name}{Method}
   \gradcolumn[type=number,formatter=demo-boxed,aggregate=mean]{value}{Score}
   \gradrow{A,72}\gradrow{B,90}\gradsummary{Mean}
 \end{gradtable}
+\end{center}
 \end{example}
 该示例不访问私有变量。开发者参考见 \key{docs/developer.md}，迁移说明见 \key{docs/migration-v1.0.0.md}。
 \subsection{安装与发布文件}
 手动安装时应把发行包 \key{sty/} 目录中的全部 \key{.sty}
 放在同一目录，而不是只替换主文件。模块版本需要一致。
 构建入口为 \key{l3build check}、\key{l3build doc} 和 \key{l3build ctan}；完整回归继续通过
-\key{python tests/run_tests.py} 验证。
+\key{texlua scripts/check.lua} 验证。
 \subsection{版本 1 的兼容性契约}
 已文档化的公开命令、选项、默认值与库依赖规则保持稳定。
 兼容新增采用次版本；删除接口或更改默认值、数据语义采用主版本。
 弃用接口在版本 1 期间继续可用；私有变量与内部模块文件名不属于稳定承诺。
 契约范围、覆盖顺序和回调限制见 \key{docs/stability.md}。
-支持环境为 LaTeX 2025-11-01、expl3 2025-12-29、PGF/TikZ 3.1.11a 或更新版本，
-安装时须保持十五个基本运行文件与可选 \key{tblrlibgradbars.sty} 适配库的版本一致。
+支持环境为 LaTeX 2025-11-01、expl3 2025-12-29、PGF/\manualTikZ{} 3.1.11a 或更新版本，
+安装时须保持全部二十二个运行文件（含可选功能库与适配库）的版本一致。
 \key{gradbars.dtx} 和 \key{gradbars.ins} 可通过 docstrip 提取同一套运行模块；
-\key{python scripts/build_source.py --check} 验证两者一致性。
+\key{texlua scripts/source.lua --check} 验证两者一致性。
 源码说明采用 l3doc，面向用户的效果与源码手册继续按章节维护。

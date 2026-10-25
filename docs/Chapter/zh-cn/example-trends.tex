@@ -4,7 +4,8 @@
 \gradbarsstyle{monthly}{width=65mm,height=7mm,
   min=0,max=100,spark range=fixed,precision=0,
   row padding=3pt,spark points=extrema}
-\begin{tabular}{@{}ll@{}}
+\begin{center}
+\begin{tabular}{@{}cc@{}}
 \toprule
 \multicolumn{1}{c}{Series} & \multicolumn{1}{c}{Jan--Jun / June value}\\\midrule
 North & \gradspark[style=monthly]{35,48,42,60,72,80}\\
@@ -13,6 +14,7 @@ West & \gradspark[style=monthly]{45,45,45,45,45,45}\\
 East & \gradspark[style=monthly]{30,40,55,60,70,NA}\\
 \bottomrule
 \end{tabular}
+\end{center}
 \end{example}
 North 与 South 的极值点只表示各自的最高与最低观测，不表示好坏。
 East 的末期标签为缺失，不能用前一期的 70 代替。

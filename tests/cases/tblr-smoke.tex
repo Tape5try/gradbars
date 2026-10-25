@@ -1,0 +1,43 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{tabularray}
+\usepackage{gradbars}
+\UseTblrLibrary{gradbars,gradbars}
+\usepackage{siunitx}
+\setlength{\parindent}{0pt}
+\gradscale{signed}{min=-10,max=10}
+\gradbarssetup{scale group=signed,precision=1,height=16pt,
+  color=green!40,negative color=red!40,track color=white,text color=black}
+\begin{document}
+\section*{Cell-centered signed values}
+\begin{gradtblr}{colspec={l G{25mm} G{25mm} H{25mm} N{25mm}}}
+Method & {Bar} & {Bar} & {Heat} & {Number}\\
+A & .5 & -1 & -5 & -1.2e-3\\
+B & 9.5 & -9.5 & 5 & 12.345\\
+Pending & NA & 0 & NA & NA\\
+\end{gradtblr}
+\par\bigskip
+\begin{tblr}{colspec={l G[label=left,label width=13mm,unit=\%]{40mm} D{40mm}},row{1}={cmd=}}
+Method & {Left label} & {Comparison}\\
+A & -5 & -3/7\\
+B & NA & NA/4\\
+\end{tblr}
+\par\bigskip
+\begin{tblr}{colspec={X X},row{2-Z}={cmd=\gradbarTblr}}
+First & Second\\
+1 & -1\\
+9 & -9\\
+\end{tblr}
+\par\bigskip
+\begin{tblr}{colspec={Q[wd=40mm] Q[wd=40mm]},row{1}={cmd=}}
+Number & Interval\\
+\gradnumberTblr[formatter=siunitx,unit code=\second,unit text=seconds]{-2.5e-3} &
+\gradtblrcell{range}{-3/7}\\
+\end{tblr}
+\par\bigskip
+\begin{gradtable}[style=matrix,width=\linewidth]
+\gradcolumn{name}{Method}
+\gradcolumn[type=bar,aggregate=mean,options={scale group=signed,label=inside,label align=cell}]{value}{Value}
+\gradrow{A,-5}\gradrow{B,5}\gradrow{Pending,NA}\gradsummary{Mean}
+\end{gradtable}
+\end{document}

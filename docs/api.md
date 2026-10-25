@@ -275,6 +275,12 @@ longest label. Contrast at a single point cannot cover a long label spanning sev
 
 ## Numeric table columns (v0.0.2)
 
+The v1.1.0 starred form `\gradbarscolumn*{G}{options}` selects compact centered
+labels and preserves literal empty cells as blank; `NA` is still missing and zero
+is numeric. `\gradbarshead{text}` provides a text heading. See
+[ordinary-table examples and compatibility](tabular-columns.md).
+
+
 ```latex
 \gradbarscolumn{G}{max=100,width=35mm,precision=0}
 \begin{tabular}{lG}
@@ -414,7 +420,7 @@ Heat is a scalar color encoding: bar targets, error whiskers, patterns and thres
 bins are not drawn. `print`/`palette=mono` use a grayscale heat scale. The colored
 rectangle covers content width, leaving normal intercolumn spacing intact.
 
-Run `python tests/run_tests.py` for the three-engine regression suite, including
+Run `texlua scripts/check.lua` for the three-engine regression suite, including
 range assertions, special CSV characters, missing/constant data, shared spark
 ranges, signed stacks, schema reuse, paginated CSV tables and expected errors.
 
@@ -568,7 +574,10 @@ dataset remains unchanged and may be reused in another table.
 
 `heat palette=sequential|diverging` defaults to sequential. Selecting sequential
 sets the existing light-blue/blue endpoints; selecting diverging sets orange/white/
-teal. Place custom endpoint colors after the palette. `heat center` defaults to 0;
+teal. Named shortcuts `blue|teal|purple|orange` select white-to-color sequential ramps;
+`purple-teal|blue-red|orange-blue|brown-teal` select white-centered diverging ramps.
+They work in Heat cells and shared/continuous legends; see [palette examples](legends.md#built-in-heat-palettes).
+Place custom endpoint colors after the palette. `heat center` defaults to 0;
 `heat center color` defaults to white. The center must be a decimal within the
 closed [min,max] range, including its boundaries.
 
@@ -758,7 +767,7 @@ Column/explicit shared scales span all groups; per-group auto-scaling is not
 implemented. Across pages, a group heading stays with its first row, each group
 summary appears once with its last row, and the overall summary follows the
 final group summary on that page. Group headings are not repeated on continued
-pages. See `tests/v007-smoke.tex` and `tests/v007_cases.py`.
+pages. See `tests/v007-smoke.tex` and `tests/cases/v007-regression.tex`.
 
 ## Research numeric presentation (v0.0.8)
 
@@ -831,7 +840,7 @@ or SI dependency. Combine any existing table theme and put explicit overrides
 after the style. Academic, compact and dashboard retain their existing defaults.
 This is the new preset after the v0.0.7 and v0.0.8 functional-theme updates.
 
-See `tests/v008-smoke.tex`, `tests/v008_cases.py`, `tests/v008-alignment.tex`
+See `tests/v008-smoke.tex`, `tests/cases/v008-builtin.tex`, `tests/v008-alignment.tex`
 and `tests/v008-tagged.tex`. SI typesetting follows the
 [official siunitx manual](https://mirrors.ctan.org/macros/latex/contrib/siunitx/siunitx.pdf).
 
@@ -843,7 +852,7 @@ Default `\usepackage{gradbars}` retains complete loading. Use
 library automatically loads the other four; each depends on core. Package
 `libraries={heat,spark}` is also supported. Repeated loading is safe; unknown
 names, missing files, cycles and native module version mismatches are errors.
-Install the fifteen base runtime .sty files and optional tblrlibgradbars.sty together. SI formatting remains optional.
+Install all twenty-two matching runtime .sty files, including optional libraries and adapters, together. SI formatting remains optional.
 
 `\gradbarsset` delegates to `\gradbarssetup`, sharing TeX grouping and precedence.
 `\gradbarsiflibraryloaded{name}{yes}{no}` queries availability. Registrations are
@@ -879,7 +888,7 @@ centered headers, decimal number alignment, row stretch 1.25 and column separati
 overrides after the style.
 
 The generated `gradbars.dtx`/`gradbars.ins` extract all runtime modules using
-docstrip. `python scripts/build_source.py --check` verifies source consistency.
+docstrip. `texlua scripts/source.lua --check` verifies source consistency.
 The private model module separates validated raw data and normalized positions
 from TikZ drawing. Only the TikZ backend is supplied; its internal backend
 registration is not part of the stable public API.
@@ -945,6 +954,40 @@ remain native gradtable features.
 
 Public trial hooks suspend tagging during measurement. Three-engine checks cover
 fixed/X cells, explicit/automatic descriptions, missing values and artifact/off.
-Use text for repeated headers; graphic-header per-page descriptions are outside
-the tested scope. Graphic alt support does not certify complete tagged table
+With the basic adapter alone, use text for repeated headers. Explicit table
+structure and graphic-header repeat modes require the opt-in interface below. Graphic alt support does not certify complete tagged table
 structure or PDF/UA conformance.
+
+## v1.1.0 distributions, legends and accessible tables
+
+`legend missing=true|false` controls the missing-value item in continuous legends,
+including `\gradlegenduse` layout overrides; default true.
+
+Optional native libraries `distribution` and `legend` extend the default five
+libraries without changing their load list. Full contracts and examples:
+
+- [Distribution statistics and box plots](distributions.md): `\gradboxplot`, `\gradboxsummary`, `\gradcomputesummary`, `\gradstat`, `\gradsummarytext`, native boxplot columns and new styles.
+- [Continuous and shared legends](legends.md): `\gradheatlegend`, `\gradreferencelegend`, `\gradlegenddefine`, `\gradlegenduse` and shared configuration.
+- [Color and table accessibility](accessibility.md): accessible palettes, print, raw descriptions and opt-in `\gradtblrtagging`.
+
+The optional tabularray adapter adds J (dumbbell), R (range), V (spark), K (stack),
+U (bullet) and B (boxplot), all `[options]{width}`, plus matching
+`\graddumbbellTblr`, `\gradrangeTblr`, `\gradsparkTblr`, `\gradstackTblr`,
+`\gradbulletTblr`, `\gradboxplotTblr`. The generic cell accepts the same types.
+The adapter now loads heat, stack, spark and distribution in the preamble.
+Spark and dumbbell cells reserve marker radii plus a 1pt stroke allowance, fixing
+false width overflow when markers lie exactly at scale endpoints.
+G/H/N/D signatures are retained. Spark/stack default to no main label to avoid
+external-label overflow; explicitly requested left/outside slots are reserved.
+Bullet columns require explicit `bullet bands`; pair formats remain unchanged.
+Protect comma-containing sample/series/stack cells with braces and call the
+matching helper inside, so tabularray does not bypass the conversion silently.
+
+## Domain reports and backend providers (v1.1.0)
+
+- [Reports](reports.md): opt-in correlation, ablation and metric presets and native column helpers.
+- [Backend contract](backends.md): `\gradbarsdeclarebackend`, `\gradbarsifbackendcapable`,
+  `\gradbarsbackendvalue`, `\gradbarsbackendlabel`, `\gradbarsbackenddefault`,
+  `\gradbarsbackendversion`, `backend` and `backend fallback`.
+- [Third-party starter](libraries/starter/README.md): public-only source and three-engine checker.
+- `\gradbarsversion` and `\gradbarsrequireversion{minimum}` query/check semantic versions.

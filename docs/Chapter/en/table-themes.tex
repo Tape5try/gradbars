@@ -2,29 +2,34 @@
 \key{style=matrix} provides centered cells/headers, row rules, row stretch 1.35,
 column separation 6pt and row padding 1pt, with an independent color theme.
 \begin{demo}{Matrix style with missing values and a summary}
-\begin{gradtable}[style=matrix,theme=teal,width=\linewidth]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=matrix,theme=teal,width=\linewidth]
   \gradcolumn{name}{Method}
   \gradcolumn[type=number,aggregate=mean]{value}{Value}
   \gradrow{A,-5}\gradrow{B,5}\gradrow{Pending,NA}\gradsummary{Mean}
 \end{gradtable}
+\end{center}
 \end{demo}
 The optional \key{style=reference} uses booktabs rules, centered headers,
 decimal number alignment, \key{row stretch=1.25} and \key{column sep=6pt}.
 It has no mandatory color theme and leaves existing styles unchanged.
 \begin{demo}{Reference table with aligned numbers}
-\begin{gradtable}[style=reference,theme=teal,width=\linewidth]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=reference,theme=teal,width=\linewidth]
   \gradcolumn{name}{Method}
   \gradcolumn[type=number,aggregate=mean,options={precision=3}]{value}{Value}
   \gradrow{A,-12.125}\gradrow{B,1.25}\gradrow{Pending,NA}\gradsummary{Mean}
 \end{gradtable}
+\end{center}
 \end{demo}
 Table presets are paper (thin solid bars and compact booktabs rules), report
 (tinted headings and taller rows) and mono (gray and textures). Column drawing
 options override the preset. Table presets and individual-graphic presets are
 separate interfaces.
 \begin{demo}{Bullet and interval columns}
-\begin{gradtable}[preset=report,graphic width=32mm,
-  text width=19mm,label width=19mm,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,preset=report,graphic width=32mm,
+  text width=19mm,label width=19mm]
   \gradcolumn{name}{Project}
   \gradcolumn[type=bullet,options={max=100,precision=0,
     bullet bands={{60/black!8},{85/black!16},{100/black!25}},
@@ -35,13 +40,15 @@ separate interfaces.
   \gradrow{B,92,80/92/98}
   \gradrow{C,NA,NA}
 \end{gradtable}
+\end{center}
 \end{demo}
 Interval cells use lower/point/upper. NA in the point position omits only the
 point, while whole-cell NA omits the interval. The supplied point must lie inside
 the original endpoints. Bullet columns require explicit background bands.
 \begin{demo}{Signed observations in monochrome}
-\begin{gradtable}[preset=mono,graphic width=32mm,
-  text width=19mm,label width=19mm,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,preset=mono,graphic width=32mm,
+  text width=19mm,label width=19mm]
   \gradcolumn{name}{Group}
   \gradcolumn[type=bar,options={min=-40,max=60,precision=0}]{change}{Change}
   \gradcolumn[type=interval,options={min=-40,max=60,
@@ -49,6 +56,7 @@ the original endpoints. Bullet columns require explicit background bands.
   \gradrow{A,-12,-25/-12/5}
   \gradrow{B,28,15/28/45}
 \end{gradtable}
+\end{center}
 \end{demo}
 Default tables are indivisible and can be placed in table, table* or minipage.
 They do not infer ranges, calculate totals or load files automatically.
@@ -63,25 +71,31 @@ Table theme accepts none (default), blue, teal, violet, orange, forest or mono.
 Themes set graphic fills, sequential heat endpoints and automatic header/summary
 fills. Column drawing options can override colors or select a diverging palette.
 \begin{demo}{Academic with violet}
-\begin{gradtable}[style=academic,theme=violet,width=\linewidth,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=academic,theme=violet,width=\linewidth]
   \gradcolumn{name}{Method}
   \gradcolumn[type=bar,aggregate=mean]{score}{Score}
   \gradrow{A,72}\gradrow{B,90}\gradsummary{Mean}
 \end{gradtable}
+\end{center}
 \end{demo}
 \begin{demo}{Compact with forest green}
-\begin{gradtable}[style=compact,theme=forest,width=\linewidth,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=compact,theme=forest,width=\linewidth]
   \gradcolumn{name}{Method}
   \gradcolumn[type=heat,aggregate=mean]{score}{Score}
   \gradrow{A,72}\gradrow{B,90}\gradsummary{Mean}
 \end{gradtable}
+\end{center}
 \end{demo}
 \begin{demo}{Dashboard with warm orange}
-\begin{gradtable}[style=dashboard,theme=orange,width=\linewidth,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=dashboard,theme=orange,width=\linewidth]
   \gradcolumn{name}{Method}
   \gradcolumn[type=bar,aggregate=mean]{score}{Score}
   \gradrow{A,72}\gradrow{B,90}\gradsummary{Mean}
 \end{gradtable}
+\end{center}
 \end{demo}
 Explicit header/summary colors override auto fills; empty colors disable them.
 Font controls table text, while column options can style graphic label fonts.
@@ -96,11 +110,13 @@ alignment. No color theme or SI dependency is mandatory; all six existing table
 themes can be combined. Academic, compact and dashboard retain their defaults.
 Put explicit overrides after style selection.
 \begin{demo}{Research style with the forest theme}
-\begin{gradtable}[style=research,theme=forest,width=\linewidth,group summary=true,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=research,theme=forest,width=\linewidth,group summary=true]
   \gradcolumn{name}{Method}
   \gradcolumn[type=number,aggregate=mean,mark=both,
     options={precision=3}]{value}{Value}
   \gradgroup{Experiment}\gradrow{A,-12.125}\gradrow{B,1.25}\gradrow{Pending,NA}
   \gradsummary{Overall}
 \end{gradtable}
+\end{center}
 \end{demo}

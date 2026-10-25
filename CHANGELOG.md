@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.1.0 — 2026-10-25
+
+- Add the opt-in reports library with correlation, ablation and metrics presets and column recipes. Preserve raw numeric meanings and explicit metric directions.
+- Add a schema-1 public scalar backend contract with registration, capability negotiation, scoped read-only records, a native continuation and explicit error/TikZ fallback for unsupported kinds. The supplied drawing implementation remains TikZ.
+- Add semantic version queries/requirements and an independently testable public-only third-party starter. Keep the default five-library load list unchanged.
+
+- Extend the existing collected-column interface with `\gradbarscolumn*` for compact centered labels, explicit blank-cell spacing and unused column-name checks; retain the unstarred behavior. Add `\gradbarshead` and a complete Precision/Recall example so ordinary table data contain only numbers.
+
+- Add eight named Heat palettes: blue, teal, purple, orange, purple-teal, blue-red, orange-blue and brown-teal. Reuse the same resolved colors in standalone Heat cells, columns and shared legends; preserve old defaults and explicit color overrides.
+
+- Add `legend missing=true|false` to continuous and shared legends; keep true by default. Hiding the item also removes its automatic missing-value description.
+
+- Fix constant automatic scales when the numeric engine rounds both +/-0.5 endpoints to the same value (for example 1e100). Preserve normal +/-0.5 bounds; only collapsed intervals use a bounded 5% span, preventing an invalid zero-width scale.
+- Add opt-in distribution statistics, type-7 quartiles, observed 1.5 IQR whiskers, raw/precomputed box plots, complete descriptions, native boxplot columns and distribution/accessible table styles. Keep sample counts and unknown precomputed counts distinct.
+- Add opt-in continuous, shared categorical and reference legends. Freeze explicit scales through core named-scale resolution (including auto box/spark modes), color roles, units, percentage bases and direction; reject conflicts and semantic overrides at legend rendering.
+- Add accessible color roles and sequential/diverging Heat palettes. Retain old defaults, print behavior and the five default libraries.
+- Extend tabularray with J/R/V/K/U/B columns and matching helpers for dumbbell/range/spark/stack/bullet/boxplot. Load their libraries in the adapter preamble and reserve spark/dumbbell marker stroke width, including points exactly at scale endpoints.
+- Add explicit table structure with captions, logical row order, scoped headers and spans. Repeated tagged longtblr headers require LuaLaTeX and become artifacts after the first page. Opt-in per-page descriptions rebuild fresh content under the original logical cells; explicit multilevel Headers-ID links validate real header cells and reject cycles. Cross-page spans, nested tables and viewer-level certification remain outside this delivery.
+- Add three-engine numerical/error/PDF-structure regressions and bilingual chapters. CTAN submission is separate from this GitHub release.
+
 ## 1.0.0 — 2026-10-30
 
 ### Compatibility, Libraries, and API Architecture

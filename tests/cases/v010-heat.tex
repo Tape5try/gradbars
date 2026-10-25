@@ -1,0 +1,7 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage[libraries=none]{gradbars}
+\setlength{\parindent}{0pt}
+\usegradbarslibrary{heat}
+\gradbarsiflibraryloaded{heat}{}{\errmessage{Library not recorded}}\gradbarsiflibraryloaded{table}{\errmessage{Unwanted table dependency}}{}
+\begin{document}\gradheat[heat palette=diverging,min=-10,max=10]{-5}\end{document}

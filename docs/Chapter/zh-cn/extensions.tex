@@ -1,0 +1,32 @@
+\section{第三方库模板与公开后端契约}
+\key{docs/libraries/starter/} 提供独立的第三方库模板，包含仅使用公开接口的源码、示例、三引擎检查器和兼容说明。
+\begin{codeonly}
+\usepackage[libraries=none]{gradbars}
+\gradbarsdeclarelibrary{starter}{table}{gradbars-contrib-starter.sty}
+\usegradbarslibrary{starter}
+\end{codeonly}
+请把第三方文件放在 TeX 搜索路径内。复制模板后统一修改 starter 的宏包、图形、格式化器、样式与后端名称，
+在注册时声明依赖，并在库内检查依赖。
+\key{\gradbarsversion} 返回宏包版本，\key{\gradbarsrequireversion{1.1.0}} 检查最低语义版本。
+模板的独立检查入口为：
+\begin{codeonly}
+texlua docs/libraries/starter/check.lua --gradbars-root .
+\end{codeonly}
+\subsection{标量后端的公开契约}
+\key{\gradbarsbackendversion} 当前为 schema 1，为条形与 Heat 回调提供局部只读记录，私有模型存储仍不作为扩展接口。
+\begin{codeonly}
+\gradbarsdeclarebackend{my-backend}
+ {bar,heat,missing,signed,gradient,print,labels,units,clip,
+  decorations,embedded,tagging,artifact}
+ {\gradbarsbackenddefault}
+\gradbar[backend=my-backend]{72.125}
+\end{codeonly}
+回调的第一个参数为 bar 或 heat；只能声明实际实现或委托实现的能力。
+\key{\gradbarsbackendvalue{字段}} 在回调期间读取未舍入数值、归一化位置、物理尺寸、选项与描述；
+\key{\gradbarsbackendlabel} 排版原有格式化标签，\key{\gradbarsbackenddefault} 至多绘制一次捕获的原生续体。
+\key{\gradbarsifbackendcapable{名称}{能力}{是}{否}} 查询声明。
+未知后端、能力不足、递归回调及回调之外读取记录均有诊断。
+复合图形与图例需显式选择 \key{backend fallback=tikz}，默认报错以免静默改变输出。
+默认绘制仍使用 TikZ；本轮提供后端契约，不增加第二套绘图实现。
+表格试排可能多次调用回调，因此不要在回调中写外部文件或产生其他可见副作用；
+应尊重暂停标记状态，保留原始数值、单位、裁剪与基线。完整字段和能力说明见 \key{docs/backends.md}。

@@ -6,7 +6,8 @@
 列设置覆盖表格设置，文本列不参与尺度计算。手写数据与 CSV 数据源使用相同规则。
 范围跨页后仍保持一致。CSV 筛选默认仍按完整数据计算；\key{scale scope=visible} 改为显示行范围。
 \begin{example}[text and listing,sidebyside=false]{整列自动范围与单列零点设置}
-\begin{gradtable}[width=\linewidth,scale=column,include zero=false,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,width=\linewidth,scale=column,include zero=false]
   \gradcolumn{name}{Method}
   \gradcolumn[type=bar,include zero=true]{score}{Score}
   \gradcolumn[type=bar]{time}{Time}
@@ -14,6 +15,7 @@
   \gradrow{B,90,90}
   \gradrow{Pending,NA,NA}
 \end{gradtable}
+\end{center}
 \end{example}
 上例 Score 列采用 [0,90]，Time 列采用 [70,90]。
 \subsection{是否包含零与固定范围}
@@ -37,11 +39,13 @@
 \gradscale{accuracy}{min=0,max=100}
 \gradbar[scale group=accuracy,theme=violet]{72}
 
-\begin{gradtable}[style=academic,theme=violet,width=\linewidth,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=academic,theme=violet,width=\linewidth]
   \gradcolumn{name}{Method}
   \gradcolumn[type=bar,scale group=accuracy]{score}{Score}
   \gradrow{A,72}\gradrow{B,90}
 \end{gradtable}
+\end{center}
 \end{example}
 表格或列的 scale group 要求 \key{scale=fixed}，不能同时使用 \key{scale=column}。
 表格组设置由列继承，列可用空 scale group 清除；普通趋势图引用组时采用固定范围，win-loss 仍表示正负类别。
@@ -51,14 +55,16 @@
 padding 的单位是原始范围跨度的百分比，在非零端点向外扩张；零端点保留原位。
 之后按 1、2、5 的数量级步长向外取整，目标约为五个间隔。列设置覆盖表格设置，固定或命名范围不扩张。
 \begin{example}[text and listing,sidebyside=false]{显示范围扩张，原百分比含义保持一致}
-\begin{gradtable}[style=compact,theme=forest,width=\linewidth,
-  scale=column,scale padding=10,scale nice=true,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=compact,theme=forest,width=\linewidth,
+  scale=column,scale padding=10,scale nice=true]
   \gradcolumn{name}{Method}
   \gradcolumn[type=bar,aggregate=mean,
     options={value format=percent}]{score}{Score}
   \gradrow{A,63}\gradrow{B,87}
   \gradsummary{Mean}
 \end{gradtable}
+\end{center}
 \end{example}
 本例范围先为 [0,87]，留白后为 [0,95.7]，整洁边界为 [0,100]。
 百分比仍以原上限 87 为分母，原最大值的标签仍为 100\%，而不是随绘图范围扩张变小。

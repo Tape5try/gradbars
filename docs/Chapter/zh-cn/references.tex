@@ -58,7 +58,8 @@
 越界处理继承 \key{overflow}，所有组必须采用相同单位。
 
 \begin{example}[sidebyside=false]{示例 28：正负区间与缺失组}
-\begin{tabular}{ll}
+\begin{center}
+\begin{tabular}{cc}
 \multicolumn{1}{c}{指标} & \multicolumn{1}{c}{估计区间}\\
 变化量 & \gradintervals[min=-40,max=60,width=65mm,
   height=4pt,precision=0,row padding=3pt]{
@@ -66,6 +67,7 @@
   {组 B/5/18/35/gradbarsTeal},
   {组 C/NA/NA/NA/gray}}\\
 \end{tabular}
+\end{center}
 \end{example}
 该命令使用内部小表格，整体作为一个单元格排版，不在组间自动分页。
 名称列、图区及外部区间标签都占用宽度；长名称请缩写，或调小图区 width。

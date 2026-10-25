@@ -1,0 +1,34 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\begin{document}
+\gradbarsloadcsv{results}{docs/data/results.csv}
+\begin{gradtable}[data=results,width=\linewidth,scale=column,
+  sort=score,order=descending,filter={score>=75},limit=2]
+  \gradcolumn[source=Model]{method}{Method}
+  \gradcolumn[type=bar,source=Score]{score}{Score}
+  \gradcolumn[type=number,source=Latency]{time}{Latency}
+\end{gradtable}
+\par\bigskip
+\gradheat[heat palette=diverging,min=-50,max=100]{-50}\quad
+\gradheat[heat palette=diverging,min=-50,max=100]{0}\quad
+\gradheat[heat palette=diverging,min=-50,max=100]{100}
+\par\bigskip
+\gradheat[heat palette=diverging,heat center=50,min=20,max=80]{20}\quad
+\gradheat[heat palette=diverging,heat center=50,min=20,max=80]{50}\quad
+\gradheat[heat palette=diverging,heat center=50,min=20,max=80]{80}
+\par\bigskip
+\gradspark[spark type=bar,width=50mm]{20,-10,NA,40,0,-30}
+\par\bigskip
+\gradspark[spark type=winloss,width=50mm]{20,-10,NA,40,0,-30}
+\par\bigskip
+\begin{gradtable}[width=\linewidth,scale=column]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=heat,options={heat palette=diverging}]{heat}{Change}
+  \gradcolumn[type=spark,options={spark type=bar}]{bar}{Bar}
+  \gradcolumn[type=spark,options={spark type=winloss}]{win}{Win / loss}
+  \gradrow{A,-10,{10,-5,0},{10,-5,0}}
+  \gradrow{B,20,{-20,15,NA},{-20,15,NA}}
+\end{gradtable}
+\end{document}

@@ -6,8 +6,9 @@
 输入顺序是基准/当前，默认显示标签的顺序为当前/基准；delta 显示当前减基准。
 
 \begin{example}[text and listing,sidebyside=false]{示例 53：同一数据的两种对比表达}
-\begin{gradtable}[text width=25mm,graphic width=34mm,
-  label width=10mm,header align=c,column sep=7pt,
+\begin{center}
+\begin{gradtable}[align=c,header align=c,text width=25mm,graphic width=34mm,
+  label width=10mm,column sep=7pt,
   row stretch=1.8]
   \gradcolumn{name}{方法}
   \gradcolumn[type=compare,
@@ -19,6 +20,7 @@
   \gradrow{方法 B,75/60,75/60}
   \gradrow{方法 C,50/NA,50/NA}
 \end{gradtable}
+\end{center}
 \end{example}
 双层条适合保留两组长度，哑铃图适合强调两个端点之间的差异。
 列标题应说明基准、当前或差值的含义；同一列所有行应采用同一尺度。
@@ -30,8 +32,9 @@
 堆叠列显示各段及总量；迷你折线列显示序列，并在外部标注最后一个观测值。
 
 \begin{example}[text and listing,sidebyside=false]{示例 54：构成与趋势并列展示}
-\begin{gradtable}[text width=25mm,graphic width=34mm,
-  label width=10mm,header align=c,column sep=7pt,
+\begin{center}
+\begin{gradtable}[align=c,header align=c,text width=25mm,graphic width=34mm,
+  label width=10mm,column sep=7pt,
   row stretch=1.8]
   \gradcolumn{name}{项目}
   \gradcolumn[type=stack,options={max=100,precision=0,
@@ -43,6 +46,7 @@
   \gradrow{项目 B,{30,20,15},{80,70,65,NA,NA}}
   \gradrow{项目 C,NA,NA}
 \end{gradtable}
+\end{center}
 \end{example}
 三段颜色依次代表类别一、二、三；同一类别在各行保持相同顺序和颜色。
 堆叠列的整格 NA 表示构成缺失，不能把缺失的一段当作零值参与累计。

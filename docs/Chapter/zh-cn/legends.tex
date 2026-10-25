@@ -1,0 +1,60 @@
+\section{连续色阶、共享图例与参考标记}
+导言区加载 \key{legend} 库；其依赖 Heat。连续图例表达数值尺度，复用 Heat 的插值函数，
+不能把类别色块当成连续量程。
+\begin{example}[text and listing,sidebyside=false]{两格数值共享冻结的尺度与图例}
+\begingroup
+\gradscale{legend-score}{min=-10,max=30}
+\gradlegenddefine{legend-score}{scale group=legend-score,
+  heat palette=purple-teal,
+  heat center=0,legend title={Score}}
+\gradheat[legend group=legend-score]{-5}
+\gradheat[legend group=legend-score]{20}
+\par\medskip
+\gradlegenduse[width=60mm,height=3mm,legend missing=false]{legend-score}
+\endgroup
+\end{example}
+\key{legend missing=false} 隐藏缺失值色块及其描述，默认值为 \key{true}；两个图例命令均可使用。
+\key{\gradheatlegend} 接受普通图形选项，以及 \key{legend title} 和 \key{legend ticks}。\par
+方向由 \key{legend orientation} 设置，取 \key{horizontal} 或 \key{vertical}。
+width 表示色带长度，height 表示厚度；默认标注两端点和内部发散中心。
+自定义刻度必须在量程内严格递增，位置按原值计算，文字按精度与单位格式化。
+色带采用 256 段矢量插值；刻度过密或舍入后相同，应增加精度或调整布局。
+\key{\gradlegenddefine} 在当前分组中冻结显式尺度、方向、单位和颜色角色；
+独立图形、原生列的 options 和 tabularray 单元格均可引用 \key{legend group=name}。
+未知名称、重复定义及尺度／配色／单位冲突会报错。
+\key{\gradlegenduse} 仅允许布局、刻度格式、字体与替代文本覆盖，不改变后续图形设置。
+\begin{example}[text and listing,sidebyside=false]{参考符号与统计含义}
+\gradreferencelegend{target/Declared target,
+  reference/Reference value,band/Reference range,
+  error/Error distances,box/Quartiles and observed whiskers}
+\end{example}
+文字必须说明标记的真实含义：误差距离不自动等于置信区间，箱线须也不是误差须。
+共享类别或参考图例可用 \key{legend kind=categorical|reference} 与 \key{legend names}。
+重复装饰图例可设 \key{accessibility=artifact}，完整图例的自动描述保留尺度、中心、方向与单位。
+
+
+\subsection{内置 Heat 配色}
+用一行 \key{heat palette=名称} 同时设置两端颜色、白色中心和插值模式。
+顺序配色为 \key{blue}、\key{teal}、\key{purple}、\key{orange}，从白色渐变到对应颜色；
+发散配色为 \key{purple-teal}、\key{blue-red}、\key{orange-blue}、\key{brown-teal}，
+颜色顺序对应低值、白色中心、高值。发散模式仍由 \key{heat center} 指定中心数值。
+这些名称是配色快捷方式，不等于可访问性认证；原有 accessible 配色继续保留。
+预设之后仍可用 \key{heat low color}、\key{heat center color}、\key{heat high color} 单独覆盖。
+\begin{example}[text and listing,sidebyside=false]{内置连续色阶配色}
+\gradheatlegend[width=45mm,height=2mm,min=-10,max=30,heat center=0,
+  heat palette=blue,legend title={blue},legend missing=false]\quad
+\gradheatlegend[width=45mm,height=2mm,min=-10,max=30,heat center=0,
+  heat palette=teal,legend title={teal},legend missing=false]\par\medskip
+\gradheatlegend[width=45mm,height=2mm,min=-10,max=30,heat center=0,
+  heat palette=purple,legend title={purple},legend missing=false]\quad
+\gradheatlegend[width=45mm,height=2mm,min=-10,max=30,heat center=0,
+  heat palette=orange,legend title={orange},legend missing=false]\par\medskip
+\gradheatlegend[width=45mm,height=2mm,min=-10,max=30,heat center=0,
+  heat palette=purple-teal,legend title={purple-teal},legend missing=false]\quad
+\gradheatlegend[width=45mm,height=2mm,min=-10,max=30,heat center=0,
+  heat palette=blue-red,legend title={blue-red},legend missing=false]\par\medskip
+\gradheatlegend[width=45mm,height=2mm,min=-10,max=30,heat center=0,
+  heat palette=orange-blue,legend title={orange-blue},legend missing=false]\quad
+\gradheatlegend[width=45mm,height=2mm,min=-10,max=30,heat center=0,
+  heat palette=brown-teal,legend title={brown-teal},legend missing=false]
+\end{example}

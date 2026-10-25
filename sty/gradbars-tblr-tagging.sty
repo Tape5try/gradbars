@@ -1,0 +1,163 @@
+% Author: SuFan; MIT License. Explicit table semantics via tabularray hooks.
+\ProvidesPackage{gradbars-tblr-tagging}[2026/10/25 v1.1.0 Tagged tabularray tables]
+\ExplSyntaxOn
+\cs_generate_variant:Nn\prop_gput:Nnn{Nxx}
+\__gradbars_check_module:n{gradbars-tblr-tagging}
+\bool_new:N\l__gradbars_tblr_tag_bool
+\bool_new:N\l__gradbars_tblr_tag_active_bool
+\bool_new:N\l__gradbars_tblr_repeat_reset_bool
+\bool_new:N\l__gradbars_tblr_rebuilding_bool
+\prop_new:N\g__gradbars_tblr_cells_prop
+\prop_new:N\g__gradbars_tblr_cell_types_prop
+\prop_new:N\l__gradbars_tblr_header_links_prop
+\prop_new:N\l__gradbars_tblr_header_visit_prop
+\clist_new:N\l__gradbars_tblr_header_cells_clist
+\tl_new:N\l__gradbars_tblr_headers_pdf_tl
+\box_new:N\g__gradbars_tblr_repeat_box
+\int_new:N\l__gradbars_tblr_head_rows_int
+\clist_new:N\l__gradbars_tblr_head_cols_clist
+\tl_new:N\l__gradbars_tblr_caption_tl
+\tl_new:N\l__gradbars_tblr_repeat_tl
+\tl_set:Nn\l__gradbars_tblr_repeat_tl{artifact}
+\prop_new:N\l__gradbars_tblr_row_structs_prop
+\int_new:N\g__gradbars_tblr_attr_int
+\tl_new:N\l__gradbars_tblr_attribute_tl
+\keys_define:nn{gradbars/tblr/tagging}
+  {head~rows .int_set:N=\l__gradbars_tblr_head_rows_int,
+   row~headers .clist_set:N=\l__gradbars_tblr_head_cols_clist,
+   header~cells .clist_set:N=\l__gradbars_tblr_header_cells_clist,
+   cell~headers .code:n=\prop_set_from_keyval:Nn\l__gradbars_tblr_header_links_prop{#1},
+   caption .tl_set:N=\l__gradbars_tblr_caption_tl,
+   header~repeat .choice:,
+   header~repeat/artifact .code:n=\tl_set:Nn\l__gradbars_tblr_repeat_tl{artifact},
+   header~repeat/describe .code:n=\tl_set:Nn\l__gradbars_tblr_repeat_tl{describe}}
+\DeclareDocumentCommand\gradtblrtagging{m}
+  {\par\bool_set_true:N\l__gradbars_tblr_tag_bool
+   \int_set:Nn\l__gradbars_tblr_head_rows_int{1}
+   \clist_clear:N\l__gradbars_tblr_head_cols_clist
+   \clist_clear:N\l__gradbars_tblr_header_cells_clist
+   \prop_clear:N\l__gradbars_tblr_header_links_prop
+   \tl_set:Nn\l__gradbars_tblr_repeat_tl{artifact}
+   \tl_clear:N\l__gradbars_tblr_caption_tl
+   \keys_set:nn{gradbars/tblr/tagging}{#1}
+   \cs_if_exist:NTF\tag_if_active:TF
+     {\tag_if_active:F{\__gradbars_public_error:n{Table~tagging~requires~DocumentMetadata~tagging=on}}}
+     {\__gradbars_public_error:n{Table~tagging~requires~DocumentMetadata~tagging=on}}}
+\cs_new_protected:Npn\__gradbars_tblr_table_begin:
+  {\bool_if:NT\l__gradbars_tblr_tag_bool
+     {\bool_if:NT\l__gradbars_tblr_tag_active_bool{\__gradbars_public_error:n{Nested~tagged~tables~are~not~supported}}
+      \bool_set_true:N\l__gradbars_tblr_tag_active_bool
+      \bool_set_false:N\l__gradbars_tblr_repeat_reset_bool
+      \prop_clear:N\l__gradbars_tblr_row_structs_prop
+      \prop_gclear:N\g__gradbars_tblr_cells_prop
+      \prop_gclear:N\g__gradbars_tblr_cell_types_prop
+      \tag_mc_end_push:\tagpdfparaOff
+      \clist_map_inline:nn{para/semantic/begin,para/semantic/end,para/textblock/begin,para/textblock/end,minipage/before,minipage/after,parbox/before,parbox/after}
+        {\socket_if_exist:nT{tagsupport/##1}{\AssignTaggingSocketPlug{##1}{noop}}}
+      \tag_struct_begin:n{tag=Table}
+      \tl_if_empty:NF\l__gradbars_tblr_caption_tl
+        {\tag_struct_begin:n{tag=Caption}\tag_mc_begin:n{tag=Caption}
+         \noindent\l__gradbars_tblr_caption_tl\par
+         \tag_mc_end:\tag_struct_end:}
+      \int_compare:nNnT{\l__gradbars_tblr_head_rows_int}<{0}
+        {\__gradbars_public_error:n{Header~row~count~must~be~nonnegative}}
+      \int_compare:nNnT{\l__gradbars_tblr_head_rows_int}>{\c@rowcount}
+        {\__gradbars_public_error:n{Header~row~count~exceeds~table~rows}}
+      \clist_map_inline:Nn\l__gradbars_tblr_head_cols_clist
+        {\int_compare:nNnF{##1}>{0}{\__gradbars_public_error:n{Header~columns~must~be~positive}}
+         \int_compare:nNnT{##1}>{\c@colcount}{\__gradbars_public_error:n{Header~column~exceeds~table~columns}}}
+      % Allocate rows in reading order; tabularray builds footers before body.
+      \int_step_inline:nn{\c@rowcount}
+        {\tag_struct_begin:n{tag=TR}
+         \prop_put:Nnx\l__gradbars_tblr_row_structs_prop{##1}{\tag_get:n{struct_num}}
+         \tag_struct_end:}}}
+\cs_new_protected:Npn\__gradbars_tblr_cell_begin:
+  {\bool_if:NT\l__gradbars_tblr_tag_active_bool
+     {\bool_lazy_and:nnT{!\lTblrMeasuringBool}{!\lTblrCellOmittedBool}
+        {\bool_if:NTF\l__gradbars_tblr_rebuilding_bool
+          {\exp_args:Ne\tag_struct_begin:n{tag=P,
+             parent=\prop_item:Ne\g__gradbars_tblr_cells_prop{\int_use:N\c@rownum/\int_use:N\c@colnum}}}
+          {\tl_set:Nn\l_tmpa_tl{TD}\tl_clear:N\l__gradbars_tblr_attribute_tl
+         \int_compare:nT{\c@rownum<=\l__gradbars_tblr_head_rows_int}
+           {\tl_set:Nn\l_tmpa_tl{TH}\tl_set:Nn\l__gradbars_tblr_attribute_tl{/Scope/Column}}
+         \clist_if_in:NeT\l__gradbars_tblr_head_cols_clist{\int_use:N\c@colnum}
+           {\tl_set:Nn\l_tmpa_tl{TH}
+            \tl_if_empty:NTF\l__gradbars_tblr_attribute_tl
+              {\tl_set:Nn\l__gradbars_tblr_attribute_tl{/Scope/Row}}
+              {\tl_set:Nn\l__gradbars_tblr_attribute_tl{/Scope/Both}}}
+         \clist_if_in:NeT\l__gradbars_tblr_header_cells_clist{\int_use:N\c@rownum/\int_use:N\c@colnum}
+           {\tl_set:Nn\l_tmpa_tl{TH}}
+         \prop_gput:Nxx\g__gradbars_tblr_cell_types_prop{\int_use:N\c@rownum/\int_use:N\c@colnum}{\l_tmpa_tl}
+         \int_gincr:N\g__gradbars_tblr_attr_int
+         \tag_attr_new:ee{gradbars-cell-\int_use:N\g__gradbars_tblr_attr_int}
+           {/O/Table/RowSpan~\int_use:N\lTblrCellRowSpanInt
+             /ColSpan~\int_use:N\lTblrCellColSpanInt\l__gradbars_tblr_attribute_tl}
+         \exp_args:Ne\tag_struct_begin:n
+           {tag=\l_tmpa_tl,parent=\prop_item:Ne\l__gradbars_tblr_row_structs_prop{\int_use:N\c@rownum},
+            attribute=gradbars-cell-\int_use:N\g__gradbars_tblr_attr_int}
+         \prop_gput:Nxx\g__gradbars_tblr_cells_prop{\int_use:N\c@rownum/\int_use:N\c@colnum}{\tag_get:n{struct_num}}}
+         \tag_mc_begin:n{tag=Span}}}}
+\cs_new_protected:Npn\__gradbars_tblr_cell_end:
+  {\bool_if:NT\l__gradbars_tblr_tag_active_bool
+     {\bool_lazy_and:nnT{!\lTblrMeasuringBool}{!\lTblrCellOmittedBool}{\tag_mc_end:\tag_struct_end:}}}
+\cs_new_protected:Npn\__gradbars_tblr_header_visit:n #1
+  {\str_case_e:nnF{\prop_item:Nn\l__gradbars_tblr_header_visit_prop{#1}}
+     {{visiting}{\__gradbars_public_error:n{Cyclic~table~header~association:~#1}}
+      {done}{}}
+     {\prop_put:Nnn\l__gradbars_tblr_header_visit_prop{#1}{visiting}
+      \prop_get:NnNT\l__gradbars_tblr_header_links_prop{#1}\l_tmpa_tl
+        {\exp_args:NV\clist_map_inline:nn\l_tmpa_tl{\__gradbars_tblr_header_visit:n{##1}}}
+      \prop_put:Nnn\l__gradbars_tblr_header_visit_prop{#1}{done}}}
+\cs_new_protected:Npn\__gradbars_tblr_link_headers:
+  {\prop_clear:N\l__gradbars_tblr_header_visit_prop
+   \clist_map_inline:Nn\l__gradbars_tblr_header_cells_clist
+     {\str_if_eq:eeF{\prop_item:Nn\g__gradbars_tblr_cell_types_prop{##1}}{TH}
+       {\__gradbars_public_error:n{Header~cell~does~not~exist~or~is~covered:~##1}}}
+   \prop_map_inline:Nn\l__gradbars_tblr_header_links_prop
+     {\__gradbars_tblr_header_visit:n{##1}
+      \prop_if_in:NnTF\g__gradbars_tblr_cells_prop{##1}
+        {\tl_clear:N\l__gradbars_tblr_headers_pdf_tl
+         \clist_map_inline:nn{##2}
+           {\str_if_eq:eeTF{\prop_item:Nn\g__gradbars_tblr_cell_types_prop{####1}}{TH}
+             {\tl_put_right:Nx\l__gradbars_tblr_headers_pdf_tl
+               {\__tag_struct_get_id:n{\prop_item:Nn\g__gradbars_tblr_cells_prop{####1}}}}
+             {\__gradbars_public_error:n{Association~requires~an~existing~TH~cell:~####1}}}
+         \exp_args:Nene\tag_struct_gput:nnn
+           {\prop_item:Nn\g__gradbars_tblr_cells_prop{##1}}{attribute}
+           {/O/Table/Headers[\l__gradbars_tblr_headers_pdf_tl]}}
+        {\__gradbars_public_error:n{Unknown~association~target~cell:~##1}}}}
+\cs_new_protected:Npn\__gradbars_tblr_table_end:
+  {\bool_if:NT\l__gradbars_tblr_tag_active_bool
+     {\__gradbars_tblr_link_headers:\par\tag_struct_end:\tag_mc_begin_pop:n{}
+      \bool_set_false:N\l__gradbars_tblr_tag_active_bool}}
+% The private adapter is isolated and tested against tabularray 2025C.
+% Artifact mode resets copied attributes. Describe mode rebuilds fresh content
+% beneath the original logical cells, never duplicating TR/TH/TD or MCIDs.
+\cs_new_protected:Npn\__gradbars_tblr_output_after:
+  {\bool_if:NT\l__gradbars_tblr_tag_active_bool
+     {\str_if_eq:VnT\lTblrPortraitTypeTl{long}
+       {\int_compare:nNnT{\lTblrRowHeadInt+\lTblrRowFootInt}>{0}
+         {\sys_if_engine_luatex:TF
+           {\bool_if:NF\l__gradbars_tblr_repeat_reset_bool
+              {\tag_mc_begin:n{artifact}
+               \tag_mc_reset_box:N\l__tblr_row_foot_box
+               \str_if_eq:VnT\l__gradbars_tblr_repeat_tl{artifact}
+                 {\tag_mc_reset_box:N\l__tblr_row_head_box}
+               \tag_mc_end:
+               \bool_set_true:N\l__gradbars_tblr_repeat_reset_bool}
+            \str_if_eq:VnT\l__gradbars_tblr_repeat_tl{describe}
+              {\bool_lazy_and:nnT{\int_compare_p:nNn{\lTblrRowHeadInt}>{0}}{\int_compare_p:nNn{\lTblrRowLastInt}<{\c@rowcount-\lTblrRowFootInt}}
+                 {\group_begin:
+                  \bool_set_true:N\l__gradbars_tblr_rebuilding_bool
+                  \__tblr_build_one_table:nnNN{1}{\lTblrRowHeadInt}\c_true_bool\c_true_bool
+                  \box_gset_eq:NN\g__gradbars_tblr_repeat_box\l__tblr_table_box
+                  \group_end:
+                  \box_set_eq:NN\l__tblr_row_head_box\g__gradbars_tblr_repeat_box}}}
+           {\__gradbars_public_error:n{Repeated~tagged~longtblr~headers~require~LuaLaTeX}}}}}}
+\AddToTblrHook{table/before}[gradbars-structure]{\__gradbars_tblr_table_begin:}
+\AddToTblrHook{cell/before}[gradbars-structure]{\__gradbars_tblr_cell_begin:}
+\AddToTblrHook{cell/after}[gradbars-structure]{\__gradbars_tblr_cell_end:}
+\AddToTblrHook{private/output/after}[gradbars-structure]{\__gradbars_tblr_output_after:}
+\AddToTblrHook{table/after}[gradbars-structure]{\__gradbars_tblr_table_end:}
+\ExplSyntaxOff
+\endinput

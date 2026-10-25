@@ -1,0 +1,18 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\usegradbarslibrary{reports,distribution}
+\setlength{\parindent}{0pt}
+\ExplSyntaxOn
+\cs_new_eq:NN\savedDomainRank\gradtableRank
+\cs_set_protected:Npn\gradtableRank{\savedDomainRank
+ \prop_if_in:NnT\l__gradtable_best_prop{acc}
+  {\fp_compare:nNnF{\prop_item:Nn\l__gradtable_best_prop{acc}}={95}{\errmessage{Accuracy~direction~wrong}}
+   \fp_compare:nNnF{\prop_item:Nn\l__gradtable_best_prop{lat}}={28}{\errmessage{Latency~direction~wrong}}}}
+\ExplSyntaxOff
+\begin{document}
+\begin{gradtable}[style=metrics,width=\linewidth]\gradcolumn{name}{Name}
+\gradmetriccolumn{acc}{Accuracy}
+\gradmetriccolumn[options={style=report-metric,better=lower,unit={ ms}}]{lat}{Latency}
+\gradrow{A,92,35}\gradrow{B,95,48}\gradrow{C,90,28}\end{gradtable}
+\end{document}

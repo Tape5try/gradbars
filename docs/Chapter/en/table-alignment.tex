@@ -3,17 +3,19 @@ Headers follow the corresponding column unless overridden. With \key{align=auto}
 text and graphic columns align left and number columns align right. Column
 settings override table settings. Use \key{header align=c} for centered headings.
 \begin{demo}{Horizontal alignment and vertically centered text}
-\begin{gradtable}[rules=grid,header align=c,valign=c,
+\begin{center}
+\begin{gradtable}[align=c,header align=c,rules=grid,valign=c,
   text width=30mm,column sep=5pt,row padding=3pt,
   header color=gradbarsBlue!8,rule color=gradbarsBlue!60!black]
-  \gradcolumn[align=l]{left}{Left}
-  \gradcolumn[align=c]{center}{Center}
-  \gradcolumn[align=r]{right}{Right}
+  \gradcolumn[align=c]{left}{Column A}
+  \gradcolumn[align=c]{center}{Column B}
+  \gradcolumn[align=c]{right}{Column C}
   \gradcolumn[type=number,align=c,width=20mm,
     options={precision=0}]{number}{Count}
   \gradrow{Method A,Method A,Method A,120}
   \gradrow{A longer name wraps within the text column,Short,Short,5}
 \end{gradtable}
+\end{center}
 \end{demo}
 \key{valign=t|c|b} affects text columns only, using array's p/m/b paragraph boxes.
 Use \key{align=l},\key{valign=c} for left-aligned, vertically centered text.
@@ -23,16 +25,18 @@ number and graphic cells. Graphic width controls the plot, label width controls
 the numeric slot, and column width controls the cell. Graphic alignment moves
 the complete plot-plus-label cell; numeric labels remain right-aligned internally.
 \begin{demo}{A centered score heading and graphic cell}
-\begin{gradtable}[rules=rows,header align=c,
-  graphic width=28mm,label width=12mm,column sep=8pt,row stretch=1.4]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,rules=rows,graphic width=28mm,label width=12mm,column sep=8pt,row stretch=1.4]
   \gradcolumn[width=24mm,header align=c]{method}{Method}
   \gradcolumn[type=bar,align=c,width=75mm,
     options={max=100,precision=0}]{score}{Score}
   \gradrow{A,82}
   \gradrow{B,NA}
 \end{gradtable}
+\end{center}
 \end{demo}
-\begin{tabularx}{\linewidth}{@{}lX@{}}
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}c>{\centering\arraybackslash}X@{}}
 \toprule
 \multicolumn{1}{c}{Option} & \multicolumn{1}{c}{Meaning}\\\midrule
 \key{rules=booktabs} & Default: top, header separator and bottom rules.\\
@@ -46,5 +50,6 @@ header color & Report defaults to gradbarsTrack; empty clears the fill.\\
 rule color & Default black; local to this table.\\
 \bottomrule
 \end{tabularx}
+\end{center}
 Spacing and widths must be nonnegative. Cell alignment does not position the
 whole table: use an enclosing group with centering, raggedright or raggedleft.

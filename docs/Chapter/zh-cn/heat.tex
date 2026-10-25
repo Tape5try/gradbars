@@ -1,7 +1,7 @@
 \section{Heat 色阶单元格}
 \label{sec:heat}
 Heat 用背景颜色表示单个数值，在色块内保留数值标签，适合观察同一指标的高低分布。
-\key{\gradheat[选项]{值}} 可在正文、普通表格或已有 TikZ 图形中使用。
+\key{\gradheat[选项]{值}} 可在正文、普通表格或已有 \manualTikZ{} 图形中使用。
 颜色按 min/max 在线性尺度上连续插值，不改变原始数值。
 \begin{example}[text and listing,sidebyside=false]{连续色阶与缺失值}
 \gradheat[min=0,max=100]{0}\quad
@@ -47,7 +47,8 @@ Heat 不绘制条形的目标线、误差线、纹理或阈值区间。
 色块占据列内容宽度，保留正常列间距；\key{mark=best|both} 可标记最佳与次佳值。
 下面先采用固定量程；自动范围见第~\ref{sec:column-scale}~章，CSV 数据源见第~\ref{sec:csv-input}~章。
 \begin{example}[text and listing,sidebyside=false]{固定尺度的 Heat 表格列}
-\begin{gradtable}[width=\linewidth,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,width=\linewidth]
   \gradcolumn{name}{Method}
   \gradcolumn[type=heat,mark=both,
     options={min=0,max=100,precision=0}]{score}{Score}
@@ -55,4 +56,5 @@ Heat 不绘制条形的目标线、误差线、纹理或阈值区间。
   \gradrow{B,90}
   \gradrow{Pending,NA}
 \end{gradtable}
+\end{center}
 \end{example}

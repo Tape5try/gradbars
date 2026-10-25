@@ -1,0 +1,20 @@
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\usegradbarslibrary{distribution,legend}
+\setlength{\parindent}{0pt}
+
+\begin{document}
+
+\gradheatlegend\newpage
+\gradheatlegend[legend missing=false]\newpage
+\gradheatlegend[legend missing]\newpage
+\gradlegenddefine{hidden}{legend missing=false}
+\gradlegenduse{hidden}\newpage
+\gradlegenduse[legend missing=true]{hidden}\newpage
+\gradlegenduse{hidden}\newpage
+\gradheatlegend[legend orientation=vertical,legend missing=false]\newpage
+\gradheatlegend
+
+\end{document}

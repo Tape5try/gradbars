@@ -4,7 +4,8 @@
 aggregate 可选 none、count、sum、mean、min、max，默认 none。
 汇总行按数字排版，不绘制图形，因此总和超过图区范围也不会被裁剪。
 \begin{example}[text and listing,sidebyside=false]{有效观测均值与总耗时}
-\begin{gradtable}[style=academic,theme=teal,width=\linewidth,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=academic,theme=teal,width=\linewidth]
   \gradcolumn{name}{Method}
   \gradcolumn[type=bar,aggregate=mean,mark=both,
     options={max=100}]{score}{Score}
@@ -13,6 +14,7 @@ aggregate 可选 none、count、sum、mean、min、max，默认 none。
   \gradrow{A,72,20}\gradrow{B,90,30}\gradrow{Missing,NA,0}
   \gradsummary{Summary}
 \end{gradtable}
+\end{center}
 \end{example}
 本例得分均值为 81，耗时总和为 50。count 统计有效数值个数，显示整数且不附加单位或计算百分比。
 缺失值被跳过，真实零仍参与统计；全缺失或没有数据时 count、sum 为 0，mean、min、max 显示缺失。
@@ -22,13 +24,15 @@ data 使用完整导入数据；手写表格两种范围相同。标签显示在
 文本及复合图形列不支持 aggregate，未选择统计量的列在汇总行中留空。
 \begin{example}[text and listing,sidebyside=false]{只显示两行，汇总完整数据}
 \gradbarsloadcsv{results}{docs/data/results.csv}
-\begin{gradtable}[style=compact,data=results,width=\linewidth,
-  sort=score,order=descending,limit=2,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=compact,data=results,width=\linewidth,
+  sort=score,order=descending,limit=2]
   \gradcolumn[source=Model]{name}{Method}
   \gradcolumn[type=number,source=Score,aggregate=mean]{score}{Score}
   \gradcolumn[type=number,width=18mm,source=Latency,aggregate=count]{n}{Latency}
   \gradsummary[scope=data]{All data}
 \end{gradtable}
+\end{center}
 \end{example}
 完整得分均值为 61.675，有效延迟观测为 4 个。汇总不会影响排名、自动尺度或数据行数量。
 数字列沿用对齐设置，普通条及子弹图的汇总值靠右，Heat 汇总值居中。
@@ -47,9 +51,10 @@ data 使用完整导入数据；手写表格两种范围相同。标签显示在
 \begin{example}[text and listing,sidebyside=false]{完整案例：分组实验结果}
 \gradscale{change}{min=-10,max=10}
 \gradbarsloadcsv{experiments}{docs/data/experiments.csv}
-\begin{gradtable}[data=experiments,width=\linewidth,theme=violet,
+\begin{center}
+\begin{gradtable}[align=c,header align=c,data=experiments,width=\linewidth,theme=violet,
   group by=batch,group summary=true,group summary label={Group summary},
-  sort keys={change/descending,duration/ascending},header align=c]
+  sort keys={change/descending,duration/ascending}]
   \gradcolumn[source=Run]{run}{Run}
   \gradcolumn[source=Batch]{batch}{Batch}
   \gradcolumn[type=heat,source=Change,aggregate=mean,scale group=change,
@@ -57,6 +62,7 @@ data 使用完整导入数据；手写表格两种范围相同。标签显示在
   \gradcolumn[type=number,source=Duration,aggregate=count]{duration}{Duration}
   \gradsummary{All visible}
 \end{gradtable}
+\end{center}
 \end{example}
 两个组的 Change 均值分别为 $-1$ 和 3；Duration 列摘要为有效观测数量，均为 2。
 整表 Change 均值为 1，有效 Duration 观测共 4 个。

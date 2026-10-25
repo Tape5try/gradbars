@@ -7,7 +7,8 @@
 分组行兼容四种 rules 样式。标题过长时应缩短文字，避免把整张表撑宽。
 
 \begin{example}[text and listing,sidebyside=false]{示例 60：分组展示与全表最优值}
-\begin{gradtable}[header align=c,text width=30mm,
+\begin{center}
+\begin{gradtable}[align=c,header align=c,text width=30mm,
   graphic width=38mm,label width=12mm,group sep=4pt]
   \gradcolumn{method}{方法}
   \gradcolumn[type=bar,mark=both,
@@ -22,6 +23,7 @@
   \gradrow{方法 D,86.7,9.6}
   \gradrow{方法 E,NA,NA}
 \end{gradtable}
+\end{center}
 \end{example}
 \textbf{最佳值加粗，次佳值加下划线。} 得分的两个 90.2 均加粗，86.7 为次佳值；
 耗时的两个 9.6 均加粗，10.5 为次佳值。比较覆盖当前整张表的全部数据行，跨越分组。
@@ -34,8 +36,8 @@
 目标接近度和区间达标不能直接用于本接口的最优值排序。
 
 \begin{example}[text and listing,sidebyside=false]{示例 61：负数、并列值与零值}
-\begin{gradtable}[rules=grid,header align=c,
-  text width=34mm,column sep=8pt,row padding=2pt]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,rules=grid,text width=34mm,column sep=8pt,row padding=2pt]
   \gradcolumn{method}{项目}
   \gradcolumn[type=number,mark=both,width=28mm,
     options={better=lower,precision=1}]{loss}{偏差}
@@ -44,6 +46,7 @@
   \gradrow{方案 C,0}
   \gradrow{方案 D,NA}
 \end{gradtable}
+\end{center}
 \end{example}
 \begin{itemize}
   \item 排名采用格式化之前的原始数值；不会按字符串或四舍五入后的标签排序。
@@ -65,9 +68,10 @@
 分组统计也支持手写 \key{gradgroup}；同名标题的手写组分别统计，首个标题之前的数据组成隐式未命名组。
 \begin{example}[text and listing,sidebyside=false]{完整案例：算法家族对比}
 \gradbarsloadcsv{families}{docs/data/families.csv}
-\begin{gradtable}[data=families,width=\linewidth,style=academic,theme=teal,
+\begin{center}
+\begin{gradtable}[align=c,header align=c,data=families,width=\linewidth,style=academic,theme=teal,
   scale=column,group by=family,rank scope=group,group summary=true,
-  sort keys={score/descending,time/ascending},header align=c]
+  sort keys={score/descending,time/ascending}]
   \gradcolumn[source=Method]{method}{Method}
   \gradcolumn[source=Family]{family}{Family}
   \gradcolumn[type=bar,source=Score,mark=both,aggregate=mean]{score}{Score}
@@ -75,6 +79,7 @@
     options={better=lower,precision=0}]{time}{Time / ms}
   \gradsummary{All visible}
 \end{gradtable}
+\end{center}
 \end{example}
 Classic 的得分均值为 82，Neural 为 91；最快时间分别为 8 和 12。
 组标题与首行同页，分组汇总只显示一次并与组末行同页；续页不重复分组标题。

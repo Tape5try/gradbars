@@ -31,9 +31,10 @@ zero while statistics retain raw values. Increase explicitly insufficient
 column widths. Long tables retain the same anchors across pages.
 \begin{demo}{Complete example: precision and elapsed time}
 \gradbarsloadcsv{precision}{docs/data/precision-time.csv}
-\begin{gradtable}[data=precision,width=\linewidth,style=research,theme=teal,
+\begin{center}
+\begin{gradtable}[align=c,header align=c,data=precision,width=\linewidth,style=research,theme=teal,
   formatter=siunitx,group by=family,rank scope=group,group summary=true,
-  sort keys={score/descending,time/ascending},header align=c]
+  sort keys={score/descending,time/ascending}]
   \gradcolumn[source=Method]{name}{Method}
   \gradcolumn[source=Family]{family}{Family}
   \gradcolumn[type=bar,source=Score,aggregate=mean,mark=both,
@@ -43,12 +44,16 @@ column widths. Long tables retain the same anchors across pages.
     unit code={\milli\second},unit text={milliseconds}}]{time}{Time}
   \gradsummary{Overall}
 \end{gradtable}
+\end{center}
 \end{demo}
 Group minimum times are 8.375 and 12 milliseconds. Both Neural scores of 91.5
 are group bests, and the missing row acquires no unit.
 \begin{demo}{Complete example: metrics of different magnitudes}
 \gradbarsloadcsv{magnitudes}{docs/data/magnitudes.csv}
-\begin{gradtable}[data=magnitudes,width=\linewidth,style=research,theme=violet,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,data=magnitudes,style=research,theme=violet,
+  width=0pt,text width=20mm,column sep=6pt,
+  row stretch=1.15,row padding=1pt]
   \gradcolumn[source=Method]{name}{Method}
   \gradcolumn[type=number,source=Residual,aggregate=mean,mark=both,
     options={precision=2,number format=scientific,better=lower}]{residual}{Residual}
@@ -58,6 +63,9 @@ are group bests, and the missing row acquires no unit.
     options={precision=3,unit={\,s}}]{rate}{Rate}
   \gradsummary{Summary}
 \end{gradtable}
+\end{center}
 \end{demo}
 The residual mean is approximately $-7.9167\times10^{-4}$ and the Count sum is
 $4.175\times10^6$. Display precision changes neither statistic.
+
+This number-only table uses \key{width=0pt} for natural sizing, avoiding unused width in the method column.

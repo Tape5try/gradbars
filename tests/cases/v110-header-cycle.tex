@@ -1,0 +1,9 @@
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}\usepackage[margin=20mm]{geometry}
+\usepackage{tabularray}\UseTblrLibrary{gradbars}
+\usegradbarslibrary{legend}
+\gradscale{box-source}{min=-10,max=30}
+\gradlegenddefine{box-scale}{scale group=box-source}
+\gradscale{box-source}{min=-100,max=100}
+\gradlegenddefine{pct-scale}{min=0,max=200,value format=percent,percent base=400}
+\begin{document}{\gradtblrtagging{head rows=1,cell headers={1/1={1/2},1/2={1/1}}}\begin{tblr}{colspec={ll}}A&B\\C&D\\\end{tblr}}\end{document}

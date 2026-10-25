@@ -1,0 +1,10 @@
+Label,Score,Group
+Alpha,10,A
+Bravo,30,B
+Charlie,30,A
+Delta,,A
+Echo,0,B
+Foxtrot,-5,A
+Golf,NA,B
+Zed,100,B
+,20,A

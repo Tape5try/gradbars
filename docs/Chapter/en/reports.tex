@@ -1,0 +1,46 @@
+\section{Domain report presets}
+Load \key{\usegradbarslibrary{reports}} in the preamble. It adds correlation,
+ablation and metric recipes through the existing table and legend libraries.
+These presets display supplied data; they do not compute statistical estimates.
+\begin{demo}{A fixed-scale correlation matrix}
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=correlation]
+\gradcolumn{name}{Variable}
+\gradcorrelationcolumn{a}{A}
+\gradcorrelationcolumn{b}{B}
+\gradrow{A,1,-.38}\gradrow{B,-.38,1}
+\end{gradtable}
+\end{center}
+\end{demo}
+Standalone \key{\gradcorrelation{r}} fixes [-1,1], keeps zero white, uses two
+decimals and rejects values outside the correlation range. NA is missing.
+The matrix recipe does not check symmetry, significance or positive semidefiniteness.
+\begin{demo}{Ablation observations: reference/current}
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=ablation]
+\gradcolumn{name}{Variant}
+\gradablationcolumn{score}{Score change}
+\gradrow{Without feature,80/76}
+\gradrow{With extra data,80/84}
+\end{gradtable}
+\end{center}
+\end{demo}
+\key{\gradablation[options]{reference}{current}} draws the same dumbbell alone.
+Its delta is current minus reference in the supplied units, not a significance
+test or an inferred percent change. The default range is [0,100].
+\begin{demo}{Metrics with separate directions and units}
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=metrics,width=\linewidth]
+\gradcolumn{name}{Model}
+\gradmetriccolumn{acc}{Accuracy}
+\gradmetriccolumn[options={style=report-metric,
+  better=lower,unit={ ms},precision=1}]{lat}{Latency}
+\gradrow{A,92,35}\gradrow{B,95,48}\gradrow{C,90,28}
+\end{gradtable}
+\end{center}
+\end{demo}
+\key{\gradmetric{value}} is the standalone [0,100] preset. Native metric columns
+scan their own ranges and mark best/second values; lower-is-better must be stated
+for costs. No combined score is invented. Column keys override recipe defaults;
+when replacing options, retain the desired report graphic style. Full examples
+and limits are in \key{docs/reports.md} and \key{docs/examples/domain-reports.tex}.

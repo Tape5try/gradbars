@@ -1,0 +1,194 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\makeatletter
+\ExplSyntaxOn
+\cs_new_eq:NN\testOriginalRanges\gradtableAutoRanges
+\tl_new:N\l_test_checks_tl
+\cs_set_protected:Npn\gradtableAutoRanges
+  {\testOriginalRanges\tl_use:N\l_test_checks_tl}
+\NewDocumentCommand\checks{m}{\tl_set:Nn\l_test_checks_tl{#1}}
+\NewDocumentCommand\assertcol{m m m}
+  {\group_begin:\gradtableConfigure{#1}
+   \fp_compare:nNnF{\gradbars@min}={#2}{\errmessage{Incorrect~minimum~for~#1}}
+   \fp_compare:nNnF{\gradbars@max}={#3}{\errmessage{Incorrect~maximum~for~#1}}
+   \group_end:}
+\NewDocumentCommand\assertrows{m}
+  {\int_compare:nNnF{\seq_count:N\l__gradtable_rows_seq}={#1}{\errmessage{Incorrect~CSV~row~count}}}
+\NewDocumentCommand\assertcell{m m m}
+  {\clist_set:Nx\l_tmpa_clist{\seq_item:Nn\l__gradtable_rows_seq{#1}}
+   \tl_set:Nx\l_tmpa_tl{\clist_item:Nn\l_tmpa_clist{#2}}
+   \str_if_eq:eeF{\tl_to_str:V\l_tmpa_tl}{\tl_to_str:n{#3}}{\errmessage{Incorrect~selected~cell}}}
+\NewDocumentCommand\assertheat{m m m}
+  {\group_begin:\gradbarssetup{#1}\gradbarsHeatColor{#2}
+   \convertcolorspec{named}{gradbarsHeatCell}{rgb}\testActualRGB
+   \convertcolorspec{named}{#3}{rgb}\testExpectedRGB
+   \clist_set:Nx\l_tmpa_clist{\testActualRGB}\clist_set:Nx\l_tmpb_clist{\testExpectedRGB}
+   \int_step_inline:nn{3}
+     {\fp_compare:nNnT{abs(\clist_item:Nn\l_tmpa_clist{##1}-\clist_item:Nn\l_tmpb_clist{##1})}>{.0002}
+       {\errmessage{Incorrect~heat~interpolation}}}\group_end:}
+\ExplSyntaxOff
+\makeatother
+\begin{document}
+\gradbarsloadcsv{longdata}{build/tests/long.csv}
+\gradbarsloadcsv{select}{build/tests/select.csv}
+\checks{\assertrows{9}\assertcol{score}{-5}{100}\assertcell{1}{1}{Zed}\assertcell{2}{1}{Bravo}\assertcell{3}{1}{Charlie}\assertcell{8}{1}{Delta}\assertcell{9}{1}{Golf}}
+\begin{gradtable}[data=select,scale=column,width=\linewidth,sort=score,order=descending]
+\gradcolumn[source=Label]{label}{Label}
+\gradcolumn[type=heat,source=Score]{score}{Score}
+\gradcolumn[source=Group]{group}{Group}
+
+\end{gradtable}\par\bigskip
+
+\checks{\assertrows{9}\assertcol{score}{-5}{100}\assertcell{1}{1}{Foxtrot}\assertcell{2}{1}{Echo}\assertcell{5}{1}{Bravo}\assertcell{6}{1}{Charlie}\assertcell{9}{1}{Golf}}
+\begin{gradtable}[data=select,scale=column,width=\linewidth,sort=score]
+\gradcolumn[source=Label]{label}{Label}
+\gradcolumn[type=heat,source=Score]{score}{Score}
+\gradcolumn[source=Group]{group}{Group}
+
+\end{gradtable}\par\bigskip
+
+\checks{\assertrows{9}\assertcol{score}{-5}{100}\assertcell{1}{1}{Zed}\assertcell{8}{1}{Alpha}\assertcell{9}{1}{}}
+\begin{gradtable}[data=select,scale=column,width=\linewidth,sort=label,order=descending]
+\gradcolumn[source=Label]{label}{Label}
+\gradcolumn[type=heat,source=Score]{score}{Score}
+\gradcolumn[source=Group]{group}{Group}
+
+\end{gradtable}\par\bigskip
+
+\checks{\assertrows{3}\assertcol{score}{-5}{100}\assertcell{1}{1}{Zed}\assertcell{2}{1}{Bravo}\assertcell{3}{1}{Charlie}}
+\begin{gradtable}[data=select,scale=column,width=\linewidth,sort=score,order=descending,limit=3]
+\gradcolumn[source=Label]{label}{Label}
+\gradcolumn[type=heat,source=Score]{score}{Score}
+\gradcolumn[source=Group]{group}{Group}
+
+\end{gradtable}\par\bigskip
+
+\checks{\assertrows{2}\assertcol{score}{-5}{100}\assertcell{1}{1}{Charlie}\assertcell{2}{1}{}}
+\begin{gradtable}[data=select,scale=column,width=\linewidth,filter={group=A},sort=score,order=descending,limit=2]
+\gradcolumn[source=Label]{label}{Label}
+\gradcolumn[type=heat,source=Score]{score}{Score}
+\gradcolumn[source=Group]{group}{Group}
+
+\end{gradtable}\par\bigskip
+
+\checks{\assertrows{2}\assertcol{score}{0}{30}\assertcell{1}{1}{Charlie}\assertcell{2}{1}{}}
+\begin{gradtable}[data=select,scale=column,width=\linewidth,filter={group=A},sort=score,order=descending,limit=2,scale scope=visible]
+\gradcolumn[source=Label]{label}{Label}
+\gradcolumn[type=heat,source=Score]{score}{Score}
+\gradcolumn[source=Group]{group}{Group}
+
+\end{gradtable}\par\bigskip
+
+\checks{\assertrows{3}\assertcol{score}{-5}{100}\assertcell{1}{1}{Alpha}\assertcell{2}{1}{Charlie}\assertcell{3}{1}{}}
+\begin{gradtable}[data=select,scale=column,width=\linewidth,filter={score>=10,score<=30,group=A}]
+\gradcolumn[source=Label]{label}{Label}
+\gradcolumn[type=heat,source=Score]{score}{Score}
+\gradcolumn[source=Group]{group}{Group}
+
+\end{gradtable}\par\bigskip
+
+\checks{\assertrows{2}\assertcol{score}{-5}{100}\assertcell{1}{1}{Delta}\assertcell{2}{1}{Golf}}
+\begin{gradtable}[data=select,scale=column,width=\linewidth,filter={score=NA}]
+\gradcolumn[source=Label]{label}{Label}
+\gradcolumn[type=heat,source=Score]{score}{Score}
+\gradcolumn[source=Group]{group}{Group}
+
+\end{gradtable}\par\bigskip
+
+\checks{\assertrows{7}\assertcol{score}{-5}{100}\assertcell{1}{1}{Alpha}\assertcell{7}{1}{}}
+\begin{gradtable}[data=select,scale=column,width=\linewidth,filter={score!=NA}]
+\gradcolumn[source=Label]{label}{Label}
+\gradcolumn[type=heat,source=Score]{score}{Score}
+\gradcolumn[source=Group]{group}{Group}
+
+\end{gradtable}\par\bigskip
+
+\checks{\assertrows{2}\assertcol{score}{-5}{100}\assertcell{1}{1}{Bravo}\assertcell{2}{1}{Charlie}}
+\begin{gradtable}[data=select,scale=column,width=\linewidth,filter={score=30.0}]
+\gradcolumn[source=Label]{label}{Label}
+\gradcolumn[type=heat,source=Score]{score}{Score}
+\gradcolumn[source=Group]{group}{Group}
+
+\end{gradtable}\par\bigskip
+
+\checks{\assertrows{5}\assertcol{score}{-5}{100}\assertcell{1}{1}{Alpha}\assertcell{5}{1}{}}
+\begin{gradtable}[data=select,scale=column,width=\linewidth,filter={score!=30}]
+\gradcolumn[source=Label]{label}{Label}
+\gradcolumn[type=heat,source=Score]{score}{Score}
+\gradcolumn[source=Group]{group}{Group}
+
+\end{gradtable}\par\bigskip
+
+\checks{\assertrows{1}\assertcol{score}{-5}{100}\assertcell{1}{1}{}}
+\begin{gradtable}[data=select,scale=column,width=\linewidth,filter={label=}]
+\gradcolumn[source=Label]{label}{Label}
+\gradcolumn[type=heat,source=Score]{score}{Score}
+\gradcolumn[source=Group]{group}{Group}
+
+\end{gradtable}\par\bigskip
+
+\checks{\assertrows{0}\assertcol{score}{0}{1}}
+\begin{gradtable}[data=select,scale=column,width=\linewidth,filter={score>200},scale scope=visible]
+\gradcolumn[source=Label]{label}{Label}
+\gradcolumn[type=heat,source=Score]{score}{Score}
+\gradcolumn[source=Group]{group}{Group}
+
+\end{gradtable}\par\bigskip
+
+\checks{\assertrows{0}\assertcol{score}{-5}{100}}
+\begin{gradtable}[data=select,scale=column,width=\linewidth,filter={score>200}]
+\gradcolumn[source=Label]{label}{Label}
+\gradcolumn[type=heat,source=Score]{score}{Score}
+\gradcolumn[source=Group]{group}{Group}
+
+\end{gradtable}\par\bigskip
+
+\checks{\assertrows{1}\assertcol{score}{-5}{100}\assertcell{1}{1}{Foxtrot}}
+\begin{gradtable}[data=select,scale=column,width=\linewidth,filter={score<0}]
+\gradcolumn[source=Label]{label}{Label}
+\gradcolumn[type=heat,source=Score]{score}{Score}
+\gradcolumn[source=Group]{group}{Group}
+
+\end{gradtable}\par\bigskip
+
+\checks{}
+\gradbarsloadcsv[missing={missing}]{special}{build/tests/special.csv}
+\checks{\assertrows{1}\assertcell{1}{2}{70}}
+\begin{gradtable}[data=special,filter={{label=Comma, quote "yes"}}]
+\gradcolumn[source=Label]{label}{Label}
+\gradcolumn[type=number,source=Score]{score}{Score}
+\end{gradtable}
+\checks{}
+\assertheat{heat palette=diverging,min=-50,max=100}{-50}{gradbarsOrange}
+\assertheat{heat palette=diverging,min=-50,max=100}{0}{white}
+\assertheat{heat palette=diverging,min=-50,max=100}{100}{gradbarsTeal}
+\assertheat{heat palette=diverging,min=-50,max=100}{-25}{gradbarsOrange!50!white}
+\assertheat{heat palette=diverging,min=-50,max=100}{50}{gradbarsTeal!50!white}
+\assertheat{heat palette=diverging,min=20,max=80,heat center=50}{50}{white}
+\assertheat{heat palette=diverging,min=0,max=100}{0}{white}
+\assertheat{heat palette=diverging,min=-50,max=0}{0}{white}
+\assertheat{heat palette=diverging,min=-50,max=100,better=lower}{-50}{gradbarsTeal}
+\assertheat{heat palette=diverging,min=-50,max=100,print}{-50}{black!75}
+\assertheat{heat palette=diverging,min=-50,max=100,print}{100}{black!75}
+\gradspark[spark type=bar]{0,0,NA}\par
+\gradspark[spark type=bar]{-10,-20,-30}\par
+\gradspark[spark type=bar]{10,20,30}\par
+\gradspark[spark type=bar]{NA,NA}\par
+\gradspark[spark type=bar]{25}\par
+\gradspark[spark type=bar,spark range=fixed,min=-40,max=40]{-30,0,30,NA}\par
+\gradspark[spark type=winloss]{20,-100,0,NA}\par
+\gradspark[spark type=winloss,spark range=fixed,min=10,max=20]{-100,100,0}\par
+\gradspark[spark type=winloss]{NA,NA}\par
+\gradspark[spark type=winloss,print]{20,-10,0}\par
+\gradspark[spark type=bar,print,spark bar width=1]{20,-10,0}\par
+\begin{tikzpicture}\gradspark[spark type=bar]{10,-10,0}\end{tikzpicture}\par
+
+\checks{\assertrows{80}\assertcol{Score}{0}{90}\assertcell{1}{2}{90}\assertcell{80}{2}{11}}
+\begin{gradtable}[data=longdata,long=true,scale=column,sort=Score,order=descending,limit=80,caption={Sorted CSV pages},width=\linewidth]
+\gradcolumn[source=Label]{label}{Label}
+\gradcolumn[type=heat]{Score}{Score}
+
+\end{gradtable}\par\bigskip
+\end{document}

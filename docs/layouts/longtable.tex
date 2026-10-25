@@ -11,7 +11,8 @@ West & 54\\ Pending & NA\\ Zero & 0\\}
 Illustrative rows are repeated to demonstrate page breaks. The scale is fixed
 at 0--100 on every page. A longtable must not be enclosed in a table float.
 \renewcommand{\arraystretch}{1.5}
-\begin{longtable}{@{}lG@{}}
+\begin{center}
+\begin{longtable}{@{}cG@{}}
 \caption{Repeated observations; shared scale 0--100.}\\
 \toprule
 \multicolumn{1}{c}{Region} & \multicolumn{1}{c}{Score}\\
@@ -29,4 +30,5 @@ at 0--100 on every page. A longtable must not be enclosed in a table float.
 \SampleRows\SampleRows\SampleRows\SampleRows\SampleRows
 \SampleRows\SampleRows\SampleRows\SampleRows\SampleRows
 \end{longtable}
+\end{center}
 \end{document}

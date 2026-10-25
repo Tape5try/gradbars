@@ -13,19 +13,23 @@
   \gradcolumn[type=bar,mark=both,
     options={max=100,precision=1}]{score}{得分}
 }
-\begin{gradtable}[style=benchmark,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=benchmark]
   \graduseschema{benchmark}
   \gradgroup{验证集}
   \gradrow{方法 A,81.5}
   \gradrow{方法 B,88.2}
 \end{gradtable}
+\end{center}
 
-\begin{gradtable}[style=benchmark,rules=grid,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=benchmark,rules=grid]
   \graduseschema{benchmark}
   \gradgroup{测试集}
   \gradrow{方法 A,79.6}
   \gradrow{方法 B,85.3}
 \end{gradtable}
+\end{center}
 \end{example}
 选项按从左到右的顺序执行；放在 style 后面的参数覆盖命名样式。
 样式可以引用其他已定义样式，列定义也可以组合其他列定义；循环引用会报告错误。

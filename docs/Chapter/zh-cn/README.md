@@ -52,3 +52,9 @@
 | [layouts.tex](layouts.tex) | 真实排版案例 |
 | [faq.tex](faq.tex) | 常见问题 |
 | [reference.tex](reference.tex) | 参数速查与使用限制 |
+
+| [distribution.tex](distribution.tex) | 箱线图与分布统计定义 |
+| [legends.tex](legends.tex) | 连续色阶与共享图例 |
+
+| [reports.tex](reports.tex) | Domain report presets |
+| [extensions.tex](extensions.tex) | Third-party starter and public scalar backend contract |

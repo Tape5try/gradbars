@@ -1,0 +1,9 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\usegradbarslibrary{distribution,legend}
+\setlength{\parindent}{0pt}
+\usepackage{siunitx}
+\begin{document}
+\gradboxplot[formatter=siunitx,unit code={\second},unit text={seconds},label=outside,width=40mm]{.01,.02,.03}\par\gradlegenddefine{si}{min=0,max=.1,formatter=siunitx,unit code={\second},unit text={seconds},heat palette=accessible-sequential}\gradbarssetup{formatter=builtin}\gradlegenduse[width=60mm,height=3mm]{si}
+\end{document}

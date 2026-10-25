@@ -1,0 +1,7 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage[libraries=none]{gradbars}
+\setlength{\parindent}{0pt}
+\usegradbarslibrary{table}
+\gradbarsiflibraryloaded{table}{}{\errmessage{Library not recorded}}\gradbarsiflibraryloaded{stack}{}{\errmessage{Missing dependency}}\gradbarsiflibraryloaded{spark}{}{\errmessage{Missing dependency}}\gradbarsiflibraryloaded{csv}{}{\errmessage{Missing dependency}}\gradbarsiflibraryloaded{heat}{}{\errmessage{Missing dependency}}
+\begin{document}\begin{gradtable}[style=research,width=\linewidth]\gradcolumn{name}{Name}\gradcolumn[type=number,aggregate=mean]{value}{Value}\gradrow{A,72}\gradrow{B,90}\gradsummary{Mean}\end{gradtable}\end{document}

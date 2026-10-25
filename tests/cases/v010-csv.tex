@@ -1,0 +1,7 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage[libraries=none]{gradbars}
+\setlength{\parindent}{0pt}
+\usegradbarslibrary{csv}
+\gradbarsiflibraryloaded{csv}{}{\errmessage{Library not recorded}}\gradbarsiflibraryloaded{table}{\errmessage{Unwanted table dependency}}{}
+\begin{document}\gradbarsloadcsv{data}{build/tests/scientific.csv}\gradbarcsv[min=-1,max=1,number format=scientific]{data}{1}{Value}\end{document}

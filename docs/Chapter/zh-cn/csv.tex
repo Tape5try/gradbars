@@ -15,12 +15,14 @@
 导入表格省略 \key{gradrow}，数据按文件顺序生成；缺失值采用读取数据时的映射，文本字段保持字面字符。
 \begin{example}[text and listing,sidebyside=false]{CSV 字段绑定与多指标表格}
 \gradbarsloadcsv{results}{docs/data/results.csv}
-\begin{gradtable}[data=results,width=\linewidth,scale=column,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,data=results,width=\linewidth,scale=column]
   \gradcolumn[source=Model]{method}{Method}
   \gradcolumn[type=bar,source=Score,mark=both]{score}{Score}
   \gradcolumn[type=number,source=Latency,
     options={precision=0}]{time}{Latency}
 \end{gradtable}
+\end{center}
 \end{example}
 这里只声明列，不手写数据行；CSV 数据源不能与手写 \key{gradrow} 混用。
 未知数据集或字段会报错。列表型字段含逗号时必须用 CSV 双引号包裹，
@@ -35,13 +37,15 @@ filter 支持多个用逗号分隔的条件，所有条件同时成立才保留�
 limit 为非负整数，0 表示不限行数；处理顺序是筛选、稳定排序、截取前几行。
 \begin{example}[text and listing,sidebyside=false]{筛选有效得分，再按延迟选择前两行}
 \gradbarsloadcsv{results}{docs/data/results.csv}
-\begin{gradtable}[data=results,width=\linewidth,scale=column,
-  filter={score>=75},sort=time,order=ascending,limit=2,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,data=results,width=\linewidth,scale=column,
+  filter={score>=75},sort=time,order=ascending,limit=2]
   \gradcolumn[source=Model]{method}{Method}
   \gradcolumn[type=bar,source=Score]{score}{Score}
   \gradcolumn[type=bar,source=Latency,
     options={better=lower,precision=0}]{time}{Latency}
 \end{gradtable}
+\end{center}
 \end{example}
 数值条件支持 =、!=、<、<=、>、>=；例如 \key{filter={score>=75,time<100}}。
 普通数值比较不保留缺失值，包括 !=；使用 score=NA 或 score!=NA 检查映射后的缺失状态。
@@ -58,13 +62,15 @@ order 只影响旧版单列 sort，不覆盖多字段各自方向。
 每个键的缺失值都置后；键相同或均缺失时继续比较下一键，全部相同则保留 CSV 原序。
 \begin{example}[text and listing,sidebyside=false]{多指标排序后限制总行数}
 \gradbarsloadcsv{families}{docs/data/families.csv}
-\begin{gradtable}[data=families,width=\linewidth,
-  sort keys={score/descending,time/ascending},limit=3,group by=family,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,data=families,width=\linewidth,
+  sort keys={score/descending,time/ascending},limit=3,group by=family]
   \gradcolumn[source=Method]{method}{Method}
   \gradcolumn[source=Family]{family}{Family}
   \gradcolumn[type=number,source=Score]{score}{Score}
   \gradcolumn[type=number,source=Time]{time}{Time}
 \end{gradtable}
+\end{center}
 \end{example}
 执行顺序为筛选、全局稳定排序、全局 limit、分组排列。例中先选择 Compact、Wide、Fast，
 再按原文件组序显示 Classic 的 Fast 与 Neural 的 Compact、Wide。
@@ -80,7 +86,9 @@ limit 始终限制整表数据行数，不是每组行数。分组后整表不�
 \subsection{生成简短的双列数据条表格}
 \begin{example}[text and listing,sidebyside=false]{示例 66：从 CSV 直接生成数据条表格}
 \gradbarsloadcsv{results}{docs/data/results.csv}
+\begin{center}
 \gradbarscsvtable[width=40mm,precision=1]{results}{Model}{Score}
+\end{center}
 \end{example}
 
 表格按文件顺序显示 Model 与 Score 两列。数值列自动采用同一范围：
@@ -111,7 +119,8 @@ limit 始终限制整表数据行数，不是每组行数。分组后整表不�
 \gradbarscsvstyle{csvLatency}{results}{Latency}
 \gradbarssetup{style=csvLatency,width=40mm,
   unit={\,ms},precision=0}
-\begin{tabular}{@{}ll@{}}
+\begin{center}
+\begin{tabular}{@{}cc@{}}
   \toprule
 \multicolumn{1}{c}{Model} & \multicolumn{1}{c}{Latency}\\
   \midrule
@@ -123,6 +132,7 @@ limit 始终限制整表数据行数，不是每组行数。分组后整表不�
     \gradbarcsv{results}{4}{Latency}\\
   \bottomrule
 \end{tabular}
+\end{center}
 \end{example}
 
 本例共享范围为 0--125。自动范围包含整个数值列，而不是仅包含表中选取的几行。

@@ -1,0 +1,182 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\makeatletter
+\ExplSyntaxOn
+\cs_new_eq:NN\testOriginalRanges\gradtableAutoRanges
+\tl_new:N\l_test_checks_tl
+\cs_set_protected:Npn\gradtableAutoRanges
+  {\testOriginalRanges\tl_use:N\l_test_checks_tl}
+\NewDocumentCommand\checks{m}{\tl_set:Nn\l_test_checks_tl{#1}}
+\NewDocumentCommand\assertcol{m m m}
+  {\group_begin:\gradtableConfigure{#1}
+   \fp_compare:nNnF{\gradbars@min}={#2}{\errmessage{Incorrect~minimum~for~#1}}
+   \fp_compare:nNnF{\gradbars@max}={#3}{\errmessage{Incorrect~maximum~for~#1}}
+   \group_end:}
+\NewDocumentCommand\assertrows{m}
+  {\int_compare:nNnF{\seq_count:N\l__gradtable_rows_seq}={#1}{\errmessage{Incorrect~CSV~row~count}}}
+\NewDocumentCommand\assertcell{m m m}
+  {\clist_set:Nx\l_tmpa_clist{\seq_item:Nn\l__gradtable_rows_seq{#1}}
+   \tl_set:Nx\l_tmpa_tl{\clist_item:Nn\l_tmpa_clist{#2}}
+   \str_if_eq:eeF{\tl_to_str:V\l_tmpa_tl}{\tl_to_str:n{#3}}{\errmessage{Incorrect~selected~cell}}}
+\NewDocumentCommand\assertheat{m m m}
+  {\group_begin:\gradbarssetup{#1}\gradbarsHeatColor{#2}
+   \convertcolorspec{named}{gradbarsHeatCell}{rgb}\testActualRGB
+   \convertcolorspec{named}{#3}{rgb}\testExpectedRGB
+   \clist_set:Nx\l_tmpa_clist{\testActualRGB}\clist_set:Nx\l_tmpb_clist{\testExpectedRGB}
+   \int_step_inline:nn{3}
+     {\fp_compare:nNnT{abs(\clist_item:Nn\l_tmpa_clist{##1}-\clist_item:Nn\l_tmpb_clist{##1})}>{.0002}
+       {\errmessage{Incorrect~heat~interpolation}}}\group_end:}
+\ExplSyntaxOff
+\makeatother
+\begin{document}
+\checks{\assertcol{value}{0}{90}}
+\begin{gradtable}[scale=column]
+\gradcolumn[type=heat]{value}{Value}
+\gradrow{70}
+\gradrow{90}
+\gradrow{NA}
+\end{gradtable}\par\bigskip
+
+\checks{\assertcol{value}{-30}{0}}
+\begin{gradtable}[scale=column]
+\gradcolumn[type=heat]{value}{Value}
+\gradrow{-30}
+\gradrow{-10}
+\gradrow{NA}
+\end{gradtable}\par\bigskip
+
+\checks{\assertcol{value}{70}{90}}
+\begin{gradtable}[scale=column,include zero=false]
+\gradcolumn[type=heat]{value}{Value}
+\gradrow{70}
+\gradrow{90}
+\gradrow{NA}
+\end{gradtable}\par\bigskip
+
+\checks{\assertcol{value}{-30}{-10}}
+\begin{gradtable}[scale=column,include zero=false]
+\gradcolumn[type=heat]{value}{Value}
+\gradrow{-30}
+\gradrow{-10}
+\gradrow{NA}
+\end{gradtable}\par\bigskip
+
+\checks{\assertcol{value}{-8}{12}}
+\begin{gradtable}[scale=column]
+\gradcolumn[type=heat]{value}{Value}
+\gradrow{-8}
+\gradrow{12}
+\end{gradtable}\par\bigskip
+
+\checks{\assertcol{value}{0}{7}}
+\begin{gradtable}[scale=column]
+\gradcolumn[type=heat]{value}{Value}
+\gradrow{7}
+\gradrow{7}
+\end{gradtable}\par\bigskip
+
+\checks{\assertcol{value}{6.5}{7.5}}
+\begin{gradtable}[scale=column,include zero=false]
+\gradcolumn[type=heat]{value}{Value}
+\gradrow{7}
+\gradrow{7}
+\end{gradtable}\par\bigskip
+
+\checks{\assertcol{value}{-7.5}{-6.5}}
+\begin{gradtable}[scale=column,include zero=false]
+\gradcolumn[type=heat]{value}{Value}
+\gradrow{-7}
+\gradrow{-7}
+\end{gradtable}\par\bigskip
+
+\checks{\assertcol{value}{0}{1}}
+\begin{gradtable}[scale=column]
+\gradcolumn[type=heat]{value}{Value}
+\gradrow{0}
+\gradrow{0}
+\end{gradtable}\par\bigskip
+
+\checks{\assertcol{value}{-0.5}{0.5}}
+\begin{gradtable}[scale=column,include zero=false]
+\gradcolumn[type=heat]{value}{Value}
+\gradrow{0}
+\gradrow{0}
+\end{gradtable}\par\bigskip
+
+\checks{\assertcol{value}{0}{1}}
+\begin{gradtable}[scale=column]
+\gradcolumn[type=heat]{value}{Value}
+\gradrow{NA}
+\gradrow{NA}
+\end{gradtable}\par\bigskip
+
+\checks{\assertcol{value}{0}{1}}
+\begin{gradtable}[scale=column,include zero=false]
+\gradcolumn[type=heat]{value}{Value}
+\gradrow{NA}
+\gradrow{NA}
+\end{gradtable}\par\bigskip
+
+\checks{\assertcol{value}{0}{1}}
+\begin{gradtable}[scale=column]
+\gradcolumn[type=heat]{value}{Value}
+
+\end{gradtable}\par\bigskip
+
+\checks{\assertcol{stack}{-40}{50}\assertcol{pair}{0}{80}\assertcol{interval}{0}{70}}
+\begin{gradtable}[scale=column,graphic width=25mm,label width=12mm]
+\gradcolumn[type=stack]{stack}{Stack}
+\gradcolumn[type=compare]{pair}{Pair}
+\gradcolumn[type=interval]{interval}{Interval}
+\gradrow{{20,30,-10},40/60,30/40/70}
+\gradrow{{5,10,-40},NA/80,NA}
+\end{gradtable}\par\bigskip
+
+\checks{\assertcol{spark}{70}{90}}
+\begin{gradtable}[scale=column,include zero=false]
+\gradcolumn[type=spark]{spark}{Trend}
+\gradrow{{70,NA,90}}
+\gradrow{{75,80,NA}}
+\end{gradtable}\par\bigskip
+
+\checks{\assertcol{fixed}{-50}{100}\assertcol{auto}{70}{90}}
+\begin{gradtable}[scale=column]
+\gradcolumn[type=bar,scale=fixed,options={min=-50,max=100}]{fixed}{Fixed}
+\gradcolumn[type=heat,include zero=false,options={min=0,max=200}]{auto}{Auto}
+\gradrow{10,70}
+\gradrow{20,90}
+\end{gradtable}\par\bigskip
+
+\gradbarsloadcsv[missing={missing}]{special}{build/tests/special.csv}
+\checks{\assertrows{4}\assertcol{score}{0}{90}\assertcol{same}{70}{90}}
+\begin{gradtable}[data=special,scale=column,width=\linewidth]
+\gradcolumn[source=Label]{label}{Label}
+\gradcolumn[type=bar,source=Score]{score}{Score}
+\gradcolumn[type=heat,source=Score,include zero=false]{same}{Same}
+\end{gradtable}
+\checks{}
+\gradbarsloadcsv{empty}{build/tests/empty.csv}
+\begin{gradtable}[data=empty,scale=column]
+\gradcolumn[source=Label]{label}{Label}
+\gradcolumn[type=heat,source=Score]{score}{Score}
+\end{gradtable}
+\gradtablestyle{auto}{scale=column,include zero=false}
+\gradtableschema{heat}{\gradcolumn[type=heat,mark=both,options={better=lower}]{value}{Heat}}
+\begin{gradtable}[style=auto]
+\graduseschema{heat}
+\gradrow{70}\gradrow{90}\gradrow{70}\gradrow{NA}
+\end{gradtable}
+\gradbarsloadcsv{longdata}{build/tests/long.csv}
+\checks{\assertrows{90}\assertcol{Score}{0}{90}}
+\begin{gradtable}[data=longdata,long=true,width=\linewidth,scale=column,caption={CSV pages}]
+\gradcolumn[source=Label]{label}{Label}
+\gradcolumn[type=heat]{Score}{Score}
+\end{gradtable}
+\checks{}
+\gradheat[min=-10,max=10]{-10}\gradheat[min=-10,max=10]{0}\gradheat[min=-10,max=10]{10}\par
+\gradheat[print]{50}\gradheat[label=none]{75}\gradheat{NA}\par
+\gradheat[heat low color=white,heat high color=red,heat text color=black,height=5ex]{75}\par
+\begin{tikzpicture}\gradheat[min=70,max=90]{80}\end{tikzpicture}
+\end{document}

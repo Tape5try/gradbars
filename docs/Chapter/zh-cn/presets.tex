@@ -4,7 +4,8 @@
 这些预设不改变量程、数据、目标值或阈值；同一选项列表仍从左到右执行。
 
 \begin{example}[text and listing,sidebyside=false]{示例 50：四套内置排版预设}
-\begin{tabular}{@{}ll@{}}
+\begin{center}
+\begin{tabular}{@{}cc@{}}
   \toprule
 \multicolumn{1}{c}{Preset} & \multicolumn{1}{c}{Preview}\\
   \midrule
@@ -16,10 +17,12 @@
   Outline & \gradbar[preset=outline,width=45mm]{70}\\
   \bottomrule
 \end{tabular}
+\end{center}
 \end{example}
 
 \clearpage
-\begin{tabularx}{\linewidth}{@{}p{30mm}X@{}}
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}>{\centering\arraybackslash}p{30mm}>{\centering\arraybackslash}X@{}}
 \toprule
 \multicolumn{1}{c}{\textbf{预设}} & \multicolumn{1}{c}{\textbf{特点与设置}}\\
 \midrule
@@ -29,6 +32,7 @@ report：报告仪表型 & 12pt 粗条、3pt 圆角、外部数值，上下留�
 outline：轮廓节墨型 & 7pt 空心轮廓、白轨道、细端点与外部数值，上下留白各 1pt；不绘制大面积填充或纹理。\\
 \bottomrule
 \end{tabularx}
+\end{center}
 
 \key{row padding} 只增加数据条自身上下的占位，不修改表格或文档的全局行距。
 \key{outline=true} 单独开启空心绘制，\key{outline width} 默认 0.4pt；
@@ -42,7 +46,8 @@ outline 预设将其设为 0.35pt。堆叠条也可使用轮廓，其图例同�
 \begin{example}[text and listing,sidebyside=false]{示例 51：命名样式与新图形共用预设}
 \gradbarsstyle{compact}{preset=paper,width=55mm,
   max=100,precision=0,label width=6em}
-\begin{tabular}{@{}ll@{}}
+\begin{center}
+\begin{tabular}{@{}cc@{}}
   \toprule
 \multicolumn{1}{c}{View} & \multicolumn{1}{c}{Value}\\
   \midrule
@@ -51,4 +56,5 @@ outline 预设将其设为 0.35pt。堆叠条也可使用轮廓，其图例同�
   Lower / upper & \gradrange[style=compact]{70}{90}\\
   \bottomrule
 \end{tabular}
+\end{center}
 \end{example}

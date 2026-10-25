@@ -2,7 +2,8 @@
 \key{palette} 管理一组颜色与纹理，与设置单条外观的 theme 和排版预设 preset 分工不同。
 选项从左到右执行。配色用于表达数据角色，不能替代单位、名称与数值。
 
-\begin{tabularx}{\linewidth}{@{}lX@{}}
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}c>{\centering\arraybackslash}X@{}}
 \toprule
 \multicolumn{1}{c}{方案} & \multicolumn{1}{c}{用途}\\\midrule
 categorical & 六种类别色，循环使用；适合没有大小顺序的类别。\\
@@ -11,6 +12,7 @@ diverging & 橙、浅橙、中性灰、浅青、青五色；同时设置负值�
 mono & 灰度与三种纹理组合；同时设置黑白标签和趋势线极值点色。\\
 \bottomrule
 \end{tabularx}
+\end{center}
 \begin{example}[text and listing,sidebyside=false]{示例 46：四套成组配色}
 \gradstack[palette=categorical]{20,25,15,20,10,10}
 

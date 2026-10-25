@@ -6,6 +6,9 @@
 主题参数之后仍可逐项覆盖颜色；同一选项列表从左向右执行。
 示例 29 集中展示 19 种内置配色，包括十种主题和九种单色。
 渐变预设通过 \key{theme} 调用，内置颜色通过 \key{color} 设置纯色填充。
+九种预定义单色为 \manualColor{lightgreen}、\manualColor{lightyellow}、
+\manualColor{lightblue}、\manualColor{lightred}、\manualColor{rose}、
+\manualColor{skyblue}、\manualColor{gold}、\manualColor{lavender} 和 \manualColor{peach}。
 
 \begin{example}[before upper={\fontsize{9}{10.6}\selectfont\setlength{\parskip}{13.8pt}}]{示例 29：内置主题与颜色}
 \gradbar[theme=blue]{72}
@@ -51,7 +54,8 @@
 \begingroup
 \small
 \renewcommand{\arraystretch}{1.15}
-\begin{tabularx}{\linewidth}{@{}lX@{}}
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}c>{\centering\arraybackslash}X@{}}
 \toprule
 \multicolumn{1}{c}{\textbf{主题或颜色}} & \multicolumn{1}{c}{\textbf{特征与适用场景}}\\
 \midrule
@@ -78,6 +82,7 @@
 \key{peach} & 蜜桃纯色，适合暖色风格的辅助指标。\\
 \bottomrule
 \end{tabularx}
+\end{center}
 \endgroup
 
 \begin{example}{示例 30：自定义渐变与轨道}
@@ -110,3 +115,21 @@
 
 \note{不要只靠颜色传递关键含义。并列指标应在列标题中写明名称和单位，
 并保留可读的数值。可设置 \key{text color=auto} 根据背景选择黑白文字，也可显式指定颜色。}
+
+\subsection{色觉友好的颜色角色与冗余线索}
+\key{palette=accessible} 提供七种 Okabe--Ito 颜色角色与循环堆叠纹理；
+\key{theme=accessible} 选用对应实心条形角色。
+Heat 可用 \key{heat palette} (\key{accessible-sequential}, \key{accessible-diverging})，
+原生表格可用 \key{theme=accessible} 和 \key{style=accessible}，旧默认值保持不变。
+\begin{example}[text and listing,sidebyside=false]{颜色、文字、纹理与打印}
+\gradstack[palette=accessible,width=45mm,height=16pt,
+  stack names={A,B,C},segment labels=name]{30,20,50}
+\par\medskip
+\gradstack[palette=accessible,print,width=45mm,height=16pt,
+  stack names={A,B,C},segment labels=name]{30,20,50}
+\end{example}
+颜色与纹理会循环，超过七类时尤其需要保留名称与不同符号。
+渐变标签的自动对比度只是中心估计；必要时采用实心填充、外置标签或白底标签。
+Heat 按实际底色选择黑白文字。缺失标记、空心异常点和打印纹理提供颜色之外的线索。
+替代文本保留原值、单位和统计口径；长描述可由显式 \key{alt} 替换，并在邻近文字提供完整数据。
+配色模拟与结构检查不构成普遍可访问性认证。

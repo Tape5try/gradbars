@@ -4,7 +4,8 @@ least one data row. Groups do not alter scales or participate in ranking.
 Group color defaults to gradbarsTrack; an empty value removes it. Group sep
 defaults to 4pt. All rule styles support groups.
 \begin{demo}{Ties, second-best values and lower-is-better metrics}
-\begin{gradtable}[header align=c,text width=30mm,
+\begin{center}
+\begin{gradtable}[align=c,header align=c,text width=30mm,
   graphic width=38mm,label width=12mm,group sep=4pt]
   \gradcolumn{method}{Method}
   \gradcolumn[type=bar,mark=both,
@@ -19,6 +20,7 @@ defaults to 4pt. All rule styles support groups.
   \gradrow{D,86.7,9.6}
   \gradrow{E,NA,NA}
 \end{gradtable}
+\end{center}
 \end{demo}
 Best values are bold and second-best values are underlined. Mark can be none
 (default), best or both, for number, bar and bullet columns. Ranking covers the
@@ -50,9 +52,10 @@ groups, and rows preceding the first heading form an implicit unnamed group.
 \end{sloppypar}
 \begin{demo}{Complete example: algorithm-family comparisons}
 \gradbarsloadcsv{families}{docs/data/families.csv}
-\begin{gradtable}[data=families,width=\linewidth,style=academic,theme=teal,
+\begin{center}
+\begin{gradtable}[align=c,header align=c,data=families,width=\linewidth,style=academic,theme=teal,
   scale=column,group by=family,rank scope=group,group summary=true,
-  sort keys={score/descending,time/ascending},header align=c]
+  sort keys={score/descending,time/ascending}]
   \gradcolumn[source=Method]{method}{Method}
   \gradcolumn[source=Family]{family}{Family}
   \gradcolumn[type=bar,source=Score,mark=both,aggregate=mean]{score}{Score}
@@ -60,6 +63,7 @@ groups, and rows preceding the first heading form an implicit unnamed group.
     options={better=lower,precision=0}]{time}{Time / ms}
   \gradsummary{All visible}
 \end{gradtable}
+\end{center}
 \end{demo}
 Classic and Neural have mean scores of 82 and 91, with minimum times of 8 and
 12. Group headings stay with the first data row; group summaries appear once

@@ -1,0 +1,42 @@
+\section{领域报告预设}
+导言区加载 \key{\usegradbarslibrary{reports}}，即可使用相关系数矩阵、消融实验与性能指标表的预设。
+该库复用 table 和 legend 及其依赖，只排版用户提供的数据，不自行估计统计量。
+\begin{example}[text and listing,sidebyside=false]{固定尺度的相关系数矩阵}
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=correlation]
+\gradcolumn{name}{Variable}
+\gradcorrelationcolumn{a}{A}
+\gradcorrelationcolumn{b}{B}
+\gradrow{A,1,-.38}\gradrow{B,-.38,1}
+\end{gradtable}
+\end{center}
+\end{example}
+独立命令 \key{\gradcorrelation{r}} 固定使用 [-1,1]，零点为白色，显示两位小数并拒绝越界值。
+NA 表示缺失；矩阵预设不计算相关系数，也不检查对称性、半正定性或统计显著性。
+\begin{example}[text and listing,sidebyside=false]{消融实验：参考值与当前值}
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=ablation]
+\gradcolumn{name}{Variant}
+\gradablationcolumn{score}{Score change}
+\gradrow{Without feature,80/76}
+\gradrow{With extra data,80/84}
+\end{gradtable}
+\end{center}
+\end{example}
+\key{\gradablation[选项]{参考值}{当前值}} 可单独绘制哑铃图。
+标签显示当前值减参考值，沿用输入单位；默认范围为 [0,100]，不自动解释为百分比变化或显著性结论。
+\begin{example}[text and listing,sidebyside=false]{独立尺度、单位与优劣方向的指标表}
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=metrics,width=\linewidth]
+\gradcolumn{name}{Model}
+\gradmetriccolumn{acc}{Accuracy}
+\gradmetriccolumn[options={style=report-metric,
+  better=lower,unit={ ms},precision=1}]{lat}{Latency}
+\gradrow{A,92,35}\gradrow{B,95,48}\gradrow{C,90,28}
+\end{gradtable}
+\end{center}
+\end{example}
+\key{\gradmetric{数值}} 提供独立的 [0,100] 指标条形预设；原生指标列则扫描自身量程并标记最优和次优值。
+延迟等成本应显式指定 \key{better=lower}，不同指标不自动合成为总分。
+列选项可覆盖预设；替换 options 字段时，请保留所需的 report 图形样式。
+完整说明见 \key{docs/reports.md}，三类完整示例见 \key{docs/examples/domain-reports.tex}。

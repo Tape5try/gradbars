@@ -38,3 +38,9 @@ Edit each section in its own file. Compile the main document, not a chapter.
 | [faq.tex](faq.tex) | Frequently asked questions |
 | [reference.tex](reference.tex) | Compact option reference |
 | [table-reference.tex](table-reference.tex) | Table and annotation reference |
+
+| [distribution.tex](distribution.tex) | Box plots and statistical definitions |
+| [legends.tex](legends.tex) | Continuous and shared legends |
+
+| [reports.tex](reports.tex) | Domain report presets |
+| [extensions.tex](extensions.tex) | Third-party starter and public scalar backend contract |

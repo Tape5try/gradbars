@@ -1,0 +1,40 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\usegradbarslibrary{reports}
+\setlength{\parindent}{0pt}
+\begin{document}
+\section*{Correlation matrix}
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=correlation]
+\gradcolumn{name}{Variable}
+\gradcorrelationcolumn{a}{A}
+\gradcorrelationcolumn{b}{B}
+\gradcorrelationcolumn{c}{C}
+\gradrow{A,1,.72,-.38}
+\gradrow{B,.72,1,NA}
+\gradrow{C,-.38,NA,1}
+\end{gradtable}
+\end{center}\par
+\section*{Ablation: reference/current}
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=ablation]
+\gradcolumn{name}{Variant}
+\gradablationcolumn{score}{Score change}
+\gradrow{Without augmentation,80/76}
+\gradrow{With extra data,80/84}
+\gradrow{Pending,NA/NA}
+\end{gradtable}
+\end{center}\par
+\section*{Metrics with explicit directions and units}
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=metrics,width=\linewidth]
+\gradcolumn{name}{Model}
+\gradmetriccolumn{accuracy}{Accuracy}
+\gradmetriccolumn[options={style=report-metric,better=lower,unit={ ms},precision=1}]{latency}{Latency}
+\gradrow{Alpha,92,35}
+\gradrow{Beta,95,48}
+\gradrow{Gamma,90,28}
+\end{gradtable}
+\end{center}
+\end{document}

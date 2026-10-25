@@ -1,0 +1,184 @@
+% Author: SuFan; MIT License. Versioned public scalar backend contract.
+\ProvidesPackage{gradbars-backend}[2026/10/25 v1.1.0 Public backend contract]
+\ExplSyntaxOn
+\cs_generate_variant:Nn\clist_if_in:nnTF{Vn}
+\cs_generate_variant:Nn\clist_if_in:nnF{Vn}
+\prop_new:N\g__gradbars_backends_prop
+\prop_new:N\l__gradbars_backend_record_prop
+\clist_const:Nn\c__gradbars_backend_features_clist
+  {bar,heat,missing,signed,gradient,print,labels,units,clip,decorations,embedded,tagging,artifact}
+\clist_const:Nn\c__gradbars_backend_kinds_clist
+  {bar,heat,stack,spark,compare,dumbbell,range,bullet,boxplot,heat-legend,reference-legend,category-legend}
+\tl_new:N\l__gradbars_backend_tl
+\tl_new:N\l__gradbars_backend_fallback_tl
+\tl_new:N\l__gradbars_backend_native_tl
+\clist_new:N\l__gradbars_backend_caps_clist
+\clist_new:N\l__gradbars_backend_required_clist
+\clist_new:N\l__gradbars_backend_missing_clist
+\tl_new:N\l__gradbars_backend_kind_tl
+\bool_new:N\l__gradbars_backend_active_bool
+\bool_new:N\l__gradbars_backend_default_bool
+\bool_new:N\l__gradbars_backend_valid_bool
+\tl_set:Nn\l__gradbars_backend_tl{tikz}
+\tl_set:Nn\l__gradbars_backend_fallback_tl{error}
+\prop_gput:Nnn\g__gradbars_backends_prop{tikz}
+ {bar,heat,stack,spark,compare,dumbbell,range,bullet,boxplot,heat-legend,reference-legend,category-legend,missing,signed,gradient,print,labels,units,clip,decorations,embedded,tagging,artifact}
+\pgfkeys{/gradbars,
+ backend/.code={\prop_if_in:NnTF\g__gradbars_backends_prop{#1}
+   {\tl_set:Nn\l__gradbars_backend_tl{#1}}
+   {\__gradbars_public_error:n{Unknown~backend:~#1}}},
+ backend~fallback/.is~choice,
+ backend~fallback/error/.code={\tl_set:Nn\l__gradbars_backend_fallback_tl{error}},
+ backend~fallback/tikz/.code={\tl_set:Nn\l__gradbars_backend_fallback_tl{tikz}}}
+\NewExpandableDocumentCommand\gradbarsbackendversion{}{1}
+\NewDocumentCommand\gradbarsdeclarebackend{m m +m}
+ {\bool_set_true:N\l__gradbars_backend_valid_bool
+  \__gradbars_name_valid:nTF{#1}{}
+   {\bool_set_false:N\l__gradbars_backend_valid_bool
+    \__gradbars_public_error:n{Invalid~backend~name:~#1}}
+  \prop_if_in:NnT\g__gradbars_backends_prop{#1}
+   {\bool_set_false:N\l__gradbars_backend_valid_bool
+    \__gradbars_public_error:n{Backend~already~registered:~#1}}
+  \clist_set:Nn\l__gradbars_backend_caps_clist{#2}
+  \clist_remove_duplicates:N\l__gradbars_backend_caps_clist
+  \clist_map_inline:Nn\l__gradbars_backend_caps_clist
+   {\clist_if_in:NnF\c__gradbars_backend_features_clist{##1}
+     {\bool_set_false:N\l__gradbars_backend_valid_bool
+      \__gradbars_public_error:n{Unknown~backend~capability:~##1}}}
+  \clist_if_in:NnF\l__gradbars_backend_caps_clist{bar}
+   {\clist_if_in:NnF\l__gradbars_backend_caps_clist{heat}
+     {\bool_set_false:N\l__gradbars_backend_valid_bool
+      \__gradbars_public_error:n{Backend~must~support~bar~or~heat}}}
+  \bool_if:NT\l__gradbars_backend_valid_bool
+   {\prop_gput:NnV\g__gradbars_backends_prop{#1}\l__gradbars_backend_caps_clist
+    \cs_gset_protected:cpn{__gradbars_backend_#1:n}##1{#3}}}
+\NewDocumentCommand\gradbarsifbackendcapable{m m m m}
+ {\prop_get:NnNTF\g__gradbars_backends_prop{#1}\l_tmpa_tl
+   {\clist_if_in:VnTF\l_tmpa_tl{#2}{#3}{#4}}{#4}}
+\msg_new:nnn{gradbars}{backend-field}{Backend~record~field~unavailable:~#1.}
+\NewExpandableDocumentCommand\gradbarsbackendvalue{m}
+ {\bool_if:NTF\l__gradbars_backend_active_bool
+   {\prop_if_in:NnTF\l__gradbars_backend_record_prop{#1}
+     {\prop_item:Nn\l__gradbars_backend_record_prop{#1}}
+     {\msg_expandable_error:nnn{gradbars}{backend-field}{#1}}}
+   {\msg_expandable_error:nnn{gradbars}{backend-field}{#1}}}
+\NewDocumentCommand\gradbarsbackendlabel{}
+ {\bool_if:NTF\l__gradbars_backend_active_bool
+   {{\gradbars@font\gradbarsSingleLabel}}
+   {\__gradbars_public_error:n{Backend~label~requires~an~active~callback}}}
+\NewDocumentCommand\gradbarsbackenddefault{}
+ {\bool_if:NTF\l__gradbars_backend_active_bool
+   {\bool_if:NTF\l__gradbars_backend_default_bool
+     {\__gradbars_public_error:n{Backend~default~may~be~drawn~only~once}}
+     {\bool_set_true:N\l__gradbars_backend_default_bool
+      \tl_use:N\l__gradbars_backend_native_tl}}
+   {\__gradbars_public_error:n{Backend~default~requires~an~active~callback}}}
+\cs_new_protected:Npn\__gradbars_backend_record:n #1
+ {\prop_clear:N\l__gradbars_backend_record_prop
+  \prop_put:Nnn\l__gradbars_backend_record_prop{version}{1}
+  \prop_put:Nnn\l__gradbars_backend_record_prop{kind}{#1}
+  \clist_map_inline:nn{min,max,shape,baseline,precision,numberformat,format,better,overflow,label,labelalign,accessibility,
+    left,right,negativecolor,track,textcolor,text,rounded,pattern,patterncolor,overflowmark,change,changecolor,markershape,markerfill,markersize,target,targetcolor,band,bandcolor,bandopacity,
+    references,errorminus,errorplus,errorcolor,thresholds,thresholdcolors,unit,unitcode,unittext,missingtext,gap,labelwidth,
+    baselineshift,heatpalette,heatcenter,heatcentercolor,heatlow,heathigh,heatmissing}
+   {\cs_if_exist:cT{gradbars@##1}
+     {\prop_put:Nnx\l__gradbars_backend_record_prop{##1}{\exp_not:v{gradbars@##1}}}}
+  \prop_put:Nnx\l__gradbars_backend_record_prop{raw-value}{\exp_not:o{\gradbars@value}}
+  \prop_put:Nnx\l__gradbars_backend_record_prop{width}{\dim_eval:n{\gradbars@width}}
+  \prop_put:Nnx\l__gradbars_backend_record_prop{height}{\dim_eval:n{\gradbars@height}}
+  \prop_put:Nnn\l__gradbars_backend_record_prop{missing}{false}
+  \prop_put:Nnn\l__gradbars_backend_record_prop{print}{false}
+  \prop_put:Nnn\l__gradbars_backend_record_prop{gradient}{false}
+  \prop_put:Nnn\l__gradbars_backend_record_prop{tagging}{false}
+  \prop_put:Nnn\l__gradbars_backend_record_prop{embedded}{false}
+  \ifpgfpicture\prop_put:Nnn\l__gradbars_backend_record_prop{embedded}{true}\fi
+  \cs_if_exist:NT\tag_if_active:T{\tag_if_active:T{\prop_put:Nnn\l__gradbars_backend_record_prop{tagging}{true}}}
+  \ifgradbars@print\prop_put:Nnn\l__gradbars_backend_record_prop{print}{true}\fi
+  \ifgradbars@gradient\prop_put:Nnn\l__gradbars_backend_record_prop{gradient}{true}\fi
+  \ifgradbars@missing
+   \prop_put:Nnn\l__gradbars_backend_record_prop{missing}{true}
+   \prop_put:Nnn\l__gradbars_backend_record_prop{value}{NA}
+   \prop_put:Nnn\l__gradbars_backend_record_prop{display-value}{NA}
+   \prop_put:Nnn\l__gradbars_backend_record_prop{position}{NA}
+  \else
+   \prop_put:Nnx\l__gradbars_backend_record_prop{value}{\fp_eval:n{\gradbars@value}}
+   \prop_put:Nnx\l__gradbars_backend_record_prop{display-value}{\gradbars@number}
+   \prop_put:Nnx\l__gradbars_backend_record_prop{position}
+    {\fp_eval:n{max(0,min(1,(\gradbars@value-\gradbars@min)/(\gradbars@max-\gradbars@min)))}}
+  \fi
+  \prop_put:Nnx\l__gradbars_backend_record_prop{zero}
+   {\fp_eval:n{max(0,min(1,-\gradbars@min/(\gradbars@max-\gradbars@min)))}}
+  \str_if_eq:nnTF{#1}{bar}
+   {\gradbarsBuildAlt
+    \clist_map_inline:nn{start,stop,end}
+     {\prop_put:Nnx\l__gradbars_backend_record_prop{##1}{\use:c{gradbars@##1}}}}
+   {\convertcolorspec{named}{gradbarsHeatCell}{rgb}\gradbars@rgb
+    \prop_put:Nno\l__gradbars_backend_record_prop{heat-rgb}{\gradbars@rgb}}
+  \tl_if_empty:oF{\gradbars@alt}{\tl_set:No\l__gradbars_alt_tl{\gradbars@alt}}
+  \prop_put:NnV\l__gradbars_backend_record_prop{alt}\l__gradbars_alt_tl
+  \prop_put:Nnx\l__gradbars_backend_record_prop{percentbase}{\gradbarsPercentBase}}
+\cs_new_protected:Npn\__gradbars_backend_requirements:n #1
+ {\clist_set:Nn\l__gradbars_backend_required_clist{#1}
+  \ifgradbars@missing\clist_put_right:Nn\l__gradbars_backend_required_clist{missing}\fi
+  \fp_compare:nNnT{\gradbars@min}<{0}{\clist_put_right:Nn\l__gradbars_backend_required_clist{signed}}
+  \str_if_eq:nnT{#1}{bar}
+   {\ifgradbars@gradient\clist_put_right:Nn\l__gradbars_backend_required_clist{gradient}\fi}
+  \ifgradbars@print\clist_put_right:Nn\l__gradbars_backend_required_clist{print}\fi
+  \str_if_eq:eeF{\gradbars@label}{none}{\clist_put_right:Nn\l__gradbars_backend_required_clist{labels}}
+  \tl_if_empty:oF{\gradbars@unit}{\clist_put_right:Nn\l__gradbars_backend_required_clist{units}}
+  \tl_if_empty:oF{\gradbars@unitcode}{\clist_put_right:Nn\l__gradbars_backend_required_clist{units}}
+  \ifgradbars@missing\else
+   \fp_compare:nT{\gradbars@value<\gradbars@min || \gradbars@value>\gradbars@max}
+    {\clist_put_right:Nn\l__gradbars_backend_required_clist{clip}}\fi
+  \dim_compare:nNnT{\gradbars@rounded}>{0pt}{\clist_put_right:Nn\l__gradbars_backend_required_clist{decorations}}
+  \str_if_eq:nnT{#1}{bar}
+   {
+  \str_if_eq:eeF{\gradbars@pattern}{none}{\clist_put_right:Nn\l__gradbars_backend_required_clist{decorations}}
+  \str_if_eq:eeF{\gradbars@shape}{bar}{\str_if_eq:nnT{#1}{bar}{\clist_put_right:Nn\l__gradbars_backend_required_clist{decorations}}}
+  \clist_map_inline:nn{target,band,references,errorminus,errorplus,thresholds}
+   {\tl_set:Nv\l_tmpb_tl{gradbars@##1}
+    \tl_if_empty:NF\l_tmpb_tl{\clist_put_right:Nn\l__gradbars_backend_required_clist{decorations}}}
+  \ifgradbars@outline\clist_put_right:Nn\l__gradbars_backend_required_clist{decorations}\fi
+  \str_if_eq:eeF{\gradbars@overflowmark}{none}{\clist_put_right:Nn\l__gradbars_backend_required_clist{decorations}}
+  \str_if_eq:eeF{\gradbars@change}{none}{\clist_put_right:Nn\l__gradbars_backend_required_clist{decorations}}
+   }
+  \ifpgfpicture\clist_put_right:Nn\l__gradbars_backend_required_clist{embedded}\fi
+  \cs_if_exist:NT\tag_if_active:T
+   {\tag_if_active:T
+     {\str_case_e:nn{\gradbars@accessibility}
+       {{auto}{\clist_put_right:Nn\l__gradbars_backend_required_clist{tagging}}
+        {artifact}{\clist_put_right:Nn\l__gradbars_backend_required_clist{artifact}}}}}}
+\cs_new_protected:Npn\__gradbars_backend_draw:nn #1#2
+ {\str_if_eq:VnTF\l__gradbars_backend_tl{tikz}{#2}
+   {\group_begin:
+    \bool_if:NTF\l__gradbars_backend_active_bool
+     {\__gradbars_public_error:n{Recursive~backend~callback}}
+     {\clist_set:Nn\l__gradbars_backend_required_clist{#1}
+      \str_case:nn{#1}{{bar}{\__gradbars_backend_requirements:n{bar}}{heat}{\__gradbars_backend_requirements:n{heat}}}
+      \prop_get:NVN\g__gradbars_backends_prop\l__gradbars_backend_tl\l_tmpa_tl
+      \bool_set_true:N\l__gradbars_backend_valid_bool
+      \clist_clear:N\l__gradbars_backend_missing_clist
+      \clist_map_inline:Nn\l__gradbars_backend_required_clist
+       {\clist_if_in:VnF\l_tmpa_tl{##1}{\bool_set_false:N\l__gradbars_backend_valid_bool\clist_put_right:Nn\l__gradbars_backend_missing_clist{##1}}}
+      \clist_remove_duplicates:N\l__gradbars_backend_missing_clist
+      \bool_if:NTF\l__gradbars_backend_valid_bool
+       {\__gradbars_backend_record:n{#1}
+        \tl_set:Nn\l__gradbars_backend_native_tl{#2}
+        \bool_set_true:N\l__gradbars_backend_active_bool
+        \bool_set_false:N\l__gradbars_backend_default_bool
+        \use:c{__gradbars_backend_\l__gradbars_backend_tl :n}{#1}}
+       {\str_if_eq:VnTF\l__gradbars_backend_fallback_tl{tikz}{#2}
+         {\__gradbars_public_error:n{Backend~\l__gradbars_backend_tl~lacks~required~capabilities~for~#1:~\clist_use:Nn\l__gradbars_backend_missing_clist{,~}}}}}
+    \group_end:}}
+\cs_new_protected:Npn\__gradbars_backend_core:
+ {\tl_set:Nn\l__gradbars_backend_kind_tl{bar}
+  \ifgradbars@stack\tl_set:Nn\l__gradbars_backend_kind_tl{stack}\fi
+  \ifgradbars@spark\tl_set:Nn\l__gradbars_backend_kind_tl{spark}\fi
+  \ifgradbars@compare\tl_set:Nn\l__gradbars_backend_kind_tl{compare}
+    \str_if_eq:eeT{\gradbars@shape}{dumbbell}{\tl_set:Nn\l__gradbars_backend_kind_tl{dumbbell}}\fi
+  \ifgradbars@rangemode\tl_set:Nn\l__gradbars_backend_kind_tl{range}\fi
+  \ifgradbars@bullet\tl_set:Nn\l__gradbars_backend_kind_tl{bullet}\fi
+  \exp_args:NV\__gradbars_backend_draw:nn\l__gradbars_backend_kind_tl{\__gradbars_render_tikz:}}
+\@onlypreamble\gradbarsdeclarebackend
+\ExplSyntaxOff
+\endinput

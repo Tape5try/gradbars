@@ -1,11 +1,11 @@
 % Author: SuFan; MIT License. Optional public tabularray integration.
 \NeedsTeXFormat{LaTeX2e}[2025/11/01]
-\ProvidesPackage{tblrlibgradbars}[2026/10/30 v1.0.0 gradbars tabularray library]
+\ProvidesPackage{tblrlibgradbars}[2026/10/25 v1.1.0 gradbars tabularray library]
 \RequirePackage{tabularray}[2025/11/27]
 \IfPackageAtLeastTF{tabularray}{2025/11/27}{}{%
   \PackageError{gradbars}{The gradbars library requires tabularray 2025C or newer}{Update tabularray before loading this library.}}
 \IfPackageLoadedTF{gradbars}{}{\RequirePackage[libraries=none]{gradbars}}
-\usegradbarslibrary{heat}
+\usegradbarslibrary{heat,stack,spark,distribution}
 \UseTblrLibrary{hook}
 \ExplSyntaxOn
 \__gradbars_check_module:n{tblrlibgradbars}
@@ -64,13 +64,19 @@
       {number}{\__gradbars_tblr_number:n{#2}}
       {compare}{\__gradbars_tblr_pair:nn{compare}{#2}}
       {dumbbell}{\__gradbars_tblr_pair:nn{dumbbell}{#2}}
-      {range}{\__gradbars_tblr_pair:nn{range}{#2}}}
+      {range}{\__gradbars_tblr_pair:nn{range}{#2}}
+      {spark}{\use:x{\exp_not:N\gradspark[height=\dim_eval:n{\gradbars@height}]{\exp_not:n{#2}}}}
+      {stack}{\str_if_eq:nnTF{#2}{NA}{\gradbar{NA}}{\gradstack{#2}}}
+      {bullet}{\use:x{\exp_not:N\gradbullet[height=\dim_eval:n{\gradbars@height},label=\gradbars@label]{\exp_not:n{#2}}}}
+      {boxplot}{\use:x{\exp_not:N\gradboxplot[height=\dim_eval:n{\gradbars@height}]{\exp_not:n{#2}}}}}
      {\__gradbars_public_error:n{Unknown~tblr~graphic~type:~#1}}}
 \DeclareDocumentCommand\gradtblrcell{O{} m m}
   {\leavevmode\group_begin:
    \gradbarssetup{baseline=text,label=inside,label~align=cell}
    \exp_args:NV\gradbarssetup\l__gradbars_tblr_defaults_tl
    \gradbarssetup{#1}
+   \str_case:nn{#2}{{spark}{\str_if_eq:eeT{\gradbars@label}{inside}{\gradbarssetup{label=none}}}
+     {stack}{\str_if_eq:eeT{\gradbars@label}{inside}{\gradbarssetup{label=none}}}}
    \str_if_eq:VnTF\l__gradbars_tblr_width_tl{auto}
      {\dim_set:Nn\l__gradbars_tblr_width_dim{\linewidth}
       % Natural-width trials run inside a paper-wide varwidth box.
@@ -79,8 +85,10 @@
      {\dim_set:Nn\l__gradbars_tblr_width_dim{\l__gradbars_tblr_width_tl}}
    \dim_compare:nNnTF{\l__gradbars_tblr_width_dim}>{0pt}
      {\dim_set_eq:NN\l__gradbars_tblr_graphic_dim\l__gradbars_tblr_width_dim
-      \str_if_eq:nnT{#2}{dumbbell}
+      \bool_lazy_or:nnT{\str_if_eq_p:nn{#2}{dumbbell}}{\str_if_eq_p:nn{#2}{spark}}
         {\dim_sub:Nn\l__gradbars_tblr_graphic_dim{\gradbars@markersize+\gradbars@markersize}}
+      \bool_lazy_or:nnT{\str_if_eq_p:nn{#2}{spark}}{\str_if_eq_p:nn{#2}{dumbbell}}{\dim_sub:Nn\l__gradbars_tblr_graphic_dim{1pt}}
+      \str_if_eq:nnT{#2}{boxplot}{\gradbarssetup{label=none}}
       \str_if_eq:nnF{#2}{number}
         {\str_if_eq:nnF{#2}{heat}
           {\str_case_e:nn{\gradbars@label}
@@ -104,8 +112,21 @@
 \NewTblrColumnType{H}[2][]{Q[c,m,wd=#2,cmd={\gradheatTblr[cell~width=#2,#1]}]}
 \NewTblrColumnType{N}[2][]{Q[c,m,wd=#2,cmd={\gradnumberTblr[cell~width=#2,#1]}]}
 \NewTblrColumnType{D}[2][]{Q[c,m,wd=#2,cmd={\gradcompareTblr[cell~width=#2,#1]}]}
+\DeclareDocumentCommand\graddumbbellTblr{O{} m}{\gradtblrcell[#1]{dumbbell}{#2}}
+\DeclareDocumentCommand\gradrangeTblr{O{} m}{\gradtblrcell[#1]{range}{#2}}
+\DeclareDocumentCommand\gradsparkTblr{O{} m}{\gradtblrcell[#1]{spark}{#2}}
+\DeclareDocumentCommand\gradstackTblr{O{} m}{\gradtblrcell[#1]{stack}{#2}}
+\DeclareDocumentCommand\gradbulletTblr{O{} m}{\gradtblrcell[#1]{bullet}{#2}}
+\DeclareDocumentCommand\gradboxplotTblr{O{} m}{\gradtblrcell[#1]{boxplot}{#2}}
+\NewTblrColumnType{J}[2][]{Q[c,m,wd=#2,cmd={\graddumbbellTblr[cell~width=#2,#1]}]}
+\NewTblrColumnType{R}[2][]{Q[c,m,wd=#2,cmd={\gradrangeTblr[cell~width=#2,#1]}]}
+\NewTblrColumnType{V}[2][]{Q[c,m,wd=#2,cmd={\gradsparkTblr[cell~width=#2,#1]}]}
+\NewTblrColumnType{K}[2][]{Q[c,m,wd=#2,cmd={\gradstackTblr[cell~width=#2,#1]}]}
+\NewTblrColumnType{U}[2][]{Q[c,m,wd=#2,cmd={\gradbulletTblr[cell~width=#2,#1]}]}
+\NewTblrColumnType{B}[2][]{Q[c,m,wd=#2,cmd={\gradboxplotTblr[cell~width=#2,#1]}]}
 \NewTblrEnviron{gradtblr}
 \SetTblrInner[gradtblr]{hlines={.3pt,black!18},colsep=6pt,rowsep=4pt,
   cells={c,m},row{1}={font=\bfseries,bg=gradbarsTeal!8,cmd=}}
 \ExplSyntaxOff
+\RequirePackage{gradbars-tblr-tagging}
 \endinput

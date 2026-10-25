@@ -1,0 +1,10 @@
+Name,Group,Score,Time
+A,A,10,5
+B,B,20,4
+C,B,20.0,4.0
+D,A,30,2
+E,B,0,2
+F,A,NA,1
+G,B,NA,9
+Empty,,5,6
+NAgroup,NA,5,5

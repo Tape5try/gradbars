@@ -94,11 +94,13 @@ formatter and table style. Register its dependencies and load it in the preamble
 \begin{demo}{Renderer, formatter and reusable table style}
 \gradgraphic{demo-score}{72.125}\par
 \gradbar[formatter=demo-boxed]{72.125}\par
-\begin{gradtable}[style=demo-report,width=\linewidth,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=demo-report,width=\linewidth]
   \gradcolumn{name}{Method}
   \gradcolumn[type=number,formatter=demo-boxed,aggregate=mean]{value}{Score}
   \gradrow{A,72}\gradrow{B,90}\gradsummary{Mean}
 \end{gradtable}
+\end{center}
 \end{demo}
 The example uses no private variables. See \key{docs/developer.md} and
 \key{docs/migration-v1.0.0.md} for callback limits, dependencies and migration.
@@ -107,15 +109,15 @@ Install all matching
 \key{.sty} files from \key{sty/} together, including \key{tblrlibgradbars.sty}; replacing only the entry file is insufficient.
 Native versions must match. Use \key{l3build check},
 \key{l3build doc}, \key{l3build ctan} and the detailed
-\key{python tests/run_tests.py} regressions.
+\key{texlua scripts/check.lua} regressions.
 \subsection{Version 1 compatibility contract}
 The documented public commands, keys, defaults and dependency rules are stable.
 Compatible additions use a minor release; removals or changes to defaults/data
 semantics require a major release. Deprecated interfaces remain available
 throughout version 1. Internal module files and private variables are excluded.
 See \key{docs/stability.md} for scope, precedence and callback restrictions.
-The supported baseline is LaTeX 2025-11-01, expl3 2025-12-29 and PGF/TikZ
-3.1.11a or newer. Install the fifteen base runtime files and matching optional tabularray adapter together.
+The supported baseline is LaTeX 2025-11-01, expl3 2025-12-29 and PGF/\manualTikZ{}
+3.1.11a or newer. Install all twenty-two matching runtime files, including optional feature libraries and adapters, together.
 The generated \key{gradbars.dtx} and \key{gradbars.ins} reproduce those modules
-using docstrip; \key{python scripts/build_source.py --check} verifies consistency.
+using docstrip; \key{texlua scripts/source.lua --check} verifies consistency.
 The l3doc source guide complements the illustrated manuals.

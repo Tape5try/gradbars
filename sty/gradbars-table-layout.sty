@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Private table layout layer.
-\ProvidesPackage{gradbars-table-layout}[2026/10/30 v1.0.0 gradbars table layout]
+\ProvidesPackage{gradbars-table-layout}[2026/10/25 v1.1.0 gradbars table layout]
 \ExplSyntaxOn
 \cs_new_protected:Npn \gradtableConfigure #1
   {\prop_get:NnN \l__gradtable_types_prop {#1}\l__gradtable_type_tl
@@ -64,6 +64,7 @@
      {compare}{\gradtablePair{\gradcompare}{#1}}
      {dumbbell}{\gradtablePair{\graddumbbell}{#1}}
      {stack}{\str_if_eq:nnTF{#1}{NA}{\gradbar{NA}}{\gradstack{#1}}}
+     {boxplot}{\gradboxplot[box~range=fixed]{#1}}
      {spark}{\gradspark{#1}}
      {interval}{\str_if_eq:nnTF {#1}{NA}
        {\gradrange{NA}{NA}}
@@ -487,7 +488,8 @@
 \ExplSyntaxOn
 \cs_new_protected:Npn\gradtableConfigureTheme
   {\str_case:Vn\l__gradtable_theme_tl
-     {{blue}{\pgfkeys{/gradbars,theme=blue,heat~low~color=gradbarsBlue!8,heat~high~color=gradbarsBlue}}
+     {{accessible}{\pgfkeys{/gradbars,palette=accessible,heat~palette=accessible-sequential}}
+      {blue}{\pgfkeys{/gradbars,theme=blue,heat~low~color=gradbarsBlue!8,heat~high~color=gradbarsBlue}}
       {teal}{\pgfkeys{/gradbars,theme=teal,heat~low~color=gradbarsTeal!8,heat~high~color=gradbarsTeal}}
       {violet}{\pgfkeys{/gradbars,theme=violet,heat~low~color=gradbarsViolet!8,heat~high~color=gradbarsViolet}}
       {orange}{\pgfkeys{/gradbars,theme=orange,heat~low~color=gradbarsWarmOrange!8,heat~high~color=gradbarsWarmOrange}}
@@ -498,7 +500,8 @@
 \cs_new_protected:Npn\gradtableResolveThemeColors
   {\tl_set:Nn\l__gradtable_theme_color_tl{gradbarsBlue}
    \str_case:Vn\l__gradtable_theme_tl
-     {{teal}{\tl_set:Nn\l__gradtable_theme_color_tl{gradbarsTeal}}
+     {{accessible}{\tl_set:Nn\l__gradtable_theme_color_tl{gradbarsCudBlue}}
+      {teal}{\tl_set:Nn\l__gradtable_theme_color_tl{gradbarsTeal}}
       {violet}{\tl_set:Nn\l__gradtable_theme_color_tl{gradbarsViolet}}
       {orange}{\tl_set:Nn\l__gradtable_theme_color_tl{gradbarsWarmOrange}}
       {forest}{\tl_set:Nn\l__gradtable_theme_color_tl{gradbarsForest}}

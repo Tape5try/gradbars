@@ -1,0 +1,30 @@
+% Author: SuFan; MIT License. Opt-in domain recipes, not statistical inference.
+\ProvidesPackage{gradbars-lib-reports}[2026/10/25 v1.1.0 Domain report presets]
+\gradbarsstyle{report-correlation}{min=-1,max=1,heat palette=purple-teal,
+ heat center=0,precision=2,width=14mm,height=3ex,overflow=error,value format=value}
+\gradbarsstyle{report-ablation}{min=0,max=100,width=40mm,height=3ex,
+ compare label=delta,precision=2,compare color=gradbarsCudOrange,color=gradbarsCudBlue}
+\gradbarsstyle{report-metric}{min=0,max=100,width=35mm,height=3ex,
+ precision=2,theme=accessible,label=inside,label align=cell}
+\gradtablestyle{correlation}{style=matrix,rules=booktabs,graphic width=14mm,
+ min graphic width=8mm,column sep=4pt,row padding=2pt,theme=none}
+\gradtablestyle{ablation}{style=academic,graphic width=40mm,
+ row stretch=1.4,row padding=2pt,theme=teal}
+\gradtablestyle{metrics}{style=research,graphic width=35mm,
+ row stretch=1.4,row padding=2pt,theme=accessible}
+\DeclareDocumentCommand\gradcorrelation{O{} m}
+ {\gradheat[style=report-correlation,#1,min=-1,max=1,scale group={},overflow=error]{#2}}
+\DeclareDocumentCommand\gradablation{O{} m m}
+ {\graddumbbell[style=report-ablation,#1]{#2}{#3}}
+\DeclareDocumentCommand\gradmetric{O{} m}
+ {\gradbar[style=report-metric,#1]{#2}}
+\DeclareDocumentCommand\gradcorrelationcolumn{O{} m m}
+ {\gradcolumn[type=heat,scale=fixed,
+   options={style=report-correlation},#1]{#2}{#3}}
+\DeclareDocumentCommand\gradablationcolumn{O{} m m}
+ {\gradcolumn[type=dumbbell,
+   options={style=report-ablation},#1]{#2}{#3}}
+\DeclareDocumentCommand\gradmetriccolumn{O{} m m}
+ {\gradcolumn[type=bar,scale=column,include zero=true,mark=both,
+   options={style=report-metric},#1]{#2}{#3}}
+\endinput

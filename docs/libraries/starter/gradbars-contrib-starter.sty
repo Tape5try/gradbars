@@ -1,0 +1,18 @@
+% MIT License. Copy this starter and rename all starter-* registrations.
+\ProvidesPackage{gradbars-contrib-starter}[2026/10/24 v0.1.0 Public extension starter]
+\RequirePackage{gradbars}
+\ifdefined\gradbarsrequireversion
+  \gradbarsrequireversion{1.1.0}
+\else
+  \PackageError{gradbars-contrib-starter}{This library requires gradbars 1.1.0 or newer}{Update every gradbars runtime module together.}
+\fi
+\gradbarsiflibraryloaded{table}{}{\PackageError{gradbars-contrib-starter}{The table library is required}{Register starter with the table dependency before loading it.}}
+\gradbarsdeclaretype{starter-score}{\gradbar[theme=teal,label=inside,label align=cell]{#1}}
+\gradbarsdeclareformatter{starter-number}{\gradbarsformatnumber[precision=#2,number format=#3]{#1}}
+\gradtablestyle{starter-report}{style=academic,theme=teal,header align=c}
+% Version-1 backend callback: #1 is bar or heat. Delegate actual drawing here.
+% Replace this callback only after implementing every declared capability.
+\gradbarsdeclarebackend{starter-tikz}
+ {bar,heat,missing,signed,gradient,print,labels,units,clip,decorations,embedded,tagging,artifact}
+ {\gradbarsbackenddefault}
+\endinput

@@ -25,9 +25,10 @@
 跨页表格使用同一组锚点，不能将格式化字符串回流为计算输入。
 \begin{example}[text and listing,sidebyside=false]{完整案例：精度与耗时}
 \gradbarsloadcsv{precision}{docs/data/precision-time.csv}
-\begin{gradtable}[data=precision,width=\linewidth,style=research,theme=teal,
+\begin{center}
+\begin{gradtable}[align=c,header align=c,data=precision,width=\linewidth,style=research,theme=teal,
   formatter=siunitx,group by=family,rank scope=group,group summary=true,
-  sort keys={score/descending,time/ascending},header align=c]
+  sort keys={score/descending,time/ascending}]
   \gradcolumn[source=Method]{name}{Method}
   \gradcolumn[source=Family]{family}{Family}
   \gradcolumn[type=bar,source=Score,aggregate=mean,mark=both,
@@ -37,11 +38,15 @@
     unit code={\milli\second},unit text={milliseconds}}]{time}{Time}
   \gradsummary{Overall}
 \end{gradtable}
+\end{center}
 \end{example}
 组内最小耗时为 8.375 与 12 毫秒；并列得分 91.5 都是 Neural 的最佳值。
 \begin{example}[text and listing,sidebyside=false]{完整案例：不同数量级指标}
 \gradbarsloadcsv{magnitudes}{docs/data/magnitudes.csv}
-\begin{gradtable}[data=magnitudes,width=\linewidth,style=research,theme=violet,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,data=magnitudes,style=research,theme=violet,
+  width=0pt,text width=20mm,column sep=6pt,
+  row stretch=1.15,row padding=1pt]
   \gradcolumn[source=Method]{name}{Method}
   \gradcolumn[type=number,source=Residual,aggregate=mean,mark=both,
     options={precision=2,number format=scientific,better=lower}]{residual}{Residual}
@@ -51,5 +56,8 @@
     options={precision=3,unit={\,s}}]{rate}{Rate}
   \gradsummary{Summary}
 \end{gradtable}
+\end{center}
 \end{example}
 残差均值约为 $-7.9167\times10^{-4}$，Count 总和为 $4.175\times10^6$；摘要显示精度不会改变统计值。
+
+纯数字表采用 \key{width=0pt} 按内容排版，避免将整行剩余宽度分配给方法列。

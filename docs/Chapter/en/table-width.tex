@@ -3,8 +3,8 @@
 Labels, fixed columns, padding and rules are reserved first; text columns and
 graphic areas share the remaining space. Values keep their original scale.
 \begin{demo}{A fixed number column and flexible text and graphics}
-\begin{gradtable}[width=\linewidth,header align=c,
-  label width=12mm,column sep=6pt,row padding=2pt,
+\begin{center}
+\begin{gradtable}[align=c,header align=c,width=\linewidth,label width=12mm,column sep=6pt,row padding=2pt,
   min text width=18mm,min graphic width=15mm]
   \gradcolumn[weight=1]{method}{Method name}
   \gradcolumn[type=bar,weight=2,mark=both,
@@ -16,6 +16,7 @@ graphic areas share the remaining space. Values keep their original scale.
   \gradrow{Baseline,84.6,320}
   \gradrow{Pending,NA,80}
 \end{gradtable}
+\end{center}
 \end{demo}
 Default \key{width=0pt} retains natural sizing. A positive column weight (default 1)
 shares space left after minimum widths, so weight=2 does not mean exactly twice

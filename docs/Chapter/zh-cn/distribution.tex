@@ -1,0 +1,47 @@
+\section{微型箱线图与分布摘要}
+在导言区加载可选 \key{distribution} 库：
+\begin{codeonly}
+\usegradbarslibrary{distribution}
+\end{codeonly}
+输入为逗号分隔的样本列表；空字段与 \key{NA} 为缺失，真实零值保留。
+统计使用未舍入值并在内部排序。四分位数固定采用 type-7 线性插值：
+排序样本为 $x_1,\ldots,x_n$，令 $h=1+(n-1)p$、$j=\lfloor h\rfloor$、$g=h-j$，
+则 $Q(p)=(1-g)x_j+gx_{j+1}$；$h=n$ 时取 $x_n$。
+Q1、中位数、Q3 对应 $p=0.25,0.5,0.75$。
+$IQR=Q3-Q1$；两须取闭区间 $[Q1-1.5\,IQR,Q3+1.5\,IQR]$ 内最小与最大的实际观测，
+不直接画到围栏边界。围栏外用空心点标记，原始数据不会因此被删除。
+\begin{example}[text and listing,sidebyside=false]{原始样本与预计算记录}
+\gradboxplot[width=52mm,height=5ex,palette=accessible]{0,2,3,4,5,6,7,8,16}
+\quad
+\gradboxsummary[width=52mm,height=5ex]{n=9,q1=3,median=5,q3=7,
+  low=0,high=8,outliers={16}}
+\end{example}
+此例将箱体、两须、中位线和异常点保留在可辨认的尺度内，并用 \key{height=5ex} 增大绘图高度。
+若样本为 \key{0,1,2,3,100}，异常值 100 会将主体 0--3 压缩到全宽的约 3\%；
+这是线性尺度下的真实比例，单纯加宽不能解决。展示时可另列异常值并明确说明，
+不应静默删去异常点或改变其位置。
+默认 \key{box range=auto} 将全部异常值纳入量程；恒定样本只在绘图时扩展范围。
+跨方法比较请用 \key{box range=fixed,min=...,max=...} 或显式命名尺度。
+有效 n=0 时显示缺失；n=1 时分位数与两须重合；n=2 仍按同一公式插值。
+重叠异常点保留计数和完整描述。箱线须不是置信区间，首轮不接受百分比格式、权重或缺口箱线图。
+\begin{example}[text and listing,sidebyside=false]{可读取的统计结果与原生表格列}
+\gradcomputesummary{0,2,3,4,5,6,7,8,16}{%
+  n=\gradstat{n}; median=\gradstat{median};
+  outliers=\gradstat{outlier count}}
+\par\medskip
+\begin{center}
+\begin{gradtable}[align=c,header align=c,style=distribution,width=\linewidth,scale=column]
+\gradcolumn{name}{方法}
+\gradcolumn[type=boxplot,options={height=5ex,palette=accessible}]{samples}{分布}
+\gradrow{Alpha,{0,2,3,4,5,6,7,8,16}}
+\gradrow{Beta,{-3,0,2,5,9,12,14}}
+\gradrow{缺失,NA}
+\end{gradtable}
+\end{center}
+\end{example}
+\key{\gradcomputesummary} 的回调内可用 \key{\gradstat} 读取 n、missing、min、max、mean、
+q1、median、q3、iqr、low、high、outliers、outlier count 与 method。
+\key{\gradsummarytext} 可输出主要统计摘要。
+预计算记录必须给出 n、q1、median、q3、low、high，缺失数与异常值数量未提供时保持未知。
+没有原始样本便无法验证分位数算法或围栏内极值；宏包仅校验可检查的一致性。
+表格自动尺度包含异常值，筛选只选择行，不改变每格内部样本，也不隐式合并各行样本。

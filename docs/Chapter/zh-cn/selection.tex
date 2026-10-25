@@ -2,7 +2,8 @@
 先确定读者需要比较的是数值大小、相对零的变化、组成还是不确定性，再选择条形。
 同一比较组应共用范围与宽度，并在标题或表头中写明单位。
 
-\begin{tabularx}{\linewidth}{@{}p{23mm}p{44mm}X@{}}
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}>{\centering\arraybackslash}p{23mm}>{\centering\arraybackslash}p{44mm}>{\centering\arraybackslash}X@{}}
 \toprule
 \multicolumn{1}{c}{\textbf{类型}} & \multicolumn{1}{c}{\textbf{适用情形}} & \multicolumn{1}{c}{\textbf{选择与说明}}\\
 \midrule
@@ -20,6 +21,7 @@
 在表注中明确区间是标准差、标准误还是置信区间。\\
 \bottomrule
 \end{tabularx}
+\end{center}
 
 \subsection{组合使用时的语义}
 \key{target} 是一个参考值，\key{band} 是预先给定的参考范围，

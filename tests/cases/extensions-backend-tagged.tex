@@ -1,0 +1,40 @@
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\usegradbarslibrary{reports,distribution}
+\setlength{\parindent}{0pt}
+\ExplSyntaxOn\newcount\probeCount
+\gradbarsdeclarebackend{probe}{bar,heat,missing,signed,gradient,print,labels,units,clip,decorations,embedded,tagging,artifact}{
+\global\advance\probeCount1
+\ExplSyntaxOn
+\str_if_eq:eeF{\gradbarsbackendvalue{version}}{1}{\errmessage{Wrong~schema}}
+\fp_compare:nNnF{\gradbarsbackendvalue{min}}<{\gradbarsbackendvalue{max}}{\errmessage{Invalid~record~range}}
+\dim_compare:nNnF{\gradbarsbackendvalue{width}}>{0pt}{\errmessage{Invalid~record~width}}
+\str_if_eq:eeF{\gradbarsbackendvalue{kind}}{#1}{\errmessage{Wrong~record~kind}}
+\str_if_eq:eeF{\gradbarsbackendvalue{missing}}{true}
+ {\fp_compare:nF{0<=\gradbarsbackendvalue{position}<=1}{\errmessage{Invalid~position}}}
+\ExplSyntaxOff
+\gradbarsbackenddefault}
+\gradbarsifbackendcapable{probe}{bar}{}{\errmessage{Missing capability}}
+\gradbarsifbackendcapable{probe}{stack}{\errmessage{Unexpected compound support}}{}
+\gradbarsrequireversion{1.0.9999}
+\ExplSyntaxOff
+\begin{document}
+
+\gradbar[backend=probe,min=0,max=1,unit={ ms},alt={PROBE-EXPLICIT}]{.5}\par
+\gradbar[backend=probe,min=-2,max=2,print,target=1]{-1}\par
+\gradbar[backend=probe]{NA}\par
+\gradbar[backend=probe,min=0,max=1]{.75}\par
+\gradheat[backend=probe,heat palette=purple-teal,min=-1,max=1]{-.5}\par
+\gradheat[backend=probe]{NA}\par
+\gradbar[backend=probe,accessibility=artifact]{12}\par
+\gradbar[backend=probe,accessibility=off]{13}\par
+\begin{tikzpicture}[alt={PROBE-OUTER}]\gradbar[backend=probe]{14}\end{tikzpicture}\par
+\begin{gradtable}[style=metrics,width=\linewidth]
+\gradcolumn{name}{Name}
+\gradmetriccolumn[options={style=report-metric,backend=probe}]{score}{Score}
+\gradrow{A,10}\gradrow{B,20}\end{gradtable}\par
+\typeout{PROBE-DONE}
+
+\end{document}

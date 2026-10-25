@@ -2,7 +2,7 @@
 \label{sec:heat}
 Heat encodes one scalar through fill color and retains its formatted value inside
 the rectangle. Use \key{\gradheat[options]{value}} in text, ordinary tables or
-existing TikZ pictures. Color is interpolated linearly over min/max.
+existing \manualTikZ{} pictures. Color is interpolated linearly over min/max.
 \begin{demo}{Continuous colors and a neutral missing cell}
 \gradheat[min=0,max=100]{0}\quad
 \gradheat[min=0,max=100]{50}\quad
@@ -53,7 +53,8 @@ retaining column spacing. Best/second-best marking uses \key{mark=best|both}.
 This example uses a fixed range; see Section~\ref{sec:column-scale} for automatic
 scales and Section~\ref{sec:csv-input} for CSV data sources.
 \begin{demo}{A fixed-scale heat column}
-\begin{gradtable}[width=\linewidth,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,width=\linewidth]
   \gradcolumn{name}{Method}
   \gradcolumn[type=heat,mark=both,
     options={min=0,max=100,precision=0}]{score}{Score}
@@ -61,4 +62,5 @@ scales and Section~\ref{sec:csv-input} for CSV data sources.
   \gradrow{B,90}
   \gradrow{Pending,NA}
 \end{gradtable}
+\end{center}
 \end{demo}

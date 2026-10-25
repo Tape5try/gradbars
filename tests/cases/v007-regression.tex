@@ -1,0 +1,180 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\makeatletter
+\ExplSyntaxOn
+\cs_new_eq:NN\testOriginalRanges\gradtableAutoRanges
+\tl_new:N\l_test_checks_tl
+\cs_set_protected:Npn\gradtableAutoRanges
+  {\testOriginalRanges\tl_use:N\l_test_checks_tl}
+\NewDocumentCommand\checks{m}{\tl_set:Nn\l_test_checks_tl{#1}}
+\NewDocumentCommand\assertcol{m m m}
+  {\group_begin:\gradtableConfigure{#1}
+   \fp_compare:nNnF{\gradbars@min}={#2}{\errmessage{Incorrect~minimum~for~#1}}
+   \fp_compare:nNnF{\gradbars@max}={#3}{\errmessage{Incorrect~maximum~for~#1}}
+   \group_end:}
+\NewDocumentCommand\assertrows{m}
+  {\int_compare:nNnF{\seq_count:N\l__gradtable_rows_seq}={#1}{\errmessage{Incorrect~CSV~row~count}}}
+\NewDocumentCommand\assertcell{m m m}
+  {\clist_set:Nx\l_tmpa_clist{\seq_item:Nn\l__gradtable_rows_seq{#1}}
+   \tl_set:Nx\l_tmpa_tl{\clist_item:Nn\l_tmpa_clist{#2}}
+   \str_if_eq:eeF{\tl_to_str:V\l_tmpa_tl}{\tl_to_str:n{#3}}{\errmessage{Incorrect~selected~cell}}}
+\NewDocumentCommand\assertheat{m m m}
+  {\group_begin:\gradbarssetup{#1}\gradbarsHeatColor{#2}
+   \convertcolorspec{named}{gradbarsHeatCell}{rgb}\testActualRGB
+   \convertcolorspec{named}{#3}{rgb}\testExpectedRGB
+   \clist_set:Nx\l_tmpa_clist{\testActualRGB}\clist_set:Nx\l_tmpb_clist{\testExpectedRGB}
+   \int_step_inline:nn{3}
+     {\fp_compare:nNnT{abs(\clist_item:Nn\l_tmpa_clist{##1}-\clist_item:Nn\l_tmpb_clist{##1})}>{.0002}
+       {\errmessage{Incorrect~heat~interpolation}}}\group_end:}
+\ExplSyntaxOff
+\makeatother
+\begin{document}
+\ExplSyntaxOn
+\tl_new:N\l_vseven_checks_tl
+\cs_new_eq:NN\vsevenOriginalMeasure\gradtableMeasureSummary
+\cs_set_protected:Npn\gradtableMeasureSummary{\vsevenOriginalMeasure\tl_use:N\l_vseven_checks_tl}
+\NewDocumentCommand\groupchecks{m}{\tl_set:Nn\l_vseven_checks_tl{#1}}
+\NewDocumentCommand\assertprop{m m m}
+ {\tl_set:Nx\l_tmpa_tl{\prop_item:cn{l__gradtable_#1_prop}{#2}}
+  \str_if_eq:eeF{\l_tmpa_tl}{#3}{\errmessage{Incorrect~#1~at~#2:~\l_tmpa_tl~vs~#3}}}
+\NewDocumentCommand\assertstat{m m}
+ {\fp_compare:nNnF{\prop_item:Nn\l__gradtable_group_summary_values_prop{#1}}={#2}
+   {\errmessage{Incorrect~group~summary~#1}}}
+\ExplSyntaxOff
+
+\gradbarsloadcsv{groups}{build/tests/groups.csv}
+\checks{}\groupchecks{\assertcell{1}{1}{D}\assertcell{2}{1}{B}\assertcell{3}{1}{C}\assertcell{4}{1}{A}\assertcell{5}{1}{NAgroup}\assertcell{6}{1}{Empty}\assertcell{7}{1}{E}\assertcell{8}{1}{F}\assertcell{9}{1}{G}}
+\begin{gradtable}[width=\linewidth,data=groups,sort keys={score/descending,time/ascending}]
+\gradcolumn[source=Name]{name}{Name}
+\gradcolumn[source=Group]{family}{Group}
+\gradcolumn[type=number,source=Score,mark=both,aggregate=mean]{score}{Score}
+\gradcolumn[type=number,source=Time,mark=both,aggregate=count,options={better=lower}]{time}{Time}
+\end{gradtable}\par\bigskip
+
+\checks{}\groupchecks{\assertcell{1}{1}{E}\assertcell{2}{1}{Empty}\assertcell{3}{1}{NAgroup}\assertcell{4}{1}{A}\assertcell{5}{1}{B}\assertcell{6}{1}{C}\assertcell{7}{1}{D}\assertcell{8}{1}{G}\assertcell{9}{1}{F}}
+\begin{gradtable}[width=\linewidth,data=groups,sort keys={score/ascending,time/descending}]
+\gradcolumn[source=Name]{name}{Name}
+\gradcolumn[source=Group]{family}{Group}
+\gradcolumn[type=number,source=Score,mark=both,aggregate=mean]{score}{Score}
+\gradcolumn[type=number,source=Time,mark=both,aggregate=count,options={better=lower}]{time}{Time}
+\end{gradtable}\par\bigskip
+
+\checks{}\groupchecks{\assertcell{1}{1}{NAgroup}\assertcell{9}{1}{Empty}}
+\begin{gradtable}[width=\linewidth,data=groups,sort keys={family/descending,time/ascending}]
+\gradcolumn[source=Name]{name}{Name}
+\gradcolumn[source=Group]{family}{Group}
+\gradcolumn[type=number,source=Score,mark=both,aggregate=mean]{score}{Score}
+\gradcolumn[type=number,source=Time,mark=both,aggregate=count,options={better=lower}]{time}{Time}
+\end{gradtable}\par\bigskip
+
+\checks{}\groupchecks{\assertrows{9}\assertcell{1}{1}{D}\assertcell{2}{1}{A}\assertcell{3}{1}{F}\assertcell{4}{1}{B}\assertcell{5}{1}{C}\assertcell{6}{1}{E}\assertcell{7}{1}{G}\assertprop{group_best}{1/score}{30}\assertprop{group_second}{1/score}{10}\assertprop{group_best}{2/score}{20}\assertprop{group_second}{2/score}{0}\assertprop{group_best}{2/time}{2}\assertprop{group_second}{2/time}{4}\assertprop{group_labels}{3}{(ungrouped)}\assertprop{group_labels}{4}{NA}\assertprop{group_ends}{3}{1}\assertprop{group_ends}{7}{2}\assertstat{1/score}{20}\assertstat{2/score}{40/3}\assertstat{1/time}{3}\assertstat{2/time}{4}}
+\begin{gradtable}[width=\linewidth,data=groups,group by=family,rank scope=group,group summary=true,sort keys={score/descending,time/ascending}]
+\gradcolumn[source=Name]{name}{Name}
+\gradcolumn[source=Group]{family}{Group}
+\gradcolumn[type=number,source=Score,mark=both,aggregate=mean]{score}{Score}
+\gradcolumn[type=number,source=Time,mark=both,aggregate=count,options={better=lower}]{time}{Time}
+\end{gradtable}\par\bigskip
+
+\checks{}\groupchecks{\assertrows{3}\assertcell{1}{1}{D}\assertcell{2}{1}{B}\assertcell{3}{1}{C}\assertstat{1/score}{30}\assertstat{2/score}{20}\assertprop{best}{score}{30}}
+\begin{gradtable}[width=\linewidth,data=groups,group by=family,group summary=true,sort keys={score/descending,time/ascending},limit=3]
+\gradcolumn[source=Name]{name}{Name}
+\gradcolumn[source=Group]{family}{Group}
+\gradcolumn[type=number,source=Score,mark=both,aggregate=mean]{score}{Score}
+\gradcolumn[type=number,source=Time,mark=both,aggregate=count,options={better=lower}]{time}{Time}
+\gradsummary{Overall}\end{gradtable}\par\bigskip
+
+\checks{}\groupchecks{\assertstat{1/score}{20}\assertstat{2/score}{40/3}}
+\begin{gradtable}[width=\linewidth,data=groups,group by=family,group summary=true,group summary scope=data,sort=score,order=descending,limit=3]
+\gradcolumn[source=Name]{name}{Name}
+\gradcolumn[source=Group]{family}{Group}
+\gradcolumn[type=number,source=Score,mark=both,aggregate=mean]{score}{Score}
+\gradcolumn[type=number,source=Time,mark=both,aggregate=count,options={better=lower}]{time}{Time}
+\end{gradtable}\par\bigskip
+
+\checks{}\groupchecks{\assertstat{1/score}{30}\assertstat{2/score}{20}\assertprop{summary_values}{time}{9}}
+\begin{gradtable}[width=\linewidth,data=groups,group by=family,group summary=true,sort=score,order=descending,limit=3]
+\gradcolumn[source=Name]{name}{Name}
+\gradcolumn[source=Group]{family}{Group}
+\gradcolumn[type=number,source=Score,mark=both,aggregate=mean]{score}{Score}
+\gradcolumn[type=number,source=Time,mark=both,aggregate=count,options={better=lower}]{time}{Time}
+\gradsummary[scope=data]{All data}\end{gradtable}\par\bigskip
+
+\checks{}\groupchecks{\assertrows{6}\assertcell{1}{1}{A}\assertcell{2}{1}{B}\assertcell{3}{1}{C}\assertstat{1/score}{10}\assertstat{2/score}{40/3}}
+\begin{gradtable}[width=\linewidth,data=groups,group by=family,group summary=true,filter={score<=20},sort=score,order=descending]
+\gradcolumn[source=Name]{name}{Name}
+\gradcolumn[source=Group]{family}{Group}
+\gradcolumn[type=number,source=Score,mark=both,aggregate=mean]{score}{Score}
+\gradcolumn[type=number,source=Time,mark=both,aggregate=count,options={better=lower}]{time}{Time}
+\end{gradtable}\par\bigskip
+
+\checks{}\groupchecks{\assertrows{0}}
+\begin{gradtable}[width=\linewidth,data=groups,group by=family,rank scope=group,group summary=true,filter={score>100}]
+\gradcolumn[source=Name]{name}{Name}
+\gradcolumn[source=Group]{family}{Group}
+\gradcolumn[type=number,source=Score,mark=both,aggregate=mean]{score}{Score}
+\gradcolumn[type=number,source=Time,mark=both,aggregate=count,options={better=lower}]{time}{Time}
+\end{gradtable}\par\bigskip
+
+\checks{}\groupchecks{\assertrows{1}\assertprop{group_summary_values}{2/score}{NA}\assertstat{2/time}{1}}
+\begin{gradtable}[width=\linewidth,data=groups,group by=family,rank scope=group,group summary=true,filter={family=B,score=NA}]
+\gradcolumn[source=Name]{name}{Name}
+\gradcolumn[source=Group]{family}{Group}
+\gradcolumn[type=number,source=Score,mark=both,aggregate=mean]{score}{Score}
+\gradcolumn[type=number,source=Time,mark=both,aggregate=count,options={better=lower}]{time}{Time}
+\end{gradtable}\par\bigskip
+
+\checks{}\groupchecks{\assertrows{1}\assertprop{groups}{1}{No family}\assertstat{3/score}{5}}
+\begin{gradtable}[width=\linewidth,data=groups,group by=family,group missing label={No family},group summary=true,filter={family=}]
+\gradcolumn[source=Name]{name}{Name}
+\gradcolumn[source=Group]{family}{Group}
+\gradcolumn[type=number,source=Score,mark=both,aggregate=mean]{score}{Score}
+\gradcolumn[type=number,source=Time,mark=both,aggregate=count,options={better=lower}]{time}{Time}
+\end{gradtable}\par\bigskip
+
+\checks{}\groupchecks{\assertprop{group_best}{1/score}{0}\assertprop{group_second}{1/score}{-5}\assertstat{1/score}{-2.5}\assertstat{2/score}{3}\assertstat{1/time}{1}\assertstat{2/time}{2}\assertprop{group_ends}{2}{1}\assertprop{group_ends}{4}{2}}
+\begin{gradtable}[width=\linewidth,rank scope=group,group summary=true,rules=grid]
+\gradcolumn[source=Name]{name}{Name}
+\gradcolumn[source=Group]{family}{Group}
+\gradcolumn[type=number,source=Score,mark=both,aggregate=mean]{score}{Score}
+\gradcolumn[type=number,source=Time,mark=both,aggregate=count,options={better=lower}]{time}{Time}
+\gradgroup{One}\gradrow{A,A,-5,0}\gradrow{B,A,0,NA}\gradgroup{Two}\gradrow{C,B,3,1}\gradrow{D,B,NA,2}\gradsummary{Overall}\end{gradtable}\par\bigskip
+
+\checks{}\groupchecks{\assertprop{groups}{1}{(ungrouped)}\assertstat{1/score}{1}\assertstat{2/score}{2}}
+\begin{gradtable}[width=\linewidth,rank scope=group,group summary=true,rules=none]
+\gradcolumn[source=Name]{name}{Name}
+\gradcolumn[source=Group]{family}{Group}
+\gradcolumn[type=number,source=Score,mark=both,aggregate=mean]{score}{Score}
+\gradcolumn[type=number,source=Time,mark=both,aggregate=count,options={better=lower}]{time}{Time}
+\gradrow{A,A,1,0}\gradgroup{Named}\gradrow{B,B,2,1}\end{gradtable}\par\bigskip
+
+\checks{}\groupchecks{\assertstat{1/score}{2}}
+\begin{gradtable}[width=\linewidth,group summary=true,style=compact,theme=mono]
+\gradcolumn{name}{Name}\gradcolumn[type=number,aggregate=count]{score}{Score}\gradgroup{Repeated}\gradrow{A,-5}\gradrow{B,0}\gradrow{C,NA}\gradgroup{Repeated}\gradrow{D,NA}\end{gradtable}\par\bigskip
+
+\checks{}\groupchecks{\assertstat{1/score}{-5}}
+\begin{gradtable}[width=\linewidth,group summary=true,style=compact,theme=mono]
+\gradcolumn{name}{Name}\gradcolumn[type=number,aggregate=sum]{score}{Score}\gradgroup{Repeated}\gradrow{A,-5}\gradrow{B,0}\gradrow{C,NA}\gradgroup{Repeated}\gradrow{D,NA}\end{gradtable}\par\bigskip
+
+\checks{}\groupchecks{\assertstat{1/score}{-2.5}}
+\begin{gradtable}[width=\linewidth,group summary=true,style=compact,theme=mono]
+\gradcolumn{name}{Name}\gradcolumn[type=number,aggregate=mean]{score}{Score}\gradgroup{Repeated}\gradrow{A,-5}\gradrow{B,0}\gradrow{C,NA}\gradgroup{Repeated}\gradrow{D,NA}\end{gradtable}\par\bigskip
+
+\checks{}\groupchecks{\assertstat{1/score}{-5}}
+\begin{gradtable}[width=\linewidth,group summary=true,style=compact,theme=mono]
+\gradcolumn{name}{Name}\gradcolumn[type=number,aggregate=min]{score}{Score}\gradgroup{Repeated}\gradrow{A,-5}\gradrow{B,0}\gradrow{C,NA}\gradgroup{Repeated}\gradrow{D,NA}\end{gradtable}\par\bigskip
+
+\checks{}\groupchecks{\assertstat{1/score}{0}}
+\begin{gradtable}[width=\linewidth,group summary=true,style=compact,theme=mono]
+\gradcolumn{name}{Name}\gradcolumn[type=number,aggregate=max]{score}{Score}\gradgroup{Repeated}\gradrow{A,-5}\gradrow{B,0}\gradrow{C,NA}\gradgroup{Repeated}\gradrow{D,NA}\end{gradtable}\par\bigskip
+
+\gradbarsloadcsv[missing={missing}]{literal}{build/tests/group-literal.csv}
+\checks{}\groupchecks{\assertrows{4}\assertprop{group_labels}{1}{\detokenize{Family, one}}\assertprop{group_labels}{2}{missing}\assertprop{group_labels}{3}{(ungrouped)}\assertstat{1/score}{15}\assertprop{group_summary_values}{2/score}{NA}\assertstat{3/score}{0}}
+\begin{gradtable}[width=\linewidth,data=literal,group by=family,group summary=true,rank scope=group]
+\gradcolumn[source=Name]{name}{Name}
+\gradcolumn[source=Group]{family}{Group}
+\gradcolumn[type=number,source=Score,mark=both,aggregate=mean]{score}{Score}
+\gradcolumn[type=number,source=Time,mark=both,aggregate=count,options={better=lower}]{time}{Time}
+\end{gradtable}\par\bigskip
+\end{document}

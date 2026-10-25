@@ -1,0 +1,39 @@
+% Table data adapted from https://tex.stackexchange.com/a/767118
+% Sebastiano; retrieved 2026-10-24; CC BY-SA 4.0.
+% Layout rewritten using the gradbars starred collected-column interface.
+\documentclass[a4paper,landscape,10pt]{article}
+\usepackage[margin=1.2cm]{geometry}
+\usepackage{gradbars,booktabs}
+\gradbarscolumn*{G}{min=0,max=1,width=8mm,precision=3,
+  theme=gray,height=3ex,font=\scriptsize}
+\renewcommand{\arraystretch}{1.5}
+\pagestyle{empty}
+\begin{document}
+\begin{center}
+\begin{tabular}{@{}c*{8}{G}@{}}
+\toprule
+& \multicolumn{2}{c}{RDII} & \multicolumn{2}{c}{RMInf}
+& \multicolumn{2}{c}{RCraw} & \multicolumn{2}{c}{RFind}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(lr){8-9}
+Ref. Type
+& \gradbarshead{Precision} & \gradbarshead{Recall}
+& \gradbarshead{Precision} & \gradbarshead{Recall}
+& \gradbarshead{Precision} & \gradbarshead{Recall}
+& \gradbarshead{Precision} & \gradbarshead{Recall}\\
+\midrule
+Rename Type       & 1.000 & 1.000 & 1.000 & 1.000 & 0.750 & 0.429 &       &       \\
+Move Type         & 1.000 & 0.968 & 1.000 & 0.968 &       &       &       &       \\
+Extract Superclass& 1.000 & 0.875 & 1.000 & 0.875 &       &       & 0.484 & 0.938 \\
+Rename Method     & 1.000 & 0.943 & 1.000 & 0.886 & 0.971 & 0.486 & 0.868 & 0.843 \\
+Pull Up Method    & 1.000 & 0.600 & 1.000 & 0.733 & 0.500 & 0.067 & 1.000 & 0.571 \\
+Push Down Method  & 1.000 & 0.971 & 1.000 & 0.176 & 1.000 & 0.265 & 1.000 & 0.491 \\
+Move Method       & 1.000 & 1.000 & 1.000 & 0.742 & 0.090 & 0.323 & 0.054 & 0.759 \\
+Extract Method    & 1.000 & 0.897 & 1.000 & 0.862 &       &       & 0.607 & 0.586 \\
+Inline Method     & 1.000 & 0.981 & 1.000 & 0.423 &       &       & 0.917 & 0.688 \\
+Pull Up Field     & 1.000 & 0.576 & 1.000 & 0.970 &       &       & 1.000 & 0.394 \\
+Push Down Field   & 1.000 & 0.929 & 1.000 & 0.929 &       &       & 1.000 & 0.333 \\
+Move Field        & 1.000 & 0.269 & 0.583 & 0.808 &       &       & 0.097 & 0.923 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{document}

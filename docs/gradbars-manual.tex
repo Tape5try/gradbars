@@ -1,5 +1,5 @@
 % !TeX program = xelatex
-% Build from the repository root: python scripts/build_manual.py
+% Build from the repository root: l3build doc
 \makeatletter
 \def\input@path{{docs/}}
 \makeatother
@@ -9,6 +9,7 @@
 \usepackage{gradbars}
 \usepackage{tabularray}
 \UseTblrLibrary{gradbars}
+\usegradbarslibrary{distribution,legend,reports}
 \usepackage{booktabs,array,tabularx,amsmath}
 \usepackage{tcolorbox}
 \tcbuselibrary{listings,skins}
@@ -35,7 +36,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\small\sffamily\color{manualMuted}gradbars\quad 宏包手册}
-\fancyhead[R]{\small\sffamily\color{manualMuted}v1.0.0}
+\fancyhead[R]{\small\sffamily\color{manualMuted}v1.1.0}
 \fancyfoot[L]{\footnotesize\color{manualMuted}效果与源码对照 \enspace / \enspace XeLaTeX}
 \fancyfoot[R]{\small\thepage}
 \renewcommand{\headrulewidth}{.3pt}
@@ -114,11 +115,12 @@
 全书按入门、图形、外观、专属表格、案例与参考六部分组织。源码中的空行用于区分示例。
 示例框内的效果与源码来自同一段代码，避免两者脱节。\par
 \vspace{3mm}
-适用于 gradbars 1.0.0。示例数据仅用于演示，不代表真实实验结果。\par}
+适用于 gradbars 1.1.0。示例数据仅用于演示，不代表真实实验结果。\par}
 
 % Chapters, in reading order.
 \include{Chapter/zh-cn/install}
 \include{Chapter/zh-cn/libraries}
+\include{Chapter/zh-cn/extensions}
 \include{Chapter/zh-cn/selection}
 \include{Chapter/zh-cn/values}
 \include{Chapter/zh-cn/styles}
@@ -130,8 +132,10 @@
 \include{Chapter/zh-cn/dumbbell}
 \include{Chapter/zh-cn/change}
 \include{Chapter/zh-cn/spark}
+\include{Chapter/zh-cn/distribution}
 \include{Chapter/zh-cn/references}
 \include{Chapter/zh-cn/heat}
+\include{Chapter/zh-cn/legends}
 \include{Chapter/zh-cn/themes}
 \include{Chapter/zh-cn/labels}
 \include{Chapter/zh-cn/collision}
@@ -152,6 +156,7 @@
 \include{Chapter/zh-cn/summaries}
 \include{Chapter/zh-cn/table-themes}
 \include{Chapter/zh-cn/table-definitions}
+\include{Chapter/zh-cn/reports}
 \include{Chapter/zh-cn/longtable}
 \include{Chapter/zh-cn/tabularray}
 \include{Chapter/zh-cn/csv}

@@ -1,4 +1,4 @@
-# Developing gradbars v1.0.0
+# Developing gradbars v1.1.0
 
 This release freezes the documented extension interfaces under the
 [version 1 stability contract](stability.md). Private
@@ -7,7 +7,7 @@ implementation details; they are not an extension contract.
 
 ## Runtime structure
 
-Fifteen base runtime modules and optional `tblrlibgradbars.sty` are stored in `sty/`. The builders and tests add
+The twenty-two matching runtime modules, including optional feature libraries and tabularray adapters, are stored in `sty/`. The builders and tests add
 this directory to the TeX search path; l3build installs its contents as package
 files. The contributed example remains in `docs/libraries/`.
 
@@ -20,7 +20,9 @@ files. The contributed example remains in `docs/libraries/`.
 | gradbars-model.sty | Validated input, normalized model and coordinate projection |
 | gradbars-render-tikz.sty | TikZ drawing and label primitives |
 | gradbars-tagging.sty | Alternative descriptions and measurement-tag suspension |
-| gradbars-api.sty | Settings alias, library registry and public extension callbacks |
+| gradbars-api.sty | Settings alias, semantic version guard, library registry and public extension callbacks |
+| gradbars-backend.sty | Public scalar backend registry, capabilities and scoped schema-1 records |
+| gradbars-lib-reports.sty | Optional correlation, ablation and metrics recipes |
 | gradbars-lib-stack.sty | Signed-stack parsing and drawing |
 | gradbars-lib-spark.sty | Series parsing and line/bar/win-loss rendering |
 | gradbars-lib-heat.sty | Sequential/diverging heat-cell renderer |
@@ -28,6 +30,10 @@ files. The contributed example remains in `docs/libraries/`.
 | gradbars-lib-table.sty | Column/schema declarations and table frontend |
 | gradbars-table-data.sty | Table selection, ranges, ranks, grouping and aggregates |
 | gradbars-table-layout.sty | Table measurement, alignment, headers, layout and pagination |
+| gradbars-accessible.sty | Opt-in color roles; no default style change |
+| gradbars-lib-distribution.sty | Type-7 statistics, observed whiskers and box plots |
+| gradbars-lib-legend.sty | Shared explicit configurations and semantic legends |
+| gradbars-tblr-tagging.sty | Opt-in Table/TR/TH/TD and Lua repeat suppression |
 | tblrlibgradbars.sty | Optional tabularray library, cell widths, dedicated columns and trial-tagging hooks |
 
 The default package loads all five feature libraries. `libraries=none` loads
@@ -101,35 +107,26 @@ columns; their output is opaque and cannot use `number align=decimal`. Semantic
 
 ```sh
 l3build check
-python tests/run_tests.py
+texlua scripts/check.lua
 l3build doc
 l3build ctan
 ```
 
-`l3build check` runs three-engine semantic log regressions in an isolated staging
-tree containing the runtime modules. The existing Python suite preserves detailed
-range/color/statistic/position assertions and expected errors. `l3build doc` and
-`l3build ctan` delegate to the existing checked builders, retaining Chapter includes
-and `gradbars_CTAN/gradbars-VERSION.zip`. Set `GRADBARS_PYTHON` if Python is not
-available as `python`. Modern tagging fixtures require a tagging-capable LaTeX
-installation; ordinary operation requires no tagging setup.
+`l3build check` runs seven semantic groups under three engines, extracting runtime
+modules from the documented source and comparing them with `sty/`. The static
+regression corpus in `tests/cases/` is replayed by `texlua scripts/check.lua`;
+expected failures must fail with their declared diagnostics. Run
+`texlua scripts/pdf-check.lua` to inspect actual Tagged PDF Figure alternatives,
+measurement suppression and table spans/scopes through TeX Live's pdfe library.
 
-For a fixed-dataset timing and value comparison, extract a v0.0.8 `.sty` baseline:
-
-```sh
-python scripts/benchmark.py --baseline path/to/v0.0.8
-```
-
-The report records median compilation time, PDF/log sizes and an identical PDF-text
-hash per engine. Sizes include version/file metadata and are diagnostic. Timing
-greater than twice the baseline requires investigation rather than automatic acceptance.
-
-The supported minimum is LaTeX 2025/11/01, expl3 2025/12/29 and PGF/TikZ 3.1.11a.
-The tested baseline is TeX Live 2025 with current updates; CI uses a current
-TeX Live container rather than an older operating-system TeX package. The usual table
-dependencies remain required for corresponding features. SI formatting requires
-siunitx v3, and the package never installs or loads it automatically. Wider old
-distribution compatibility should be claimed only after running the same suite.
+`l3build doc` uses latexmk for convergence and stages chapter sources, data and
+layout PDFs. `l3build ctan` uses the native target, runs the l3build tests, builds
+documentation and produces `gradbars-ctan.zip`. Run
+`texlua scripts/release.lua --verify` and `texlua scripts/install-check.lua` to
+inspect that ZIP and compile after source extraction in a clean directory.
+No Python files or generated runtime modules enter the CTAN source ZIP.
+PDFs and archives are ignored by Git and published through Release/CI artifacts.
+See [upload and release configuration](#release-configuration).
 
 ## Model and backend boundary
 
@@ -140,13 +137,19 @@ after clipping; raw-value is retained separately for semantics. Colors and
 formatted text are resolved independently of numeric input. The snapshot is
 local and cannot leak between graphics.
 
-`\__gradbars_render:` prepares the model before invoking
-`\__gradbars_render_tikz:`. Projection to physical dimensions runs in the drawing
-font/coordinate context, preserving existing em/ex behavior. The TikZ backend
-consumes validated values and resolved positions; it does not parse raw scalar
-input. Compound library drawing helpers and table measurement remain private.
-This boundary reserves a future backend without exposing its internal fields
-as a version-1 extension API. Public scalar callbacks delegate to public graphics.
+`\__gradbars_render:` prepares the model, then dispatches through the public
+backend contract. Default tikz follows the native path without creating a public
+record. Selected custom scalar backends receive a scoped schema-1 snapshot, not
+access to private model storage. Heat uses the same negotiation after validation.
+Compound and legend kinds require native rendering or explicit fallback.
+Projection preserves existing em/ex behavior. See [backends.md](backends.md)
+for the exact public fields, capabilities, label helper and continuation rules.
+
+Use [the independent starter](libraries/starter/README.md) to create a library.
+It includes source, example, semantic version guard and a three-engine checker.
+`\gradbarsversion` reports the package version; `\gradbarsrequireversion{1.1.0}`
+checks a minimum semantic version. [Domain reports](reports.md) demonstrate
+recipes built from existing graphic/table interfaces without inferring statistics.
 
 ## tabularray adapter
 
@@ -174,8 +177,33 @@ their normal restrictions. `gradtblr` is an opt-in styled environment; native
 CSV selection, ranking or aggregates for tblr.
 
 `gradbars.dtx`/`gradbars.ins` are generated from `sty/` by
-`python scripts/build_source.py`. Use `--check` to reject drift and verify
+`texlua scripts/source.lua`. Use `--check` to reject drift and verify
 docstrip extraction of every module. The l3doc driver builds a source guide;
 the manuals continue using bilingual chapter sources. Run
-`python scripts/check_tagging.py` with development dependency pypdf to inspect
+`texlua scripts/pdf-check.lua` with TeX Live pdfe to inspect
 actual PDF Figure descriptions and check measurement suppression in all engines.
+
+The two new native libraries are opt-in: distribution depends on core; legend
+depends on core and heat. Run `texlua scripts/check.lua` and `texlua scripts/pdf-check.lua`
+for independent rational-reference statistics and actual PDF structure checks.
+Palette design evidence is described in [accessibility](accessibility.md); CVD previews are not a certification.
+The table-tagging adapter isolates the private repeated-box reset and requires
+LuaLaTeX for repeated tagged longtblr headers. Do not extend this with unverified
+PDF literal rewrites for the other engines.
+
+## Release configuration
+
+The GitHub source tree does not track UPLOAD-RESTRICTIONS.md, README.ctan.md,
+gradbars.dtx or gradbars.ins. The first two are local maintainer files;
+l3build and CI generate the documented sources from the tracked sty/ modules.
+The CTAN README is derived from README.en.md and receives source-installation
+instructions. Clean GitHub checkouts and extracted CTAN source packages both
+support l3build check/doc/ctan without the local maintainer files.
+
+Branch pushes and pull requests run tests and create CI artifacts. A stable
+vVERSION tag matching finalized metadata publishes the verified ZIP and PDFs to
+GitHub Release. For subsequent CTAN submission, configure the repository secret
+CTAN_EMAIL and repository variables CTAN_UPLOAD=true, CTAN_ANNOUNCEMENT and
+optionally CTAN_NOTE. The CTAN job submits the same verified ZIP with l3build
+upload. Future planned dates and unreleased README states block stable releases.
+No task here rewrites Git history or publishes a release merely by editing files.

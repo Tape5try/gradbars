@@ -1,0 +1,37 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\usegradbarslibrary{distribution,legend}
+\usepackage{tabularray}
+\UseTblrLibrary{gradbars}
+\setlength{\parindent}{0pt}
+\begin{document}
+\section*{Distributions, shared scales and accessible colors}
+\gradscale{bench}{min=-10,max=100}
+\gradlegenddefine{bench}{scale group=bench,palette=accessible,
+ heat palette=accessible-diverging,heat center=0,legend title={Shared score}}
+\begin{gradtable}[style=distribution,width=\linewidth]
+\gradcolumn{name}{Method}
+\gradcolumn[type=boxplot,scale group=bench,options={palette=accessible}]{samples}{Distribution}
+\gradcolumn[type=heat,scale group=bench,options={legend group=bench}]{score}{Score}
+\gradrow{Alpha,{0,1,2,3,100},20}
+\gradrow{Beta,{-8,-3,0,5,7},-3}
+\gradrow{Missing,NA,NA}
+\end{gradtable}
+\medskip\gradlegenduse[width=65mm,height=3mm]{bench}\par\bigskip
+\gradreferencelegend{target/Declared target,reference/Reference value,
+ band/Reference range,error/Error distances (not automatically a confidence interval),
+ box/Quartiles and observed whiskers (1.5 IQR)}\par\bigskip
+\begin{tblr}{colspec={l J{28mm} R{28mm} V{28mm} B{32mm}},hlines}
+Method & {Before/after} & {Range} & {Trend} & {Distribution}\\
+Alpha & 10/30 & 20/60 & {\gradsparkTblr[cell width=28mm]{1,3,NA,2}} & {\gradboxplotTblr[cell width=32mm]{0,1,2,3,100}}\\
+Beta & NA/20 & NA & {\gradsparkTblr[cell width=28mm]{NA,0,-1}} & NA\\
+\end{tblr}\par\bigskip
+\begin{tblr}{colspec={K{40mm} U[bullet bands={40/black!10,70/black!20,100/black!30}]{40mm}}}
+{Composition} & {Bullet}\\
+{\gradstackTblr[cell width=40mm,palette=accessible]{20,30,10}} & 60\\
+\end{tblr}
+\section*{Print}
+\gradboxplot[width=50mm,print]{0,1,2,3,100}\quad
+\gradheatlegend[print,min=-10,max=30,heat palette=diverging,width=60mm,height=3mm]
+\end{document}

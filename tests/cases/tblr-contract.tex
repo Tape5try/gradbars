@@ -1,0 +1,34 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{tabularray}
+\UseTblrLibrary{gradbars,gradbars}
+\setlength{\parindent}{0pt}
+
+\makeatletter
+\newsavebox{\probe}
+\ExplSyntaxOn
+\cs_new_eq:NN\probeBaseline\gradbarsResolveBaseline
+\cs_set_protected:Npn\gradbarsResolveBaseline
+  {\probeBaseline
+   \str_if_eq:eeT{\gradbars@placement}{center}
+     {\dim_compare:nNnT{\dim_abs:n{\gradbars@labelx-\gradbars@width/2}}>{.01pt}
+       {\errmessage{Cell~label~is~not~centered}}}}
+\ExplSyntaxOff
+\makeatother
+\gradtblrsetup{precision=3}
+\gradtblrsetup{min=-10,max=10}
+\begin{document}
+\sbox{\probe}{\gradbarTblr[cell width=80pt]{-9.5}}
+\ifdim\wd\probe=80pt\else\errmessage{Cell width changed}\fi
+\sbox{\probe}{\gradbarTblr[cell width=80pt]{.001}}
+\sbox{\probe}{\gradbarTblr[cell width=80pt]{NA}}
+\sbox{\probe}{\gradbarTblr[cell width=80pt,label=left,label width=35pt]{-5}}
+\ifdim\wd\probe=80pt\else\errmessage{Left label exceeds cell}\fi
+{\gradtblrsetup{precision=1}\gradnumberTblr[cell width=80pt]{12.345}}
+\gradnumberTblr[cell width=80pt]{12.345}
+\gradtblrcell[cell width=80pt]{dumbbell}{-5/5}
+\begin{tblr}{colspec={G{80pt} H{80pt}},cell{1}{1}={c=2}{c,cmd=}}
+Spanning header & \\
+-1 & NA\\
+\end{tblr}
+\end{document}

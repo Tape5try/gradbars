@@ -4,8 +4,8 @@
 先声明全部列，再声明表头，最后填写分组和数据。每层合并列数之和必须恰好等于总列数。
 
 \begin{example}[text and listing,sidebyside=false]{示例 59：三级表头组织不同指标}
-\begin{gradtable}[rules=grid,header align=c,
-  header color=gradbarsBlue!8,text width=28mm,
+\begin{center}
+\begin{gradtable}[align=c,header align=c,rules=grid,header color=gradbarsBlue!8,text width=28mm,
   column sep=8pt,row padding=3pt]
   \gradcolumn{method}{方法}
   \gradcolumn[type=number,width=24mm,
@@ -20,6 +20,7 @@
   \gradrow{方法 A,91.4,89.7,24}
   \gradrow{方法 B,93.2,91.5,31}
 \end{gradtable}
+\end{center}
 \end{example}
 跨列标题默认居中，底色跟随 header color，分隔线跟随 rules。
 空标题可写成 \key{\gradspan{1}{}}，该单元格仍占指定列数。

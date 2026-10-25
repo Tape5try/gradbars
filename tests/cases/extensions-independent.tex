@@ -1,0 +1,9 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\usegradbarslibrary{reports,distribution}
+\setlength{\parindent}{0pt}
+\gradbarsdeclarebackend{record-box}{bar,labels}{\makebox[\gradbarsbackendvalue{width}][c]{\gradbarsbackendlabel}}
+\begin{document}
+\gradbar[backend=record-box,fill=solid,label=inside,precision=3]{72.125}
+\end{document}

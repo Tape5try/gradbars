@@ -11,12 +11,14 @@ be reordered or reused. Omit \key{gradrow} in imported tables; rows follow file 
 numeric missing values use the dataset's mapping and text stays literal.
 \begin{demo}{CSV field binding with multiple metrics}
 \gradbarsloadcsv{results}{docs/data/results.csv}
-\begin{gradtable}[data=results,width=\linewidth,scale=column,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,data=results,width=\linewidth,scale=column]
   \gradcolumn[source=Model]{method}{Method}
   \gradcolumn[type=bar,source=Score,mark=both]{score}{Score}
   \gradcolumn[type=number,source=Latency,
     options={precision=0}]{time}{Latency}
 \end{gradtable}
+\end{center}
 \end{demo}
 Manual \key{gradrow} data cannot be mixed with an imported dataset. Unknown datasets
 or fields are errors. Quote list fields containing commas; use NA for missing
@@ -32,13 +34,15 @@ is a nonnegative integer; 0 is unlimited. Processing order is filter, stable sor
 then limit.
 \begin{demo}{Filter scores, then select the two lowest latencies}
 \gradbarsloadcsv{results}{docs/data/results.csv}
-\begin{gradtable}[data=results,width=\linewidth,scale=column,
-  filter={score>=75},sort=time,order=ascending,limit=2,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,data=results,width=\linewidth,scale=column,
+  filter={score>=75},sort=time,order=ascending,limit=2]
   \gradcolumn[source=Model]{method}{Method}
   \gradcolumn[type=bar,source=Score]{score}{Score}
   \gradcolumn[type=bar,source=Latency,
     options={better=lower,precision=0}]{time}{Latency}
 \end{gradtable}
+\end{center}
 \end{demo}
 Numeric conditions support =, !=, <, <=, > and >=; for example,
 \key{filter={score>=75,time<100}}. Ordinary comparisons, including !=, exclude missing
@@ -65,13 +69,15 @@ at each key; equal/missing keys proceed to the next key and full ties keep CSV o
 \end{sloppypar}
 \begin{demo}{Global top-three selection before grouping}
 \gradbarsloadcsv{families}{docs/data/families.csv}
-\begin{gradtable}[data=families,width=\linewidth,
-  sort keys={score/descending,time/ascending},limit=3,group by=family,header align=c]
+\begin{center}
+\begin{gradtable}[align=c,header align=c,data=families,width=\linewidth,
+  sort keys={score/descending,time/ascending},limit=3,group by=family]
   \gradcolumn[source=Method]{method}{Method}
   \gradcolumn[source=Family]{family}{Family}
   \gradcolumn[type=number,source=Score]{score}{Score}
   \gradcolumn[type=number,source=Time]{time}{Time}
 \end{gradtable}
+\end{center}
 \end{demo}
 Selection runs filter, global stable sort, global limit, then grouping.
 The selected rows are Compact, Wide and Fast; the original group order displays
@@ -84,7 +90,9 @@ preserving relative sort order within each group.
 The following source assumes a CSV file with Name and Score columns:
 \begin{source}
 \gradbarsloadcsv{results}{results.csv}
+\begin{center}
 \gradbarscsvtable{results}{Name}{Score}
+\end{center}
 \gradbarscsvstyle{shared}{results}{Score}
 \gradbarcsv[style=shared]{results}{1}{Score}
 \gradbarscsvcell{results}{1}{Name}
@@ -95,14 +103,43 @@ does not paginate; native \key{gradtable} data sources support \key{long=true}. 
 
 \begin{demo}{Only numbers in a common-style column}
 \gradbarscolumn{G}{width=35mm,min=-50,max=100,precision=0}
-\begin{tabular}{@{}lG@{}}
+\begin{center}
+\begin{tabular}{@{}cG@{}}
 \toprule
 \multicolumn{1}{c}{Item} & \multicolumn{1}{c}{Value}\\\midrule
 A & 72\\ B & -20\\ C & 0\\ D & NA\\
 \bottomrule
 \end{tabular}
+\end{center}
 \end{demo}
 Numeric columns use collcell. Use multicolumn for text headings. They do not
 calculate a range and are not siunitx S columns. Avoid placing complete drawing
 commands in a numeric collection cell. tabular and longtable workflows are
-documented; a tabularray-specific collection interface is not implemented.
+documented; tabularray uses the separate adapter described in its own chapter.
+
+
+\subsection{Compact numeric columns without cell commands}
+\key{\gradbarscolumn*{G}{options}} supplies text-baseline, inside labels centered
+in the whole cell, and blank handling. It belongs to the already loaded csv library;
+no CSV file or user-defined collector is needed. Explicit options override those defaults.
+\key{\gradbarshead{text}} makes a centered text heading that bypasses numeric conversion.
+\begin{demo}{One column declaration, numbers in the cells}
+\gradbarscolumn*{G}{max=1,width=14mm,precision=3,
+  theme=gray,height=3ex,font=\small}
+\begin{center}
+\begin{tabular}{@{}cGG@{}}
+\toprule
+Method & \gradbarshead{Precision} & \gradbarshead{Recall}\\\midrule
+Alpha & 1.000 & 0.968\\
+Beta & & 0.750\\
+Zero & 0 & NA\\\bottomrule
+\end{tabular}
+\end{center}
+\end{demo}
+Literal empty cells stay blank and reserve the configured graphic width;
+NA remains an explicit missing value and zero is drawn normally.
+The unstarred interface retains its earlier defaults and missing-value behavior.
+The starred form rejects existing or reserved column names; choose an unused letter.
+Use standard multicolumn for grouped headings. No automatic range or ranking is added.
+The complete four-tool Precision/Recall example is in
+\key{docs/examples/precision-recall.tex}.

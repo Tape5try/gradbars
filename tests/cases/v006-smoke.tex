@@ -1,0 +1,37 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\begin{document}
+\gradscale{accuracy}{min=0,max=100}
+\gradbar[scale group=accuracy,theme=violet]{72}\par\bigskip
+\begin{gradtable}[style=academic,theme=violet,width=\linewidth]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=bar,scale group=accuracy,aggregate=mean,mark=both]{score}{Score}
+  \gradcolumn[type=number,aggregate=sum,options={precision=0,unit={ ms}}]{time}{Time}
+  \gradrow{A,72,20}
+  \gradrow{B,90,30}
+  \gradrow{C,NA,0}
+  \gradsummary{Summary}
+\end{gradtable}
+\par\bigskip
+\begin{gradtable}[style=compact,theme=forest,width=\linewidth,scale=column,
+  scale padding=10,scale nice=true]
+  \gradcolumn{name}{Method}
+  \gradcolumn[type=bar,aggregate=mean,options={value format=percent}]{score}{Score}
+  \gradcolumn[type=heat,aggregate=count]{heat}{Heat}
+  \gradrow{A,63,63}
+  \gradrow{B,87,87}
+  \gradrow{Missing,NA,NA}
+  \gradsummary{Summary}
+\end{gradtable}
+\par\bigskip
+\gradbarsloadcsv{results}{docs/data/results.csv}
+\begin{gradtable}[style=dashboard,theme=orange,data=results,scale=column,width=\linewidth,
+  filter={score>=75},sort=score,order=descending,limit=2]
+  \gradcolumn[source=Model]{name}{Method}
+  \gradcolumn[type=bar,source=Score,aggregate=mean]{score}{Score}
+  \gradcolumn[type=number,source=Latency,aggregate=count]{count}{Latency}
+  \gradsummary[scope=data]{All data}
+\end{gradtable}
+\end{document}

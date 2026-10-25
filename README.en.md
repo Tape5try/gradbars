@@ -2,13 +2,13 @@
 
 **Inline data graphics for LaTeX text and tables.**
 
-**v1.0.0 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
+**v1.1.0 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
 
-Planned release date: 2026-10-30.
+Released on 2026-10-25. Adds box plots, distribution summaries, shared legends, accessible palettes and optional tagged table structure.
 
-[简体中文](README.md) · [English manual](gradbars-manual-en-v1.0.0.pdf) · [Chinese manual](gradbars-manual-v1.0.0.pdf) · [CTAN](https://ctan.org/pkg/gradbars)
+[简体中文](README.md) · [English manual](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-en-v1.1.0.pdf) · [Chinese manual](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-v1.1.0.pdf) · [CTAN](https://ctan.org/pkg/gradbars)
 
-![gradbars: data bars, stacks, trends and heat cells](docs/images/overview-v1.0.0.svg)
+![gradbars: data bars, stacks, trends and heat cells](docs/images/overview-v1.1.0.svg)
 
 Built on PGF/TikZ, gradbars embeds graphics in existing `tabular` cells or builds visual tables through declared `gradtable` columns and data rows. No `tikzpicture` wrapper or shell escape is required.
 
@@ -93,6 +93,19 @@ Use `libraries=none` for basic graphics only. Additional libraries must be loade
 
 `all` and `none` are modes of the `libraries` option, not library names. Both `\gradbarsset` and `\gradbarssetup` set defaults within the current scope.
 
+## Ordinary tables with numeric cells
+
+```latex
+\gradbarscolumn*{G}{max=1,width=14mm,precision=3,theme=gray}
+\begin{tabular}{lGG}
+Method & \gradbarshead{Precision} & \gradbarshead{Recall}\\
+Alpha & 1.000 & 0.968\\
+Beta & & 0.750\\
+\end{tabular}
+```
+
+The starred form centers labels and keeps empty cells blank; `NA` remains missing. No user-written collector is needed. See [ordinary-table documentation](docs/tabular-columns.md) and the [complete example](docs/examples/precision-recall.tex).
+
 ## tabularray integration
 
 With tabularray 2025C (2025-11-27) or newer, load the optional adapter in the preamble:
@@ -114,6 +127,8 @@ With tabularray 2025C (2025-11-27) or newer, load the optional adapter in the pr
 - `long=true` enables native table pagination. Place multipage tables in single-column body text, outside floats and minipages.
 - Automatic alternative text covers graphics only. Document reading order, table structure and other accessibility requirements need separate validation.
 
+The opt-in reports library provides [domain report presets](docs/reports.md). Contributors can use the [independent starter](docs/libraries/starter/README.md) and the [public scalar backend contract](docs/backends.md).
+
 ## Documentation and development
 
 Both manuals pair rendered output with source and cover getting started, graphics, appearance, tables, applications and reference material.
@@ -122,27 +137,34 @@ Both manuals pair rendered output with source and cover getting started, graphic
 - [English main source](docs/gradbars-manual-en.tex) and [English chapters](docs/Chapter/en/README.md).
 - [API reference](docs/api.md), [developer guide](docs/developer.md) and [migration guide](docs/migration-v1.0.0.md).
 - [Stability contract](docs/stability.md) for public scope, precedence, compatibility and deprecation.
-- [Source guide](gradbars-source-v1.0.0.pdf) for the l3doc and docstrip workflow.
+- [Source guide](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-source-v1.1.0.pdf) for the l3doc and docstrip workflow.
 - [Changelog](CHANGELOG.md) for additions, fixes and compatibility changes.
 
 Runtime modules live in `sty/`; the contributed example lives in `docs/libraries/`. From the repository root, run:
 
 ```sh
 l3build check
-python tests/run_tests.py
-python scripts/build_source.py --check
-python scripts/build_manual.py
+texlua scripts/check.lua
+texlua scripts/source.lua --check
+l3build doc
 ```
 
-The builders configure module lookup and generate the companion layouts and both PDF manuals. The Chinese manual requires XeLaTeX and ctex/Fandol; the English manual uses pdfLaTeX. Python is a development/build helper, not a package runtime dependency.
+The build uses TeX Live texlua, l3build and latexmk, without Python. The Chinese manual uses XeLaTeX; the English manual and source guide use pdfLaTeX. latexmk handles reruns automatically. PDFs are distributed as GitHub Release assets rather than committed to Git.
 
 `gradbars.dtx` and `gradbars.ins` are reproducible distribution sources;
 `tex gradbars.ins` extracts all runtime modules. After editing `sty/`, run
-`python scripts/build_source.py` to synchronize them. Inspect actual PDF alternative
-text with `python scripts/check_tagging.py` (development dependency: `pypdf`).
+`texlua scripts/source.lua` to synchronize them. Inspect actual Figure alternatives
+and tagged table spans/scopes with `texlua scripts/pdf-check.lua`.
+
+See [release configuration](docs/developer.md#release-configuration). The CTAN source ZIP excludes
+Python files and generated runtime modules; the development repository retains `sty/`.
 
 ## Feedback and license
 
 Report problems through [GitHub Issues](https://github.com/Tape5try/gradbars/issues), including a minimal `.tex` example, engine, package version and relevant log.
 
 Author and maintainer: SuFan (GitHub: Tape5try). Licensed under [MIT](LICENSE).
+
+[Distributions](docs/distributions.md) · [Shared legends](docs/legends.md) · [Accessibility scope](docs/accessibility.md)
+
+The GitHub tree omits `.dtx/.ins` and local CTAN README templates. l3build and CI generate distribution sources from `sty/`; the CTAN entry is prepared from `README.en.md`.

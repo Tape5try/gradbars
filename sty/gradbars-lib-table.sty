@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Internal implementation unless documented.
-\ProvidesPackage{gradbars-lib-table}[2026/10/30 v1.0.0 gradbars lib-table]
+\ProvidesPackage{gradbars-lib-table}[2026/10/25 v1.1.0 gradbars lib-table]
 \RequirePackage{booktabs}
 \RequirePackage{colortbl}
 \RequirePackage{longtable}
@@ -65,7 +65,7 @@
    header~color .tl_set:N = \l__gradtable_header_color_tl,
    rule~color .tl_set:N = \l__gradtable_rule_color_tl}
 \keys_define:nn {gradbars/table/column}
-  {type .choices:nn = {text,number,bar,bullet,interval,compare,dumbbell,stack,spark,heat}
+  {type .choices:nn = {text,number,bar,bullet,interval,compare,dumbbell,stack,spark,heat,boxplot}
      {\tl_set_eq:NN \l__gradtable_type_tl \l_keys_choice_tl},
    options .tl_set:N = \l__gradtable_options_tl,
    align .choices:nn = {auto,l,c,r}{\tl_set_eq:NN\l__gradtable_align_tl\l_keys_choice_tl},
@@ -106,6 +106,7 @@
    \fp_set_eq:NN\l__gradtable_scale_padding_fp\l__gradtable_default_scale_padding_fp
    \bool_set_eq:NN\l__gradtable_scale_nice_bool\l__gradtable_default_scale_nice_bool
    \keys_set:nn {gradbars/table/column}{#1}
+   \str_if_eq:VnT\l__gradtable_type_tl{boxplot}{\gradbarsiflibraryloaded{distribution}{}{\gradtableError{Load~distribution~library~before~boxplot~columns}}}
    \gradtableStoreNumericFormat{#2}
    \dim_compare:nNnT{\l__gradtable_colwidth_dim}<{0pt}{\gradtableError{Column~width~must~be~nonnegative}}
    \prop_put:Nnx\l__gradtable_fixed_prop{#2}{\dim_use:N\l__gradtable_colwidth_dim}
@@ -492,7 +493,7 @@
   {scale~group .tl_set:N=\l__gradtable_default_scale_group_tl,
    scale~padding .code:n=\gradtableSetPadding\l__gradtable_default_scale_padding_fp{#1},
    scale~nice .bool_set:N=\l__gradtable_default_scale_nice_bool,
-   theme .choices:nn={none,blue,teal,violet,orange,forest,mono}
+   theme .choices:nn={none,blue,teal,violet,orange,forest,mono,accessible}
      {\tl_set_eq:NN\l__gradtable_theme_tl\l_keys_choice_tl},
    font .tl_set:N=\l__gradtable_font_tl,
    summary~color .tl_set:N=\l__gradtable_summary_color_tl,
@@ -526,6 +527,8 @@
 \gradtablestyle{academic}{preset=paper,rules=booktabs,header~align=c,row~stretch=1.2,column~sep=6pt}
 \gradtablestyle{reference}{preset=paper,rules=booktabs,header~align=c,
   row~stretch=1.25,column~sep=6pt,number~align=decimal}
+\gradtablestyle{distribution}{preset=paper,rules=booktabs,header~align=c,row~stretch=1.6,column~sep=8pt,row~padding=3pt,graphic~width=45mm}
+\gradtablestyle{accessible}{preset=paper,rules=rows,header~align=c,row~stretch=1.4,column~sep=7pt,row~padding=2pt,theme=accessible}
 \gradtablestyle{matrix}{preset=paper,rules=rows,align=c,header~align=c,
   row~stretch=1.35,column~sep=6pt,row~padding=1pt}
 \gradtablestyle{compact}{preset=paper,rules=booktabs,header~align=c,row~stretch=1.05,column~sep=4pt,

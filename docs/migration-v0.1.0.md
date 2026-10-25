@@ -37,8 +37,8 @@ alignment. Existing native table types and SI formatting remain unchanged.
 
 Chinese/English manuals retain separate Chapter files. Code examples and inline
 commands share a `\ttfamily` typography definition. Use `l3build doc` (or the
-documented Python builder) for full builds. Restore full includes before packaging.
-`l3build ctan` creates and validates `gradbars_CTAN/gradbars-0.1.0.zip`.
+documented l3build/latexmk workflow) for full builds. Restore full includes before packaging.
+The historical builder used `gradbars_CTAN/gradbars-0.1.0.zip`; the current native `l3build ctan` target writes `gradbars-ctan.zip`.
 
 This release does not yet provide `\UseTblrLibrary{gradbars}`. The tabularray
 library remains the main v0.1.1 milestone; the next new preset style is scheduled

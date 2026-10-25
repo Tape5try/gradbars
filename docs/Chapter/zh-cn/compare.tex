@@ -83,7 +83,8 @@ inside/auto 标签移至外部，end 标签仍可放在端点上方。
 添加 range point 后，内部总标签自动外移，避免盖住圆点；默认仍显示上下界，而不是点值。
 \key{value format=percent} 分别计算两个端点相对于 max 的百分比，仅用于 \key{min=0}。
 
-\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{30mm}X@{}}
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}>{\centering\arraybackslash}p{30mm}>{\centering\arraybackslash}X@{}}
 \toprule
 \multicolumn{1}{c}{\textbf{需要表达的信息}} & \multicolumn{1}{c}{\textbf{推荐方式}}\\
 \midrule
@@ -94,3 +95,4 @@ inside/auto 标签移至外部，end 标签仍可放在端点上方。
 所有观测共用的参考区间 & band：绘制背景参考，不充当单条观测的区间。\\
 \bottomrule
 \end{tabularx}
+\end{center}
