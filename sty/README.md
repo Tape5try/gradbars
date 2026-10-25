@@ -1,6 +1,8 @@
 # Extracted runtime modules
 
-Run `tex gradbars.ins` from the parent directory to extract all 22 runtime
+Run `texlua scripts/unpack.lua` from the parent directory to create this directory
+if needed and extract all 22 runtime modules. Alternatively, retain this file
+and run `tex gradbars.ins` from the parent directory to extract all 22 runtime
 `.sty` files into this directory. Install the complete set together in
 `TEXMFHOME/tex/latex/gradbars/`, or copy it beside your main `.tex` file.
 

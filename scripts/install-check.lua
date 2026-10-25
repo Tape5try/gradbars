@@ -23,6 +23,17 @@ end
 local n=0
 for name in lfs.dir('sty') do if name:match('%.sty$') then n=n+1 end end
 assert(n==22,'Expected all 22 extracted runtime modules')
+-- Also exercise the reported case: the output directory has been removed.
+local marker = r.read('sty/README.md')
+for name in lfs.dir('sty') do
+  if name ~= '.' and name ~= '..' then assert(os.remove('sty/'..name)) end
+end
+assert(lfs.rmdir('sty'))
+execute('texlua scripts/unpack.lua > auto-extraction.stdout 2>&1')
+r.write('sty/README.md', marker)
+for name in lfs.dir('.') do
+  assert(not name:match('%.sty$'), 'Auto extraction created a root module: '..name)
+end
 execute('l3build check > native-check.stdout 2>&1')
 for name in lfs.dir('.') do
   assert(not name:match('%.sty$'), 'l3build created a root runtime module: '..name)

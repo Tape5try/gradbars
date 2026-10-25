@@ -70,7 +70,14 @@ function M.ctan_readme(path)
     .. 'Repository and issues: https://github.com/Tape5try/gradbars\n\n'
     .. [[## Installation from the CTAN source archive
 
-Generated runtime modules are not repeated in this source archive. Run:
+Generated runtime modules are not repeated in this source archive. To create
+sty/ automatically and extract the modules, run from this directory:
+
+```sh
+texlua scripts/unpack.lua
+```
+
+Alternatively, retain the supplied sty/README.md directory marker and run:
 
 ```sh
 tex gradbars.ins
@@ -128,7 +135,7 @@ function M.verify(archive)
     assert((not name:match('^gradbars/sty/') or name=='gradbars/sty/README.md') and not name:match('%.aux$') and not name:match('%.log$'), 'Generated file in source archive: '..name)
     assert(not files[name], 'Duplicate archive path: '..name); files[name]=true;count=count+1
   end
-  for _, name in ipairs({'README.md','LICENSE','gradbars.dtx','gradbars.ins','build.lua','scripts/release.lua','sty/README.md'}) do
+  for _, name in ipairs({'README.md','LICENSE','gradbars.dtx','gradbars.ins','build.lua','scripts/release.lua','scripts/unpack.lua','sty/README.md'}) do
     assert(files['gradbars/'..name], 'Missing archive file: '..name)
   end
   local v = M.metadata()
