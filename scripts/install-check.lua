@@ -17,15 +17,21 @@ local function execute(cmd)
   assert(ok==true or ok==0, 'Isolated installation command failed: '..cmd..' ('..tostring(code)..')')
 end
 execute('tex -interaction=nonstopmode -halt-on-error gradbars.ins > extraction.stdout 2>&1')
-execute('l3build check > native-check.stdout 2>&1')
+for name in lfs.dir('.') do
+  assert(not name:match('%.sty$'), 'Unexpected root runtime module: '..name)
+end
 local n=0
-for name in lfs.dir('.') do if name:match('%.sty$') then n=n+1 end end
+for name in lfs.dir('sty') do if name:match('%.sty$') then n=n+1 end end
 assert(n==22,'Expected all 22 extracted runtime modules')
+execute('l3build check > native-check.stdout 2>&1')
+for name in lfs.dir('.') do
+  assert(not name:match('%.sty$'), 'l3build created a root runtime module: '..name)
+end
 for _,engine in ipairs({'pdflatex','xelatex','lualatex'}) do
-  execute('max_print_line=1000 TEXINPUTS=".:docs/libraries/starter:" '..engine..' -interaction=nonstopmode -halt-on-error -jobname=isolated-'..engine..' docs/examples/domain-reports.tex > '..engine..'.stdout 2>&1')
+  execute('max_print_line=1000 TEXINPUTS="./sty//:.:docs/libraries/starter:" '..engine..' -interaction=nonstopmode -halt-on-error -jobname=isolated-'..engine..' docs/examples/domain-reports.tex > '..engine..'.stdout 2>&1')
   r.logcheck('isolated-'..engine..'.log')
   local log=r.read('isolated-'..engine..'.log')
-  assert(log:find('(./gradbars.sty',1,true),'Installed elsewhere: '..engine)
+  assert(log:find('(./sty/gradbars.sty',1,true),'Installed elsewhere: '..engine)
   print(engine..': isolated CTAN source extraction and domain reports passed.')
 end
 assert(lfs.chdir(previous))

@@ -152,7 +152,9 @@ l3build doc
 The build uses TeX Live texlua, l3build and latexmk, without Python. The Chinese manual uses XeLaTeX; the English manual and source guide use pdfLaTeX. latexmk handles reruns automatically. PDFs are distributed as GitHub Release assets rather than committed to Git.
 
 `gradbars.dtx` and `gradbars.ins` are reproducible distribution sources;
-`tex gradbars.ins` extracts all runtime modules. After editing `sty/`, run
+`tex gradbars.ins` extracts all 22 runtime modules into `sty/`, leaving the
+source root free of `.sty` files. Retain the supplied `sty/README.md` directory
+marker; no shell escape is required. After editing `sty/`, run
 `texlua scripts/source.lua` to synchronize them. Inspect actual Figure alternatives
 and tagged table spans/scopes with `texlua scripts/pdf-check.lua`.
 

@@ -184,7 +184,7 @@ l3build doc
 
 构建使用 TeX Live 自带的 texlua、l3build 和 latexmk，不依赖 Python。中文手册使用 XeLaTeX，英文手册与源码说明使用 pdfLaTeX；latexmk 自动判断重编译次数。PDF 不提交到 Git，通过 GitHub Release 下载。
 
-`gradbars.dtx` 与 `gradbars.ins` 是可复现的发行源码；`tex gradbars.ins` 提取完整运行模块。
+`gradbars.dtx` 与 `gradbars.ins` 是可复现的发行源码；`tex gradbars.ins` 将全部 22 个运行模块提取到 `sty/`，根目录不生成 `.sty` 文件。发行包预置 `sty/README.md` 以保留输出目录，无需开启 shell escape。
 开发时修改 `sty/` 后运行 `texlua scripts/source.lua` 同步发行源码。
 使用 `texlua scripts/pdf-check.lua` 检查实际 PDF 的替代文本、表格表头及跨行跨列结构。
 

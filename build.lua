@@ -2,8 +2,8 @@
 module = "gradbars"
 sourcefiledir = "."
 docfiledir = "docs"
-sourcefiles = {"gradbars.dtx", "gradbars.ins"}
-installfiles = {"gradbars*.sty", "tblrlibgradbars.sty"}
+sourcefiles = {"gradbars.dtx", "gradbars.ins", "sty"}
+installfiles = {"sty/gradbars*.sty", "sty/tblrlibgradbars.sty"}
 unpackfiles = {"gradbars.ins"}
 testfiledir = "tests/l3build"
 builddir = "build/l3build"
@@ -18,7 +18,7 @@ specialformats.latex.luatex = {
   binary = "luahbtex", format = "lualatex", options = "-progname=lualatex"
 }
 function checkinit_hook()
-  dofile("scripts/release.lua").runtime(unpackdir)
+  dofile("scripts/release.lua").runtime(unpackdir .. "/sty")
   local cache = builddir .. "/tex-cache"
   -- Windows CRT child environments cannot reliably pass non-ASCII cache paths.
   if os.type == "windows" then
@@ -99,7 +99,7 @@ function typeset(file, dir)
   return 0
 end
 function docinit_hook()
-  release.runtime(unpackdir)
+  release.runtime(unpackdir .. "/sty")
   for _, path in ipairs(release.walk("docs")) do
     if release.allowed(path) then release.copy(path, typesetdir .. "/" .. path) end
   end
@@ -122,6 +122,7 @@ function copyctan()
   for _, name in ipairs({"LICENSE", "CHANGELOG.md", "gradbars.dtx", "gradbars.ins", "build.lua"}) do
     release.copy(name, target .. "/" .. name)
   end
+  release.copy("sty/README.md", target .. "/sty/README.md")
   if fileexists("README.en.md") then
     release.write(target .. "/README.md", release.ctan_readme("README.en.md"))
   else

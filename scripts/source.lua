@@ -17,8 +17,10 @@ local dtx = {'% \\iffalse', '%<*driver>', '\\documentclass{l3doc}',
   '% \\title{\\textsf{gradbars}: documented source}',
   '% \\author{SuFan (Tape5try)}', '% \\date{v' .. version .. ' / ' .. date .. '}',
   '% \\maketitle', '% \\input{docs/source-guide.tex}', '% \\StopEventually{}'}
-local ins = {'\\input docstrip.tex', '\\keepsilent', '\\askforoverwritefalse',
-  '\\nopreamble', '\\nopostamble', '\\generate{'}
+local ins = {
+  '% The source archive supplies sty/README.md so no shell escape is needed.',
+  '\\def\\WriteToDir{sty/}', '\\input docstrip.tex',
+  '\\keepsilent', '\\askforoverwritefalse', '\\nopreamble', '\\nopostamble', '\\generate{'}
 for _, name in ipairs(names) do
   local stem = name:gsub('%.sty$', '')
   local tag = stem == 'gradbars' and 'entry' or stem:gsub('^gradbars%-', '')

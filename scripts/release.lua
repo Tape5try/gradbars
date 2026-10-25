@@ -76,7 +76,11 @@ Generated runtime modules are not repeated in this source archive. Run:
 tex gradbars.ins
 ```
 
-Install all 22 extracted .sty files together in TEXMFHOME/tex/latex/gradbars/,
+The supplied sty/ directory receives all 22 extracted .sty files. Plain TeX
+does not create directories, so retain sty/README.md when copying the sources.
+No runtime .sty files are written into the source root.
+
+Install all 22 extracted .sty files from sty/ together in TEXMFHOME/tex/latex/gradbars/,
 or place the complete set alongside your document. Refresh the filename database
 if required by your distribution. Do not install only gradbars.sty.
 
@@ -121,10 +125,10 @@ function M.verify(archive)
     local name = info.filename
     assert(name:sub(1,9) == 'gradbars/' and not name:find('..',1,true), 'Unsafe archive path: '..name)
     assert(not name:match('%.py[c]?$') and not name:find('__pycache__',1,true), 'Python in archive: '..name)
-    assert(not name:match('^gradbars/sty/') and not name:match('%.aux$') and not name:match('%.log$'), 'Generated file in source archive: '..name)
+    assert((not name:match('^gradbars/sty/') or name=='gradbars/sty/README.md') and not name:match('%.aux$') and not name:match('%.log$'), 'Generated file in source archive: '..name)
     assert(not files[name], 'Duplicate archive path: '..name); files[name]=true;count=count+1
   end
-  for _, name in ipairs({'README.md','LICENSE','gradbars.dtx','gradbars.ins','build.lua','scripts/release.lua'}) do
+  for _, name in ipairs({'README.md','LICENSE','gradbars.dtx','gradbars.ins','build.lua','scripts/release.lua','sty/README.md'}) do
     assert(files['gradbars/'..name], 'Missing archive file: '..name)
   end
   local v = M.metadata()

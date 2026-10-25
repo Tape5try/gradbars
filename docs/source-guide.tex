@@ -7,8 +7,10 @@ same modules with this source guide. Generate it with
 compares its contents with the runtime sources (line endings and trailing
 whitespace are normalized).
 
-Run \texttt{tex gradbars.ins} in a separate directory containing the two
-distribution source files to extract all matching runtime modules. Install the
+Run \texttt{tex gradbars.ins} in the source archive directory, retaining its
+\texttt{sty/README.md} directory marker. All 22 matching runtime modules are
+extracted into \texttt{sty/}, not the source root; no shell escape is needed.
+Plain \TeX{} cannot create a missing directory. Install the
 complete set together. Run \texttt{pdflatex gradbars.dtx} from the repository
 root for this guide; the illustrated bilingual manuals are built separately by
 \texttt{l3build doc}. The default driver prints the guide

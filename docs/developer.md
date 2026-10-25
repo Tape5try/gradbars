@@ -179,7 +179,12 @@ CSV selection, ranking or aggregates for tblr.
 `gradbars.dtx`/`gradbars.ins` are generated from `sty/` by
 `texlua scripts/source.lua`. Use `--check` to reject drift and verify
 docstrip extraction of every module. The l3doc driver builds a source guide;
-the manuals continue using bilingual chapter sources. Run
+the manuals continue using bilingual chapter sources. Plain
+`tex gradbars.ins` writes the 22 modules into `sty/`. Source archives
+include `sty/README.md` to preserve that directory without shell escape.
+The l3build unpack stage retains this layout and stages the extracted modules
+for checks and typesetting. Isolated installation checks reject root `.sty` files.
+Run
 `texlua scripts/pdf-check.lua` with TeX Live pdfe to inspect
 actual PDF Figure descriptions and check measurement suppression in all engines.
 
