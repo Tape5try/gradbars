@@ -7,7 +7,8 @@ Load it in the preamble:
 \UseTblrLibrary{gradbars}
 \end{source}
 The external library is \key{tblrlibgradbars.sty}, installed with the other files
-from \key{sty/}. It loads Heat and the hook/varwidth support on demand.
+from \key{sty/}. It loads Heat, stack, spark, distribution and the hook/varwidth
+support in the preamble.
 Repeated loading is harmless. With only \pkg{tabularray} loaded, the library
 also loads a minimal \pkg{gradbars} core. Ordinary documents have no tabularray dependency.
 
@@ -139,7 +140,7 @@ A & 42\\
 \end{tblr}
 \end{center}}
 \end{source}
-Short tables support all three engines. Repeated tagged longtblr headers require
+Short tables support all three engines. Tagged longtblr with repeated headers or footers requires
 LuaLaTeX: the first logical header is retained and subsequent copies are artifacts.
 The explicit \key{header repeat=describe} mode rebuilds each repeated header
 with fresh marked content beneath its original logical cells. Header callbacks

@@ -2,9 +2,13 @@
 module = "gradbars"
 sourcefiledir = "."
 docfiledir = "docs"
-sourcefiles = {"gradbars.dtx", "gradbars.ins", "sty"}
+sourcefiles = {"gradbars.dtx", "gradbars.ins", "scripts/unpack.lua"}
 installfiles = {"sty/gradbars*.sty", "sty/tblrlibgradbars.sty"}
 unpackfiles = {"gradbars.ins"}
+-- The CTAN mirror may remove the otherwise empty sty/ directory.  Stage the
+-- directory through Lua before docstrip rather than relying on a README marker.
+unpackexe = "texlua"
+unpackopts = "unpack.lua" -- l3build flattens explicitly listed source paths.
 testfiledir = "tests/l3build"
 builddir = "build/l3build"
 checkengines = {"pdftex", "xetex", "luatex"}
@@ -55,6 +59,14 @@ end
 -- Native l3build targets; design reference: OsbertWang/install-latex-guide-zh-cn.
 -- This project-specific implementation remains MIT licensed.
 local release = dofile("scripts/release.lua")
+if not direxists(testfiledir) then
+  function check()
+    print("Development tests are absent; run l3build check in the GitHub checkout.")
+    return 1
+  end
+  target_list.check.func = check
+  target_list.bundlecheck.func = check
+end
 -- GitHub tracks sty/ only; CTAN carries the generated documented sources.
 if fileexists("sty/gradbars.sty") then
   assert(run(".", "texlua scripts/source.lua") == 0, "Cannot generate CTAN sources")
@@ -122,13 +134,16 @@ function copyctan()
   for _, name in ipairs({"LICENSE", "CHANGELOG.md", "gradbars.dtx", "gradbars.ins", "build.lua"}) do
     release.copy(name, target .. "/" .. name)
   end
-  release.copy("sty/README.md", target .. "/sty/README.md")
+  if fileexists("sty/README.md") then
+    release.copy("sty/README.md", target .. "/sty/README.md")
+  end
   if fileexists("README.en.md") then
     release.write(target .. "/README.md", release.ctan_readme("README.en.md"))
   else
     release.copy("README.md", target .. "/README.md")
   end
-  for _, dir in ipairs({"docs", "tests", "scripts"}) do
+  -- Development tests stay in GitHub; CTAN carries rebuildable source/docs.
+  for _, dir in ipairs({"docs", "scripts"}) do
     for _, path in ipairs(release.walk(dir)) do
       if release.allowed(path) then release.copy(path, target .. "/" .. path) end
     end
@@ -141,11 +156,12 @@ function copyctan()
     local file = "docs/layouts/" .. name .. ".pdf"
     release.copy(file, target .. "/" .. file)
   end
+  release.permissions(target)
   return 0
 end
 uploadconfig = {
-  pkg = module, version = version, author = "SuFan", uploader = "SuFan",
-  email = os.getenv("CTAN_EMAIL"), license = "mit",
+  pkg = module, version = version .. " " .. releasedate:gsub("/", "-"), author = "SuFan", uploader = "SuFan",
+  email = os.getenv("CTAN_EMAIL"), license = {"mit", "cc-by-sa-4"},
   summary = "Compact data graphics for LaTeX tables and inline text",
   description = "Bars, comparisons, sparklines, heat cells and distribution summaries with shared scales and native table interfaces.",
   ctanPath = "/graphics/pgf/contrib/gradbars/",
@@ -153,7 +169,8 @@ uploadconfig = {
   home = "https://github.com/Tape5try/gradbars",
   bugtracker = "https://github.com/Tape5try/gradbars/issues",
   announcement = os.getenv("CTAN_ANNOUNCEMENT") or "",
-  note = os.getenv("CTAN_NOTE") or ""
+  note = release.license_note .. ((os.getenv("CTAN_NOTE") or "") ~= ""
+    and "\n\n" .. os.getenv("CTAN_NOTE") or "")
 }
 -- Explicitly enabled only in the CTAN submission job; never auto-upload in doc/ctan.
 ctanupload = os.getenv("GRADBARS_CTAN_UPLOAD") == "1"

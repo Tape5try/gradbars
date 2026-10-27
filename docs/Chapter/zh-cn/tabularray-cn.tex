@@ -131,7 +131,7 @@ A & 42\\
 \end{tblr}
 \end{center}}
 \end{codeonly}
-短表支持三个引擎；带重复表头的标记 longtblr 仅支持 LuaLaTeX，
+短表支持三个引擎；带重复表头或表尾的标记 longtblr 仅支持 LuaLaTeX，
 保留首次逻辑表头，后续视觉副本设为 artifact。
 显式 \key{header repeat=describe} 会逐页重新绘制表头并分配新的标记 ID，
 内容挂在原逻辑单元格下，不增加数据行；表头回调会重新执行，应避免外部副作用。

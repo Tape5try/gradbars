@@ -167,7 +167,9 @@ Invalid options produce a package error and no bar if compilation continues.
 - TikZ-backed commands are not expandable; avoid PDF bookmarks.
 - In an existing `tikzpicture`, bars draw in a local scope at `(0,0)` under the
   surrounding coordinate transformations.
-- This version does not generate accessible tagged chart descriptions.
+- With document tagging enabled, graphics provide automatic or explicit Figure
+  descriptions; `accessibility=artifact|off` retains its documented meaning.
+  See [accessibility.md](accessibility.md) for table structure and tested limits.
 
 ## Engine and documentation workflows
 
@@ -253,6 +255,54 @@ Automatic legends require a width greater than 14pt and use the ordinary `font`.
 Long legend names wrap inside the track width; a single unbreakable word may need a wider width.
 Standalone `\gradbarslegend[options]{names}` uses `stack colors` and `width`;
 share a named style with the bars to ensure matching colors. Legend names must not be empty.
+
+## Horizontal table-header legends (v1.1.1)
+
+These core commands also work with `libraries=none`; the optional `legend`
+library is not required. Both accept ordinary `/gradbars` options.
+
+| Command | Behavior |
+|---|---|
+| `\gradtablelegend[options]{names}` | One horizontal category row at natural width |
+| `\gradtablelegendhead[options]{title}{names}` | Center an ordinary text title above the row, with a 2pt gap |
+
+| `/gradbars` key | Default | Contract |
+|---|---|---|
+| `table legend` | `true` | Boolean; bare key means true; false hides the category row |
+| `legend font` | `\sffamily\scriptsize` | Category-label font |
+| `legend swatch size` | `6pt` | Must be positive |
+| `legend text gap` | `2pt` | Swatch-to-label gap; must be nonnegative |
+| `legend item gap` | `4pt` | Item-to-item gap; must be nonnegative |
+| `legend border color` | `black` | Swatch border color |
+| `legend border width` | `.4pt` | Must be nonnegative |
+
+Table swatches are filled; the graphic `outline` switch does not turn them into
+empty boxes. Set `legend border width=0pt` to remove their frame.
+
+Set these keys in `\gradbarssetup` or per call, with normal TeX grouping and
+left-to-right overrides. They are graphic keys, not native table declaration
+keys. A true switch never inserts a legend automatically: only an explicit
+helper call produces one. With false, `\gradtablelegend` is hidden and
+`\gradtablelegendhead` prints only its title without a reserved legend gap.
+
+```latex
+\gradtablelegendhead[
+  stack colors={gray,teal,blue,orange,red}
+]{Response status}{Pending,Fast,Normal,Slow,Timeout}
+```
+
+Names reuse `\gradbarscategory` mappings, positional `stack colors` fallback
+and print textures. No thresholds or bar colors are inferred. The title helper
+works in an ordinary `tabular` heading, a `\gradcolumn` title, or inside
+`\gradbarshead{...}` to bypass collected numeric cells. It does not insert
+`\multicolumn`. Existing `\gradbarslegend` remains vertical and stack
+`legend=true` is independent of `table legend`.
+
+Automatic/explicit `alt`, `accessibility` and the `category-legend` backend path
+follow the existing category-legend rules, including explicit native fallback
+when required. The ordinary text title remains outside the legend Figure.
+See [table legend examples](legends.md#horizontal-table-header-legends) and the
+[service-response table](examples/service-response-legend.tex).
 
 ## Automatic label layout (v0.0.2)
 
@@ -420,9 +470,10 @@ Heat is a scalar color encoding: bar targets, error whiskers, patterns and thres
 bins are not drawn. `print`/`palette=mono` use a grayscale heat scale. The colored
 rectangle covers content width, leaving normal intercolumn spacing intact.
 
-Run `texlua scripts/check.lua` for the three-engine regression suite, including
+In the GitHub checkout, run `texlua scripts/check.lua` for the three-engine regression suite, including
 range assertions, special CSV characters, missing/constant data, shared spark
 ranges, signed stacks, schema reuse, paginated CSV tables and expected errors.
+The CTAN source archive omits `tests/`; these development checks require the checkout.
 
 ## v0.0.6 summaries, shared scales and table presentation
 
@@ -872,7 +923,7 @@ Custom formatters work with graphic labels and ordinary number columns and rejec
 decimal alignment. The engine adds literal unit/percent suffixes; semantic units
 still require siunitx. Callbacks do not become statistical input. Private commands
 and variables remain outside the contract. See [developer.md](developer.md),
-[migration-v1.0.0.md](migration-v1.0.0.md) and
+[migration-v1.1.0.md](migration-v1.1.0.md) and
 [the contributed library](libraries/gradbars-contrib-demo.sty).
 
 ## Stable version 1 contract
@@ -890,8 +941,10 @@ overrides after the style.
 The generated `gradbars.dtx`/`gradbars.ins` extract all runtime modules using
 docstrip. `texlua scripts/source.lua --check` verifies source consistency.
 The private model module separates validated raw data and normalized positions
-from TikZ drawing. Only the TikZ backend is supplied; its internal backend
-registration is not part of the stable public API.
+from TikZ drawing. Only the TikZ backend is supplied. Schema-1 scalar backend
+registration and read-only callback records are public; private model storage
+is excluded. See [backends.md](backends.md) for the bar/Heat contract and explicit
+fallback requirements for compound graphics and legends.
 
 ## tabularray library and cell interfaces
 
@@ -909,8 +962,9 @@ B & 0 & NA & NA & NA\\
 
 The standard external library file `tblrlibgradbars.sty` lives in `sty/` and
 must be installed alongside the base modules. The adapter is optional, requires
-tabularray 2025C+, loads the native Heat library and tabularray hook/varwidth,
-and supports repeated preamble loading. If gradbars is absent it loads the
+tabularray 2025C+, loads the native heat, stack, spark and distribution libraries
+and tabularray hook/varwidth, and supports repeated preamble loading.
+If gradbars is absent it loads the
 minimal core. It is not an extra name in the native `libraries={...}` option.
 
 | Interface | Meaning |
@@ -955,8 +1009,13 @@ remain native gradtable features.
 Public trial hooks suspend tagging during measurement. Three-engine checks cover
 fixed/X cells, explicit/automatic descriptions, missing values and artifact/off.
 With the basic adapter alone, use text for repeated headers. Explicit table
-structure and graphic-header repeat modes require the opt-in interface below. Graphic alt support does not certify complete tagged table
-structure or PDF/UA conformance.
+structure and graphic-header repeat modes require `\gradtblrtagging`, described
+in [accessibility.md](accessibility.md). Short tagged tables are tested on all
+three engines. Tagged longtblr with repeated headers or footers requires
+LuaLaTeX; both artifact copies and explicitly described repeated headers are
+supported. Nested tagged tables and cross-page spanning cells remain outside
+the verified scope. Structural checks do not certify screen-reader behavior or
+whole-document PDF/UA conformance.
 
 ## v1.1.0 distributions, legends and accessible tables
 

@@ -21,10 +21,10 @@ local ins = {
   '\\newread\\gradbarsDirectoryCheck',
   '\\openin\\gradbarsDirectoryCheck=sty/README.md',
   '\\ifeof\\gradbarsDirectoryCheck',
-  '  \\errmessage{Missing sty/README.md. Run texlua scripts/unpack.lua to create sty/ and extract the modules}',
+  '  \\errmessage{Missing sty/README.md directory marker. Run texlua scripts/unpack.lua to create or repair sty/ and extract the modules}',
   '  \\expandafter\\end',
   '\\fi', '\\closein\\gradbarsDirectoryCheck',
-  '% The source archive supplies sty/README.md so no shell escape is needed.',
+  '% Plain TeX cannot create directories; the Lua entry repairs missing markers.',
   '\\def\\WriteToDir{sty/}', '\\input docstrip.tex',
   '\\keepsilent', '\\askforoverwritefalse', '\\nopreamble', '\\nopostamble', '\\generate{'}
 for _, name in ipairs(names) do

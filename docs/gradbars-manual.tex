@@ -15,7 +15,7 @@
 \tcbuselibrary{listings,skins}
 \usepackage{fancyhdr}
 \usepackage[colorlinks=true,linkcolor=gradbarsBlue,urlcolor=gradbarsTeal,
-  pdftitle={gradbars 宏包手册},pdfauthor={SuFan}]{hyperref}
+  pdftitle={gradbars v1.1.1 宏包手册},pdfauthor={SuFan}]{hyperref}
 \definecolor{manualCode}{HTML}{EEEEFF}
 \definecolor{manualResult}{HTML}{FAFAE6}
 \definecolor{manualLine}{HTML}{DCE3ED}
@@ -36,11 +36,11 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\small\sffamily\color{manualMuted}gradbars\quad 宏包手册}
-\fancyhead[R]{\small\sffamily\color{manualMuted}v1.1.0}
+\fancyhead[R]{\small\sffamily\color{manualMuted}v1.1.1}
 \fancyfoot[L]{\footnotesize\color{manualMuted}效果与源码对照 \enspace / \enspace XeLaTeX}
 \fancyfoot[R]{\small\thepage}
 \renewcommand{\headrulewidth}{.3pt}
-\input{Chapter/zh-cn/code-style}
+\input{Chapter/zh-cn/code-style-cn}
 \newcommand{\note}[1]{\begin{tcolorbox}[colback=gradbarsTrack,colframe=gradbarsTrack,
   boxrule=0pt,arc=0pt,left=3mm,right=3mm,top=2mm,bottom=2mm]
   \small #1\end{tcolorbox}}
@@ -86,11 +86,11 @@
   before upper={\small\setlength{\parskip}{2pt}}
 }
 % Optional partial build after a full build (in the preamble):
-% \includeonly{Chapter/zh-cn/install,Chapter/zh-cn/selection}
+% \includeonly{Chapter/zh-cn/install-cn,Chapter/zh-cn/selection-cn}
 \gradbarsdeclarelibrary{manual-demo}{table}{docs/libraries/gradbars-contrib-demo.sty}
 \usegradbarslibrary{manual-demo}
 \begin{document}
-\input{Chapter/zh-cn/cover}
+\input{Chapter/zh-cn/cover-cn}
 
 \clearpage
 \begingroup
@@ -115,60 +115,67 @@
 全书按入门、图形、外观、专属表格、案例与参考六部分组织。源码中的空行用于区分示例。
 示例框内的效果与源码来自同一段代码，避免两者脱节。\par
 \vspace{3mm}
-适用于 gradbars 1.1.0。示例数据仅用于演示，不代表真实实验结果。\par}
+适用于 gradbars 1.1.1。示例数据仅用于演示，不代表真实实验结果。\par}
+
+\medskip
+\textbf{v1.1.1 维护说明（2026-10-27，开发版尚未正式发布）。}
+本版修复源码提取、归档与文档引用，保留已有接口和默认数据语义。
+新增显式调用的表头组装图例命令，使用 \key{table legend=true|false} 控制图例行显隐。
+连续 Heat 图例在 256 段底色之间带有装饰性半透明白色细纹；与 v1.1.0 相比外观有变化，
+细纹不表示分类或分箱。完整回归使用开发仓库，缺少 tests 的精简源码包仅验证解包与文档构建。
 
 % Chapters, in reading order.
-\include{Chapter/zh-cn/install}
-\include{Chapter/zh-cn/libraries}
-\include{Chapter/zh-cn/extensions}
-\include{Chapter/zh-cn/selection}
-\include{Chapter/zh-cn/values}
-\include{Chapter/zh-cn/styles}
-\include{Chapter/zh-cn/number-format}
-\include{Chapter/zh-cn/signed-bars}
-\include{Chapter/zh-cn/stack}
-\include{Chapter/zh-cn/stack-legend}
-\include{Chapter/zh-cn/compare}
-\include{Chapter/zh-cn/dumbbell}
-\include{Chapter/zh-cn/change}
-\include{Chapter/zh-cn/spark}
-\include{Chapter/zh-cn/distribution}
-\include{Chapter/zh-cn/references}
-\include{Chapter/zh-cn/heat}
-\include{Chapter/zh-cn/legends}
-\include{Chapter/zh-cn/themes}
-\include{Chapter/zh-cn/labels}
-\include{Chapter/zh-cn/collision}
-\include{Chapter/zh-cn/rounded-targets}
-\include{Chapter/zh-cn/overflow}
-\include{Chapter/zh-cn/conditional-colors}
-\include{Chapter/zh-cn/quality}
-\include{Chapter/zh-cn/categories}
-\include{Chapter/zh-cn/patterns}
-\include{Chapter/zh-cn/presets}
-\include{Chapter/zh-cn/table}
-\include{Chapter/zh-cn/table-graphics}
-\include{Chapter/zh-cn/table-alignment}
-\include{Chapter/zh-cn/column-scales}
-\include{Chapter/zh-cn/table-width}
-\include{Chapter/zh-cn/headers}
-\include{Chapter/zh-cn/groups}
-\include{Chapter/zh-cn/summaries}
-\include{Chapter/zh-cn/table-themes}
-\include{Chapter/zh-cn/table-definitions}
-\include{Chapter/zh-cn/reports}
-\include{Chapter/zh-cn/longtable}
-\include{Chapter/zh-cn/tabularray}
-\include{Chapter/zh-cn/csv}
-\include{Chapter/zh-cn/research-numbers}
-\include{Chapter/zh-cn/example-models}
-\include{Chapter/zh-cn/example-overview}
-\include{Chapter/zh-cn/example-palettes}
-\include{Chapter/zh-cn/example-comparisons}
-\include{Chapter/zh-cn/example-contributions}
-\include{Chapter/zh-cn/example-trends}
-\include{Chapter/zh-cn/layouts}
-\include{Chapter/zh-cn/faq}
-\include{Chapter/zh-cn/reference}
+\include{Chapter/zh-cn/install-cn}
+\include{Chapter/zh-cn/libraries-cn}
+\include{Chapter/zh-cn/extensions-cn}
+\include{Chapter/zh-cn/selection-cn}
+\include{Chapter/zh-cn/values-cn}
+\include{Chapter/zh-cn/styles-cn}
+\include{Chapter/zh-cn/number-format-cn}
+\include{Chapter/zh-cn/signed-bars-cn}
+\include{Chapter/zh-cn/stack-cn}
+\include{Chapter/zh-cn/stack-legend-cn}
+\include{Chapter/zh-cn/compare-cn}
+\include{Chapter/zh-cn/dumbbell-cn}
+\include{Chapter/zh-cn/change-cn}
+\include{Chapter/zh-cn/spark-cn}
+\include{Chapter/zh-cn/distribution-cn}
+\include{Chapter/zh-cn/references-cn}
+\include{Chapter/zh-cn/heat-cn}
+\include{Chapter/zh-cn/legends-cn}
+\include{Chapter/zh-cn/themes-cn}
+\include{Chapter/zh-cn/labels-cn}
+\include{Chapter/zh-cn/collision-cn}
+\include{Chapter/zh-cn/rounded-targets-cn}
+\include{Chapter/zh-cn/overflow-cn}
+\include{Chapter/zh-cn/conditional-colors-cn}
+\include{Chapter/zh-cn/quality-cn}
+\include{Chapter/zh-cn/categories-cn}
+\include{Chapter/zh-cn/patterns-cn}
+\include{Chapter/zh-cn/presets-cn}
+\include{Chapter/zh-cn/table-cn}
+\include{Chapter/zh-cn/table-graphics-cn}
+\include{Chapter/zh-cn/table-alignment-cn}
+\include{Chapter/zh-cn/column-scales-cn}
+\include{Chapter/zh-cn/table-width-cn}
+\include{Chapter/zh-cn/headers-cn}
+\include{Chapter/zh-cn/groups-cn}
+\include{Chapter/zh-cn/summaries-cn}
+\include{Chapter/zh-cn/table-themes-cn}
+\include{Chapter/zh-cn/table-definitions-cn}
+\include{Chapter/zh-cn/reports-cn}
+\include{Chapter/zh-cn/longtable-cn}
+\include{Chapter/zh-cn/tabularray-cn}
+\include{Chapter/zh-cn/csv-cn}
+\include{Chapter/zh-cn/research-numbers-cn}
+\include{Chapter/zh-cn/example-models-cn}
+\include{Chapter/zh-cn/example-overview-cn}
+\include{Chapter/zh-cn/example-palettes-cn}
+\include{Chapter/zh-cn/example-comparisons-cn}
+\include{Chapter/zh-cn/example-contributions-cn}
+\include{Chapter/zh-cn/example-trends-cn}
+\include{Chapter/zh-cn/layouts-cn}
+\include{Chapter/zh-cn/faq-cn}
+\include{Chapter/zh-cn/reference-cn}
 
 \end{document}

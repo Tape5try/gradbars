@@ -1,0 +1,60 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage[libraries=none]{gradbars}
+\usegradbarslibrary{stack}
+\setlength{\parindent}{0pt}
+\newsavebox{\legendA}\newsavebox{\legendB}
+\newcommand\unreadLegendNames{\errmessage{Hidden legend read its names}}
+\newcommand\assertEmptyLegend{%
+  \ifdim\wd\legendB=0pt\else\errmessage{Hidden legend has width}\fi
+  \ifdim\ht\legendB=0pt\else\errmessage{Hidden legend has height}\fi
+  \ifdim\dp\legendB=0pt\else\errmessage{Hidden legend has depth}\fi}
+\gradbarscategory{Low}{teal}{diagonal}
+\gradbarscategory{High}{red}{dots}
+\begin{document}
+\sbox{\legendA}{\gradtablelegend{Low,High}}
+\sbox{\legendB}{\gradtablelegend[legend item gap=10pt]{Low,High}}
+\ifdim\dimexpr\wd\legendB-\wd\legendA\relax=6pt\else
+  \errmessage{Legend item gap does not control natural width}\fi
+\sbox{\legendB}{\gradtablelegend[legend text gap=8pt]{Low,High}}
+\ifdim\dimexpr\wd\legendB-\wd\legendA\relax=12pt\else
+  \errmessage{Legend text gap does not apply to every item}\fi
+\sbox{\legendB}{\gradtablelegend[legend swatch size=12pt]{Low,High}}
+\ifdim\dimexpr\wd\legendB-\wd\legendA\relax=12pt\else
+  \errmessage{Legend swatch size does not apply to every item}\fi
+\sbox{\legendA}{\gradtablelegend[width=20mm]{Low,High}}
+\sbox{\legendB}{\gradtablelegend[width=120mm]{Low,High}}
+\ifdim\wd\legendA=\wd\legendB\else\errmessage{Legend is not naturally sized}\fi
+\sbox{\legendB}{\gradtablelegend[legend font=\Large\sffamily]{Low,High}}
+\ifdim\wd\legendB>\wd\legendA\else\errmessage{Legend font override was ignored}\fi
+{\gradbarssetup{table legend=false}
+ \sbox{\legendB}{\gradtablelegend{\unreadLegendNames}}\assertEmptyLegend
+ \sbox{\legendB}{\gradtablelegend[table legend]{Low,High}}
+ \ifdim\wd\legendB>0pt\else\errmessage{Bare table legend did not enable display}\fi
+ \sbox{\legendA}{Title}
+ \sbox{\legendB}{\gradtablelegendhead{Title}{\unreadLegendNames}}
+ \ifdim\wd\legendA=\wd\legendB\else\errmessage{Hidden header changed title width}\fi
+ \ifdim\ht\legendA=\ht\legendB\else\errmessage{Hidden header left vertical spacing}\fi
+ \ifdim\dp\legendA=\dp\legendB\else\errmessage{Hidden header changed title depth}\fi
+ \sbox{\legendB}{\gradbarslegend[width=30mm]{Low,High}}
+ \ifdim\wd\legendB>0pt\else\errmessage{Table legend switch hid legacy legend}\fi
+ \gradstack[width=40mm,stack names={Low,High},legend=true]{20,30}\par\medskip}
+\sbox{\legendB}{\gradtablelegend{Low,High}}
+\ifdim\wd\legendB>0pt\else\errmessage{Table legend switch leaked out of group}\fi
+\sbox{\legendB}{\gradtablelegend[table legend=false]{\unreadLegendNames}}\assertEmptyLegend
+\sbox{\legendB}{\gradtablelegend{Low,High}}
+\ifdim\wd\legendB>0pt\else\errmessage{Local table legend option leaked}\fi
+
+\begin{tabular}{lcc}
+Method & \multicolumn{2}{c}{\gradtablelegendhead{Grouped metrics}{Low,High}}\\
+A & 42 & 73\\
+B & 61 & 82\\
+\end{tabular}\par\bigskip
+\gradtablelegend[legend font=\sffamily\small,legend swatch size=8pt,
+  legend text gap=3pt,legend item gap=8pt,
+  legend border color=purple,legend border width=1pt]{High,Low,Unregistered}\par\medskip
+\gradtablelegend[outline=true]{Low,High}\par\medskip
+\gradtablelegend[print]{Low,High,Unregistered}\par\medskip
+\gradtablelegend[legend text gap=0pt,legend item gap=0pt,legend border width=0pt]{Low,High}\par\medskip
+\gradbarslegend[width=40mm]{Low,High}
+\end{document}

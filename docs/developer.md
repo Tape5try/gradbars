@@ -1,4 +1,4 @@
-# Developing gradbars v1.1.0
+# Developing gradbars v1.1.1
 
 This release freezes the documented extension interfaces under the
 [version 1 stability contract](stability.md). Private
@@ -14,7 +14,7 @@ files. The contributed example remains in `docs/libraries/`.
 | File | Responsibility |
 | --- | --- |
 | gradbars.sty | Package options and default library selection |
-| gradbars-core.sty | Scoped defaults, numeric/geometry orchestration, common scalar and comparison frontends |
+| gradbars-core.sty | Scoped defaults, numeric/geometry orchestration, common scalar/comparison frontends and opt-in assembled table-header legends |
 | gradbars-keys.sty | Basic `/gradbars` pgfkeys family; feature keys live with their implementation |
 | gradbars-numbers.sty | Shared decimal/scientific validation, numeric formatting and units |
 | gradbars-model.sty | Validated input, normalized model and coordinate projection |
@@ -105,8 +105,13 @@ columns; their output is opaque and cannot use `number align=decimal`. Semantic
 
 ## Build and validation
 
+Run the complete development checks from a GitHub checkout, which includes
+`tests/`:
+
 ```sh
 l3build check
+texlua tests/maintenance.lua
+texlua scripts/docs-check.lua
 texlua scripts/check.lua
 l3build doc
 l3build ctan
@@ -124,6 +129,10 @@ layout PDFs. `l3build ctan` uses the native target, runs the l3build tests, buil
 documentation and produces `gradbars-ctan.zip`. Run
 `texlua scripts/release.lua --verify` and `texlua scripts/install-check.lua` to
 inspect that ZIP and compile after source extraction in a clean directory.
+The CTAN source archive omits `tests/`, so `l3build check`, `scripts/check.lua`
+and `scripts/pdf-check.lua` there do not provide the full development regression
+suite. Use `l3build unpack` and `l3build doc` to extract and rebuild the supplied
+source package; use the GitHub checkout for the full checks.
 No Python files or generated runtime modules enter the CTAN source ZIP.
 PDFs and archives are ignored by Git and published through Release/CI artifacts.
 See [upload and release configuration](#release-configuration).
@@ -179,12 +188,14 @@ CSV selection, ranking or aggregates for tblr.
 `gradbars.dtx`/`gradbars.ins` are generated from `sty/` by
 `texlua scripts/source.lua`. Use `--check` to reject drift and verify
 docstrip extraction of every module. The l3doc driver builds a source guide;
-the manuals continue using bilingual chapter sources. Plain
-`tex gradbars.ins` writes the 22 modules into `sty/`. Source archives
-include `sty/README.md` to preserve that directory without shell escape.
-The l3build unpack stage retains this layout and stages the extracted modules
-for checks and typesetting. Isolated installation checks reject root `.sty` files.
-Run
+the manuals continue using bilingual chapter sources. From the source-package
+root, `texlua scripts/unpack.lua` creates `sty/` if needed and extracts all 22
+modules without shell escape. Plain `tex gradbars.ins` also writes there, but
+requires both an existing `sty/` directory and its readable `sty/README.md`
+marker. If either is missing, use the Lua entry above; creating the directory
+alone is insufficient. The l3build unpack stage creates this layout and stages
+the extracted modules for checks and typesetting. Isolated installation checks
+cover a missing `sty/` and reject root `.sty` files. In the GitHub checkout, run
 `texlua scripts/pdf-check.lua` with TeX Live pdfe to inspect
 actual PDF Figure descriptions and check measurement suppression in all engines.
 
@@ -202,8 +213,10 @@ The GitHub source tree does not track UPLOAD-RESTRICTIONS.md, README.ctan.md,
 gradbars.dtx or gradbars.ins. The first two are local maintainer files;
 l3build and CI generate the documented sources from the tracked sty/ modules.
 The CTAN README is derived from README.en.md and receives source-installation
-instructions. Clean GitHub checkouts and extracted CTAN source packages both
-support l3build check/doc/ctan without the local maintainer files.
+instructions. Clean GitHub checkouts support l3build check/doc/ctan without the
+local maintainer files. CTAN source packages support extraction and documentation
+rebuilds without those files; full regression checks require the GitHub `tests/`
+directory.
 
 Branch pushes and pull requests run tests and create CI artifacts. A stable
 vVERSION tag matching finalized metadata publishes the verified ZIP and PDFs to

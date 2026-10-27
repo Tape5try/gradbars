@@ -2,11 +2,11 @@
 
 **在 LaTeX 正文和表格中呈现数值、比较、组成与趋势。**
 
-**v1.1.0 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
+**v1.1.1 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
 
-正式版本，发布于 2026-10-25。新增箱线图、分布摘要、共享图例、色觉友好配色与可选表格结构标记。
+开发版更新于 2026-10-27，尚未发布 v1.1.1 正式版本。修复源码提取、归档检查和文档一致性，并新增显式启用的表头组装图例；保留已有接口与默认数据语义。下方下载链接仍指向已发布的 v1.1.0。
 
-[English](README.en.md) · [中文手册](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-v1.1.0.pdf) · [英文手册](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-en-v1.1.0.pdf) · [CTAN](https://ctan.org/pkg/gradbars)
+[English](README.en.md) · [已发布中文手册（v1.1.0）](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-v1.1.0.pdf) · [已发布英文手册（v1.1.0）](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-en-v1.1.0.pdf) · [CTAN](https://ctan.org/pkg/gradbars)
 
 ![gradbars：数据条、堆叠、趋势与色阶表格](docs/images/overview-v1.1.0.svg)
 
@@ -22,7 +22,7 @@ gradbars 基于 PGF/TikZ，既可将单个图形嵌入现有 `tabular`，也可�
 
 ## 效果展示
 
-以下图片均由当前宏包实际编译生成，使用演示数据。图形保留数值标签，可直接嵌入正文或表格；点击图片可查看大图。
+以下图片由宏包示例实际编译生成，使用演示数据。图形保留数值标签，可直接嵌入正文或表格；点击图片可查看大图。
 
 ### 内嵌图形：数值、比较、组成与趋势
 
@@ -53,6 +53,14 @@ gradbars 基于 PGF/TikZ，既可将单个图形嵌入现有 `tabular`，也可�
 例如 `heat palette=purple-teal` 自动设置紫—白—青的发散配色，不必逐一指定两端和中心颜色。单元格与图例可通过命名组共享尺度和颜色，使用 `legend missing=false` 可隐藏图例中的缺失项。
 
 [共享图例接口](docs/legends.md) · [上述四张展示图的完整源码与重建命令](docs/images/readme-gallery.tex)
+
+### 服务响应时间与状态图例（v1.1.1）
+
+![服务响应时间表：表头横向展示待测、快速、正常、偏慢、超时五项图例，数据条共用 0–1000 ms 尺度](docs/images/service-response-legend-v1.1.1.png)
+
+这是 `service-response-legend-v1.1.1` 的实际编译效果。`\gradtablelegendhead` 将标题与横向色块图例组合为表头；`table legend=false` 可隐藏图例行并保留标题。示例逐行指定状态颜色，未测数据使用 `NA`。
+
+[完整示例源码](docs/examples/service-response-legend.tex) · [图片重建方法](docs/images/service-response-legend.md)
 
 ## 安装
 
@@ -102,7 +110,7 @@ TeX Live 仓库中的版本可能晚于 CTAN 或仓库开发版，请核对安�
 
 ## 按需加载
 
-默认 `\usepackage{gradbars}` 加载全部功能。也可显式选择库：
+默认 `\usepackage{gradbars}` 加载 `stack,spark,heat,csv,table` 五个功能库；`distribution,legend,reports` 按需加载。也可显式选择库：
 
 ```latex
 \usepackage[libraries={stack,spark,heat,csv,table}]{gradbars}
@@ -139,6 +147,17 @@ Beta & & 0.750\\
 
 星号接口提供格内居中标签；空白保持空白，`NA` 表示缺失。无需手写 `collectcell`。详见[普通表格说明](docs/tabular-columns.md)及[完整示例](docs/examples/precision-recall.tex)。
 
+表头下的横向类别图例可直接使用内置命令，不再手写色块宏或嵌套表格：
+
+```latex
+\gradbarssetup{table legend=true} % false 隐藏图例行，保留标题
+\gradtablelegendhead[
+  stack colors={gray,teal,blue,orange,red}
+]{响应状态}{待测,快速,正常,偏慢,超时}
+```
+
+仅需色块行时用 `\gradtablelegend[选项]{名称列表}`。两个命令都随 core 提供，无需加载 `legend` 库；颜色说明由用户声明，不会自动改变数据条颜色。[完整服务响应时间表](docs/examples/service-response-legend.tex)与[图例配置](docs/legends.md)。
+
 ## tabularray 集成
 
 需要 tabularray 2025C（2025-11-27）或更新版本，在导言区加载：
@@ -168,15 +187,17 @@ Beta & & 0.750\\
 
 - [中文主文件](docs/gradbars-manual.tex)与[中文章节](docs/Chapter/zh-cn/README.md)。
 - [英文主文件](docs/gradbars-manual-en.tex)与[英文章节](docs/Chapter/en/README.md)。
-- [API 参考](docs/api.md)、[开发者指南](docs/developer.md)和[迁移指南](docs/migration-v1.0.0.md)。
+- [API 参考](docs/api.md)、[开发者指南](docs/developer.md)、[v1.1.1 维护说明](docs/migration-v1.1.1.md)和[v1.1.0 迁移指南](docs/migration-v1.1.0.md)。
 - [稳定接口契约](docs/stability.md)：公开接口范围、覆盖顺序、兼容性和弃用约定。
-- [源码说明](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-source-v1.1.0.pdf)：l3doc 文档与 docstrip 源码流程。
+- [已发布源码说明（v1.1.0）](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-source-v1.1.0.pdf)：l3doc 文档与 docstrip 源码流程；当前版本可本地构建。
 - [变更记录](CHANGELOG.md)：版本新增、修复与兼容性变化。
 
 运行模块集中在 `sty/`，第三方库示例位于 `docs/libraries/`。从仓库根目录执行：
 
 ```sh
 l3build check
+texlua tests/maintenance.lua
+texlua scripts/docs-check.lua
 texlua scripts/check.lua
 texlua scripts/source.lua --check
 l3build doc
@@ -194,6 +215,7 @@ l3build doc
 
 通过 [GitHub Issues](https://github.com/Tape5try/gradbars/issues) 报告问题，请附最小 `.tex` 示例、编译引擎、宏包版本和相关日志。
 
-作者与维护者：SuFan（GitHub：Tape5try）。采用 [MIT 许可证](LICENSE)。
+作者与维护者：SuFan（GitHub：Tape5try）。宏包与原创源码采用 [MIT 许可证](LICENSE)。
+[Precision/Recall 示例](docs/examples/precision-recall.tex) 含署名的 CC BY-SA 4.0 改编内容，许可范围见该文件开头；不将此例外扩展到宏包运行时。
 
 [分布统计](docs/distributions.md) · [共享图例](docs/legends.md) · [无障碍支持范围](docs/accessibility.md)

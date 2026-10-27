@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.1.1 — 2026-10-27
+
+Development snapshot; no v1.1.1 release has been published.
+
+- Preserve all public interfaces, the five-library default load list and existing numeric, missing-value, ranking and aggregation semantics. Synchronize all 22 runtime module versions.
+- Add the explicitly requested opt-in `\gradtablelegend` horizontal category row and `\gradtablelegendhead` title/legend assembly. The scoped `table legend` switch hides the row without leaving a gap below the title; colors, typography, swatches, spacing and borders are configurable. Reuse category mappings, print patterns, alternative text and explicit backend fallback; retain older vertical and automatic stack legends.
+- Make source extraction and l3build unpacking work when the CTAN source archive no longer contains `sty/` or its README marker. Keep direct plain-TeX extraction diagnostics explicit when the output directory is unavailable.
+- Separate the development regression suite from source packages that omit `tests/`; do not report an empty package check as a successful regression run.
+- Preserve source timestamps, normalize CTAN archive permissions, reject unwanted paths, repeated filenames and duplicate contents, and record the MIT package / CC BY-SA 4.0 adapted-example license scopes in upload metadata.
+- Keep the existing bilingual chapter suffixes and starter-checker rename, repair stale migration links, and correct the documented tagging/backend support boundaries. Add maintenance and documentation-reference checks.
+- Continuous Heat legends retain the current worktree's decorative semitransparent white separators between 256 sampled color strips, in both orientations and print mode. This changes the visible ramp texture compared with v1.1.0; the underlying Heat interpolation, scale, ticks and alternative text remain unchanged. The separators are not category or bin boundaries.
+
 ## 1.1.0 — 2026-10-25
 
 - Add the opt-in reports library with correlation, ablation and metrics presets and column recipes. Preserve raw numeric meanings and explicit metric directions.

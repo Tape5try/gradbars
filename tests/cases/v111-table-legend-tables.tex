@@ -1,0 +1,30 @@
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars,longtable}
+\setlength{\parindent}{0pt}
+\gradbarscolumn*{G}{width=40mm,min=0,max=100,precision=0}
+\gradbarscategory{Low}{teal}{diagonal}
+\gradbarscategory{High}{red}{dots}
+\begin{document}
+\begin{tabular}{lG}
+Method & \gradbarshead{\gradtablelegendhead{Collected score}{Low,High}}\\
+A & 42\\
+B & 73\\
+\end{tabular}\par\bigskip
+
+\begin{gradtable}[width=110mm]
+\gradcolumn{method}{Method}
+\gradcolumn[type=bar,width=70mm]{score}{\gradtablelegendhead{Native score}{Low,High}}
+\gradrow{A,42}
+\gradrow{B,73}
+\end{gradtable}\par\bigskip
+
+\begin{longtable}{lG}
+Method & \gradbarshead{\gradtablelegendhead{Longtable score}{Low,High}}\\
+\endfirsthead
+Method & \gradbarshead{\gradtablelegendhead{Longtable score}{Low,High}}\\
+\endhead
+A & 42\\
+B & 73\\
+\end{longtable}
+\end{document}

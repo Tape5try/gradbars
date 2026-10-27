@@ -16,5 +16,38 @@
 \setbox0=\hbox{\gradbar{72.125}}
 \TIMO
 \TYPE{basic graphic rendered}
+\OMIT
+\setbox0=\hbox{\gradtablelegend{A,B}}
+\TIMO
+\ifdim\wd0>0pt\TYPE{table legend=visible}\else\TYPE{table legend=empty}\fi
+\OMIT
+\ExplSyntaxOn
+\int_new:N\g_test_legend_backend_int
+\cs_new_eq:NN\savedLegendBackend\__gradbars_backend_draw:nn
+\cs_set_protected:Npn\__gradbars_backend_draw:nn #1#2
+  {\int_gincr:N\g_test_legend_backend_int\savedLegendBackend{#1}{#2}}
+\ExplSyntaxOff
+{\gradbarssetup{table legend=false}
+ \setbox0=\hbox{\gradtablelegend{\errmessage{Hidden names were read}}}
+ \ifdim\wd0=0pt\else\errmessage{Hidden legend has width}\fi
+ \ifdim\ht0=0pt\else\errmessage{Hidden legend has height}\fi
+ \ifdim\dp0=0pt\else\errmessage{Hidden legend has depth}\fi
+ \setbox2=\hbox{Title}
+ \setbox0=\hbox{\gradtablelegendhead{Title}{\errmessage{Hidden header names were read}}}
+ \ifdim\wd0=\wd2\else\errmessage{Hidden header changed title width}\fi
+ \ifdim\ht0=\ht2\else\errmessage{Hidden header left spacing}\fi
+ \ifdim\dp0=\dp2\else\errmessage{Hidden header changed title depth}\fi}
+\TIMO
+\ExplSyntaxOn
+\TYPE{hidden~legend~backend~callbacks=\int_use:N\g_test_legend_backend_int}
+\cs_set_eq:NN\__gradbars_backend_draw:nn\savedLegendBackend
+\ExplSyntaxOff
+\TYPE{hidden legend dimensions=zero; header=title only}
+\OMIT
+\setbox0=\hbox{\gradtablelegend{A,B}}
+\TIMO
+\ifdim\wd0>0pt\TYPE{table legend scope=local}\else\TYPE{table legend scope=leaked}\fi
+\gradbarsiflibraryloaded{legend}{\TYPE{legend library=loaded}}{\TYPE{legend library=absent}}
+\gradbarsiflibraryloaded{table}{\TYPE{table after legend=loaded}}{\TYPE{table after legend=absent}}
 \END
 \end{document}

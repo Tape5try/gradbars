@@ -1,0 +1,20 @@
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage[libraries=none]{gradbars}
+\setlength{\parindent}{0pt}
+\newcommand\unreadLegendNames{\errmessage{Hidden legend read its names}}
+\gradbarscategory{Low}{teal}{diagonal}
+\gradbarscategory{High}{red}{dots}
+\begin{document}
+\begin{tabular}{lc}
+Method & \gradtablelegendhead{Grouped metrics}{Low,High}\\
+A & 42\\
+\end{tabular}\par\bigskip
+\gradtablelegend[alt={Explicit categories.}]{Low,High}\par\medskip
+\gradtablelegend[accessibility=artifact]{ArtifactLow,ArtifactHigh}\par\medskip
+\gradtablelegend[accessibility=off]{OffLow,OffHigh}\par\medskip
+\gradtablelegend[table legend=false]{\unreadLegendNames}
+{\gradbarssetup{table legend=false}
+ \gradtablelegendhead{Hidden legend title}{\unreadLegendNames}}
+\end{document}

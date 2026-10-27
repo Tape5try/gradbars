@@ -9,7 +9,7 @@ local root=nil
 if arg[1]=='--gradbars-root' then
   assert(arg[2],'Missing checkout path');assert(lfs.chdir(arg[2]));root=lfs.currentdir();assert(lfs.chdir(original))
   assert(lfs.attributes(root..'/sty/gradbars.sty'),'Development root must contain sty/gradbars.sty')
-elseif arg[1] then error('Usage: texlua check.lua [--gradbars-root CHECKOUT]') end
+elseif arg[1] then error('Usage: texlua check-starter.lua [--gradbars-root CHECKOUT]') end
 local work=os.tmpname();os.remove(work);assert(lfs.mkdir(work))
 local sep=os.type=='windows' and ';' or ':'
 assert(os.setenv, 'This checker requires the TeX Live texlua runtime')

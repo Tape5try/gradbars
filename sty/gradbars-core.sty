@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Internal implementation unless documented.
-\ProvidesPackage{gradbars-core}[2026/10/25 v1.1.0 gradbars core]
+\ProvidesPackage{gradbars-core}[2026/10/27 v1.1.1 gradbars core]
 \RequirePackage{tikz}
 \RequirePackage{xparse}
 \RequirePackage{expl3}
@@ -818,6 +818,70 @@
        \prop_get:NVNT \l__gradbars_category_patterns_prop \l_tmpa_tl \l_tmpb_tl
          {\tl_set_eq:NN \l__gradbars_pattern_tl \l_tmpb_tl}}
   }
+% Opt-in assembled category rows for ordinary and native table headers.
+% Keep the older vertical/automatic legends on their original rendering path.
+\newif\ifgradbars@tablelegend
+\gradbars@tablelegendtrue
+\def\gradbars@legendfont{\sffamily\scriptsize}
+\def\gradbars@legendswatchsize{6pt}
+\def\gradbars@legendtextgap{2pt}
+\def\gradbars@legenditemgap{4pt}
+\def\gradbars@legendbordercolor{black}
+\def\gradbars@legendborderwidth{.4pt}
+\pgfkeys{/gradbars,
+  table~legend/.is~if=gradbars@tablelegend,table~legend/.default=true,
+  legend~font/.store~in=\gradbars@legendfont,
+  legend~swatch~size/.store~in=\gradbars@legendswatchsize,
+  legend~text~gap/.store~in=\gradbars@legendtextgap,
+  legend~item~gap/.store~in=\gradbars@legenditemgap,
+  legend~border~color/.store~in=\gradbars@legendbordercolor,
+  legend~border~width/.store~in=\gradbars@legendborderwidth}
+\dim_new:N\l__gradbars_legend_swatch_dim
+\dim_new:N\l__gradbars_legend_text_gap_dim
+\dim_new:N\l__gradbars_legend_item_gap_dim
+\dim_new:N\l__gradbars_legend_border_dim
+\cs_new_protected:Npn\__gradbars_table_legend:n #1
+  {\group_begin:
+   \gradbars@validtrue
+   \gradbars@legendfont
+   \clist_set:Nn\l__gradbars_names_clist{#1}
+   \clist_set:No\l__gradbars_stackcolors_clist{\gradbars@stackcolors}
+   \clist_if_empty:NT\l__gradbars_names_clist
+     {\gradbarsFail{Legend~names~must~not~be~empty}}
+   \clist_if_empty:NT\l__gradbars_stackcolors_clist
+     {\gradbarsFail{Stack~colors~must~not~be~empty}}
+   \gradbarsValidatePatterns
+   \dim_set:Nn\l__gradbars_legend_swatch_dim{\gradbars@legendswatchsize}
+   \dim_set:Nn\l__gradbars_legend_text_gap_dim{\gradbars@legendtextgap}
+   \dim_set:Nn\l__gradbars_legend_item_gap_dim{\gradbars@legenditemgap}
+   \dim_set:Nn\l__gradbars_legend_border_dim{\gradbars@legendborderwidth}
+   \dim_compare:nNnF{\l__gradbars_legend_swatch_dim}>{0pt}
+     {\gradbarsFail{Legend~swatch~size~must~be~positive}}
+   \dim_compare:nNnT{\l__gradbars_legend_text_gap_dim}<{0pt}
+     {\gradbarsFail{Legend~gaps~must~be~nonnegative}}
+   \dim_compare:nNnT{\l__gradbars_legend_item_gap_dim}<{0pt}
+     {\gradbarsFail{Legend~gaps~must~be~nonnegative}}
+   \dim_compare:nNnT{\l__gradbars_legend_border_dim}<{0pt}
+     {\gradbarsFail{Legend~border~width~must~be~nonnegative}}
+   \ifgradbars@valid
+     \__gradbars_backend_draw:nn{category-legend}
+       {\ifpgfpicture\gradbarsDrawTableLegend
+        \else\gradbarsPrepareLegendAlt
+          \leavevmode\tikz[baseline=0pt]{\gradbarsDrawTableLegend}\fi}
+   \fi
+   \group_end:}
+\DeclareDocumentCommand\gradtablelegend{O{} m}
+  {\group_begin:\gradbarsCaptureTikzAlt\gradbars@capturealttrue
+   \gradbarssetup{#1}\gradbars@capturealtfalse
+   \ifgradbars@tablelegend\__gradbars_table_legend:n{#2}\fi
+   \group_end:}
+\DeclareDocumentCommand\gradtablelegendhead{O{} m m}
+  {\group_begin:\gradbarsCaptureTikzAlt\gradbars@capturealttrue
+   \gradbarssetup{#1}\gradbars@capturealtfalse
+   \ifgradbars@tablelegend
+     \shortstack[c]{#2\\[2pt]\__gradbars_table_legend:n{#3}}
+   \else #2\fi
+   \group_end:}
 \fp_new:N \l__gradbars_distance_fp
 \clist_new:N \l__gradbars_quality_clist
 \cs_new_protected:Npn \gradbarsQuality

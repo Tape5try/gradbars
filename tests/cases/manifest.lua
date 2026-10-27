@@ -215,5 +215,10 @@ return {
   {name="v110-tagged-repeat", source="v110-tagged-repeat.tex", error=false, passes=2, overfull=0, warnings=0, engines={lualatex=true}},
   {name="v110-tagging-disabled", source="v110-tagging-disabled.tex", error="Table tagging requires", passes=1, overfull=0, warnings=0, engines={pdflatex=true,xelatex=true,lualatex=true}},
   {name="v110-units", source="v110-units.tex", error=false, passes=1, overfull=0, warnings=0, engines={pdflatex=true,xelatex=true,lualatex=true}},
+  {name="v111-table-legend", source="v111-table-legend.tex", error=false, passes=1, overfull=0, warnings=0, engines={pdflatex=true,xelatex=true,lualatex=true}},
+  {name="v111-table-legend-gap", source="v111-table-legend-gap.tex", error="Legend gaps must be nonnegative", passes=1, overfull=0, warnings=0, engines={pdflatex=true,xelatex=true,lualatex=true}},
+  {name="v111-table-legend-swatch", source="v111-table-legend-swatch.tex", error="Legend swatch size must be positive", passes=1, overfull=0, warnings=0, engines={pdflatex=true,xelatex=true,lualatex=true}},
+  {name="v111-table-legend-tagged", source="v111-table-legend-tagged.tex", error=false, passes=2, overfull=0, warnings=0, engines={pdflatex=true,xelatex=true,lualatex=true}},
+  {name="v111-table-legend-tables", source="v111-table-legend-tables.tex", error=false, passes=2, overfull=0, warnings=0, engines={pdflatex=true,xelatex=true,lualatex=true}},
   {name="winloss-percent", source="winloss-percent.tex", error="Win-loss does not support percent", passes=1, overfull=0, warnings=0, engines={pdflatex=true,xelatex=true,lualatex=true}},
 }

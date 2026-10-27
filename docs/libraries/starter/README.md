@@ -1,8 +1,8 @@
 # Third-party library starter
 
 Copy this directory, rename the file/package/library and all `starter-*` names,
-and edit the callback bodies. The starter is [MIT-licensed](LICENSE.md); retain its license
-notice and add your authorship/version information to your derived library.
+and edit the callback bodies. The starter is [MIT-licensed](../../../LICENSE); include the full MIT notice from the project-root LICENSE when copying this
+template, and add your authorship/version information to your derived library.
 
 Load a locally installed or development gradbars 1.1.0 or newer, then register:
 
@@ -28,7 +28,7 @@ tagging. It supplies no second drawing implementation.
 Run, from this directory or anywhere:
 
 ```sh
-texlua check.lua --gradbars-root /absolute/path/to/gradbars
+texlua check-starter.lua --gradbars-root /absolute/path/to/gradbars
 ```
 
 Omit `--gradbars-root` when testing a user-installed release. The checker uses

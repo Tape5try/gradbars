@@ -1,4 +1,48 @@
-\section{连续色阶、共享图例与参考标记}
+\section{表头类别图例、连续色阶与共享图例}
+\subsection{横向类别图例与组合表头}
+\key{\gradtablelegend[选项]{名称列表}} 按自然宽度横向排列类别色块与文字；
+\key{\gradtablelegendhead[选项]{标题}{名称列表}} 在其上方居中放置普通文本标题，间隔 2pt。
+两者均属于核心，\key{libraries=none} 即可使用，无需加载 \key{legend} 库。
+它们只在显式调用时显示，不会自动插入其他图形或表格。
+\begin{example}[text and listing,sidebyside=false]{服务响应时间：标题与五项状态图例}
+\begingroup
+\gradbarssetup{stack colors={gray,teal,blue,
+  orange,red}}
+\begin{center}
+\begin{tabular}{lc}
+服务 & \gradtablelegendhead{响应状态}{待测,快速,正常,偏慢,超时}\\
+\hline
+查询 & \gradbar[max=1000,width=42mm,color=teal,precision=0,unit={ ms}]{120}\\
+导出 & \gradbar[max=1000,width=42mm,color=blue,precision=0,unit={ ms}]{420}\\
+\end{tabular}
+\par\medskip
+\gradtablelegendhead[table legend=false]{响应状态}{待测,快速,正常,偏慢,超时}
+\end{center}
+\endgroup
+\end{example}
+这些是 \key{/gradbars} 图形键，可放在助手选项或 \key{\gradbarssetup} 中，
+遵循普通 TeX 分组与从左到右覆盖；不是 \key{gradtable} 的新增表格声明键。
+\key{table legend=true|false} 默认 true，裸键等同 true；false 隐藏类别行，
+标题助手仍显示标题，且不保留 2pt 图例间距。
+\key{legend font} 默认 \key{\sffamily\scriptsize}，仅设置类别文字；
+\key{legend swatch size=6pt} 必须为正，
+\key{legend text gap=2pt} 与 \key{legend item gap=4pt} 必须非负。
+边框默认为 \key{legend border color=black,legend border width=.4pt}，线宽必须非负。
+
+类别复用 \key{\gradbarscategory} 的名称映射，未注册名称按 \key{stack colors} 的顺序循环取色；
+打印模式沿用类别纹理。图例不会推断阈值、给观测分类或更改条形颜色，示例因此显式设置条形颜色。
+已有竖向 \key{\gradbarslegend} 和堆叠条的 \key{legend=true} 不受 \key{table legend} 控制。
+标题助手可直接用于普通表头或 \key{\gradcolumn} 的标题参数；收集数值列使用：
+\begin{codeonly}
+\gradbarshead{\gradtablelegendhead{响应状态}
+  {待测,快速,正常,偏慢,超时}}
+\end{codeonly}
+可用该助手替换原先手写的标题、minipage 与 TikZ 色块宏；助手本身不插入 \key{\multicolumn}，
+跨列仍由外层表格代码决定。完整独立示例见 \key{docs/examples/service-response-legend.tex}。
+类别图形沿用 \key{alt}、\key{accessibility} 与 \key{category-legend} 后端规则，
+需要原生回退时仍须显式选择；标题是 Figure 之外的普通文本。
+
+\subsection{连续色阶、共享图例与参考标记}
 导言区加载 \key{legend} 库；其依赖 Heat。连续图例表达数值尺度，复用 Heat 的插值函数，
 不能把类别色块当成连续量程。
 \begin{example}[text and listing,sidebyside=false]{两格数值共享冻结的尺度与图例}
@@ -18,7 +62,9 @@
 方向由 \key{legend orientation} 设置，取 \key{horizontal} 或 \key{vertical}。
 width 表示色带长度，height 表示厚度；默认标注两端点和内部发散中心。
 自定义刻度必须在量程内严格递增，位置按原值计算，文字按精度与单位格式化。
-色带采用 256 段矢量插值；刻度过密或舍入后相同，应增加精度或调整布局。
+色带采用 256 段 Heat 插值底色，并叠加装饰性半透明白色分隔线；
+水平、纵向和打印模式均保留这些细纹。它们改变外观，不改变数值尺度，也不表示类别或分箱边界。
+刻度过密或舍入后相同，应增加精度或调整布局。
 \key{\gradlegenddefine} 在当前分组中冻结显式尺度、方向、单位和颜色角色；
 独立图形、原生列的 options 和 tabularray 单元格均可引用 \key{legend group=name}。
 未知名称、重复定义及尺度／配色／单位冲突会报错。

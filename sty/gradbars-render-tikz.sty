@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Internal implementation unless documented.
-\ProvidesPackage{gradbars-render-tikz}[2026/10/25 v1.1.0 gradbars render-tikz]
+\ProvidesPackage{gradbars-render-tikz}[2026/10/27 v1.1.1 gradbars render-tikz]
 \ExplSyntaxOn
 \cs_new_protected:Npn \gradbarsDrawBand
   {
@@ -177,6 +177,41 @@
         \dim_add:Nn \l_tmpa_dim {\ht\gradbars@segmentbox+\dp\gradbars@segmentbox+4pt}
       }
   }
+\dim_new:N\l__gradbars_legend_x_dim
+\dim_new:N\l__gradbars_legend_bottom_dim
+\dim_new:N\l__gradbars_legend_top_dim
+\cs_new_protected:Npn\gradbarsDrawTableLegend
+  {\dim_zero:N\l__gradbars_legend_x_dim
+   \int_zero:N\l__gradbars_index_int
+   \clist_map_inline:Nn\l__gradbars_names_clist
+     {\int_incr:N\l__gradbars_index_int
+      \int_compare:nNnT{\l__gradbars_index_int}>{1}
+        {\dim_add:Nn\l__gradbars_legend_x_dim{\l__gradbars_legend_item_gap_dim}}
+      \gradbarsCategoryColor{\l__gradbars_index_int}
+      \gradbarsSuspendMeasurementTagging
+      \gradbarsMeasure\gradbars@segmentbox{}{\strut ##1}
+      \gradbarsResumeMeasurementTagging
+      \dim_set:Nn\l__gradbars_legend_bottom_dim
+        {(\ht\gradbars@segmentbox-\dp\gradbars@segmentbox-\l__gradbars_legend_swatch_dim)/2}
+      \dim_set:Nn\l__gradbars_legend_top_dim
+        {\l__gradbars_legend_bottom_dim+\l__gradbars_legend_swatch_dim}
+      \path[fill=\gradbars@segmentcolor,draw=none]
+        (\dim_use:N\l__gradbars_legend_x_dim,\dim_use:N\l__gradbars_legend_bottom_dim)
+        rectangle
+        (\dim_eval:n{\l__gradbars_legend_x_dim+\l__gradbars_legend_swatch_dim},\dim_use:N\l__gradbars_legend_top_dim);
+      \gradbarsPatternRect{\l__gradbars_index_int}
+        {\dim_use:N\l__gradbars_legend_x_dim}{\dim_use:N\l__gradbars_legend_bottom_dim}
+        {\dim_eval:n{\l__gradbars_legend_x_dim+\l__gradbars_legend_swatch_dim}}{\dim_use:N\l__gradbars_legend_top_dim}
+      \dim_compare:nNnT{\l__gradbars_legend_border_dim}>{0pt}
+        {\draw[draw=\gradbars@legendbordercolor,line~width=\l__gradbars_legend_border_dim]
+          (\dim_use:N\l__gradbars_legend_x_dim,\dim_use:N\l__gradbars_legend_bottom_dim)
+          rectangle
+          (\dim_eval:n{\l__gradbars_legend_x_dim+\l__gradbars_legend_swatch_dim},\dim_use:N\l__gradbars_legend_top_dim);}
+      \dim_add:Nn\l__gradbars_legend_x_dim
+        {\l__gradbars_legend_swatch_dim+\l__gradbars_legend_text_gap_dim}
+      \node[anchor=base~west,inner~sep=0pt,outer~sep=0pt,text=gradbarsInk]
+        at(\dim_use:N\l__gradbars_legend_x_dim,0pt){\usebox\gradbars@segmentbox};
+      \dim_add:Nn\l__gradbars_legend_x_dim{\wd\gradbars@segmentbox}}}
 \ExplSyntaxOff
 \ExplSyntaxOn
 \dim_new:N \l__gradbars_labelslot_dim

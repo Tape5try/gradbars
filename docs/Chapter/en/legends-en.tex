@@ -1,4 +1,61 @@
-\section{Continuous and shared legends}
+\section{Table-header, continuous and shared legends}
+\subsection{Horizontal categories and combined headings}
+\key{\gradtablelegend} takes optional graphic settings and a list of names,
+drawing a horizontal category row at its natural width.
+\key{\gradtablelegendhead} also takes a title, centered above the row with a
+2pt gap. Both commands belong to core and
+work with \key{libraries=none}; the optional \key{legend} library is unnecessary.
+They render only when explicitly called, without inserting legends into other
+graphics or tables.
+\begin{demo}{Service response: a heading with five status items}
+\begingroup
+\gradbarssetup{stack colors={gray,teal,blue,
+  orange,red}}
+\begin{center}
+\begin{tabular}{lc}
+Service & \gradtablelegendhead{Response status}{Pending,Fast,Normal,Slow,Timeout}\\
+\hline
+Lookup & \gradbar[max=1000,width=42mm,color=teal,precision=0,unit={ ms}]{120}\\
+Export & \gradbar[max=1000,width=42mm,color=blue,precision=0,unit={ ms}]{420}\\
+\end{tabular}
+\par\medskip
+\gradtablelegendhead[table legend=false]{Response status}
+  {Pending,Fast,Normal,Slow,Timeout}
+\end{center}
+\endgroup
+\end{demo}
+These are \key{/gradbars} graphic keys for helper options or
+\key{\gradbarssetup}, with normal grouping and left-to-right overrides;
+they are not new native \key{gradtable} declaration keys.
+\key{table legend=true|false} defaults to true; the bare key means true.
+False hides the category row; the heading helper retains its title without
+reserving the 2pt legend gap. \key{legend font} defaults to
+\key{\sffamily\scriptsize} for category labels.
+\key{legend swatch size=6pt} must be positive;
+\key{legend text gap=2pt} and \key{legend item gap=4pt} must be nonnegative.
+The border defaults are \key{legend border color=black} and
+\key{legend border width=.4pt}; border width must be nonnegative.
+
+Registered \key{\gradbarscategory} mappings take precedence; other names use
+positional \key{stack colors}, cycling as needed. Print mode reuses category
+textures. The helpers do not infer thresholds, classify observations or change
+bar colors, so the example sets bar colors explicitly. The older vertical
+\key{\gradbarslegend} and stack \key{legend=true} remain independent of
+\key{table legend}.
+Use the heading helper directly in a normal table header or a \key{\gradcolumn}
+title. In a collected numeric column, bypass numeric collection with:
+\begin{source}
+\gradbarshead{\gradtablelegendhead{Response status}
+  {Pending,Fast,Normal,Slow,Timeout}}
+\end{source}
+It replaces handwritten title/minipage/TikZ-swatch macros without inserting
+\key{\multicolumn}; retain any column spanning in the surrounding table code.
+See \key{docs/examples/service-response-legend.tex} for a standalone example.
+The category graphic follows existing \key{alt}, \key{accessibility} and
+\key{category-legend} backend rules, including explicit native fallback when
+required. The title remains ordinary text outside the legend Figure.
+
+\subsection{Continuous and shared legends}
 Load \key{legend} in the preamble; it depends on Heat. Unlike category swatches,
 a continuous legend describes a numeric scale and uses the same color interpolation.
 \begin{demo}{Two values sharing a frozen scale and legend}
@@ -19,8 +76,11 @@ a continuous legend describes a numeric scale and uses the same color interpolat
 \key{true} is the default. Both legend commands accept this switch.\par
 Set \key{legend orientation} to \key{horizontal} or \key{vertical}.
 Width is ramp length; height is thickness. Endpoints and an interior neutral
-center are default ticks; custom ticks must increase within the range. The smooth
-ramp uses 256 vector strips. Increase precision or spacing if tick text overlaps.
+center are default ticks; custom ticks must increase within the range. The ramp
+uses 256 vector strips sampled from Heat, with decorative semitransparent white
+separators in both orientations and print mode. These lines change the texture,
+not the numeric scale; they are not category or bin boundaries.
+Increase precision or spacing if tick text overlaps.
 \key{\gradlegenddefine} freezes scale, direction, unit and color roles in the
 current group. Use \key{legend group=name} in standalone graphics or column
 options. Unknown names, duplicate declarations and contradictory scale/color/unit

@@ -1,6 +1,6 @@
 This is a generated file for the l3build validation system.
 Don't change this file in any respect.
-package=1.1.0; schema=1
+package=1.1.1; schema=1
 bar=yes
 stack=no
 callbacks=1; value=0.5; position=0.5

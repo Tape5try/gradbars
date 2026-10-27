@@ -103,13 +103,16 @@ formatter and table style. Register its dependencies and load it in the preamble
 \end{center}
 \end{demo}
 The example uses no private variables. See \key{docs/developer.md} and
-\key{docs/migration-v1.0.0.md} for callback limits, dependencies and migration.
+\key{docs/migration-v1.1.0.md} for callback limits, dependencies and migration.
 \subsection{Install the complete release}
-Install all matching
+For a CTAN source archive, first run \key{texlua scripts/unpack.lua} from its root
+to create \key{sty/} and extract the runtime files. Install all matching
 \key{.sty} files from \key{sty/} together, including \key{tblrlibgradbars.sty}; replacing only the entry file is insufficient.
-Native versions must match. Use \key{l3build check},
+Native versions must match. In the GitHub checkout, use \key{l3build check},
 \key{l3build doc}, \key{l3build ctan} and the detailed
-\key{texlua scripts/check.lua} regressions.
+\key{texlua scripts/check.lua} regressions. The CTAN source archive omits
+\key{tests/}; it supports extraction and documentation rebuilds, while full
+regression checks require the development checkout.
 \subsection{Version 1 compatibility contract}
 The documented public commands, keys, defaults and dependency rules are stable.
 Compatible additions use a minor release; removals or changes to defaults/data

@@ -17,8 +17,18 @@ tlmgr info gradbars
 Load \key{\usepackage{gradbars}} in the preamble; no project-local sty copy is
 needed. The configured TeX Live repository may not yet contain a new CTAN
 release. Check the installed version before using new manual features.
-For a release not yet synchronized, place all matching \key{.sty} files
-from \key{sty/} beside your source, or use a local TEXMF tree under \key{tex/latex/gradbars}.
+For a release not yet synchronized, distinguish the development checkout from
+the CTAN source archive. The checkout contains runtime files in \key{sty/};
+the source archive supplies \key{.dtx/.ins} instead. From the source-package root, run:
+\begin{lstlisting}[style=gradmanual,language={}]
+texlua scripts/unpack.lua
+\end{lstlisting}
+This creates \key{sty/} if needed and extracts all twenty-two runtime files
+without shell escape. Direct \key{tex gradbars.ins} requires both an existing
+\key{sty/} directory and its readable \key{sty/README.md} marker. If either is
+missing, use the Lua entry above; creating the directory alone is insufficient.
+Place all matching extracted \key{.sty} files beside your source, or use a local
+TEXMF tree under \key{tex/latex/gradbars}.
 Include \key{tblrlibgradbars.sty} for the optional tabularray adapter.
 A project-local copy takes precedence over the system installation. See the
 \href{https://tug.org/texlive/doc/tlmgr.html}{TeX Live package manager documentation}.

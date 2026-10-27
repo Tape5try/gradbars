@@ -6,3 +6,9 @@ longtable=absent
 collcell=absent
 max=100
 basic graphic rendered
+table legend=visible
+hidden legend backend callbacks=0
+hidden legend dimensions=zero; header=title only
+table legend scope=local
+legend library=absent
+table after legend=absent

@@ -17,7 +17,16 @@ tlmgr info gradbars
 \end{lstlisting}
 安装后在导言区写入 \key{\usepackage{gradbars}}，无需把 sty 文件复制到项目。
 tlmgr 提供所配置 TeX Live 仓库中的版本，新 CTAN 版本可能尚未同步；使用本手册的新功能前请核对版本。
-需要使用尚未同步的发行包时，把其中 \key{sty/} 目录下的全部 \key{.sty} 文件一起放在主文档旁边，
+需要使用尚未同步的发行包时，应区分开发仓库与 CTAN 源码包。
+开发仓库的 \key{sty/} 已包含运行文件；CTAN 源码包只提供可提取的 \key{.dtx/.ins}，
+先在源码包根目录运行：
+\begin{lstlisting}[style=manual,language={}]
+texlua scripts/unpack.lua
+\end{lstlisting}
+该命令自动创建缺失的 \key{sty/} 并提取全部二十二个运行文件，无需 shell escape。
+直接运行 \key{tex gradbars.ins} 时须确保 \key{sty/} 目录及可读的 \key{sty/README.md} 标记同时存在；
+缺少任一项均使用上述 Lua 入口修复，仅创建目录不足以直接提取。
+随后把 \key{sty/} 目录下的全部 \key{.sty} 文件一起放在主文档旁边，
 包括可选的 \key{tblrlibgradbars.sty} 适配库。
 项目中的同名文件会优先于系统安装版加载。参见 \href{https://tug.org/texlive/doc/tlmgr.html}{TeX Live 包管理说明}。
 无需手动创建 \key{tikzpicture}，

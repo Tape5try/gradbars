@@ -2,11 +2,11 @@
 
 **Inline data graphics for LaTeX text and tables.**
 
-**v1.1.0 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
+**v1.1.1 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
 
-Released on 2026-10-25. Adds box plots, distribution summaries, shared legends, accessible palettes and optional tagged table structure.
+Development snapshot, dated 2026-10-27; no v1.1.1 release has been published. Fixes source extraction, archive checks and documentation consistency, and adds opt-in assembled header legends while retaining existing interfaces and default data semantics. Downloads below still refer to the published v1.1.0.
 
-[简体中文](README.md) · [English manual](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-en-v1.1.0.pdf) · [Chinese manual](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-v1.1.0.pdf) · [CTAN](https://ctan.org/pkg/gradbars)
+[简体中文](README.md) · [Published English manual (v1.1.0)](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-en-v1.1.0.pdf) · [Published Chinese manual (v1.1.0)](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-v1.1.0.pdf) · [CTAN](https://ctan.org/pkg/gradbars)
 
 ![gradbars: data bars, stacks, trends and heat cells](docs/images/overview-v1.1.0.svg)
 
@@ -19,6 +19,14 @@ Built on PGF/TikZ, gradbars embeds graphics in existing `tabular` cells or build
 - **Data handling:** CSV field binding, sorting, filtering, grouping, automatic column ranges and named shared scales.
 - **Numbers and appearance:** scientific input, optional siunitx formatting, decimal alignment, themes, patterns, table styles and legends.
 - **Accessibility and extensions:** automatic graphic alternative text when LaTeX PDF tagging is enabled, with `alt` overrides; stable registration interfaces for scalar graphics, formatters and contributed libraries.
+
+## Service response times and status legend (v1.1.1)
+
+![Compiled service-response table with Pending, Fast, Normal, Slow and Timeout legend items, and data bars sharing a 0–1000 ms scale](docs/images/service-response-legend-v1.1.1.png)
+
+Actual output from `service-response-legend-v1.1.1`. `\gradtablelegendhead` combines the title and horizontal swatches in a table heading; `table legend=false` hides the legend row while retaining the title. Colors are assigned explicitly for each row, and unmeasured data use `NA`.
+
+[Complete example source](docs/examples/service-response-legend.tex) · [Rebuild the image](docs/images/service-response-legend.md)
 
 ## Installation
 
@@ -69,7 +77,8 @@ Higher scores and lower times are better. `mark=both` marks the best and second-
 
 ## Loading selected libraries
 
-By default, `\usepackage{gradbars}` loads all features. Select libraries explicitly with:
+By default, `\usepackage{gradbars}` loads the five libraries `stack,spark,heat,csv,table`.
+Load `distribution,legend,reports` explicitly when needed. Select libraries with:
 
 ```latex
 \usepackage[libraries={stack,spark,heat,csv,table}]{gradbars}
@@ -106,6 +115,17 @@ Beta & & 0.750\\
 
 The starred form centers labels and keeps empty cells blank; `NA` remains missing. No user-written collector is needed. See [ordinary-table documentation](docs/tabular-columns.md) and the [complete example](docs/examples/precision-recall.tex).
 
+Place a horizontal category legend below a heading without custom swatch macros or a nested table:
+
+```latex
+\gradbarssetup{table legend=true} % false hides the legend row, retaining the title
+\gradtablelegendhead[
+  stack colors={gray,teal,blue,orange,red}
+]{Response status}{Pending,Fast,Normal,Slow,Timeout}
+```
+
+Use `\gradtablelegend[options]{names}` for the swatch row alone. Both commands are in core and need no `legend` library. Labels declare the categories; they do not change bar colors automatically. See the [complete service-response table](docs/examples/service-response-legend.tex) and [legend configuration](docs/legends.md).
+
 ## tabularray integration
 
 With tabularray 2025C (2025-11-27) or newer, load the optional adapter in the preamble:
@@ -135,15 +155,17 @@ Both manuals pair rendered output with source and cover getting started, graphic
 
 - [Chinese main source](docs/gradbars-manual.tex) and [Chinese chapters](docs/Chapter/zh-cn/README.md).
 - [English main source](docs/gradbars-manual-en.tex) and [English chapters](docs/Chapter/en/README.md).
-- [API reference](docs/api.md), [developer guide](docs/developer.md) and [migration guide](docs/migration-v1.0.0.md).
+- [API reference](docs/api.md), [developer guide](docs/developer.md), [v1.1.1 maintenance notes](docs/migration-v1.1.1.md) and [v1.1.0 migration guide](docs/migration-v1.1.0.md).
 - [Stability contract](docs/stability.md) for public scope, precedence, compatibility and deprecation.
-- [Source guide](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-source-v1.1.0.pdf) for the l3doc and docstrip workflow.
+- [Published source guide (v1.1.0)](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-source-v1.1.0.pdf) for the l3doc and docstrip workflow; build the current guide locally.
 - [Changelog](CHANGELOG.md) for additions, fixes and compatibility changes.
 
 Runtime modules live in `sty/`; the contributed example lives in `docs/libraries/`. From the repository root, run:
 
 ```sh
 l3build check
+texlua tests/maintenance.lua
+texlua scripts/docs-check.lua
 texlua scripts/check.lua
 texlua scripts/source.lua --check
 l3build doc
@@ -166,7 +188,10 @@ Python files and generated runtime modules; the development repository retains `
 
 Report problems through [GitHub Issues](https://github.com/Tape5try/gradbars/issues), including a minimal `.tex` example, engine, package version and relevant log.
 
-Author and maintainer: SuFan (GitHub: Tape5try). Licensed under [MIT](LICENSE).
+Author and maintainer: SuFan (GitHub: Tape5try). The package and original sources
+are licensed under [MIT](LICENSE). The attributed adaptation in the
+[Precision/Recall example](docs/examples/precision-recall.tex) is CC BY-SA 4.0;
+see its source header. This exception does not relicense the runtime.
 
 [Distributions](docs/distributions.md) · [Shared legends](docs/legends.md) · [Accessibility scope](docs/accessibility.md)
 

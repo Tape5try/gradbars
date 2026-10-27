@@ -1,0 +1,36 @@
+% Author: SuFan; MIT License. Illustrative service-response data.
+% Compile with XeLaTeX or LuaLaTeX; use matching gradbars v1.1.1 modules.
+\documentclass{article}
+\usepackage[UTF8]{ctex}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars,booktabs}
+\gradbarsrequireversion{1.1.1}
+
+\gradbarsstyle{response-legend}{stack colors={gray,teal,blue,orange,red}}
+\gradbarssetup{
+  min=0,max=1000,width=50mm,height=5pt,
+  precision=0,unit={\,ms},label=none,
+  table legend=true % false hides the status row and retains the heading.
+}
+
+\pagestyle{empty}
+\begin{document}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}lrl@{}}
+\toprule
+服务 & 响应时间 / ms &
+\gradtablelegendhead[style=response-legend]
+  {响应状态}{待测,快速,正常,偏慢,超时}\\
+\midrule
+查询接口 & 120 & \gradbar[color=teal]{120}\\
+身份校验 & 240 & \gradbar[color=blue]{240}\\
+文件下载 & 420 & \gradbar[color=blue]{420}\\
+报表导出 & 680 & \gradbar[color=orange]{680}\\
+消息投递 & 920 & \gradbar[color=red]{920}\\
+批量同步 & 待测 & \gradbar[color=gray]{NA}\\
+\bottomrule
+\end{tabular}
+\end{center}
+\noindent 示例数据仅用于排版演示。状态颜色逐行显式指定，图例不自动推断分类。
+\end{document}

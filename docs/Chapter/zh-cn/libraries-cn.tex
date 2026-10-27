@@ -91,12 +91,13 @@ v1.0.0 注册了以下六个内置库名。核心始终加载，另外五个为�
 \end{gradtable}
 \end{center}
 \end{example}
-该示例不访问私有变量。开发者参考见 \key{docs/developer.md}，迁移说明见 \key{docs/migration-v1.0.0.md}。
+该示例不访问私有变量。开发者参考见 \key{docs/developer.md}，迁移说明见 \key{docs/migration-v1.1.0.md}。
 \subsection{安装与发布文件}
-手动安装时应把发行包 \key{sty/} 目录中的全部 \key{.sty}
+CTAN 源码包应先在根目录运行 \key{texlua scripts/unpack.lua}，自动创建 \key{sty/} 并提取运行文件。
+手动安装时应把 \key{sty/} 目录中的全部 \key{.sty}
 放在同一目录，而不是只替换主文件。模块版本需要一致。
-构建入口为 \key{l3build check}、\key{l3build doc} 和 \key{l3build ctan}；完整回归继续通过
-\key{texlua scripts/check.lua} 验证。
+GitHub 开发仓库的构建入口为 \key{l3build check}、\key{l3build doc} 和 \key{l3build ctan}；完整回归通过
+\key{texlua scripts/check.lua} 验证。CTAN 源码包不附带 \key{tests/}，可提取源码并重建文档；完整测试应在开发仓库运行。
 \subsection{版本 1 的兼容性契约}
 已文档化的公开命令、选项、默认值与库依赖规则保持稳定。
 兼容新增采用次版本；删除接口或更改默认值、数据语义采用主版本。

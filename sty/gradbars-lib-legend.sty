@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Continuous and shared semantic legends.
-\ProvidesPackage{gradbars-lib-legend}[2026/10/25 v1.1.0 Shared legends]
+\ProvidesPackage{gradbars-lib-legend}[2026/10/27 v1.1.1 Shared legends]
 \ExplSyntaxOn
 \cs_generate_variant:Nn\seq_set_from_clist:Nn{NV}
 \cs_generate_variant:Nn\prop_to_keyval:N{c}
@@ -211,6 +211,10 @@
            \int_step_inline:nn{256}
              {\gradbarsHeatColor{\fp_eval:n{\gradbars@min+(##1-.5)/256*(\gradbars@max-\gradbars@min)}}
               \path[fill=gradbarsHeatCell,draw=none](\fp_eval:n{(##1-1)/256},0)rectangle(\fp_eval:n{##1/256},1);}
+           % Fine separators make the vector color steps visible at normal zoom.
+           \int_step_inline:nn{255}
+             {\draw[white,opacity=.45,line~width=.12pt]
+                (\fp_eval:n{##1/256},0)--(\fp_eval:n{##1/256},1);}
            \draw[draw=black!65,line~width=.3pt](0,0)rectangle(1,1);
            \seq_map_indexed_inline:Nn\l__gradbars_legend_ticks_seq
              {\draw(\gradbarsPosition{##2},0)--++(0,-.25);
@@ -223,6 +227,9 @@
            \int_step_inline:nn{256}
              {\gradbarsHeatColor{\fp_eval:n{\gradbars@min+(##1-.5)/256*(\gradbars@max-\gradbars@min)}}
               \path[fill=gradbarsHeatCell,draw=none](0,\fp_eval:n{(##1-1)/256})rectangle(1,\fp_eval:n{##1/256});}
+           \int_step_inline:nn{255}
+             {\draw[white,opacity=.45,line~width=.12pt]
+                (0,\fp_eval:n{##1/256})--(1,\fp_eval:n{##1/256});}
            \draw[draw=black!65,line~width=.3pt](0,0)rectangle(1,1);
            \seq_map_inline:Nn\l__gradbars_legend_ticks_seq
              {\node[anchor=west,font=\gradbars@font]at(1,\gradbarsPosition{##1}){\gradbarsFormatEndpoint{##1}};}

@@ -16,6 +16,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Generate CTAN documented sources from the tracked runtime
         run: texlua scripts/source.lua
+      - name: Check maintenance contracts and local documentation references
+        run: |
+          texlua tests/maintenance.lua
+          texlua scripts/docs-check.lua
       - name: Validate a release tag
         if: startsWith(github.ref, 'refs/tags/')
         env:
@@ -30,7 +34,7 @@ jobs:
       - name: Inspect actual Tagged PDF structures with TeX Live pdfe
         run: texlua scripts/pdf-check.lua
       - name: Check the independent third-party starter
-        run: texlua docs/libraries/starter/check.lua --gradbars-root .
+        run: texlua docs/libraries/starter/check-starter.lua --gradbars-root .
       - name: Inspect archive and test isolated source installation
         run: |
           texlua scripts/release.lua --verify

@@ -1,6 +1,7 @@
 # Version 1 Stability Contract
 
-This contract applies to the documented public interfaces of gradbars 1.1.0, including the preserved 1.0.0 contract.
+This contract applies to the documented public interfaces of gradbars 1.1.1,
+including the preserved 1.1.0 and 1.0.0 contracts.
 It covers their arguments, option meaning, scope, library dependencies, data
 semantics and documented errors. It does not promise identical PDF bytes,
 font metrics across engines, compilation speed or private implementation names.
@@ -20,7 +21,7 @@ ctex/Fandol. texlua, l3build and latexmk are build tools; no Python files are re
 | --- | --- |
 | Settings | `\gradbarssetup`, its alias `\gradbarsset`, `\gradbarsstyle`, `\gradscale` |
 | Graphics | `\gradbar`, `\gradstack`, `\gradspark`, `\gradheat`, `\gradcompare`, `\graddumbbell`, `\gradrange`, `\gradbullet`, `\gradintervals` |
-| Categories | `\gradbarscategory`, `\gradbarslegend` |
+| Categories | `\gradbarscategory`, `\gradbarslegend`, `\gradtablelegend`, `\gradtablelegendhead` |
 | CSV and existing tables | `\gradbarsloadcsv`, `\gradbarcsv`, `\gradbarscsvcell`, `\gradbarscsvstyle`, `\gradbarscsvtable`, `\gradbarscolumn` (including `*`), `\gradbarshead` |
 | Native tables | `gradtable`, `\gradcolumn`, `\gradrow`, `\gradsummary`, `\gradgroup`, `\gradheader`, `\gradspan`, `\gradtablestyle`, `\gradtableschema`, `\graduseschema` |
 | Library extensions | `\gradbarsdeclarelibrary`, `\usegradbarslibrary`, `\gradbarsiflibraryloaded` |
@@ -79,6 +80,15 @@ Removal, changed defaults or changed data meaning requires a new major version.
 A bug contradicting this contract may be fixed in a patch; the changelog must
 describe any resulting numeric or visible output change.
 
+For the explicitly requested v1.1.1 development update, the opt-in
+`\gradtablelegend` and `\gradtablelegendhead` commands and their documented
+`/gradbars` keys are an additive exception to the usual minor-release policy.
+This does not change that policy for subsequent work. They are available in
+core, render only when explicitly called, and preserve existing loading,
+category mappings, bar colors, stack legends and data semantics. Their title
+is ordinary text outside the category Figure; existing accessibility/backend
+rules continue to apply. See [the table-legend contract](legends.md#horizontal-table-header-legends).
+
 A deprecated public interface remains available throughout version 1. Its
 replacement and migration example are documented before removal in a later major
 version. No public interface is deprecated in 1.0.0. Private functions may change
@@ -100,10 +110,16 @@ requests require explicit native fallback.
 The optional tabularray 2025C+ adapter loads with `\UseTblrLibrary{gradbars}`;
 its documented commands and columns are stable. It does not load with the five
 native feature libraries, modify ordinary tblr defaults, or add native table
-statistics to tblr. Header text must be protected from numeric column commands;
-repeated graphic headers and complete tagged table structure are outside the
-tested accessibility scope. pgfplots and pgfplotstable may contain ordinary
-inline graphics but have no dedicated supplied adapter.
+statistics to tblr. Header text must be protected from numeric column commands.
+The opt-in `\gradtblrtagging` interface supplies Table/TR/TH/TD, Scope/span and
+explicit multilevel Headers-ID associations; short tagged tables are tested on
+all three engines. Tagged longtblr with repeated headers or footers requires
+LuaLaTeX, with artifact or explicitly described repeated-header modes. Nested
+tagged tables and cross-page spanning cells remain outside the verified scope;
+structural tests do not certify screen-reader behavior or whole-document PDF/UA
+conformance. See [accessibility.md](accessibility.md) for the exact boundaries.
+pgfplots and pgfplotstable may contain ordinary inline graphics but have no
+dedicated supplied adapter.
 
 ## Version 1.1 additions
 

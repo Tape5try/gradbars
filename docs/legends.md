@@ -1,7 +1,77 @@
-# Continuous and shared legends
+# Table, continuous and shared legends
 
-Load `\usegradbarslibrary{legend}` in the preamble (depends on core and heat).
-Existing category registration and `\gradbarslegend` remain available.
+## Horizontal table-header legends
+
+`\gradtablelegend[graphic options]{names}` draws one horizontal category row at
+its natural width. `\gradtablelegendhead[graphic options]{title}{names}` centers
+an ordinary text title above that row, with a 2pt vertical gap. Both commands
+belong to core and work with `\usepackage[libraries=none]{gradbars}`; no optional
+`legend` library is needed. They render only when explicitly called and do not
+insert legends into existing bars or tables.
+
+```latex
+\begingroup
+\gradbarssetup{stack colors={gray,teal,blue,orange,red}}
+\begin{tabular}{lc}
+Service & \gradtablelegendhead{Response status}{Pending,Fast,Normal,Slow,Timeout}\\
+\hline
+Lookup & \gradbar[max=1000,width=42mm,color=teal,precision=0,unit={ ms}]{120}\\
+Export & \gradbar[max=1000,width=42mm,color=blue,precision=0,unit={ ms}]{420}\\
+\end{tabular}
+\endgroup
+```
+
+Names use the existing comma-list category syntax. Registered
+`\gradbarscategory{name}{color}{pattern}` mappings take precedence; other names
+use `stack colors` by position, cycling when needed. Print mode reuses category
+textures and monochrome colors. These helpers do not infer thresholds, classify
+observations or change any bar's colors. Set the corresponding bar colors or
+classification rules explicitly.
+The table swatches remain filled even with `outline=true`; use
+`legend border color` and `legend border width` for their frames. Setting the
+border width to zero removes the frame.
+
+The following `/gradbars` keys can be set in `\gradbarssetup` or either helper's
+optional argument. They follow ordinary TeX grouping and left-to-right overrides;
+they are not new native `gradtable` declaration keys.
+
+| Key | Default | Meaning |
+|---|---|---|
+| `table legend` | `true` | `true`/`false`; the bare key means true; false hides the category row |
+| `legend font` | `\sffamily\scriptsize` | Category-label font |
+| `legend swatch size` | `6pt` | Positive square swatch size |
+| `legend text gap` | `2pt` | Nonnegative gap between a swatch and its label |
+| `legend item gap` | `4pt` | Nonnegative gap between category items |
+| `legend border color` | `black` | Swatch border color |
+| `legend border width` | `.4pt` | Nonnegative border width |
+
+With `table legend=false`, `\gradtablelegend` emits no category row, while
+`\gradtablelegendhead` retains its title with no reserved legend gap:
+
+```latex
+\gradtablelegendhead[table legend=false]{Response status}{Pending,Fast,Normal,Slow,Timeout}
+```
+
+Use the header helper directly in an ordinary `tabular` heading or a
+`\gradcolumn` title. In a collected numeric column, write
+`\gradbarshead{\gradtablelegendhead{Response status}{Pending,Fast,Normal,Slow,Timeout}}`
+to bypass numeric collection. The helper itself does not insert `\multicolumn`.
+It can replace a handwritten title/minipage/TikZ-swatch macro; keep any desired
+column spanning in the surrounding table code. See the
+[service-response example](examples/service-response-legend.tex).
+
+The category graphic retains the existing automatic/explicit `alt`,
+`accessibility=auto|artifact|off` and `category-legend` backend rules, including
+explicit native fallback when required. The title is ordinary text outside the
+legend Figure. The older vertical `\gradbarslegend` and automatic stack
+`legend=true` behavior are unchanged; `table legend` controls only these new
+helpers.
+
+## Continuous and shared legends
+
+For the commands below, load `\usegradbarslibrary{legend}` in the preamble
+(depends on core and heat). Existing category registration and
+`\gradbarslegend` remain available.
 
 ```latex
 \gradscale{score}{min=-10,max=30}
@@ -11,9 +81,12 @@ Existing category registration and `\gradbarslegend` remain available.
 \gradlegenduse[width=60mm,height=3mm]{score}
 ```
 
-`\gradheatlegend[graphic options]` displays a continuous *quantity* with a smooth
-256-strip vector ramp using the exact same Heat color function. It is not a set
-of categories or bins. `width` is the ramp length and `height` its thickness;
+`\gradheatlegend[graphic options]` displays a continuous *quantity* with a
+256-strip vector ramp whose base colors use the same Heat color function.
+Fine semitransparent white separators are drawn over the strip boundaries in
+both orientations, including print mode. They change the visible texture, not
+the numeric encoding, and do not represent categories or bins. `width` is the
+ramp length and `height` its thickness;
 `legend orientation=vertical` rotates the layout (low at bottom). Endpoints and
 an interior diverging center are default ticks. `legend ticks={...}` supplies
 strictly increasing numeric ticks within range. `legend title` adds a heading.
