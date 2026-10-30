@@ -1,0 +1,37 @@
+% Author: SuFan; MIT License. Illustrative signed values, not measured data.
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage[libraries=none]{gradbars}
+\pagestyle{empty}
+\begin{document}
+\section*{Positive and negative colors on one track}
+\gradbarssetup{min=-50,max=50,error=8,width=72mm,height=6pt,
+  precision=1,label width=3em}
+\renewcommand{\arraystretch}{1.8}
+\newcommand{\themerow}[1]{#1 & $-24.0$ & \gradsignedbar[theme=#1,label=none]{-24}{24} & $24.0$\\}
+\begin{tabular}{lrcl}
+Theme & Negative & Shared scale: $[-50,50]$ & Positive\\\hline
+\themerow{blue}
+\themerow{teal}
+\themerow{solid}
+\themerow{gray}
+\themerow{lbyellow}
+\themerow{viblue}
+\themerow{cyblu}
+\themerow{violet}
+\themerow{orange}
+\themerow{forest}
+\themerow{accessible}
+\end{tabular}
+\par\medskip
+Each explicit theme sets the negative fill to the RGB complement of its
+positive endpoints. Both values share one track and the central zero line:
+the negative value extends left and the positive value extends right.
+Whiskers show a declared symmetric error of 8 for each value.
+The built-in \texttt{\string\gradsignedbar} command draws both observations;
+its two arguments are the nonpositive and nonnegative values, respectively.
+\par\medskip
+Override after the theme for a custom solid negative fill:
+\par\smallskip
+\gradsignedbar[theme=blue,negative fill=solid,negative color=lightred]{-24}{24}
+\end{document}

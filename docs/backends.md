@@ -43,7 +43,7 @@ implemented or delegated to the supplied renderer.
 An unsupported request fails before invoking the callback. Explicit
 `backend fallback=tikz` delegates that whole graphic to the native renderer;
 default `error` prevents silent changes. Stack, spark, comparison, dumbbell,
-range, bullet, boxplot and all three legend families currently require tikz or
+range, signed-bar (\gradsignedbar), bullet, boxplot and all three legend families currently require tikz or
 this explicit fallback. An interval collection consists of range graphics.
 No partially rendered compound plot is sent to a scalar callback.
 

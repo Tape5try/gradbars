@@ -1,0 +1,35 @@
+% Author: SuFan; MIT License. All values are illustrative.
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars,booktabs}
+\gradbarsrequireversion{1.1.1}
+\pagestyle{empty}
+\begin{document}
+% BEGIN TABLE
+\begingroup
+\gradbarscategory{Desk}{blue}{diagonal}
+\gradbarscategory{Locker}{teal}{dots}
+\gradbarscategory{Delivery}{orange}{crosshatch}
+\gradbarssetup{print,min=0,max=300,width=70mm,height=14pt,
+  stack names={Desk,Locker,Delivery},segment labels=percent,
+  precision=0,label=none,table legend=true}
+\renewcommand{\arraystretch}{1.8}
+\begin{center}
+\begin{tabular}{@{}lrl@{}}
+\toprule
+Branch & Loans & \gradtablelegendhead[print]
+  {Fulfilment share}{Desk,Locker,Delivery}\\
+\midrule
+North & 300 & \gradstack{180,90,30}\\
+South & 300 & \gradstack{120,90,90}\\
+East & 300 & \gradstack{60,180,60}\\
+West & 300 & \gradstack{150,105,45}\\
+\bottomrule
+\end{tabular}
+\end{center}
+\endgroup
+% END TABLE
+\noindent Each row contains 300 loans. Inputs are counts; segment labels divide
+by that row's total. Equal full widths follow from these equal totals, not from
+automatic normalization. Textures keep the three channels distinct in print.
+\end{document}

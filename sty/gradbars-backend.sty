@@ -8,7 +8,7 @@
 \clist_const:Nn\c__gradbars_backend_features_clist
   {bar,heat,missing,signed,gradient,print,labels,units,clip,decorations,embedded,tagging,artifact}
 \clist_const:Nn\c__gradbars_backend_kinds_clist
-  {bar,heat,stack,spark,compare,dumbbell,range,bullet,boxplot,heat-legend,reference-legend,category-legend}
+  {bar,heat,signed-bar,stack,spark,compare,dumbbell,range,bullet,boxplot,heat-legend,reference-legend,category-legend}
 \tl_new:N\l__gradbars_backend_tl
 \tl_new:N\l__gradbars_backend_fallback_tl
 \tl_new:N\l__gradbars_backend_native_tl
@@ -22,7 +22,7 @@
 \tl_set:Nn\l__gradbars_backend_tl{tikz}
 \tl_set:Nn\l__gradbars_backend_fallback_tl{error}
 \prop_gput:Nnn\g__gradbars_backends_prop{tikz}
- {bar,heat,stack,spark,compare,dumbbell,range,bullet,boxplot,heat-legend,reference-legend,category-legend,missing,signed,gradient,print,labels,units,clip,decorations,embedded,tagging,artifact}
+ {bar,heat,signed-bar,stack,spark,compare,dumbbell,range,bullet,boxplot,heat-legend,reference-legend,category-legend,missing,signed,gradient,print,labels,units,clip,decorations,embedded,tagging,artifact}
 \pgfkeys{/gradbars,
  backend/.code={\prop_if_in:NnTF\g__gradbars_backends_prop{#1}
    {\tl_set:Nn\l__gradbars_backend_tl{#1}}
@@ -178,6 +178,7 @@
     \str_if_eq:eeT{\gradbars@shape}{dumbbell}{\tl_set:Nn\l__gradbars_backend_kind_tl{dumbbell}}\fi
   \ifgradbars@rangemode\tl_set:Nn\l__gradbars_backend_kind_tl{range}\fi
   \ifgradbars@bullet\tl_set:Nn\l__gradbars_backend_kind_tl{bullet}\fi
+  \ifgradbars@pair\tl_set:Nn\l__gradbars_backend_kind_tl{signed-bar}\fi
   \exp_args:NV\__gradbars_backend_draw:nn\l__gradbars_backend_kind_tl{\__gradbars_render_tikz:}}
 \@onlypreamble\gradbarsdeclarebackend
 \ExplSyntaxOff

@@ -4,8 +4,12 @@
 
 Development snapshot; no v1.1.1 release has been published.
 
+- Clarify issue #4: ordinary numeric cells align with graphic labels only after explicitly selecting `baseline=text`, already supported in v1.1.0; the legacy `auto` default is preserved. Add the exact minimal table and output-position regressions rather than treating a version upgrade as an automatic alignment fix.
+- Add explicitly requested core `\gradsignedbar[options]{negative}{positive}` with a shared track/zero, independent missing values and uncertainty, combined formatted labels, one automatic Figure description and explicit scalar-backend fallback. Rebuild all theme galleries using the built-in command.
+- At the maintainer's explicit request, all eleven explicitly selected bar themes now set complementary negative colors (RGB channel inversion), with gradient/solid modes matching the theme. This visibly changes themed negatives; unthemed defaults remain solid lightred. Retain left-to-right custom overrides, threshold/print precedence and numeric semantics; include a full signed gallery and migration examples.
 - Preserve all public interfaces, the five-library default load list and existing numeric, missing-value, ranking and aggregation semantics. Synchronize all 22 runtime module versions.
 - Add the explicitly requested opt-in `\gradtablelegend` horizontal category row and `\gradtablelegendhead` title/legend assembly. The scoped `table legend` switch hides the row without leaving a gap below the title; colors, typography, swatches, spacing and borders are configurable. Reuse category mappings, print patterns, alternative text and explicit backend fallback; retain older vertical and automatic stack legends.
+- Add bilingual complete table examples for course completion, library borrowing channels, building energy use and production-batch dimensions, with independently compilable sources using existing interfaces.
 - Make source extraction and l3build unpacking work when the CTAN source archive no longer contains `sty/` or its README marker. Keep direct plain-TeX extraction diagnostics explicit when the output directory is unavailable.
 - Separate the development regression suite from source packages that omit `tests/`; do not report an empty package check as a successful regression run.
 - Preserve source timestamps, normalize CTAN archive permissions, reject unwanted paths, repeated filenames and duplicate contents, and record the MIT package / CC BY-SA 4.0 adapted-example license scopes in upload metadata.

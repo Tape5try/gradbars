@@ -9,7 +9,7 @@
 \key{max} & \key{100} & 范围上限，必须为正值。\\
 \key{width} & \key{24mm} & 正的轨道宽度，不含外部标签。\\
 \key{height} & \key{1.5ex} & 正的轨道高度。\\
-\key{theme} & \key{blue} & blue、teal、solid、gray、lbyellow、viblue、cyblu。\\
+\key{theme} & \key{blue} & 11 种条形主题，见主题章节；显式选择会设置负值互补色。\\
 \key{label} & \key{outside} & outside、left、inside、none、end、auto。\\
 \key{label width} & \key{4.5em} & 外部标签最小槽宽；自动溢出模式下可扩展。\\
 \key{label gap} & \key{.6em} & 轨道与外部标签之间的间隔。\\
@@ -25,8 +25,8 @@
 \key{left color} & 由主题指定 & 渐变起点，或纯色填充的颜色。\\
 \key{right color} & 由主题指定 & 渐变终点。\\
 \key{track color} & 由主题指定 & 空轨道颜色。\\
-\key{negative fill} & \key{solid} & 负值使用纯色或 gradient。\\
-\key{negative left/right color} & 空 & 负值渐变两端；设置任一项会启用渐变。\\
+\key{negative fill} & \key{solid} & 未选主题时为纯色；显式主题设置对应模式。\\
+\key{negative left/right color} & 空 & 主题可设置负值两端；覆盖任一项会启用渐变。\\
 \key{text color} & 由主题指定 & 标签文字颜色；auto 自动选黑白。\\
 \key{font} & 沿用周围字体 & 标签字体声明。\\
 \key{style} & 未指定 & 应用已定义的命名样式。\\

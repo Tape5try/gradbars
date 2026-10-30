@@ -19,6 +19,30 @@ current label font metrics; \key{baseline=center} and \key{baseline=bottom} are
 useful when a table row deliberately aligns graphics by their visual center or
 lower edge. A positive \key{baseline shift} moves the picture upward.
 
+
+\subsection{Aligning ordinary table numbers with bar labels}
+For an ordinary \key{tabular} with a plain numeric column next to an outside
+bar label, explicitly select \key{baseline=text}. The default
+\key{baseline=auto} retains the historical graphic position; it is not the
+text-baseline alignment mode. Upgrading alone therefore does not change the
+original example's placement. The text option is already available in v1.1.0.
+\begin{demo}{Plain numbers and graphic labels on the same baseline}
+\gradbarssetup{width=30mm,max=100,precision=1,baseline=text}
+\begin{tabular}{lcc}
+\toprule
+Model & Number & Accuracy (\%) \\
+\midrule
+Baseline & 72.4 & \gradbar{72.4} \\
+Proposed & 92.7 & \gradbar{92.7} \\
+\bottomrule
+\end{tabular}
+\end{demo}
+The numeric column remains ordinary text; no individual raisebox adjustment is
+needed.
+Center/bottom modes align graphic geometry, and row-height changes do not replace
+the text-baseline option.
+\par\smallskip\noindent Standalone source: \texttt{docs/examples/baseline-alignment.tex}.
+
 \key{row padding} reserves extra height above and below a graphic; it does not
 change the document's global row spacing. Use arraystretch or table row spacing
 when appropriate. Marker shapes reserve space consistently even when the first

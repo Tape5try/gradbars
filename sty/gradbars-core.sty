@@ -43,6 +43,7 @@
 \def\gradbars@negativecolor{lightred}
 \def\gradbars@negativeleft{}
 \def\gradbars@negativeright{}
+\newif\ifgradbars@pair
 \newif\ifgradbars@negativegradient
 \gradbars@negativegradientfalse
 \def\gradbars@thresholds{}
@@ -77,7 +78,9 @@
 \def\gradbars@bandopacity{0.3}
 \def\gradbars@stackcolors{gradbarsBlue,gradbarsTeal,gold}
 \RequirePackage{gradbars-keys}
-\pgfkeys{/gradbars,theme=blue}
+% Keep the historical implicit negative fill; explicit themes select complements.
+\pgfkeys{/gradbars,theme=blue,negative color=lightred,
+  negative left color={},negative right color={},negative fill=solid}
 \DeclareDocumentCommand\gradbarssetup{m}{\pgfkeys{/gradbars,#1}}
 % Style definitions follow ordinary TeX grouping, like setup.
 \DeclareDocumentCommand\gradbarsstyle{m m}{%
@@ -1238,4 +1241,96 @@
 
 
 \ExplSyntaxOff
+
+% Explicit two-observation signed bar; the ordinary scalar API is unchanged.
+\DeclareDocumentCommand\gradsignedbar{O{} m m}{%
+  \begingroup
+    \gradbars@pairtrue
+    \def\gradbars@pairnegative{#2}%
+    \def\gradbars@pairpositive{#3}%
+    \gradbar[shape=bar,#1]{#3}%
+  \endgroup}
+\ExplSyntaxOn
+\tl_new:N \l__gradbars_pair_state_tl
+\tl_new:N \l__gradbars_pair_alt_tl
+\cs_new_protected:Npn \__gradbars_pair_prepare_negative:
+  {\group_begin:
+   \gradbars@pairfalse
+   \cs_set_eq:NN \gradbars@value \gradbars@pairnegative
+   \def\gradbars@errorlo{0}\def\gradbars@errorhi{0}
+   \__gradbars_prepare_model:
+   \ifgradbars@valid
+     \ifgradbars@missing\else
+       \fp_compare:nNnT{\gradbars@value}>{0}
+         {\gradbarsFail{Signed~bar~first~value~must~be~nonpositive}}
+     \fi
+   \fi
+   \tl_clear:N \l__gradbars_pair_state_tl
+   \clist_map_inline:nn{value,zero,start,stop,end,left,right,errorlo,errorhi}
+     {\tl_put_right:Nx \l__gradbars_pair_state_tl
+       {\cs_set:cpn{gradbars@##1}{\exp_not:v{gradbars@##1}}}}
+   \ifgradbars@gradient
+     \tl_put_right:Nn\l__gradbars_pair_state_tl{\gradbars@gradienttrue}
+   \else\tl_put_right:Nn\l__gradbars_pair_state_tl{\gradbars@gradientfalse}\fi
+   \ifgradbars@missing
+     \tl_put_right:Nn\l__gradbars_pair_state_tl{\gradbars@missingtrue}
+   \else\tl_put_right:Nn\l__gradbars_pair_state_tl{\gradbars@missingfalse}\fi
+   \use:x{\group_end:
+     \cs_set_protected:Npn \exp_not:N\gradbarsPairNegativeState
+       {\exp_not:V\l__gradbars_pair_state_tl}
+     \ifgradbars@valid\else\exp_not:N\gradbars@validfalse\fi}}
+\cs_new_protected:Npn \gradbarsPairNegative #1
+  {\group_begin:\gradbarsPairNegativeState\gradbarsPrepareLayout#1\group_end:}
+\cs_new_eq:NN \gradbarsValidateBeforePair \gradbarsValidateExtras
+\cs_set_protected:Npn \gradbarsValidateExtras
+  {\gradbarsValidateBeforePair
+   \ifgradbars@pair
+     \fp_compare:nF{\gradbars@min<0 && \gradbars@max>0}
+       {\gradbarsFail{Signed~bars~require~min~<~0~<~max}}
+     \str_if_eq:eeF{\gradbars@shape}{bar}
+       {\gradbarsFail{Signed~bars~require~shape=bar}}
+     \ifgradbars@stack\gradbarsFail{Signed~bars~do~not~accept~compound~modes}\fi
+     \ifgradbars@spark\gradbarsFail{Signed~bars~do~not~accept~compound~modes}\fi
+     \ifgradbars@compare\gradbarsFail{Signed~bars~do~not~accept~compound~modes}\fi
+     \ifgradbars@rangemode\gradbarsFail{Signed~bars~do~not~accept~compound~modes}\fi
+     \ifgradbars@bullet\gradbarsFail{Signed~bars~do~not~accept~compound~modes}\fi
+     \str_case_e:nnF{\gradbars@label}{{outside}{}{left}{}{none}{}}
+       {\gradbarsFail{Signed~bar~labels~must~be~outside,~left~or~none}}
+     \ifgradbars@valid
+       \ifgradbars@missing\else
+         \fp_compare:nNnT{\gradbars@value}<{0}
+           {\gradbarsFail{Signed~bar~second~value~must~be~nonnegative}}
+       \fi
+     \fi
+     \ifgradbars@valid\__gradbars_pair_prepare_negative:\fi
+   \fi}
+\cs_new_protected:Npn \__gradbars_pair_label:n #1
+  {\tl_set:Nx\l_tmpa_tl{#1}\tl_trim_spaces:N\l_tmpa_tl
+   \tl_if_empty:NTF\l_tmpa_tl{\gradbars@missingtext}
+     {\str_if_eq:VnTF\l_tmpa_tl{NA}{\gradbars@missingtext}
+       {\group_begin:\gradbars@pairfalse\gradbarsFormatEndpoint{#1}\group_end:}}}
+\cs_new_eq:NN \gradbarsLabelBeforePair \gradbars@labelcontent
+\cs_set_protected:Npn \gradbars@labelcontent
+  {\ifgradbars@pair
+     \tl_if_empty:oTF{\gradbars@text}
+       {\__gradbars_pair_label:n{\gradbars@pairnegative}\,/\,
+        \__gradbars_pair_label:n{\gradbars@pairpositive}}
+       {\gradbars@text}
+   \else\gradbarsLabelBeforePair\fi}
+\cs_new_eq:NN \gradbarsAltBeforePair \gradbarsBuildAlt
+\cs_set_protected:Npn \gradbarsBuildAlt
+  {\gradbarsAltBeforePair
+   \ifgradbars@pair
+     \tl_replace_once:Nnn\l__gradbars_alt_tl{Value:}{Positive:}
+     \tl_set_eq:NN\l__gradbars_pair_alt_tl\l__gradbars_alt_tl
+     \tl_set:Nn\l__gradbars_alt_tl{Signed~pair.~Negative:~}
+     \gradbarsAltValue{\gradbars@pairnegative}
+     \tl_put_right:Nn\l__gradbars_alt_tl{.~}
+     \tl_put_right:NV\l__gradbars_alt_tl\l__gradbars_pair_alt_tl
+     \ifgradbars@error
+       \tl_put_right:Nn\l__gradbars_alt_tl{~Error~distances~apply~to~both~observations.}
+     \fi
+   \fi}
+\ExplSyntaxOff
+
 \endinput

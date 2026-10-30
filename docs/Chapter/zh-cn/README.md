@@ -49,6 +49,7 @@
 | [example-comparisons.tex](example-comparisons-cn.tex) | 完整案例：前后对比与目标评价 |
 | [example-contributions.tex](example-contributions-cn.tex) | 完整案例：收支贡献与黑白打印 |
 | [example-trends.tex](example-trends-cn.tex) | 完整案例：等间隔趋势汇总 |
+| [example-scenarios-cn.tex](example-scenarios-cn.tex) | 完整案例：教学、借阅、节能与质控 |
 | [layouts.tex](layouts-cn.tex) | 真实排版案例 |
 | [faq.tex](faq-cn.tex) | 常见问题 |
 | [reference.tex](reference-cn.tex) | 参数速查与使用限制 |

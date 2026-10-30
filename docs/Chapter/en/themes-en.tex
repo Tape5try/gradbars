@@ -11,12 +11,41 @@ Nine predefined solid colors are \manualColor{lightgreen}, \manualColor{lightyel
 \key{left color}/\key{right color} for a gradient. Standard xcolor expressions work.
 
 \begin{demo}{Violet, warm orange and forest green themes}
-\gradbar[theme=violet]{72}
+\gradsignedbar[min=-50,max=50,label=none,theme=violet]{-24}{24}
 
-\gradbar[theme=orange]{72}
+\gradsignedbar[min=-50,max=50,label=none,theme=orange]{-24}{24}
 
-\gradbar[theme=forest]{72}
+\gradsignedbar[min=-50,max=50,label=none,theme=forest]{-24}{24}
 \end{demo}
+
+
+\subsection{Complementary negative colors}
+An explicitly selected bar theme also sets negative colors to the RGB complement:
+each channel $c$ becomes $1-c$. This covers all ten themes above and
+\key{theme=accessible}. Gradient endpoints are complemented individually in the
+same left/right order. The solid, gray and accessible themes use solid
+complements; gray remains gray with inverted intensity. Without an explicit
+theme, the historical solid lightred negative default remains.
+\begin{demo}{Built-in signed bars with complementary colors}
+\gradsignedbar[min=-50,max=50,error=8,theme=blue]{-24}{24}
+
+\gradsignedbar[min=-50,max=50,error=8,theme=teal]{-24}{24}
+
+\gradsignedbar[min=-50,max=50,error=8,theme=gray]{-24}{24}
+
+\gradsignedbar[min=-50,max=50,theme=blue,
+  negative fill=solid,negative color=lightred]{-24}{24}
+\end{demo}
+This explicitly requested v1.1.1 development change alters negative colors when a
+theme is selected; previously most themes retained lightred. Themes reset negative
+endpoints and fill mode. Put custom negative settings after the theme. For a solid
+override after a gradient theme, set both \key{negative fill=solid} and
+\key{negative color}; the latter alone does not replace gradient endpoints.
+Later positive endpoint overrides do not recompute negative colors.
+Threshold and print precedence, values, errors and scales are unchanged.
+The full eleven-theme gallery is in \texttt{docs/examples/theme-complements.tex}.
+Complementary colors are not a color-vision accessibility guarantee; retain labels
+or other redundant cues.
 
 \begin{demo}{A reusable layout style}
 \gradbarsstyle{paperrow}{preset=paper,width=45mm,max=100,precision=0}

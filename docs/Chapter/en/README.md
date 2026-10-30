@@ -34,6 +34,7 @@ Edit each section in its own file. Compile the main document, not a chapter.
 | [csv.tex](csv-en.tex) | CSV input and numeric table columns |
 | [research-numbers.tex](research-numbers-en.tex) | Research number columns and semantic units |
 | [example-models.tex](example-models-en.tex) | A complete benchmark table |
+| [example-scenarios-en.tex](example-scenarios-en.tex) | Complete tables for teaching, libraries, energy and quality |
 | [layouts.tex](layouts-en.tex) | Two-column papers, print and slides |
 | [faq.tex](faq-en.tex) | Frequently asked questions |
 | [reference.tex](reference-en.tex) | Compact option reference |

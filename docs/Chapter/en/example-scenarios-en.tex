@@ -1,0 +1,132 @@
+\section{Complete tables for teaching, libraries, energy and quality}
+These four tables reuse existing public interfaces with different layouts.
+All values are illustrative; scales, units and missing observations remain explicit.
+Standalone files are in \key{docs/examples/}; only the final case needs the optional distribution library.
+
+\subsection{Course projects: completion and status}
+Completed and total task counts are listed separately. Percentages are calculated before input, and every bar shares 0--100\%. Status colors are assigned explicitly.
+
+\begin{demo}{Course projects: completion and status}
+\begingroup
+\gradbarssetup{min=0,max=100,width=42mm,height=6pt,
+  precision=0,unit={\%},label=outside,label width=3em,
+  label gap=4pt,baseline=text,table legend=true}
+\renewcommand{\arraystretch}{1.5}
+\begin{center}
+\begin{tabular}{lrl}
+\toprule
+\rowcolor{gradbarsTrack}
+Course & Tasks & \gradtablelegendhead[
+  stack colors={teal,orange,blue,gray}]{Completion}
+  {Done,Active,Planned,Unmeasured}\\
+\midrule
+Geometry & 18/25 & \gradbar[color=orange]{72}\\
+Data & 24/25 & \gradbar[color=orange]{96}\\
+Methods & 25/25 & \gradbar[color=teal]{100}\\
+Design & 0/25 & \gradbar[color=blue]{0}\\
+Seminar & -- & \gradbar[color=gray]{NA}\\
+\bottomrule
+\end{tabular}
+\end{center}
+\endgroup
+\end{demo}
+
+A real zero retains its 0\% label; an unmeasured record stays missing. The literal percent unit adds a suffix and does not divide task counts.
+\par\smallskip\noindent Standalone source: \key{docs/examples/course-progress.tex}.
+
+\clearpage
+
+\subsection{Library loans: monochrome channel shares}
+Named categories share textures between the legend and stacked segments. Desk, locker and delivery are mutually exclusive channels in this example.
+
+\begin{demo}{Library loans: monochrome channel shares}
+\begingroup
+\gradbarscategory{Desk}{blue}{diagonal}
+\gradbarscategory{Locker}{teal}{dots}
+\gradbarscategory{Delivery}{orange}{crosshatch}
+\gradbarssetup{print,min=0,max=300,width=70mm,height=14pt,
+  stack names={Desk,Locker,Delivery},segment labels=percent,
+  precision=0,label=none,table legend=true}
+\renewcommand{\arraystretch}{1.8}
+\begin{center}
+\begin{tabular}{@{}lrl@{}}
+\toprule
+Branch & Loans & \gradtablelegendhead[print]
+  {Fulfilment share}{Desk,Locker,Delivery}\\
+\midrule
+North & 300 & \gradstack{180,90,30}\\
+South & 300 & \gradstack{120,90,90}\\
+East & 300 & \gradstack{60,180,60}\\
+West & 300 & \gradstack{150,105,45}\\
+\bottomrule
+\end{tabular}
+\end{center}
+\endgroup
+\end{demo}
+
+Inputs are counts summing to 300 in each row. Segment percentages use that row total. Equal full widths follow from equal totals, not automatic normalization.
+\par\smallskip\noindent Standalone source: \key{docs/examples/borrowing-channels.tex}.
+
+\clearpage
+
+\subsection{Building retrofit: grouped headers and energy use}
+A grouped header places before/after values under one unit. All dumbbells share the 0--200 scale rather than enlarging each row independently.
+
+\begin{demo}{Building retrofit: grouped headers and energy use}
+\begingroup
+\begin{center}
+\begin{gradtable}[width=\linewidth,align=c,header align=c,
+  column sep=3pt,row stretch=1.7,label width=9mm]
+\gradcolumn[width=22mm]{building}{Building}
+\gradcolumn[type=number,width=16mm,
+  options={precision=0}]{before}{Before}
+\gradcolumn[type=number,width=16mm,
+  options={precision=0}]{after}{After}
+\gradcolumn[type=dumbbell,options={min=0,max=200,
+  precision=0,compare label=delta,track color=black!35,
+  stem width=.9pt}]{change}{Change}
+\gradheader{\gradspan{1}{Site}
+  \gradspan{2}{Annual use (kWh/m$^2$)}
+  \gradspan{1}{Common scale: 0--200}}
+\gradrow{Atrium,160,120,160/120}
+\gradrow{Studio,130,90,130/90}
+\gradrow{Archive,80,76,80/76}
+\gradrow{Annex,110,128,110/128}
+\end{gradtable}
+\end{center}
+\endgroup
+\end{demo}
+
+Hollow points are before and filled points are after. Delta is after minus before, in kWh/m$^2$. A negative value means lower use in these illustrative observations, not a causal estimate.
+\par\smallskip\noindent Standalone source: \key{docs/examples/energy-retrofit.tex}.
+
+\clearpage
+
+\subsection{Production batches: box plots on a shared scale}
+Load \key{\usegradbarslibrary{distribution}} in the preamble. Every batch uses 9.80--10.20 mm so location, spread and outliers remain comparable.
+
+\begin{demo}{Production batches: box plots on a shared scale}
+\begingroup
+\gradbarsstyle{batch-demo}{box range=fixed,min=9.8,max=10.2,
+  width=70mm,height=5ex,precision=2,label=outside,
+  unit={\,mm},palette=accessible}
+\newcommand{\batchplot}[1]{\raisebox{\dimexpr.5ex-.5\height+.5\depth\relax}{%
+  \gradboxplot[style=batch-demo]{#1}}}
+\renewcommand{\arraystretch}{2.2}
+\begin{center}
+\begin{tabular}{@{}lrp{94mm}@{}}
+\toprule
+Batch & Samples & 9.80--10.20 mm / median\\
+\midrule
+A & 9 & \batchplot{9.96,9.98,9.99,10,10.01,10.02,10.03,10.04,10.06}\\
+B & 9 & \batchplot{9.85,9.95,9.98,10,10.01,10.02,10.04,10.08,10.17}\\
+C & 9 & \batchplot{10.03,10.04,10.05,10.05,10.06,10.07,10.07,10.08,10.09}\\
+Pending & -- & \batchplot{NA}\\
+\bottomrule
+\end{tabular}
+\end{center}
+\endgroup
+\end{demo}
+
+Right-hand labels show medians. Whiskers end at observed values inside the 1.5 IQR fences, and hollow points retain outliers. The display range is not an acceptance interval; whiskers are not confidence intervals.
+\par\smallskip\noindent Standalone source: \key{docs/examples/batch-dimensions.tex}.

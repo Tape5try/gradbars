@@ -12,7 +12,9 @@
  .accessible heat roles/.code={\pgfkeysifdefined{/gradbars/heat low color/.@cmd}
    {\pgfkeysalso{/gradbars/heat low color=white,/gradbars/heat high color=gradbarsCudBlue}}{}},
  theme/accessible/.style={fill=solid,left color=gradbarsCudBlue,right color=gradbarsCudBlue,
-   track color=black!6,text color=auto,negative color=gradbarsCudVermillion},
+   track color=black!6,text color=auto,negative color=-gradbarsCudBlue,
+   negative left color=-gradbarsCudBlue,negative right color=-gradbarsCudBlue,
+   negative fill=solid},
  palette/accessible/.style={theme=accessible,
    stack colors={gradbarsCudBlue,gradbarsCudOrange,gradbarsCudTeal,gradbarsCudPurple,gradbarsCudSky,gradbarsCudVermillion,gradbarsCudYellow},
    stack patterns={none,diagonal,dots,crosshatch,none,diagonal,dots},

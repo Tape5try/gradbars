@@ -1,0 +1,132 @@
+\section{完整案例：教学、借阅、节能与质控}
+本节给出四张用途与版式不同的完整表格，复用已有公开接口。
+所有数据均为演示值；图形说明尺度、单位与缺失含义，不代替原始数值。
+独立文件均在 \key{docs/examples/}，前三例使用默认库，第四例另加载 distribution。
+
+\subsection{课程项目：完成率与状态}
+已完成任务数与总任务数单独列出，完成率预先换算后作为原始数值输入。所有条形共用 0--100\% 量程；颜色逐行显式指定。
+
+\begin{example}[text and listing,sidebyside=false]{课程项目：完成率与状态}
+\begingroup
+\gradbarssetup{min=0,max=100,width=42mm,height=6pt,
+  precision=0,unit={\%},label=outside,label width=3em,
+  label gap=4pt,baseline=text,table legend=true}
+\renewcommand{\arraystretch}{1.5}
+\begin{center}
+\begin{tabular}{lrl}
+\toprule
+\rowcolor{gradbarsTrack}
+课程 & 已完成/总数 & \gradtablelegendhead[
+  stack colors={teal,orange,blue,gray}]{完成率}
+  {已完成,进行中,未开始,待测}\\
+\midrule
+几何 & 18/25 & \gradbar[color=orange]{72}\\
+数据分析 & 24/25 & \gradbar[color=orange]{96}\\
+研究方法 & 25/25 & \gradbar[color=teal]{100}\\
+课程设计 & 0/25 & \gradbar[color=blue]{0}\\
+研讨 & -- & \gradbar[color=gray]{NA}\\
+\bottomrule
+\end{tabular}
+\end{center}
+\endgroup
+\end{example}
+
+真实零值仍显示 0\%，未测记录保持缺失。\key{unit={\%}} 只追加符号，不会计算任务数之比。
+\par\smallskip\noindent 独立源码：\key{docs/examples/course-progress.tex}。
+
+\clearpage
+
+\subsection{图书馆：黑白渠道构成}
+图例与堆叠段按名称共享纹理。柜台、自提柜和配送是本例中互斥的借阅渠道，打印时仍可辨认。
+
+\begin{example}[text and listing,sidebyside=false]{图书馆：黑白渠道构成}
+\begingroup
+\gradbarscategory{柜台}{blue}{diagonal}
+\gradbarscategory{自提柜}{teal}{dots}
+\gradbarscategory{配送}{orange}{crosshatch}
+\gradbarssetup{print,min=0,max=300,width=70mm,height=14pt,
+  stack names={柜台,自提柜,配送},segment labels=percent,
+  precision=0,label=none,table legend=true}
+\renewcommand{\arraystretch}{1.8}
+\begin{center}
+\begin{tabular}{@{}lrl@{}}
+\toprule
+分馆 & 借阅数 & \gradtablelegendhead[print]
+  {借阅渠道占比}{柜台,自提柜,配送}\\
+\midrule
+北馆 & 300 & \gradstack{180,90,30}\\
+南馆 & 300 & \gradstack{120,90,90}\\
+东馆 & 300 & \gradstack{60,180,60}\\
+西馆 & 300 & \gradstack{150,105,45}\\
+\bottomrule
+\end{tabular}
+\end{center}
+\endgroup
+\end{example}
+
+每行输入的三项都是借阅笔数，合计均为 300；分段百分比以该行总数为分母。等宽来自相同总数，不是宏包自动归一化。
+\par\smallskip\noindent 独立源码：\key{docs/examples/borrowing-channels.tex}。
+
+\clearpage
+
+\subsection{建筑改造：多级表头与能耗变化}
+多级表头将前后数值归在同一单位下，右侧哑铃统一采用 0--200 量程，避免按行放大变化。
+
+\begin{example}[text and listing,sidebyside=false]{建筑改造：多级表头与能耗变化}
+\begingroup
+\begin{center}
+\begin{gradtable}[width=\linewidth,align=c,header align=c,
+  column sep=3pt,row stretch=1.7,label width=9mm]
+\gradcolumn[width=22mm]{building}{楼宇}
+\gradcolumn[type=number,width=16mm,
+  options={precision=0}]{before}{改造前}
+\gradcolumn[type=number,width=16mm,
+  options={precision=0}]{after}{改造后}
+\gradcolumn[type=dumbbell,options={min=0,max=200,
+  precision=0,compare label=delta,track color=black!35,
+  stem width=.9pt}]{change}{变化}
+\gradheader{\gradspan{1}{地点}
+  \gradspan{2}{年度能耗 (kWh/m$^2$)}
+  \gradspan{1}{共同量程： 0--200}}
+\gradrow{门厅楼,160,120,160/120}
+\gradrow{工作室,130,90,130/90}
+\gradrow{档案楼,80,76,80/76}
+\gradrow{附楼,110,128,110/128}
+\end{gradtable}
+\end{center}
+\endgroup
+\end{example}
+
+空心点为改造前，实心点为改造后；差值为“改造后减改造前”，单位同为 kWh/m$^2$。负数表示本组演示数据中的用量下降，不等同于因果效果。
+\par\smallskip\noindent 独立源码：\key{docs/examples/energy-retrofit.tex}。
+
+\clearpage
+
+\subsection{生产批次：共享尺度箱线图}
+导言区先加载 \key{\usegradbarslibrary{distribution}}。所有批次固定为 9.80--10.20 mm，便于同时比较位置、离散程度与异常观测。
+
+\begin{example}[text and listing,sidebyside=false]{生产批次：共享尺度箱线图}
+\begingroup
+\gradbarsstyle{batch-demo}{box range=fixed,min=9.8,max=10.2,
+  width=70mm,height=5ex,precision=2,label=outside,
+  unit={\,mm},palette=accessible}
+\newcommand{\batchplot}[1]{\raisebox{\dimexpr.5ex-.5\height+.5\depth\relax}{%
+  \gradboxplot[style=batch-demo]{#1}}}
+\renewcommand{\arraystretch}{2.2}
+\begin{center}
+\begin{tabular}{@{}lrp{94mm}@{}}
+\toprule
+批次 & 样本数 & 9.80--10.20 mm / 中位数\\
+\midrule
+A & 9 & \batchplot{9.96,9.98,9.99,10,10.01,10.02,10.03,10.04,10.06}\\
+B & 9 & \batchplot{9.85,9.95,9.98,10,10.01,10.02,10.04,10.08,10.17}\\
+C & 9 & \batchplot{10.03,10.04,10.05,10.05,10.06,10.07,10.07,10.08,10.09}\\
+待测 & -- & \batchplot{NA}\\
+\bottomrule
+\end{tabular}
+\end{center}
+\endgroup
+\end{example}
+
+右侧文字是中位数；两须取 1.5 IQR 围栏内的实际观测，空心点保留异常值。这里的量程只是绘图范围，不是验收界限；两须也不是置信区间。
+\par\smallskip\noindent 独立源码：\key{docs/examples/batch-dimensions.tex}。

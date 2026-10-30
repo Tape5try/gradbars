@@ -8,8 +8,8 @@ Color values and redundant coding guidance are attributed to
 No third-party image or implementation is incorporated. The package's original
 implementation is MIT licensed. A palette name is not accessibility certification.
 
-`theme=accessible` selects a solid blue bar, pale track, automatic label contrast and vermillion negative
-role. `palette=accessible` additionally selects stack colors/textures, threshold,
+`theme=accessible` selects a solid blue bar, pale track, automatic label contrast and, in this explicitly requested v1.1.1 update, an RGB-complementary negative
+fill (#FF8D4D). This complement is not an Okabe-Ito color role. `palette=accessible` additionally selects stack colors/textures, threshold,
 comparison, spark and Heat roles. Heat has `heat palette=accessible-sequential`
 and `accessible-diverging` (vermillion/white/blue). Native tables accept
 `theme=accessible`; labels and numbers must remain visible. Color does not encode

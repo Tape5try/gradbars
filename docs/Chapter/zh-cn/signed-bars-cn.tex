@@ -20,7 +20,8 @@ $W(-\mathrm{min})/(\mathrm{max}-\mathrm{min})$，
 \gradbar{30}
 \end{example}
 
-负值默认使用 \key{negative color=lightred} 的纯色；正值使用所选主题。
+未显式选择主题时，负值保留 \key{negative color=lightred} 的默认纯色。
+显式设置 \key{theme=blue} 等主题后，负值采用该主题的互补色，填充方式与主题一致。
 也可以为负值独立指定渐变：
 \begin{example}{示例 10a：负值独立渐变}
 \gradbar[min=-100,max=100,width=30mm,label width=3em,
@@ -62,3 +63,28 @@ $W(-\mathrm{min})/(\mathrm{max}-\mathrm{min})$，
 \note{数值及误差端点超出范围时，默认发出警告并截断显示，
 原始标签保持不变。截断的误差端点不代表真实端点。
 严谨的区间图建议使用 \key{overflow=error}，或扩大范围以显示完整误差。}
+
+
+\subsection{同轨呈现两个正负观测值}
+\verb|\gradsignedbar[选项]{负值}{正值}| 由 core 内置，
+\key{libraries=none} 即可使用。两个参数是独立观测值，不计算净值或差值。
+负侧必须小于等于零，正侧必须大于等于零；量程须满足
+$\mathrm{min}<0<\mathrm{max}$，也可使用非对称或命名共享量程。
+\begin{example}{一条轨道、两侧数据及误差}
+\gradsignedbar[min=-50,max=50,width=30mm,
+  error=8,theme=blue]{-24}{24}
+
+\gradsignedbar[min=-20,max=80,width=30mm,
+  error minus=2,error plus=5,theme=teal]{-10}{40}
+
+\gradsignedbar[min=-50,max=50,width=30mm,
+  theme=accessible]{NA}{24}
+\end{example}
+公共轨道、零线与参考标记只绘制一次。误差参数分别作用于两个观测值，
+误差区间可以跨过零点；越界仍按 \key{overflow} 处理，不因同轨而裁剪至某一侧。
+每侧可独立使用 \key{NA} 或空参数表示缺失，零值表示零长度，不视为缺失。
+默认在轨道外显示“负值 / 正值”，分别使用现有数字格式与单位；
+支持 \key{label=outside}、\key{left}、\key{none}，\key{text} 可覆盖整个标签。
+此命令只绘制普通条形，不接受其他复合图形模式；不增加原生表格列类型。
+自动替代文本同时描述两个观测值；已有 TikZ 图内由外层图形提供描述。
+自定义标量后端须显式设置 \key{backend fallback=tikz}。

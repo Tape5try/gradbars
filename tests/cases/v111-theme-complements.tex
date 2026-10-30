@@ -1,0 +1,68 @@
+% MIT: test resolved rendering colors, modes, ordering and scope.
+\documentclass{article}
+\usepackage[libraries=none]{gradbars}
+\makeatletter
+\ExplSyntaxOn
+\cs_new_eq:NN \testBaseline \gradbarsResolveBaseline
+\cs_set_protected:Npn \gradbarsResolveBaseline
+  {\testBaseline
+   \xdef\testLeft{\gradbars@left}\xdef\testRight{\gradbars@right}
+   \ifgradbars@gradient\gdef\testGradient{yes}\else\gdef\testGradient{no}\fi}
+\cs_new_protected:Npn \checkcolor #1#2
+  {\convertcolorspec{named}{#1}{rgb}\testRgbA
+   \convertcolorspec{named}{#2}{rgb}\testRgbB
+   \int_step_inline:nn{3}
+     {\fp_compare:nF{abs(\clist_item:Nn\testRgbA{##1}-\clist_item:Nn\testRgbB{##1})<.0001}
+       {\errmessage{Incorrect~resolved~color}}}}
+\cs_new_protected:Npn \checkcomplement #1#2
+  {\convertcolorspec{named}{#1}{rgb}\testRgbA
+   \convertcolorspec{named}{#2}{rgb}\testRgbB
+   \int_step_inline:nn{3}
+     {\fp_compare:nF{abs(\clist_item:Nn\testRgbA{##1}+\clist_item:Nn\testRgbB{##1}-1)<.0001}
+       {\errmessage{RGB~channels~are~not~complementary}}}}
+\cs_new_protected:Npn \checkmode #1
+  {\str_if_eq:eeF{\testGradient}{#1}{\errmessage{Incorrect~fill~mode}}}
+\ExplSyntaxOff
+\makeatother
+\def\testYes{yes}
+\newcommand{\checktheme}[4]{%
+  \sbox0{\gradbar[theme=#1,error=8]{24}}%
+  \checkcolor{\testLeft}{#2}\checkcolor{\testRight}{#3}\checkmode{#4}%
+  \sbox0{\gradbar[theme=#1,error=8]{-24}}%
+  \checkcomplement{\testLeft}{#2}\checkmode{#4}%
+  \ifx\testGradient\testYes \checkcomplement{\testRight}{#3}\fi}
+\begin{document}
+\gradbarssetup{min=-50,max=50}
+% The implicit default remains solid lightred.
+\sbox0{\gradbar{-24}}\checkcolor{\testLeft}{lightred}\checkmode{no}
+\checktheme{blue}{gradbarsBlue}{gradbarsBlueLight}{yes}
+\checktheme{teal}{gradbarsTeal}{gradbarsTealLight}{yes}
+\checktheme{solid}{gradbarsBlue}{gradbarsBlue}{no}
+\checktheme{gray}{black!65}{black!65}{no}
+\checktheme{lbyellow}{lightblue!90}{lightyellow!60}{yes}
+\checktheme{viblue}{violet!20}{lightblue!70}{yes}
+\checktheme{cyblu}{cyan}{blue!20}{yes}
+\checktheme{violet}{gradbarsViolet}{gradbarsVioletLight}{yes}
+\checktheme{orange}{gradbarsWarmOrange}{gradbarsWarmOrangeLight}{yes}
+\checktheme{forest}{gradbarsForest}{gradbarsForestLight}{yes}
+\checktheme{accessible}{gradbarsCudBlue}{gradbarsCudBlue}{no}
+% Later overrides, mode reset and theme reset use ordinary key order.
+\sbox0{\gradbar[theme=blue,negative fill=solid,negative color=red]{-24}}
+\checkcolor{\testLeft}{red}\checkmode{no}
+\sbox0{\gradbar[theme=blue,negative left color=magenta!25,negative right color=magenta]{-24}}
+\checkcolor{\testLeft}{magenta!25}\checkcolor{\testRight}{magenta}\checkmode{yes}
+\sbox0{\gradbar[negative left color=red,negative right color=green,theme=teal,theme=gray]{-24}}
+\checkcomplement{\testLeft}{black!65}\checkmode{no}
+\sbox0{\gradbar[theme=gray,theme=blue]{-24}}
+\checkcomplement{\testRight}{gradbarsBlueLight}\checkmode{yes}
+\sbox0{\gradbar[theme=blue,print]{-24}}\checkcolor{\testLeft}{white}\checkmode{no}
+\sbox0{\gradbar[theme=blue,thresholds={-20,20},threshold colors={red,yellow,green}]{-24}}
+\checkcolor{\testLeft}{red}\checkmode{no}
+{\gradbarssetup{theme=teal}
+ \sbox0{\gradbar{-24}}\checkcomplement{\testLeft}{gradbarsTeal}}
+\sbox0{\gradbar{-24}}\checkcolor{\testLeft}{lightred}\checkmode{no}
+\gradbarsstyle{complement-demo}{theme=blue}
+\sbox0{\gradbar[style=complement-demo]{-24}}\checkcomplement{\testLeft}{gradbarsBlue}
+\sbox0{\gradbar[theme=blue]{0}}\sbox0{\gradbar[theme=blue]{NA}}
+Theme complement checks passed.
+\end{document}

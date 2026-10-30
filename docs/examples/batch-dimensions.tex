@@ -1,0 +1,33 @@
+% Author: SuFan; MIT License. Illustrative dimension samples, not acceptance limits.
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars,booktabs,array}
+\usegradbarslibrary{distribution}
+\pagestyle{empty}
+\begin{document}
+% BEGIN TABLE
+\begingroup
+\gradbarsstyle{batch-demo}{box range=fixed,min=9.8,max=10.2,
+  width=70mm,height=5ex,precision=2,label=outside,
+  unit={\,mm},palette=accessible}
+\newcommand{\batchplot}[1]{\raisebox{\dimexpr.5ex-.5\height+.5\depth\relax}{%
+  \gradboxplot[style=batch-demo]{#1}}}
+\renewcommand{\arraystretch}{2.2}
+\begin{center}
+\begin{tabular}{@{}lrp{94mm}@{}}
+\toprule
+Batch & Samples & 9.80--10.20 mm / median\\
+\midrule
+A & 9 & \batchplot{9.96,9.98,9.99,10,10.01,10.02,10.03,10.04,10.06}\\
+B & 9 & \batchplot{9.85,9.95,9.98,10,10.01,10.02,10.04,10.08,10.17}\\
+C & 9 & \batchplot{10.03,10.04,10.05,10.05,10.06,10.07,10.07,10.08,10.09}\\
+Pending & -- & \batchplot{NA}\\
+\bottomrule
+\end{tabular}
+\end{center}
+\endgroup
+% END TABLE
+\noindent Every batch uses the same 9.80--10.20 mm display scale. Labels show
+medians; hollow outlier marks remain visible. Whiskers are observed values
+inside the 1.5 IQR fences, not confidence intervals or acceptance limits.
+\end{document}

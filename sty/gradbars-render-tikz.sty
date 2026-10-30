@@ -44,6 +44,7 @@
   \gradbarsPrepareLayout
   \gradbarsDrawTrack
   \gradbarsDrawBand
+  \ifgradbars@pair\gradbarsPairNegative{\gradbarsDrawBarBody}\fi
   \gradbarsDrawShape
   \ifgradbars@spark\else\ifdim\gradbars@xzero>0pt
     \draw[gradbarsInk!65,line width=.35pt]
@@ -55,18 +56,10 @@
       ([yshift=-1pt]\gradbars@xtarget,0)--
       ([yshift=1pt]\gradbars@xtarget,\gradbars@height);
   \fi
-  \ifgradbars@missing\else\ifgradbars@error
-    \pgfmathsetlengthmacro\gradbars@xlo{\gradbars@errorlo*(\gradbars@width)}%
-    \pgfmathsetlengthmacro\gradbars@xhi{\gradbars@errorhi*(\gradbars@width)}%
-    \draw[draw=\gradbars@errorcolor,line width=.5pt]
-      ([yshift=.5*\gradbars@height]\gradbars@xlo,0)--
-      ([yshift=.5*\gradbars@height]\gradbars@xhi,0);
-    \foreach \gradbars@cap in {\gradbars@xlo,\gradbars@xhi}{
-      \draw[draw=\gradbars@errorcolor,line width=.5pt]
-        ([yshift=.2*\gradbars@height]\gradbars@cap,0)--
-        ([yshift=.8*\gradbars@height]\gradbars@cap,0);
-    }
-  \fi\fi
+  \ifgradbars@pair
+    \gradbarsPairNegative{\gradbarsDrawError\gradbarsDrawOverflow}%
+  \fi
+  \gradbarsDrawError
   \gradbarsDrawReferences
   \gradbarsDrawOverflow
   \gradbarsDrawChange
@@ -80,6 +73,20 @@
   \coordinate (gradbarsbaseline) at (0,\gradbars@baseliney);
   \path[use as bounding box] (0,-\gradbars@rowpadding)
     rectangle (\gradbars@width,{\gradbars@height+\gradbars@rowpadding});
+}
+\def\gradbarsDrawError{%
+  \ifgradbars@missing\else\ifgradbars@error
+    \pgfmathsetlengthmacro\gradbars@xlo{\gradbars@errorlo*(\gradbars@width)}%
+    \pgfmathsetlengthmacro\gradbars@xhi{\gradbars@errorhi*(\gradbars@width)}%
+    \draw[draw=\gradbars@errorcolor,line width=.5pt]
+      ([yshift=.5*\gradbars@height]\gradbars@xlo,0)--
+      ([yshift=.5*\gradbars@height]\gradbars@xhi,0);
+    \foreach \gradbars@cap in {\gradbars@xlo,\gradbars@xhi}{
+      \draw[draw=\gradbars@errorcolor,line width=.5pt]
+        ([yshift=.2*\gradbars@height]\gradbars@cap,0)--
+        ([yshift=.8*\gradbars@height]\gradbars@cap,0);
+    }
+  \fi\fi
 }
 \ExplSyntaxOn
 \cs_new_protected:Npn \__gradbars_render_tikz: {

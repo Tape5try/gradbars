@@ -27,7 +27,7 @@ precision. TeX's dimension resolution limits the smallest drawable bar.
 | `max` | `100` | Decimal scale maximum, strictly above min |
 | `width` | `24mm` | Positive track width; excludes outside label |
 | `height` | `1.5ex` | Positive track height |
-| `theme` | `blue` | `blue`, `teal`, `solid`, `gray`, `lbyellow`, `viblue`, `cyblu`, `violet`, `orange`, `forest` |
+| `theme` | `blue` | `blue`, `teal`, `solid`, `gray`, `lbyellow`, `viblue`, `cyblu`, `violet`, `orange`, `forest`, `accessible`; explicit selection also sets complementary negative colors |
 | `label` | `outside` | `outside`, `left`, `inside`, `none`, `end`, `auto` |
 | `label width` | `4.5em` | Minimum right-aligned outside label slot with automatic overflow handling |
 | `label gap` | `.6em` | Gap between track and outside label |
@@ -47,10 +47,10 @@ precision. TeX's dimension resolution limits the smallest drawable bar.
 | `rounded` | `0pt` | Nonnegative corner radius; clamped to fit each bar |
 | `target` | empty | Reference value within the scale; empty disables |
 | `target color` | `gradbarsInk` | Target line color |
-| `negative color` | `lightred` | Solid fill for negative values |
-| `negative fill` | `solid` | `solid` or `gradient` for negative bars |
-| `negative left color` | empty | Left endpoint of a negative gradient; setting it enables gradient fill |
-| `negative right color` | empty | Right endpoint of a negative gradient; setting it enables gradient fill |
+| `negative color` | `lightred` without explicit theme | Solid negative fill / gradient fallback; themes select a complement |
+| `negative fill` | `solid` without explicit theme | `solid` or `gradient`; explicit themes set the corresponding mode |
+| `negative left color` | empty without explicit theme | Left endpoint of a negative gradient; setting it enables gradient fill |
+| `negative right color` | empty without explicit theme | Right endpoint of a negative gradient; setting it enables gradient fill |
 | `thresholds` | empty | Two strictly increasing cutoffs; empty disables |
 | `threshold colors` | `lightred,gold,lightgreen` | Three ordered solid colors |
 | `error` | empty | Set both error magnitudes; empty clears both |
@@ -84,7 +84,14 @@ Three additional gradient themes are included in v0.0.5:
 
 Themes set fill, gradient endpoints, track and text colors; later explicit keys
 override these settings. They use the existing numeric scales and sign rules.
-Negative bars retain `negative color`, thresholds retain priority, and `print`
+As explicitly requested for the unreleased v1.1.1 update, all eleven bar themes
+also set negative colors to the xcolor RGB complement of their positive colors:
+`(r,g,b)` becomes `(1-r,1-g,1-b)`. Gradient endpoints are complemented
+individually in the same left/right order; `solid`, `gray` and `accessible` use
+solid complementary fills. Gray remains gray with inverted intensity.
+An explicit `theme=blue` thus uses orange/brown negative endpoints instead of
+the former fixed lightred. The implicit package default still uses solid
+`lightred` for negative values. Thresholds retain priority, and `print`
 applied after the theme selects monochrome settings. Themes do not select a
 heat palette or stack category palette.
 
@@ -121,7 +128,21 @@ The default `baseline=auto` preserves the historical visual baseline. Use
 `baseline=bottom` to place it at the track's lower edge. `baseline shift` applies
 an additional vertical shift and is useful for table rows with custom font sizes.
 
-Negative bars use `negative color` as a solid fill by default. Set both gradient
+Without an explicit theme, negative bars use `negative color` as a solid fill.
+An explicit theme sets both signs; later negative keys override that theme.
+For a custom solid color after a gradient theme, specify both
+`negative fill=solid,negative color=lightred`. Setting only `negative color`
+does not replace already specified gradient endpoints. To restore the former
+negative appearance, use:
+
+```latex
+\gradbar[min=-50,max=50,theme=blue,
+  negative fill=solid,negative color=lightred]{-24}
+```
+
+See the [eleven-theme signed gallery](examples/theme-complements.tex).
+Complementary colors apply when the theme is selected; later positive color
+overrides do not recompute negative endpoints. Set both gradient
 endpoints directly, or select the mode explicitly:
 
 ```latex
@@ -134,6 +155,49 @@ endpoints directly, or select the mode explicitly:
 For a negative bar the left endpoint is the outer, negative side and the right
 endpoint is the side nearest zero. Threshold colors and `print` retain priority
 over the negative gradient.
+
+### Ordinary table text baselines (issue #4)
+
+The default `baseline=auto` preserves the historical graphic placement; it does
+not promise that a numeric bar label shares the baseline of an adjacent plain
+number cell. This remains true in v1.1.0 and the v1.1.1 development version.
+For that use case, select `baseline=text` explicitly:
+
+```latex
+\gradbarssetup{width=30mm,max=100,precision=1,baseline=text}
+```
+
+This option is already supported by v1.1.0. No version upgrade or manual
+raisebox is needed to enable it. `baseline=center`, `baseline=bottom` and changes
+to row spacing address different layout choices. See the
+[complete original-table reproduction](examples/baseline-alignment.tex) and
+[issue #4](https://github.com/Tape5try/gradbars/issues/4).
+
+## Two signed observations on one track
+
+```latex
+\gradsignedbar[min=-50,max=50,error=8,theme=blue]{-24}{24}
+```
+
+Available in core (`libraries=none`). Arguments are independent observations:
+first <= 0, second >= 0; require `min < 0 < max`. Either may independently be
+`NA` or empty, distinct from zero. Existing strict numeric input, scientific
+notation, scopes, named scales, formatting, units and clipping rules apply.
+One track, zero line and reference set are drawn. Each observation uses its
+own sign color and its own uncertainty interval; `error`, `error minus` and
+`error plus` specify the same distances for each observation. Intervals may cross
+zero and are clipped only to the full scale, not to an observation's half.
+
+Labels support `outside` (inherited default), `left` and `none`. The label is
+`negative / positive`, with independently formatted values and units. `text`
+overrides it as a whole. Other label placements, non-bar shapes and compound
+modes are diagnosed. No native table column type or scalar `gradgraphic` type is
+added. Ordinary table cells may contain the command directly.
+
+Automatic alternative text describes both observations and the shared scale,
+unit and uncertainty; `alt`, artifact/off and outer-TikZ ownership retain their
+usual behavior. This is native compound kind `signed-bar`: custom schema-1
+scalar backends require explicit `backend fallback=tikz`.
 
 ## Targets, thresholds and uncertainty
 

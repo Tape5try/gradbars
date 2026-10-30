@@ -1,0 +1,34 @@
+% Author: SuFan; MIT License. Illustrative energy-use comparison, not measured data.
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars}
+\pagestyle{empty}
+\begin{document}
+% BEGIN TABLE
+\begingroup
+\begin{center}
+\begin{gradtable}[width=\linewidth,align=c,header align=c,
+  column sep=3pt,row stretch=1.7,label width=9mm]
+\gradcolumn[width=22mm]{building}{Building}
+\gradcolumn[type=number,width=16mm,
+  options={precision=0}]{before}{Before}
+\gradcolumn[type=number,width=16mm,
+  options={precision=0}]{after}{After}
+\gradcolumn[type=dumbbell,options={min=0,max=200,
+  precision=0,compare label=delta,track color=black!35,
+  stem width=.9pt}]{change}{Change}
+\gradheader{\gradspan{1}{Site}
+  \gradspan{2}{Annual use (kWh/m$^2$)}
+  \gradspan{1}{Common scale: 0--200}}
+\gradrow{Atrium,160,120,160/120}
+\gradrow{Studio,130,90,130/90}
+\gradrow{Archive,80,76,80/76}
+\gradrow{Annex,110,128,110/128}
+\end{gradtable}
+\end{center}
+\endgroup
+% END TABLE
+\noindent Hollow points are before, filled points are after. All dumbbells
+share 0--200. Delta is after minus before, in kWh/m$^2$; a negative value means
+lower annual use. These are illustrative comparisons, not causal estimates.
+\end{document}

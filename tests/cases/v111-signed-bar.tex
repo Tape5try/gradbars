@@ -1,0 +1,67 @@
+% MIT: shared geometry, per-observation uncertainty, scope and missing values.
+\documentclass{article}
+\usepackage[libraries=none]{gradbars}
+\newcount\tracks
+\newcount\bodies
+\newcount\errors
+\newif\ifnegativeformatted
+\newif\ifpositiveformatted
+\gradbarsdeclareformatter{pairprobe}{%
+  \ifdim#1pt<0pt\global\negativeformattedtrue
+  \else\global\positiveformattedtrue\fi
+  \gradbarsformatnumber[precision=#2,number format=#3]{#1}}
+\makeatletter
+\ExplSyntaxOn
+\cs_new_eq:NN\savedTrack\gradbarsDrawTrack
+\cs_set_protected:Npn\gradbarsDrawTrack{\global\advance\tracks1\savedTrack}
+\cs_new_eq:NN\savedBody\gradbarsDrawBarBody
+\cs_set_protected:Npn\gradbarsDrawBarBody
+ {\global\advance\bodies1
+  \fp_compare:nNnF{\gradbars@zero}={.5}{\errmessage{Shared~zero~changed}}
+  \savedBody}
+\cs_new_eq:NN\savedError\gradbarsDrawError
+\cs_set_protected:Npn\gradbarsDrawError
+ {\ifgradbars@missing\else\ifgradbars@error
+   \global\advance\errors1
+   \fp_compare:nNnTF{\gradbars@value}<{0}
+     {\fp_compare:nNnF{\gradbars@errorhi}={.56}{\errmessage{Negative~error~lost~its~positive~part}}}
+     {\fp_compare:nNnF{\gradbars@errorlo}={.44}{\errmessage{Positive~error~lost~its~negative~part}}}
+  \fi\fi\savedError}
+\ExplSyntaxOff
+\makeatother
+\begin{document}
+\sbox0{\gradsignedbar[min=-50,max=50,error=8,label=none,theme=blue]{-2}{2}}
+\ifnum\tracks=1\else\errmessage{Pair did not draw exactly one track}\fi
+\ifnum\bodies=2\else\errmessage{Pair did not draw two bodies}\fi
+\ifnum\errors=2\else\errmessage{Pair did not draw two error whiskers}\fi
+\makeatletter
+\let\gradbarsDrawTrack\savedTrack
+\let\gradbarsDrawBarBody\savedBody
+\let\gradbarsDrawError\savedError
+\ifgradbars@pair\errmessage{Pair flag leaked}\fi
+\makeatother
+\gradbarssetup{min=-50,max=50,width=36mm}
+\sbox0{\gradsignedbar[label=none]{-24}{24}}
+\sbox2{\gradbar[label=none]{24}}
+\ifdim\wd0=\wd2\else\errmessage{Shared track width changed}\fi
+\sbox0{\gradsignedbar[width=8em,height=1ex,rounded=2pt]{-10}{20}}
+\sbox0{\gradsignedbar[min=-20,max=80,error=3,theme=teal]{-10}{40}}
+\sbox0{\gradsignedbar[theme=blue,negative fill=solid,negative color=red,label=left]{-24}{24}}
+\sbox0{\gradsignedbar[theme=blue,print]{-24}{24}}
+\sbox0{\gradsignedbar[thresholds={-10,10}]{-24}{24}}
+\sbox0{\gradsignedbar{NA}{24}}
+\sbox0{\gradsignedbar{-24}{NA}}
+\sbox0{\gradsignedbar{}{}}
+\sbox0{\gradsignedbar{0}{0}}
+\sbox0{\gradsignedbar[text={Two measurements}]{-24}{24}}
+\sbox0{\gradsignedbar[formatter=pairprobe,unit={\,s}]{-24}{24}}
+\ifnegativeformatted\else\errmessage{Negative value did not reach formatter}\fi
+\ifpositiveformatted\else\errmessage{Positive value did not reach formatter}\fi
+\gradscale{pair-scale}{min=-20,max=80}
+\sbox0{\gradsignedbar[scale group=pair-scale]{-10}{40}}
+\sbox0{\begin{tikzpicture}\gradsignedbar[label=none]{-24}{24}\end{tikzpicture}}
+\begin{tabular}{lc}Method & Pair\\A & \gradsignedbar[label=none]{-24}{24}\\\end{tabular}
+\ExplSyntaxOn
+\prop_if_empty:NF\l__gradbars_model_prop{\errmessage{Pair model leaked}}
+\ExplSyntaxOff
+\end{document}

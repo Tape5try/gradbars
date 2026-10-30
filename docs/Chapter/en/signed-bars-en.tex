@@ -21,7 +21,8 @@ lie inside the original endpoints. Intervals reject error whiskers and quality
 thresholds. Default labels show the supplied endpoints.
 Lollipops show a point for zero, but no point for missing input.
 
-Negative bars are solid by default. To give the negative side its own gradient,
+Without an explicit theme, negative bars retain the solid lightred default.
+Explicit themes select complementary negative colors. To override the negative gradient,
 set its two endpoints explicitly:
 \begin{demo}{Independent negative gradient}
 \gradbar[min=-100,max=100,width=50mm,
@@ -33,3 +34,31 @@ set its two endpoints explicitly:
 The negative left endpoint is the outer side of the bar and the right endpoint is
 the side next to zero. `negative color` remains the fallback solid color; threshold
 and print modes continue to override the gradient.
+
+
+\subsection{Two signed observations on one track}
+\verb|\gradsignedbar[options]{negative}{positive}| is built into core,
+including \key{libraries=none}. Its arguments are independent observations, not
+a net total or a computed difference. The first must be nonpositive and the
+second nonnegative. Set $\mathrm{min}<0<\mathrm{max}$; asymmetric and named
+shared scales are supported.
+\begin{demo}{One track with two observations and uncertainties}
+\gradsignedbar[min=-50,max=50,width=50mm,
+  error=8,theme=blue]{-24}{24}
+
+\gradsignedbar[min=-20,max=80,width=50mm,
+  error minus=2,error plus=5,theme=teal]{-10}{40}
+
+\gradsignedbar[min=-50,max=50,width=50mm,
+  theme=accessible]{NA}{24}
+\end{demo}
+The track, zero line and reference marks are drawn once. Error distances apply to
+each observation separately; intervals may cross zero and retain the ordinary
+\key{overflow} policy. Either argument may independently be \key{NA} or empty;
+zero means zero length, not missing. The default outside label shows
+``negative / positive'', formatting each value and unit independently. Supported
+labels are \key{outside}, \key{left} and \key{none}; \key{text} replaces the whole
+label. This command accepts ordinary bars only and adds no native table column
+type. Its automatic description includes both observations; an enclosing TikZ
+picture owns the description when embedded. Custom scalar backends need explicit
+\key{backend fallback=tikz}.

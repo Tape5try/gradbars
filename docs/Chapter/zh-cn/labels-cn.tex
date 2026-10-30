@@ -51,6 +51,27 @@
 \key{baseline=bottom} 分别按图形中心或轨道下边缘对齐；正的 \key{baseline shift}
 会把图形向上移动。
 
+
+\subsection{普通表格：数字列与图中标签的基线}
+若要让普通 \key{tabular} 中的数值与数据条外部标签处于同一文字基线，
+请显式设置 \key{baseline=text}。默认 \key{baseline=auto} 保留既有图形位置，
+不是表格文字基线对齐模式；仅升级版本不会自动改变原有示例的对齐方式。
+此选项在 v1.1.0 中已可用。
+\begin{example}[text and listing,sidebyside=false]{示例 33b：普通数字与图中数字对齐}
+\gradbarssetup{width=30mm,max=100,precision=1,baseline=text}
+\begin{tabular}{lcc}
+\toprule
+Model & Number & Accuracy (\%) \\
+\midrule
+Baseline & 72.4 & \gradbar{72.4} \\
+Proposed & 92.7 & \gradbar{92.7} \\
+\bottomrule
+\end{tabular}
+\end{example}
+上例保持普通数字列的写法，只增加基线选项，不需要手工升降图形。
+调整表格行高不会自动启用文字基线对齐。
+\par\smallskip\noindent 独立源码：\texttt{docs/examples/baseline-alignment.tex}。
+
 \begin{example}{示例 34：直接放入正文}
 Completion:
 \gradbar[width=15mm,

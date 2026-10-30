@@ -1,0 +1,19 @@
+% Author: SuFan; MIT License. Minimal table for GitHub issue #4.
+% https://github.com/Tape5try/gradbars/issues/4
+\documentclass{article}
+\usepackage{booktabs,gradbars}
+\pagestyle{empty}
+\begin{document}
+\gradbarssetup{
+  width=30mm,max=100,precision=1,
+  baseline=text
+}
+\begin{tabular}{lcc}
+\toprule
+Model & Number & Accuracy (\%) \\
+\midrule
+Baseline & 72.4 & \gradbar{72.4} \\
+Proposed & 92.7 & \gradbar{92.7} \\
+\bottomrule
+\end{tabular}
+\end{document}

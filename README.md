@@ -12,6 +12,10 @@
 
 gradbars 基于 PGF/TikZ，既可将单个图形嵌入现有 `tabular`，也可通过 `gradtable` 声明列并填写数据，生成可视化表格。无需手动包裹 `tikzpicture`，无需开启 shell escape。
 
+显式设置 `theme=blue` 等条形主题时，负值自动采用互补色；支持全部 11 个主题，未选主题的默认负值保持浅红纯色。主题后可用 `negative fill=solid,negative color=lightred` 恢复原有负值外观。[正负主题完整对照](docs/examples/theme-complements.tex)。
+
+内置正负同轨命令：`\gradsignedbar[min=-50,max=50,error=8,theme=blue]{-24}{24}`。无需自定义裁剪宏；两个观测值共用轨道和零线，各自保留误差区间。
+
 ## 主要能力
 
 - **内嵌图形**：数据条、正负条、棒棒糖、比较条、哑铃、子弹图、区间、堆叠条、趋势图与 Heat 色阶。
@@ -23,6 +27,14 @@ gradbars 基于 PGF/TikZ，既可将单个图形嵌入现有 `tabular`，也可�
 ## 效果展示
 
 以下图片由宏包示例实际编译生成，使用演示数据。图形保留数值标签，可直接嵌入正文或表格；点击图片可查看大图。
+
+### 正负同轨主题（v1.1.1）
+
+![十一种主题的正负同轨数据条，共用零线并保留两侧误差标记](docs/images/theme-complements-v1.1.1.png)
+
+上图使用内置命令 `\gradsignedbar[theme=blue,label=none]{-24}{24}`；各行共用 `min=-50,max=50,error=8,width=72mm`，仅切换主题名称。两侧数值由表格单独显示，负值采用互补色。
+
+[完整主题示例](docs/examples/theme-complements.tex) · [图片重建方法](docs/images/theme-complements.md)
 
 ### 内嵌图形：数值、比较、组成与趋势
 
@@ -158,6 +170,17 @@ Beta & & 0.750\\
 
 仅需色块行时用 `\gradtablelegend[选项]{名称列表}`。两个命令都随 core 提供，无需加载 `legend` 库；颜色说明由用户声明，不会自动改变数据条颜色。[完整服务响应时间表](docs/examples/service-response-legend.tex)与[图例配置](docs/legends.md)。
 
+## 普通表格中的文字基线
+
+在 `tabular` 中，让图中标签与旁边普通数字对齐时，请显式设置：
+
+```latex
+\gradbarssetup{width=30mm,max=100,precision=1,baseline=text}
+```
+
+默认 `baseline=auto` 保留原有图形位置，升级版本不会自动切换对齐模式。
+`baseline=text` 在 v1.1.0 中已可用。[完整对齐示例](docs/examples/baseline-alignment.tex)。
+
 ## tabularray 集成
 
 需要 tabularray 2025C（2025-11-27）或更新版本，在导言区加载：
@@ -186,6 +209,7 @@ Beta & & 0.750\\
 中英文手册均提供效果与源码对照，包含入门、图形、外观、表格、应用案例和参考。
 
 - [中文主文件](docs/gradbars-manual.tex)与[中文章节](docs/Chapter/zh-cn/README.md)。
+- [完整表格案例](docs/examples/README.md)：课程完成进度、借阅渠道构成、能耗前后对比与批次尺寸分布，均附独立源码。
 - [英文主文件](docs/gradbars-manual-en.tex)与[英文章节](docs/Chapter/en/README.md)。
 - [API 参考](docs/api.md)、[开发者指南](docs/developer.md)、[v1.1.1 维护说明](docs/migration-v1.1.1.md)和[v1.1.0 迁移指南](docs/migration-v1.1.0.md)。
 - [稳定接口契约](docs/stability.md)：公开接口范围、覆盖顺序、兼容性和弃用约定。

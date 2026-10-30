@@ -1,0 +1,42 @@
+% MIT: compare actual shipped PDFTeX label/text baselines, not the renderer formula.
+\documentclass{article}
+\usepackage{booktabs,zref-savepos,gradbars}
+\pagestyle{empty}
+\makeatletter
+\ExplSyntaxOn
+\cs_new_eq:NN \testOriginalLabel \gradbars@labelcontent
+\cs_set_protected:Npn \gradbars@labelcontent
+  {\exp_args:Nx\zsavepos{bar-\testRowId}\testOriginalLabel}
+\cs_new_protected:Npn \checkbaseline #1
+  {\zifrefundefined{plain-#1}{}
+    {\dim_compare:nNnT
+       {\dim_abs:n{\zposy{plain-#1}sp-\zposy{bar-#1}sp}}>{.02pt}
+       {\errmessage{Shipped~bar~label~and~table~text~baselines~differ:~#1}}}}
+\ExplSyntaxOff
+\makeatother
+\newcommand{\alignmentrow}[5]{%
+  #1 & {#2\zsavepos{plain-#1}#3} &
+  \def\testRowId{#1}\gradbar[font={#2},#4]{#5}\\}
+\begin{document}
+\gradbarssetup{width=30mm,max=100,precision=1,baseline=text}
+\begin{tabular}{lcc}
+\toprule Model & Number & Accuracy (\%) \\\midrule
+\alignmentrow{baseline}{}{72.4}{}{72.4}
+\alignmentrow{proposed}{}{92.7}{}{92.7}
+\alignmentrow{left}{}{72.4}{label=left}{72.4}
+\alignmentrow{tall}{}{72.4}{height=18pt}{72.4}
+\alignmentrow{small}{\small}{72.4}{}{72.4}
+\alignmentrow{large}{\Large}{72.4}{}{72.4}
+\alignmentrow{descenders}{\Large}{gyp}{text={gyp}}{72.4}
+\alignmentrow{missing}{}{--}{}{NA}
+\bottomrule
+\end{tabular}
+\ExplSyntaxOn
+\sys_if_engine_pdftex:T
+  {\checkbaseline{baseline}\checkbaseline{proposed}\checkbaseline{left}
+   \checkbaseline{tall}\checkbaseline{small}\checkbaseline{large}
+   \checkbaseline{descenders}\checkbaseline{missing}}
+\ExplSyntaxOff
+% savepos whatsits do not follow every PGF transform on the other drivers.
+% Their actual PDF glyph origins are checked independently with MuPDF.
+\end{document}

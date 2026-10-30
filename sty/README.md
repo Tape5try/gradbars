@@ -63,3 +63,20 @@ texlua scripts/unpack.lua
 将全部 22 个 `.sty` 文件一起安装到 `TEXMFHOME/tex/latex/gradbars/`，或放到主 `.tex` 文件所在目录，无需 shell escape。
 
 完整回归测试保留在 GitHub 的 `tests/`，不随 CTAN 源码包分发。源码包可运行 `l3build unpack` 和 `l3build doc`；`l3build check`、`scripts/check.lua` 和 `scripts/pdf-check.lua` 的完整检查需在 GitHub 开发仓库运行。
+
+## 显式主题的正负配色 / Explicit signed themes
+
+v1.1.1 开发版按要求为所有 11 个显式条形主题加入负值互补色，渐变两端分别取 RGB
+互补色；纯色主题使用互补纯色。未显式选主题时保留默认负值浅红纯色。
+主题后可覆盖负值端点，或用 `negative fill=solid,negative color=...` 覆盖纯色。
+阈值和打印规则保持；完整对照见 [独立示例](../docs/examples/theme-complements.tex)。
+
+All eleven explicit bar themes set complementary negative colors and matching
+fill modes. The implicit default remains solid lightred. Put custom overrides
+after the theme; solid overrides need `negative fill=solid` and `negative color`.
+
+`\gradsignedbar[选项]{负值}{正值}` 为 core 内置命令，共用轨道和零线；
+无需自行定义 TikZ 裁剪宏。两侧独立支持缺失值，误差可跨零点。
+`\gradsignedbar[options]{negative}{positive}` is built into core; it shares one
+track and zero line while preserving independent observations and error intervals.
+See [the signed-bar API](../docs/api.md#two-signed-observations-on-one-track).

@@ -1,0 +1,13 @@
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage[libraries=none]{gradbars}
+\begin{document}
+\gradsignedbar[min=-50,max=50,error=8,theme=blue]{-24}{24}\par
+\gradsignedbar[min=-50,max=50]{NA}{0}\par
+\gradsignedbar[min=-50,max=50,alt={Two signed observations.}]{-24}{24}\par
+\gradsignedbar[min=-50,max=50,accessibility=artifact]{-24}{24}\par
+\gradsignedbar[min=-50,max=50,accessibility=off]{-24}{24}\par
+\begin{tikzpicture}[alt={Outer signed picture.}]
+  \gradsignedbar[min=-50,max=50,label=none]{-24}{24}
+\end{tikzpicture}
+\end{document}

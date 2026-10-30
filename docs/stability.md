@@ -20,7 +20,7 @@ ctex/Fandol. texlua, l3build and latexmk are build tools; no Python files are re
 | Family | Public interfaces |
 | --- | --- |
 | Settings | `\gradbarssetup`, its alias `\gradbarsset`, `\gradbarsstyle`, `\gradscale` |
-| Graphics | `\gradbar`, `\gradstack`, `\gradspark`, `\gradheat`, `\gradcompare`, `\graddumbbell`, `\gradrange`, `\gradbullet`, `\gradintervals` |
+| Graphics | `\gradbar`, `\gradsignedbar`, `\gradstack`, `\gradspark`, `\gradheat`, `\gradcompare`, `\graddumbbell`, `\gradrange`, `\gradbullet`, `\gradintervals` |
 | Categories | `\gradbarscategory`, `\gradbarslegend`, `\gradtablelegend`, `\gradtablelegendhead` |
 | CSV and existing tables | `\gradbarsloadcsv`, `\gradbarcsv`, `\gradbarscsvcell`, `\gradbarscsvstyle`, `\gradbarscsvtable`, `\gradbarscolumn` (including `*`), `\gradbarshead` |
 | Native tables | `gradtable`, `\gradcolumn`, `\gradrow`, `\gradsummary`, `\gradgroup`, `\gradheader`, `\gradspan`, `\gradtablestyle`, `\gradtableschema`, `\graduseschema` |
@@ -88,6 +88,21 @@ core, render only when explicitly called, and preserve existing loading,
 category mappings, bar colors, stack legends and data semantics. Their title
 is ordinary text outside the category Figure; existing accessibility/backend
 rules continue to apply. See [the table-legend contract](legends.md#horizontal-table-header-legends).
+
+For this same unreleased v1.1.1 development update, the maintainer explicitly
+requested complementary negative colors for all eleven explicitly selected bar
+themes. This is a documented visual exception: themes now reset both signs,
+including negative endpoints and fill mode. Without an explicit theme, the
+historical solid lightred negative default remains. Left-to-right overrides, grouping,
+print and threshold precedence, positive colors and data semantics remain.
+See [migration notes](migration-v1.1.1.md). This exception does not relax the
+major-version rule for other default changes.
+
+The explicitly requested built-in `\gradsignedbar[options]{negative}{positive}`
+is also an additive exception for this unreleased development update. It is in
+core, renders two independent signed observations on one track, preserves the
+scalar `\gradbar` contract and uses native compound backend kind `signed-bar`.
+Its exact bounds, missing-value and label rules are in [the API](api.md).
 
 A deprecated public interface remains available throughout version 1. Its
 replacement and migration example are documented before removal in a later major

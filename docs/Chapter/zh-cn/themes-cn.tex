@@ -10,26 +10,26 @@
 \manualColor{lightblue}、\manualColor{lightred}、\manualColor{rose}、
 \manualColor{skyblue}、\manualColor{gold}、\manualColor{lavender} 和 \manualColor{peach}。
 
-\begin{example}[before upper={\fontsize{9}{10.6}\selectfont\setlength{\parskip}{13.8pt}}]{示例 29：内置主题与颜色}
-\gradbar[theme=blue]{72}
+\begin{example}[before upper={\fontsize{9}{10.6}\selectfont\setlength{\parskip}{13.8pt}}]{示例 29：正负同轨主题与内置颜色}
+\gradsignedbar[min=-50,max=50,label=none,theme=blue]{-24}{24}
 
-\gradbar[theme=teal]{72}
+\gradsignedbar[min=-50,max=50,label=none,theme=teal]{-24}{24}
 
-\gradbar[theme=solid]{72}
+\gradsignedbar[min=-50,max=50,label=none,theme=solid]{-24}{24}
 
-\gradbar[theme=gray]{72}
+\gradsignedbar[min=-50,max=50,label=none,theme=gray]{-24}{24}
 
-\gradbar[theme=lbyellow]{72}
+\gradsignedbar[min=-50,max=50,label=none,theme=lbyellow]{-24}{24}
 
-\gradbar[theme=viblue]{72}
+\gradsignedbar[min=-50,max=50,label=none,theme=viblue]{-24}{24}
 
-\gradbar[theme=cyblu]{72}
+\gradsignedbar[min=-50,max=50,label=none,theme=cyblu]{-24}{24}
 
-\gradbar[theme=violet]{72}
+\gradsignedbar[min=-50,max=50,label=none,theme=violet]{-24}{24}
 
-\gradbar[theme=orange]{72}
+\gradsignedbar[min=-50,max=50,label=none,theme=orange]{-24}{24}
 
-\gradbar[theme=forest]{72}
+\gradsignedbar[min=-50,max=50,label=none,theme=forest]{-24}{24}
 
 \gradbar[color=lightgreen]{72}
 
@@ -100,6 +100,32 @@
   track color=orange!10
 ]{68}
 \end{example}
+
+
+\subsection{正负值的主题互补色}
+显式选择条形主题时，负值使用正值颜色的 RGB 互补色：
+各通道由 $c$ 变为 $1-c$。此规则覆盖上述十种主题以及
+\key{theme=accessible}。渐变两端分别取互补色，左右顺序不变；
+\key{solid}、\key{gray} 和 \key{accessible} 使用互补纯色，灰色仍为反相灰度。
+未显式选择主题时，原有默认负值浅红纯色保持不变。
+\begin{example}{内置命令绘制正负同轨互补色}
+\gradsignedbar[min=-50,max=50,error=8,theme=blue]{-24}{24}
+
+\gradsignedbar[min=-50,max=50,error=8,theme=teal]{-24}{24}
+
+\gradsignedbar[min=-50,max=50,error=8,theme=gray]{-24}{24}
+
+\gradsignedbar[min=-50,max=50,theme=blue,
+  negative fill=solid,negative color=lightred]{-24}{24}
+\end{example}
+此项是按要求更新的 v1.1.1 开发版可见配色变化：原先显式选择主题时负值通常仍为浅红色。
+主题会重设负值两端和填充方式；自定义负值选项放在主题之后。
+渐变主题之后仅设置 \key{negative color} 不会替换已指定的渐变端点，
+纯色覆盖需同时写 \key{negative fill=solid}。
+之后单独修改正值端点也不会重新计算负值配色。
+阈值配色与打印优先规则保持；数值、误差和量程不变。
+完整的十一主题对照源码位于 \texttt{docs/examples/theme-complements.tex}。
+互补色不保证色觉友好，仍需保留数字或其他冗余线索。
 
 \subsection{颜色参数}
 内置配色无需自行定义。主题和渐变预设使用 \key{theme}；单色使用 \key{color}。

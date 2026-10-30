@@ -1,0 +1,35 @@
+% Author: SuFan; MIT License. All values are illustrative.
+% From the repository root: TEXINPUTS=./sty//: pdflatex docs/examples/course-progress.tex
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars,booktabs,colortbl}
+\gradbarsrequireversion{1.1.1}
+\pagestyle{empty}
+\begin{document}
+% BEGIN TABLE
+\begingroup
+\gradbarssetup{min=0,max=100,width=42mm,height=6pt,
+  precision=0,unit={\%},label=outside,label width=3em,
+  label gap=4pt,baseline=text,table legend=true}
+\renewcommand{\arraystretch}{1.5}
+\begin{center}
+\begin{tabular}{lrl}
+\toprule
+\rowcolor{gradbarsTrack}
+Course & Tasks & \gradtablelegendhead[
+  stack colors={teal,orange,blue,gray}]{Completion}
+  {Done,Active,Planned,Unmeasured}\\
+\midrule
+Geometry & 18/25 & \gradbar[color=orange]{72}\\
+Data & 24/25 & \gradbar[color=orange]{96}\\
+Methods & 25/25 & \gradbar[color=teal]{100}\\
+Design & 0/25 & \gradbar[color=blue]{0}\\
+Seminar & -- & \gradbar[color=gray]{NA}\\
+\bottomrule
+\end{tabular}
+\end{center}
+\endgroup
+% END TABLE
+\noindent All courses use the same 0--100\% scale. Status colors are explicit;
+zero completed tasks and unmeasured progress remain distinct.
+\end{document}

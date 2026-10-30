@@ -12,6 +12,10 @@ Development snapshot, dated 2026-10-27; no v1.1.1 release has been published. Fi
 
 Built on PGF/TikZ, gradbars embeds graphics in existing `tabular` cells or builds visual tables through declared `gradtable` columns and data rows. No `tikzpicture` wrapper or shell escape is required.
 
+Explicit bar themes such as `theme=blue` now select complementary negative colors for all eleven themes. The unthemed negative default remains solid lightred. Use `negative fill=solid,negative color=lightred` after the theme to restore the former appearance. [Full signed-theme gallery](docs/examples/theme-complements.tex).
+
+Built-in shared signed bars: `\gradsignedbar[min=-50,max=50,error=8,theme=blue]{-24}{24}`. Two observations share a track and zero line while retaining their own uncertainty intervals; no custom clipping macro is needed.
+
 ## Features
 
 - **Inline graphics:** data bars, signed bars, lollipops, comparisons, dumbbells, bullet charts, intervals, stacks, sparklines and heat cells.
@@ -27,6 +31,18 @@ Built on PGF/TikZ, gradbars embeds graphics in existing `tabular` cells or build
 Actual output from `service-response-legend-v1.1.1`. `\gradtablelegendhead` combines the title and horizontal swatches in a table heading; `table legend=false` hides the legend row while retaining the title. Colors are assigned explicitly for each row, and unmeasured data use `NA`.
 
 [Complete example source](docs/examples/service-response-legend.tex) · [Rebuild the image](docs/images/service-response-legend.md)
+
+More [complete table examples](docs/examples/README.md) cover course completion,
+library borrowing channels, energy-use comparisons and batch dimensions, with
+standalone sources and matching chapters in both manuals.
+
+## Signed theme gallery (v1.1.1)
+
+![Eleven themes on shared signed tracks with zero lines and both error whiskers](docs/images/theme-complements-v1.1.1.png)
+
+All rows use the built-in `\gradsignedbar[theme=blue,label=none]{-24}{24}`, sharing `min=-50,max=50,error=8,width=72mm` and changing only the theme name. The table supplies the adjacent numeric labels; negative values use complementary colors.
+
+[Complete example](docs/examples/theme-complements.tex) · [Rebuild the image](docs/images/theme-complements.md)
 
 ## Installation
 
@@ -125,6 +141,19 @@ Place a horizontal category legend below a heading without custom swatch macros 
 ```
 
 Use `\gradtablelegend[options]{names}` for the swatch row alone. Both commands are in core and need no `legend` library. Labels declare the categories; they do not change bar colors automatically. See the [complete service-response table](docs/examples/service-response-legend.tex) and [legend configuration](docs/legends.md).
+
+## Text baselines in ordinary tables
+
+To align a bar's numeric label with a neighboring plain number in `tabular`,
+explicitly select:
+
+```latex
+\gradbarssetup{width=30mm,max=100,precision=1,baseline=text}
+```
+
+The default `baseline=auto` retains historical graphic placement; upgrading does
+not switch alignment modes. `baseline=text` is already supported in v1.1.0.
+[Complete alignment example](docs/examples/baseline-alignment.tex).
 
 ## tabularray integration
 

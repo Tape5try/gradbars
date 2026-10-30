@@ -58,6 +58,20 @@ ranking and aggregation; formatting results are never parsed as input. Geometry
 receives resolved ranges and validated values. Layout collects widths without
 tagging measurements; rendering emits real graphic descriptions once.
 
+Explicit bar themes now reset negative endpoints and fill mode to complementary
+colors as requested for the unreleased v1.1.1 update. Core initialization restores
+the historical implicit lightred negative default after selecting the positive
+blue defaults. Keep this distinction and left-to-right overrides covered by
+`tests/cases/v111-theme-complements.tex`; do not infer live color dependencies
+from later individual positive endpoint overrides.
+
+The core `\gradsignedbar` frontend preserves the scalar path and validates both
+observations before drawing. A scoped snapshot retains negative geometry/colors;
+the native renderer draws one track, both fills, then both uncertainty intervals.
+No half-track clipping may suppress intervals crossing zero. Labels and automatic
+Figure alternatives carry both raw observations. Custom scalar backends see an
+unsupported `signed-bar` kind and must explicitly opt into native fallback.
+
 ## Public-only third-party library
 
 ```latex
@@ -136,6 +150,17 @@ source package; use the GitHub checkout for the full checks.
 No Python files or generated runtime modules enter the CTAN source ZIP.
 PDFs and archives are ignored by Git and published through Release/CI artifacts.
 See [upload and release configuration](#release-configuration).
+
+Issue #4 has a real-output regression in `tests/cases/v111-baseline-table.tex`
+(two passes, test-only zref-savepos dependency). PDFTeX assertions compare shipped
+label/text positions for normal, tall, left, small/large-font, descender and
+missing-label rows. Do not use savepos coordinates inside PGF-transformed font
+boxes as authoritative glyph origins on other drivers. Independent MuPDF
+structured-text checks against both the v1.1.0 tag and current runtime verify all
+eight row baselines on each engine. Compare glyph origins, not font bounding
+boxes: different text/math font families can have different bounds at the same
+baseline. The issue's original unconfigured example intentionally retains the
+legacy auto placement; the complete documented example selects baseline=text.
 
 ## Model and backend boundary
 
