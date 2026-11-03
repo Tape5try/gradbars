@@ -1,0 +1,18 @@
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}\usegradbarslibrary{legend}
+
+\gradscale{trend}{min=0,max=100}
+\begin{document}
+\gradheatlegend[legend layout=measured,legend duplicates=error,legend ticks={0,20,40,60,80,100},width=20mm,height=3mm,font=\large,legend missing=false]\par
+\gradsparktarget[scale group=trend]{0,NA,70}{60}\par
+\gradsparktarget[scale group=trend]{NA,NA}{100}\par
+\gradsparktarget[scale group=trend,alt={Explicit trend.}]{10,20}{30}\par
+\gradsparktarget[scale group=trend,accessibility=artifact]{10,20}{30}\par
+\gradsparktarget[scale group=trend,accessibility=off]{10,20}{30}\par
+\gradbar[style=readable,min=-100,max=100,text={Contrast fallback}]{100}\par
+\begin{tikzpicture}[alt={Outer target picture.}]
+\gradsparktarget[scale group=trend,label=none]{10,NA,20}{30}
+\end{tikzpicture}
+\end{document}

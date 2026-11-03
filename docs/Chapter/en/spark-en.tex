@@ -58,3 +58,8 @@ Both discrete modes retain every position and the raw last-value label; a missin
 last position retains its missing label. Win-loss rejects computed-percent labels.
 Print uses grayscale. Spark points and extrema marker colors apply only to line
 mode. In \key{gradtable}, use \key{type=spark} with \key{spark type=bar} or winloss in options.
+
+\subsection{Separate target reference in v1.2.0}
+Use \key{\gradsparktarget} for a fixed/named-scale line with a separate numeric target.
+The readability chapter contains the full signature, examples and integration limits;
+ordinary \key{\gradspark} still rejects bar target options.

@@ -1,0 +1,58 @@
+% Author: SuFan; MIT License. Illustrative data only.
+\documentclass{article}
+\usepackage[margin=18mm]{geometry}
+\usepackage{gradbars}\usegradbarslibrary{legend}
+\pagestyle{empty}
+\begin{document}
+\section*{Legends, labels and target trends}
+\gradheatlegend[min=-2,max=8,heat palette=purple-teal,
+ heat center=1,legend ticks={-2,0,1,4,8},precision=1,
+ width=60mm,height=3mm,unit={ pt},font=\large,
+ legend layout=measured,legend duplicates=error,
+ legend missing=false]
+\qquad
+\gradheatlegend[min=0,max=1,precision=1,
+ legend ticks={0,.2,.4,.6,.8,1},font=\large,
+ width=22mm,height=3mm,legend orientation=vertical,
+ legend layout=measured,legend missing=false]
+\par\bigskip
+\begingroup
+\gradbarssetup{style=readable,width=62mm,
+ min=-100,max=100,precision=0}
+\begin{tabular}{lc}
+Positive & \gradbar{80}\\
+Negative & \gradbar{-65}\\
+Zero & \gradbar{0}\\
+Gradient & \gradbar[min=0,fill=gradient,
+ left color=black,right color=white,
+ text={Gradient label with panel}]{100}\\
+\end{tabular}
+\endgroup
+\par\bigskip
+\begingroup
+\gradscale{progress-target}{min=0,max=100}
+\gradbarssetup{width=45mm,height=4ex,
+ precision=0,unit={\%},label width=10mm}
+\begin{tabular}{lc}
+Team & Progress; dashed target: 70\%\\
+\hline
+Atlas & \gradsparktarget[scale group=progress-target]
+ {20,35,NA,60,75}{70}\\
+Birch & \gradsparktarget[scale group=progress-target]
+ {50,50,50,50,50}{70}\\
+Cedar & \gradsparktarget[scale group=progress-target]
+ {NA,NA,NA,NA,NA}{70}\\
+\end{tabular}
+\endgroup
+\par\bigskip
+\begin{gradtable}[style=readable]
+\gradcolumn[width=24mm]{task}{Workstream}
+\gradcolumn[type=bar,options={max=100,
+ precision=0,unit={\%}}]{progress}{Completion}
+\gradrow{Review,80}
+\gradrow{Testing,35}
+\gradrow{Pending,NA}
+\end{gradtable}
+\par\medskip
+ Illustrative data. Dashed lines are explicit targets; NA is not zero.
+\end{document}

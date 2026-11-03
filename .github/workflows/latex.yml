@@ -25,10 +25,18 @@ jobs:
         env:
           RELEASE_TAG: ${{ github.ref_name }}
         run: texlua scripts/release.lua --tag "$RELEASE_TAG"
-      - name: Test all engines, typeset with latexmk and create the CTAN source archive
+      - name: Test all engines and typeset development documentation
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        run: |
+          l3build check
+          l3build doc
+      - name: Build a CTAN source archive for an explicit release tag
+        if: startsWith(github.ref, 'refs/tags/')
         run: l3build ctan
       - name: Replay static regressions on all three engines
         run: texlua scripts/check.lua
+      - name: Check label-area contrast against independent numeric references
+        run: texlua tests/contrast-reference.lua
       - name: Check accessible palette contrast
         run: texlua scripts/accessible.lua
       - name: Inspect actual Tagged PDF structures with TeX Live pdfe
@@ -36,15 +44,18 @@ jobs:
       - name: Check the independent third-party starter
         run: texlua docs/libraries/starter/check-starter.lua --gradbars-root .
       - name: Inspect archive and test isolated source installation
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
           texlua scripts/release.lua --verify
           texlua scripts/install-check.lua
       - name: Prepare release assets
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
           cp gradbars-ctan.zip build/release/
           cd build/release
           sha256sum *.pdf *.zip > SHA256SUMS
       - uses: actions/upload-artifact@v4
+        if: startsWith(github.ref, 'refs/tags/')
         with:
           name: gradbars-release
           path: build/release/

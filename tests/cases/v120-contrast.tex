@@ -1,0 +1,40 @@
+\documentclass{article}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}\usegradbarslibrary{legend}
+
+\ExplSyntaxOn
+\cs_new_eq:NN\testArea\gradbarsAreaContrast
+\def\expectLow{0}\def\expectHigh{1}
+\cs_set_protected:Npn\gradbarsAreaContrast
+ {\testArea
+  \fp_compare:nF{abs(\l__gradbars_contrast_low_fp-\expectLow)<.0001}
+   {\errmessage{Wrong minimum luminance bound}}
+  \fp_compare:nF{abs(\l__gradbars_contrast_high_fp-\expectHigh)<.0001}
+   {\errmessage{Wrong maximum luminance bound}}}
+\ExplSyntaxOff
+\begin{document}
+\gradbarssetup{style=readable,min=-100,max=100,width=60mm,height=30pt,
+ label overflow=allow,font=\large,text={Wide label},fill=solid}
+\def\expectLow{0}\def\expectHigh{0}
+\gradbar[min=0,left color=black,right color=black]{100}\par
+\def\expectLow{1}\def\expectHigh{1}
+\gradbar[min=0,left color=white,right color=white]{100}\par
+\gradbar[negative fill=solid,negative color=white,track color=white]{-100}\par
+\def\expectLow{0}\def\expectHigh{1}
+\gradbar[left color=white,track color=black]{100}\par
+\gradbar[negative fill=solid,negative color=black,track color=white]{-100}\par
+\def\expectHigh{0}
+\gradbar[track color=white,band={-100,100},band color=black,band opacity=1]{0}\par
+% Tall labels see the band's opaque part beyond the fill/track height.
+\def\expectLow{0}\def\expectHigh{1}
+\gradbar[min=0,height=4pt,font=\Large,label overflow=allow,
+ left color=white,track color=white,band={0,100},band color=black,band opacity=1]{100}\par
+% When the band covers the entire small protrusion, no canvas is visible.
+\def\expectHigh{0}
+\gradbar[min=0,height=4pt,font=\small,text={X},label overflow=allow,
+ left color=black,track color=black,band={0,100},band color=black,band opacity=1]{100}\par
+% Explicit text color overrides opt-in automatic evaluation, including bad minimum.
+\gradbar[text color=red,contrast minimum=100]{100}\par
+\def\expectLow{1}\def\expectHigh{1}
+\gradbar[style=readable,print,text color=auto]{100}\par
+\end{document}

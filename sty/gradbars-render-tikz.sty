@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Internal implementation unless documented.
-\ProvidesPackage{gradbars-render-tikz}[2026/10/27 v1.1.1 gradbars render-tikz]
+\ProvidesPackage{gradbars-render-tikz}[2026/11/03 v1.2.0 gradbars render-tikz]
 \ExplSyntaxOn
 \cs_new_protected:Npn \gradbarsDrawBand
   {
@@ -313,6 +313,10 @@
      {\str_if_eq_p:ee{\gradbars@label}{inside} || \str_if_eq_p:ee{\gradbars@label}{auto}}
      {\def\gradbars@placement{center}\gradbars@insidetrue
       \pgfmathsetlengthmacro\gradbars@labelx{.5*\gradbars@width}
+      \str_if_eq:eeT{\gradbars@contrastmode}{area}
+        {\gradbarsSuspendMeasurementTagging
+         \gradbarsMeasure\gradbars@labelbox\gradbars@font{\gradbars@labelcontent}
+         \gradbarsResumeMeasurementTagging}
       \let\gradbars@labelcolor\gradbars@textcolor
       \str_if_eq:eeT{\gradbars@textcolor}{auto}{\gradbarsMainBackground}
       \gradbarsMeasure\gradbars@labelbox\gradbars@font
@@ -613,4 +617,155 @@
      \end{scope}}
    \fi\fi\fi}
 \ExplSyntaxOff
+% Opt-in bounds over the complete rectangular main-label box.
+\ExplSyntaxOn
+\def\gradbars@contrastmode{center}
+\def\gradbars@contrastminimum{4.5}
+\def\gradbars@contrastfailure{warn}
+\def\gradbars@contrastcanvas{white}
+\pgfkeys{/gradbars,
+ text~contrast/.is~choice,
+ text~contrast/center/.code={\def\gradbars@contrastmode{center}},
+ text~contrast/area/.code={\def\gradbars@contrastmode{area}},
+ contrast~minimum/.store~in=\gradbars@contrastminimum,
+ contrast~failure/.is~choice,
+ contrast~failure/warn/.code={\def\gradbars@contrastfailure{warn}},
+ contrast~failure/background/.code={\def\gradbars@contrastfailure{background}},
+ contrast~canvas/.store~in=\gradbars@contrastcanvas}
+\seq_new:N\l__gradbars_contrast_edges_seq
+\clist_new:N\l__gradbars_contrast_rgb_a_clist
+\clist_new:N\l__gradbars_contrast_rgb_b_clist
+\fp_new:N\l__gradbars_contrast_low_fp
+\fp_new:N\l__gradbars_contrast_high_fp
+\fp_new:N\l__gradbars_contrast_a_fp
+\fp_new:N\l__gradbars_contrast_b_fp
+\fp_new:N\l__gradbars_contrast_mid_fp
+\fp_new:N\l__gradbars_contrast_min_fp
+\fp_new:N\l__gradbars_contrast_max_fp
+\fp_new:N\l__gradbars_contrast_black_fp
+\fp_new:N\l__gradbars_contrast_white_fp
+\fp_new:N\l__gradbars_contrast_result_fp
+\dim_new:N\l__gradbars_contrast_left_dim
+\dim_new:N\l__gradbars_contrast_right_dim
+\cs_new:Npn\__gradbars_srgb:n #1
+ {((#1)<=.04045 ? (#1)/12.92 : (((#1)+.055)/1.055)^2.4)}
+% RGB endpoint channel bounds remain conservative even for opposing gradients.
+\cs_new_protected:Npn\__gradbars_contrast_colors:nn #1#2
+ {\convertcolorspec{named}{#1}{rgb}\gradbars@rgb
+  \clist_set:Nx\l__gradbars_contrast_rgb_a_clist{\gradbars@rgb}
+  \convertcolorspec{named}{#2}{rgb}\gradbars@rgb
+  \clist_set:Nx\l__gradbars_contrast_rgb_b_clist{\gradbars@rgb}
+  \fp_zero:N\l__gradbars_contrast_min_fp
+  \fp_zero:N\l__gradbars_contrast_max_fp
+  \int_step_inline:nn{3}
+   {\fp_set:Nn\l__gradbars_contrast_a_fp{\clist_item:Nn\l__gradbars_contrast_rgb_a_clist{##1}}
+    \fp_set:Nn\l__gradbars_contrast_b_fp{\clist_item:Nn\l__gradbars_contrast_rgb_b_clist{##1}}
+    \fp_add:Nn\l__gradbars_contrast_min_fp
+     {\clist_item:nn{.2126,.7152,.0722}{##1}*
+      \__gradbars_srgb:n{min(\l__gradbars_contrast_a_fp,\l__gradbars_contrast_b_fp)}}
+    \fp_add:Nn\l__gradbars_contrast_max_fp
+     {\clist_item:nn{.2126,.7152,.0722}{##1}*
+      \__gradbars_srgb:n{max(\l__gradbars_contrast_a_fp,\l__gradbars_contrast_b_fp)}}}
+  \fp_set:Nn\l__gradbars_contrast_low_fp{min(\l__gradbars_contrast_low_fp,\l__gradbars_contrast_min_fp)}
+  \fp_set:Nn\l__gradbars_contrast_high_fp{max(\l__gradbars_contrast_high_fp,\l__gradbars_contrast_max_fp)}}
+\cs_new_protected:Npn\__gradbars_contrast_gradient:n #1
+ {\cs_set:Npx\gradbars@contrastmix
+    {\fp_eval:n{max(0,min(100,100*((#1)-\dim_to_fp:n{\gradbars@xstart})/
+       (\dim_to_fp:n{\gradbars@xstop}-\dim_to_fp:n{\gradbars@xstart})))}}
+  \colorlet{gradbarsContrastSample}{\gradbars@right!\gradbars@contrastmix!\gradbars@left}}
+\cs_new_protected:Npn\__gradbars_contrast_interval:nn #1#2
+ {\fp_set:Nn\l__gradbars_contrast_mid_fp{((#1)+(#2))/2}
+  \fp_compare:nTF{\dim_to_fp:n{\gradbars@xstart}<\l__gradbars_contrast_mid_fp<\dim_to_fp:n{\gradbars@xstop}}
+   {\ifgradbars@gradient
+      % 32 subintervals bound the continuous sRGB interpolation, not just samples.
+      \int_step_inline:nn{32}
+       {\__gradbars_contrast_gradient:n{(#1)+((#2)-(#1))*(##1-1)/32}
+        \colorlet{gradbarsContrastStart}{gradbarsContrastSample}
+        \__gradbars_contrast_gradient:n{(#1)+((#2)-(#1))*##1/32}
+        \__gradbars_contrast_colors:nn{gradbarsContrastStart}{gradbarsContrastSample}}
+    \else\__gradbars_contrast_colors:nn{\gradbars@left}{\gradbars@left}\fi}
+   {\let\gradbars@contrastbase\gradbars@track
+    \clist_if_empty:NF\l__gradbars_band_clist
+     {\fp_compare:nT{\dim_to_fp:n{\gradbars@bandxlo}<\l__gradbars_contrast_mid_fp<\dim_to_fp:n{\gradbars@bandxhi}}
+       {\edef\gradbars@contrastbase{\gradbars@bandcolor!\fp_eval:n{100*\gradbars@bandopacity}!\gradbars@track}}}
+    \__gradbars_contrast_colors:nn{\gradbars@contrastbase}{\gradbars@contrastbase}}}
+\cs_new_protected:Npn\__gradbars_contrast_edge:n #1
+ {\dim_set:Nn\l_tmpa_dim{\dim_min:nn{\l__gradbars_contrast_right_dim}{#1}}
+  \dim_set:Nn\l_tmpa_dim{\dim_max:nn{\l__gradbars_contrast_left_dim}{\l_tmpa_dim}}
+  \dim_set:Nn\l_tmpa_dim{\dim_min:nn{\gradbars@width}{\l_tmpa_dim}}
+  \dim_set:Nn\l_tmpa_dim{\dim_max:nn{0pt}{\l_tmpa_dim}}
+  \seq_put_right:Nx\l__gradbars_contrast_edges_seq{\dim_to_fp:n{\l_tmpa_dim}}}
+\cs_new_protected:Npn\gradbarsAreaContrast
+ {\gradbarsCheckNumber{\gradbars@contrastminimum}{contrast~minimum}
+  \ifgradbars@valid
+   \fp_compare:nF{1<=\gradbars@contrastminimum<=21}
+     {\gradbarsFail{Contrast~minimum~must~be~between~1~and~21}}
+  \fi
+  \ifgradbars@stack\gradbarsFail{Area~contrast~requires~a~rectangular~scalar~bar}\fi
+  \ifgradbars@pair\gradbarsFail{Area~contrast~requires~a~rectangular~scalar~bar}\fi
+  \str_if_eq:eeF{\gradbars@shape}{bar}{\gradbarsFail{Area~contrast~requires~a~rectangular~scalar~bar}}
+  \ifgradbars@compare\gradbarsFail{Area~contrast~requires~a~rectangular~scalar~bar}\fi
+  \ifgradbars@print\else
+  \str_if_eq:eeF{\gradbars@pattern}{none}{\gradbarsFail{Area~contrast~does~not~evaluate~patterns}}
+  \dim_compare:nNnF{\gradbars@radius}={0pt}{\gradbarsFail{Area~contrast~requires~rounded=0pt}}
+  \ifgradbars@error\gradbarsFail{Area~contrast~does~not~evaluate~overlaid~reference~or~error~strokes}\fi
+  \tl_if_empty:oF{\gradbars@target}
+    {\gradbarsFail{Area~contrast~does~not~evaluate~overlaid~reference~or~error~strokes}}
+  \clist_if_empty:NF\l__gradbars_refs_clist
+    {\gradbarsFail{Area~contrast~does~not~evaluate~overlaid~reference~or~error~strokes}}
+  \fi
+  \fp_set:Nn\l__gradbars_contrast_low_fp{1}
+  \fp_zero:N\l__gradbars_contrast_high_fp
+  \ifgradbars@print
+    \__gradbars_contrast_colors:nn{white}{white}
+  \else
+   \dim_set:Nn\l__gradbars_contrast_left_dim{\gradbars@labelx-\wd\gradbars@labelbox/2}
+   \dim_set:Nn\l__gradbars_contrast_right_dim{\gradbars@labelx+\wd\gradbars@labelbox/2}
+   % The band extends 2pt above/below the track; outside it composites on canvas.
+   \bool_set_false:N\l_tmpa_bool
+   \dim_compare:nNnT{\l__gradbars_contrast_left_dim}<{0pt}{\bool_set_true:N\l_tmpa_bool}
+   \dim_compare:nNnT{\l__gradbars_contrast_right_dim}>{\gradbars@width}{\bool_set_true:N\l_tmpa_bool}
+   \dim_compare:nNnT{\ht\gradbars@labelbox+\dp\gradbars@labelbox}>{\gradbars@height}
+    {\clist_if_empty:NTF\l__gradbars_band_clist
+      {\bool_set_true:N\l_tmpa_bool}
+      {\bool_lazy_and:nnT
+        {\dim_compare_p:nNn{\l__gradbars_contrast_left_dim}<{\gradbars@bandxhi}}
+        {\dim_compare_p:nNn{\l__gradbars_contrast_right_dim}>{\gradbars@bandxlo}}
+         {\edef\gradbars@contrastbase{\gradbars@bandcolor!
+            \fp_eval:n{100*\gradbars@bandopacity}!\gradbars@contrastcanvas}
+          \__gradbars_contrast_colors:nn{\gradbars@contrastbase}{\gradbars@contrastbase}}
+       \dim_compare:nNnT{\ht\gradbars@labelbox+\dp\gradbars@labelbox}>{\gradbars@height+4pt}
+         {\bool_set_true:N\l_tmpa_bool}
+       \dim_compare:nNnT{\l__gradbars_contrast_left_dim}<{\gradbars@bandxlo}
+         {\bool_set_true:N\l_tmpa_bool}
+       \dim_compare:nNnT{\l__gradbars_contrast_right_dim}>{\gradbars@bandxhi}
+         {\bool_set_true:N\l_tmpa_bool}}}
+   \bool_if:NT\l_tmpa_bool
+      {\__gradbars_contrast_colors:nn{\gradbars@contrastcanvas}{\gradbars@contrastcanvas}}
+   \seq_clear:N\l__gradbars_contrast_edges_seq
+   \clist_map_inline:nn{0pt,\gradbars@width,\gradbars@xstart,\gradbars@xstop}
+    {\__gradbars_contrast_edge:n{##1}}
+   \clist_if_empty:NF\l__gradbars_band_clist
+    {\__gradbars_contrast_edge:n{\gradbars@bandxlo}
+     \__gradbars_contrast_edge:n{\gradbars@bandxhi}}
+   \seq_sort:Nn\l__gradbars_contrast_edges_seq
+    {\fp_compare:nNnTF{##1}>{##2}{\sort_return_swapped:}{\sort_return_same:}}
+   \seq_map_indexed_inline:Nn\l__gradbars_contrast_edges_seq
+    {\int_compare:nNnT{##1}<{\seq_count:N\l__gradbars_contrast_edges_seq}
+      {\fp_compare:nNnT{##2}<{\seq_item:Nn\l__gradbars_contrast_edges_seq{##1+1}}
+        {\__gradbars_contrast_interval:nn{##2}{\seq_item:Nn\l__gradbars_contrast_edges_seq{##1+1}}}}}
+  \fi
+  \fp_set:Nn\l__gradbars_contrast_black_fp{(\l__gradbars_contrast_low_fp+.05)/.05}
+  \fp_set:Nn\l__gradbars_contrast_white_fp{1.05/(\l__gradbars_contrast_high_fp+.05)}
+  \fp_compare:nNnTF{\l__gradbars_contrast_black_fp}>{\l__gradbars_contrast_white_fp}
+    {\def\gradbars@labelcolor{black}\fp_set_eq:NN\l__gradbars_contrast_result_fp\l__gradbars_contrast_black_fp}
+    {\def\gradbars@labelcolor{white}\fp_set_eq:NN\l__gradbars_contrast_result_fp\l__gradbars_contrast_white_fp}
+  \fp_compare:nNnT{\l__gradbars_contrast_result_fp}<{\gradbars@contrastminimum}
+   {\str_if_eq:eeTF{\gradbars@contrastfailure}{background}
+     {\tikzset{gradbars~label~background/.style={fill=white,fill~opacity=1,text~opacity=1,inner~sep=1pt}}
+      \def\gradbars@labelcolor{black}}
+     {\PackageWarning{gradbars}{Label~area~contrast~bound~\fp_eval:n{round(\l__gradbars_contrast_result_fp,3)}
+       ~below~\gradbars@contrastminimum;~use~contrast~failure=background~or~label=outside}}}}
+\ExplSyntaxOff
+
 \endinput

@@ -2,9 +2,9 @@
 
 **在 LaTeX 正文和表格中呈现数值、比较、组成与趋势。**
 
-**v1.1.1 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
+**v1.2.0 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
 
-开发版更新于 2026-10-27，尚未发布 v1.1.1 正式版本。修复源码提取、归档检查和文档一致性，并新增显式启用的表头组装图例；保留已有接口与默认数据语义。下方下载链接仍指向已发布的 v1.1.0。
+开发版更新于 2026-11-03，尚未发布 v1.2.0 正式版本。新增显式图例刻度诊断与测量布局、标签区域对比度、readable 预设，以及趋势线＋目标线组合；保留已有接口与默认语义。[v1.2.0 用法与边界](docs/readability.md)。下方下载链接仍指向已发布的 v1.1.0。
 
 [English](README.en.md) · [已发布中文手册（v1.1.0）](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-v1.1.0.pdf) · [已发布英文手册（v1.1.0）](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-en-v1.1.0.pdf) · [CTAN](https://ctan.org/pkg/gradbars)
 
@@ -73,6 +73,13 @@ gradbars 基于 PGF/TikZ，既可将单个图形嵌入现有 `tabular`，也可�
 这是 `service-response-legend-v1.1.1` 的实际编译效果。`\gradtablelegendhead` 将标题与横向色块图例组合为表头；`table legend=false` 可隐藏图例行并保留标题。示例逐行指定状态颜色，未测数据使用 `NA`。
 
 [完整示例源码](docs/examples/service-response-legend.tex) · [图片重建方法](docs/images/service-response-legend.md)
+
+### 可读性与目标趋势（v1.2.0）
+
+![测量图例、内部标签白底回退、独立目标趋势与可读性表格预设](docs/images/readability-target-v1.2.0.png)
+
+图例布局与对比度评估均显式启用；`\gradsparktarget` 将观测与目标分开，缺失位置仍保留。
+[用法与边界](docs/readability.md) · [独立示例](docs/examples/readability-target-cn.tex) · [图片重建](docs/images/readability-target.md)
 
 ## 安装
 
@@ -211,7 +218,7 @@ Beta & & 0.750\\
 - [中文主文件](docs/gradbars-manual.tex)与[中文章节](docs/Chapter/zh-cn/README.md)。
 - [完整表格案例](docs/examples/README.md)：课程完成进度、借阅渠道构成、能耗前后对比与批次尺寸分布，均附独立源码。
 - [英文主文件](docs/gradbars-manual-en.tex)与[英文章节](docs/Chapter/en/README.md)。
-- [API 参考](docs/api.md)、[开发者指南](docs/developer.md)、[v1.1.1 维护说明](docs/migration-v1.1.1.md)和[v1.1.0 迁移指南](docs/migration-v1.1.0.md)。
+- [v1.2.0 升级说明](docs/migration-v1.2.0.md) · [API 参考](docs/api.md)、[开发者指南](docs/developer.md)、[v1.1.1 维护说明](docs/migration-v1.1.1.md)和[v1.1.0 迁移指南](docs/migration-v1.1.0.md)。
 - [稳定接口契约](docs/stability.md)：公开接口范围、覆盖顺序、兼容性和弃用约定。
 - [已发布源码说明（v1.1.0）](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-source-v1.1.0.pdf)：l3doc 文档与 docstrip 源码流程；当前版本可本地构建。
 - [变更记录](CHANGELOG.md)：版本新增、修复与兼容性变化。

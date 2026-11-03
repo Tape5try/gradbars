@@ -243,10 +243,18 @@ local maintainer files. CTAN source packages support extraction and documentatio
 rebuilds without those files; full regression checks require the GitHub `tests/`
 directory.
 
-Branch pushes and pull requests run tests and create CI artifacts. A stable
+Branch pushes and pull requests run tests and typeset development documentation. Only tag builds upload release artifacts. A stable
 vVERSION tag matching finalized metadata publishes the verified ZIP and PDFs to
 GitHub Release. For subsequent CTAN submission, configure the repository secret
 CTAN_EMAIL and repository variables CTAN_UPLOAD=true, CTAN_ANNOUNCEMENT and
 optionally CTAN_NOTE. The CTAN job submits the same verified ZIP with l3build
 upload. Future planned dates and unreleased README states block stable releases.
 No task here rewrites Git history or publishes a release merely by editing files.
+
+## v1.2.0 readability and target trends
+
+See [the complete contract and bilingual examples](readability.md) for `legend layout=measured`, `legend duplicates=error`, `text contrast=area`, contrast fallback and `\gradsparktarget`. Defaults and older diagnostics remain unchanged; backend schema 1 remains scalar. New native-only kinds `bar-area` and `spark-target` require explicit TikZ fallback on third-party backends.
+
+Run `texlua tests/contrast-reference.lua` after the three-engine static suite. It independently compares six actual label-box geometry records per engine against 10,001-point sRGB references, including opposing gradients, reversed/negative ramps, band compositing and large type. Bounds must enclose the references and remain within the documented numerical tolerance. The actual-PDF fixture asserts six Figures, separate reference/missing descriptions and artifact/off suppression.
+
+Ordinary branch pushes and pull requests run `l3build check` and `l3build doc`; CTAN archive construction/installation checks and release-asset upload are gated to explicit tag builds. This v1.2.0 update is a repository push only: no tag, GitHub Release or CTAN package/submission.

@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.0 — 2026-11-03
+
+Development snapshot; repository update only, without a GitHub Release or CTAN package/submission.
+
+- Add opt-in measured continuous-legend layouts and builtin numeric duplicate diagnostics, shared-legend overrides, and one formatter call per measured tick. Preserve legacy two-row layout by default.
+- Add opt-in conservative label-area contrast bounds for rectangular scalar bars, declared canvas and band compositing, explicit failure warnings or white panels. Preserve center estimation and explicit color precedence; document unsupported rendering effects.
+- Add exactly one combination, `\gradsparktarget[options]{series}{target}`, with fixed/named scales, separate reference semantics, missing-position preservation, one Figure description and explicit native backend fallback. The old spark target error remains.
+- Gate CTAN archives, release artifacts and publication to explicit tag builds; ordinary branch pushes run tests and documentation builds only.
+- Add readable graphic/native-table presets, bilingual executable examples/manuals and numerical, error, callback and actual-PDF regressions. Synchronize all 22 modules at v1.2.0; backend schema remains 1.
+
 ## 1.1.1 — 2026-10-27
 
 Development snapshot; no v1.1.1 release has been published.

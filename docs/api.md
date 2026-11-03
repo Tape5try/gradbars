@@ -44,6 +44,10 @@ precision. TeX's dimension resolution limits the smallest drawable bar.
 | `right color` | set by theme | Gradient end; ignored for solid fill |
 | `track color` | set by theme | Empty track color |
 | `text color` | set by theme | Label color, or `auto` to select black/white |
+| `text contrast` | `center` | `center` or opt-in `area` over the internal label box |
+| `contrast minimum` | `4.5` | Explicit target between 1 and 21 |
+| `contrast failure` | `warn` | Insufficient area bound: warning or `background` white panel |
+| `contrast canvas` | `white` | Declared opaque background outside the track |
 | `rounded` | `0pt` | Nonnegative corner radius; clamped to fit each bar |
 | `target` | empty | Reference value within the scale; empty disables |
 | `target color` | `gradbarsInk` | Target line color |
@@ -1114,3 +1118,11 @@ matching helper inside, so tabularray does not bypass the conversion silently.
   `\gradbarsbackendversion`, `backend` and `backend fallback`.
 - [Third-party starter](libraries/starter/README.md): public-only source and three-engine checker.
 - `\gradbarsversion` and `\gradbarsrequireversion{minimum}` query/check semantic versions.
+
+## v1.2.0 readability and target trends
+
+See [the complete contract and bilingual examples](readability.md) for `legend layout=measured`, `legend duplicates=error`, `text contrast=area`, contrast fallback and `\gradsparktarget`. Defaults and older diagnostics remain unchanged; backend schema 1 remains scalar. New native-only kinds `bar-area` and `spark-target` require explicit TikZ fallback on third-party backends.
+
+### New signatures in 1.2.0
+
+`\gradsparktarget[graphic options]{series}{target}` requires the spark library, an explicit fixed/named scale and line type. `target` is a separate within-range number. Ordinary bar `target` stays rejected. `legend layout=legacy|measured` and `legend duplicates=off|error` belong to the legend library; both work in shared definitions and layout overrides. Graphic and native-table `style=readable` are separate public presets, documented in [readability](readability.md).

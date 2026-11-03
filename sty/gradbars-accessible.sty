@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Opt-in color roles; existing defaults unchanged.
-\ProvidesPackage{gradbars-accessible}[2026/10/27 v1.1.1 Accessible color roles]
+\ProvidesPackage{gradbars-accessible}[2026/11/03 v1.2.0 Accessible color roles]
 % Okabe--Ito Color Universal Design palette; see docs/accessibility.md.
 \definecolor{gradbarsCudBlue}{HTML}{0072B2}
 \definecolor{gradbarsCudOrange}{HTML}{E69F00}
@@ -27,4 +27,8 @@
  heat palette/accessible-diverging/.style={heat palette=diverging,
    heat low color=gradbarsCudVermillion,heat high color=gradbarsCudBlue,
    heat center color=white,heat text color=auto}}
+% Readability is explicit; later keys still override the style.
+\gradbarsstyle{readable}{theme=accessible,rounded=0pt,height=3ex,
+ label=inside,label align=cell,font={\small},text color=auto,
+ text contrast=area,contrast failure=background}
 \endinput

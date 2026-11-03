@@ -1,0 +1,91 @@
+\section{v1.2.0：可读性与目标趋势}
+新行为均显式开启，原图例布局与中心点自动文字颜色估计仍为默认。本章为演示数据。
+\subsection{按真实文字尺寸排列图例}
+\key{legend layout=measured} 测量文字宽、高、深，按需分配多行或多列。
+刻度位置仍取原始值，图例总宽可超过色带长度，页面应留出空间。
+\key{legend duplicates=error} 检查内建数字标签是否因精度合并，报错指出对应原始刻度，
+建议提高精度或减少刻度；不自动改值。自定义格式化器和 siunitx 为不透明输出，
+开启重复检查时明确拒绝。测量布局可使用它们，每个刻度仅调用一次，复用文字盒且不重复 Figure 标记。
+\begin{example}[text and listing,sidebyside=false]{测量布局与数字刻度}
+\gradheatlegend[min=-2,max=8,heat palette=purple-teal,
+ heat center=1,legend ticks={-2,0,1,4,8},precision=1,
+ width=60mm,height=3mm,unit={ pt},font=\large,
+ legend layout=measured,legend duplicates=error,
+ legend missing=false]
+\qquad
+\gradheatlegend[min=0,max=1,precision=1,
+ legend ticks={0,.2,.4,.6,.8,1},font=\large,
+ width=22mm,height=3mm,legend orientation=vertical,
+ legend layout=measured,legend missing=false]
+\end{example}
+共享定义保存两个新选项，\key{\gradlegenduse} 可局部覆盖；默认仍为 legacy 与 off。
+\clearpage
+\subsection{评估整个标签覆盖区域}
+\key{text contrast=area} 仅用于内部主标签且 \key{text color=auto} 时。
+按实际文字盒与填充、未填充轨道、参考带交集计算最不利对比度。
+每段渐变细分 32 个通道范围区间，保守包围连续 sRGB 亮度；覆盖负值渐变与大字号，
+默认目标 \key{contrast minimum=4.5} 不随字号自动降低。
+\key{contrast failure=warn} 报警；background 改用不透明白底黑字，
+不声称原底色已经达标。显式文字颜色跳过自动评估。
+\begin{example}[text and listing,sidebyside=false]{内部标签与白底回退}
+\begingroup
+\gradbarssetup{style=readable,width=62mm,
+ min=-100,max=100,precision=0}
+\begin{tabular}{lc}
+Positive & \gradbar{80}\\
+Negative & \gradbar{-65}\\
+Zero & \gradbar{0}\\
+Gradient & \gradbar[min=0,fill=gradient,
+ left color=black,right color=white,
+ text={Gradient label with panel}]{100}\\
+\end{tabular}
+\endgroup
+\end{example}
+图形预设 \key{style=readable} 选择 3ex 矩形纯色轨道、居中小字号内部标签和白底回退。
+后续选项可覆盖预设。\key{contrast canvas=white} 声明轨道外底色，应与实际单元格或页面一致，
+宏包不自动推断底色。圆角、纹理、复合图形和覆盖的参考／误差线会明确拒绝；外层透明度、
+混合、自定义绘图、彩色字形及字体效果不在模型内。Heat 与堆叠分段标签算法保持，
+已有打印白底面板按白色评估，其覆盖的图案与线条不参与底色评估。
+这不表示整份文档通过 PDF/UA 认证。超出范围时用外部标签或显式文字颜色。
+\clearpage
+\subsection{本版唯一新增组合：趋势线＋目标水平线}
+\key{\gradsparktarget} 分开接收序列与数值目标；要求固定范围或命名尺度、折线类型。
+目标必须在范围内，只是参考，不属于观测、不参与统计。NA 保留位置并断线；
+常量与单点使用显式尺度；全部缺失仍保留目标，替代文本说明数据缺失。
+\begin{example}[text and listing,sidebyside=false]{进度趋势与显式目标}
+\begingroup
+\gradscale{progress-target}{min=0,max=100}
+\gradbarssetup{width=45mm,height=4ex,
+ precision=0,unit={\%},label width=10mm}
+\begin{tabular}{lc}
+Team & Progress; dashed target: 70\%\\
+\hline
+Atlas & \gradsparktarget[scale group=progress-target]
+ {20,35,NA,60,75}{70}\\
+Birch & \gradsparktarget[scale group=progress-target]
+ {50,50,50,50,50}{70}\\
+Cedar & \gradsparktarget[scale group=progress-target]
+ {NA,NA,NA,NA,NA}{70}\\
+\end{tabular}
+\endgroup
+\end{example}
+标签取序列最后位置，末位缺失不回退。\key{target color} 控制虚线颜色，条形 target 键仍拒绝。
+描述区分范围、观测、参考，只产生一个 Figure。旧 \key{\gradspark} 诊断保持。
+可直接放入普通 tabular；未新增复合 CSV 记录、原生列类型或 tabularray 助手。
+第三方标量后端对 spark-target 和 bar-area 须显式设置 TikZ 回退。
+\clearpage
+\subsection{原生可读性表格预设}
+表格 \key{style=readable} 增加行列间距、使用小字号、可辨配色和 22mm 外部标签槽，
+保持列语义；内部白底面板需在列 options 中显式选图形预设。
+\begin{example}[text and listing,sidebyside=false]{可读性进度表}
+\begin{gradtable}[style=readable]
+\gradcolumn[width=24mm]{task}{Workstream}
+\gradcolumn[type=bar,options={max=100,
+ precision=0,unit={\%}}]{progress}{Completion}
+\gradrow{Review,80}
+\gradrow{Testing,35}
+\gradrow{Pending,NA}
+\end{gradtable}
+\end{example}
+
+\par\smallskip\noindent 独立源码：\texttt{docs/examples/readability-target-cn.tex}。

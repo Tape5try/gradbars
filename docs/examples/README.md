@@ -43,3 +43,6 @@ chapter examples together with the standalone source when changing data.
 
 These new sources are MIT licensed. The separately attributed Precision/Recall
 adaptation retains the license statement at the top of its own file.
+
+- [Readability and target trends](readability-target.tex): three-engine English example, measured legends, internal contrast panels and a separate target reference.
+- [可读性与目标趋势](readability-target-cn.tex)：中文版本，用 XeLaTeX 或 LuaLaTeX；演示数据，目标不参与观测。

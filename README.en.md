@@ -2,9 +2,9 @@
 
 **Inline data graphics for LaTeX text and tables.**
 
-**v1.1.1 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
+**v1.2.0 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
 
-Development snapshot, dated 2026-10-27; no v1.1.1 release has been published. Fixes source extraction, archive checks and documentation consistency, and adds opt-in assembled header legends while retaining existing interfaces and default data semantics. Downloads below still refer to the published v1.1.0.
+Development snapshot, dated 2026-11-03; v1.2.0 has not been published. Adds opt-in measured legends, duplicate numeric-tick diagnostics, label-area contrast, readable presets and a spark-line/target combination while retaining existing interfaces and defaults. [Usage and limits](docs/readability.md). Downloads below still refer to published v1.1.0.
 
 [简体中文](README.md) · [Published English manual (v1.1.0)](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-en-v1.1.0.pdf) · [Published Chinese manual (v1.1.0)](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-v1.1.0.pdf) · [CTAN](https://ctan.org/pkg/gradbars)
 
@@ -43,6 +43,14 @@ standalone sources and matching chapters in both manuals.
 All rows use the built-in `\gradsignedbar[theme=blue,label=none]{-24}{24}`, sharing `min=-50,max=50,error=8,width=72mm` and changing only the theme name. The table supplies the adjacent numeric labels; negative values use complementary colors.
 
 [Complete example](docs/examples/theme-complements.tex) · [Rebuild the image](docs/images/theme-complements.md)
+
+## Readability and target trends (v1.2.0)
+
+![Measured legends, label contrast panels, separate spark targets and a readable table preset](docs/images/readability-target-v1.2.0.png)
+
+The new layout and contrast behavior are explicit. `\gradsparktarget` separates
+reference targets from observations and preserves missing positions.
+[Usage and limits](docs/readability.md) · [Source](docs/examples/readability-target.tex) · [Rebuild](docs/images/readability-target.md)
 
 ## Installation
 
@@ -184,7 +192,7 @@ Both manuals pair rendered output with source and cover getting started, graphic
 
 - [Chinese main source](docs/gradbars-manual.tex) and [Chinese chapters](docs/Chapter/zh-cn/README.md).
 - [English main source](docs/gradbars-manual-en.tex) and [English chapters](docs/Chapter/en/README.md).
-- [API reference](docs/api.md), [developer guide](docs/developer.md), [v1.1.1 maintenance notes](docs/migration-v1.1.1.md) and [v1.1.0 migration guide](docs/migration-v1.1.0.md).
+- [v1.2.0 migration](docs/migration-v1.2.0.md) · [API reference](docs/api.md), [developer guide](docs/developer.md), [v1.1.1 maintenance notes](docs/migration-v1.1.1.md) and [v1.1.0 migration guide](docs/migration-v1.1.0.md).
 - [Stability contract](docs/stability.md) for public scope, precedence, compatibility and deprecation.
 - [Published source guide (v1.1.0)](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-source-v1.1.0.pdf) for the l3doc and docstrip workflow; build the current guide locally.
 - [Changelog](CHANGELOG.md) for additions, fixes and compatibility changes.

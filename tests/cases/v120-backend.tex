@@ -1,0 +1,16 @@
+\documentclass{article}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}\usegradbarslibrary{legend}
+
+\newcount\calls
+\gradbarsdeclarebackend{probe}{bar,labels,gradient,missing}
+ {\global\advance\calls1\relax\gradbarsbackenddefault}
+\begin{document}
+\gradbarsifbackendcapable{tikz}{spark-target}{}{\errmessage{Native target kind missing}}
+\gradbarsifbackendcapable{tikz}{bar-area}{}{\errmessage{Native area kind missing}}
+\gradbarsifbackendcapable{probe}{spark-target}{\errmessage{Scalar target capability}}{}
+
+\gradsparktarget[backend=probe,backend fallback=tikz,spark range=fixed]{10,20}{30}\par
+\gradbar[backend=probe,backend fallback=tikz,style=readable]{50}\par
+\ifnum\calls=0\else\errmessage{Compound routed to scalar backend}\fi
+\end{document}

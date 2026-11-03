@@ -89,3 +89,7 @@ Cross-page spanning cells and screen-reader behavior in specific external viewer
 are not certified. PDF/UA compliance of an entire
 document requires separate validation. The structural checks do not substitute
 for a real assistive-technology review.
+
+## v1.2.0 readability and target trends
+
+See [the complete contract and bilingual examples](readability.md) for `legend layout=measured`, `legend duplicates=error`, `text contrast=area`, contrast fallback and `\gradsparktarget`. Defaults and older diagnostics remain unchanged; backend schema 1 remains scalar. New native-only kinds `bar-area` and `spark-target` require explicit TikZ fallback on third-party backends.

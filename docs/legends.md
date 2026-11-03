@@ -167,3 +167,7 @@ color keys after the preset to override individual colors; `better=lower` and
 Existing `sequential`, `diverging`, `accessible-sequential` and
 `accessible-diverging` defaults remain unchanged. The new names are design
 shortcuts, not additional claims of color-vision or contrast certification.
+
+## v1.2.0 readability and target trends
+
+See [the complete contract and bilingual examples](readability.md) for `legend layout=measured`, `legend duplicates=error`, `text contrast=area`, contrast fallback and `\gradsparktarget`. Defaults and older diagnostics remain unchanged; backend schema 1 remains scalar. New native-only kinds `bar-area` and `spark-target` require explicit TikZ fallback on third-party backends.

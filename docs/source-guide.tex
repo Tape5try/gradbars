@@ -75,3 +75,13 @@ scoped native continuation while keeping model storage private. Compound
 graphics require native rendering or an explicit fallback. The third-party
 starter in \texttt{docs/libraries/starter/} includes public-only source, a
 minimum-version guard, an example and a three-engine checker.
+
+\section{Version 1.2 readability additions}
+Measured continuous legends cache one untagged box per tick and pack intervals
+using width, height and depth; the legacy layout remains available. Builtin
+numeric duplicate diagnostics never infer equality for arbitrary TeX output.
+The native renderer bounds internal rectangular-label contrast over fill, track
+and declared band/canvas colors. Unsupported rendering effects are diagnosed.
+The spark library adds a distinct fixed-scale target composition; schema-1
+backends remain scalar and require explicit native fallback for the new kinds.
+The complete contracts and bilingual examples are in \texttt{docs/readability.md}.

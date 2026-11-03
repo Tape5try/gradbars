@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Continuous and shared semantic legends.
-\ProvidesPackage{gradbars-lib-legend}[2026/10/27 v1.1.1 Shared legends]
+\ProvidesPackage{gradbars-lib-legend}[2026/11/03 v1.2.0 Shared legends]
 \ExplSyntaxOn
 \cs_generate_variant:Nn\seq_set_from_clist:Nn{NV}
 \cs_generate_variant:Nn\prop_to_keyval:N{c}
@@ -50,6 +50,93 @@
           {\seq_put_right:Nn\l__gradbars_legend_tick_rows_seq{1}
            \dim_set_eq:NN\l__gradbars_legend_lane_b_dim\l__gradbars_legend_tick_right_dim}
           {\gradbarsFail{Legend~tick~labels~overlap;~increase~width~or~reduce~ticks}}}}}
+% Measured labels are typeset once, with tagging suspended, and copied at output.
+\tl_new:N\l__gradbars_legend_layout_tl
+\tl_new:N\l__gradbars_legend_duplicates_tl
+\tl_set:Nn\l__gradbars_legend_layout_tl{legacy}
+\tl_set:Nn\l__gradbars_legend_duplicates_tl{off}
+\prop_new:N\l__gradbars_legend_labels_prop
+\cs_generate_variant:Nn\prop_put:Nnn{Nex}
+\prop_new:N\l__gradbars_legend_lanes_prop
+\dim_new:N\l__gradbars_legend_step_dim
+\dim_new:N\l__gradbars_legend_extent_dim
+\dim_new:N\l__gradbars_legend_maxheight_dim
+\dim_new:N\l__gradbars_legend_missing_y_dim
+\int_new:N\l__gradbars_legend_lane_int
+\int_new:N\l__gradbars_legend_lane_count_int
+\tl_new:N\l__gradbars_legend_formatted_tl
+\pgfkeys{/gradbars,
+ legend~layout/.is~choice,
+ legend~layout/legacy/.code={\tl_set:Nn\l__gradbars_legend_layout_tl{legacy}},
+ legend~layout/measured/.code={\tl_set:Nn\l__gradbars_legend_layout_tl{measured}},
+ legend~duplicates/.is~choice,
+ legend~duplicates/off/.code={\tl_set:Nn\l__gradbars_legend_duplicates_tl{off}},
+ legend~duplicates/error/.code={\tl_set:Nn\l__gradbars_legend_duplicates_tl{error}}}
+\cs_new_protected:Npn\__gradbars_legend_duplicates:
+ {\str_if_eq:VnT\l__gradbars_legend_duplicates_tl{error}
+   {\str_if_eq:eeTF{\gradbars@formatter}{builtin}
+     {\prop_clear:N\l__gradbars_legend_labels_prop
+      \seq_map_inline:Nn\l__gradbars_legend_ticks_seq
+       {\tl_set:Nx\l_tmpa_tl{\fp_eval:n{##1}}
+        \str_if_eq:eeT{\gradbars@format}{percent}
+          {\tl_set:Nx\l_tmpa_tl{\fp_eval:n{100*(##1)/\gradbarsPercentBase}}}
+        \str_if_eq:eeTF{\gradbars@numberformat}{scientific}
+         {\pgfmathprintnumberto[sci,sci~zerofill,precision=\gradbars@precision]
+            {\l_tmpa_tl}\l__gradbars_legend_formatted_tl}
+         {\pgfmathprintnumberto[fixed,fixed~zerofill,precision=\gradbars@precision]
+            {\l_tmpa_tl}\l__gradbars_legend_formatted_tl}
+        \prop_get:NVNTF\l__gradbars_legend_labels_prop\l__gradbars_legend_formatted_tl\l_tmpb_tl
+         {\gradbarsFail{Duplicate~formatted~legend~ticks:~\l_tmpb_tl\c_space_tl and~##1;~increase~precision~or~reduce~ticks}}
+         {\prop_put:NVn\l__gradbars_legend_labels_prop\l__gradbars_legend_formatted_tl{##1}}}}
+     {\gradbarsFail{Legend~duplicate~checking~requires~formatter=builtin;~custom~TeX~and~siunitx~are~opaque}}}}
+\cs_new_protected:Npn\__gradbars_legend_measured_layout:
+ {\seq_clear:N\l__gradbars_legend_tick_rows_seq
+  \prop_clear:N\l__gradbars_legend_lanes_prop
+  \int_zero:N\l__gradbars_legend_lane_count_int
+  \dim_zero:N\l__gradbars_legend_extent_dim
+  \dim_zero:N\l__gradbars_legend_maxheight_dim
+  \seq_map_indexed_inline:Nn\l__gradbars_legend_ticks_seq
+   {\box_if_exist:cF{l__gradbars_legend_tick_##1_box}
+      {\box_new:c{l__gradbars_legend_tick_##1_box}}
+    \gradbarsSuspendMeasurementTagging
+    \hbox_set:cn{l__gradbars_legend_tick_##1_box}{\gradbars@font\gradbarsFormatEndpoint{##2}}
+    \gradbarsResumeMeasurementTagging
+    \dim_set:Nn\l__gradbars_legend_maxheight_dim
+      {\dim_max:nn{\l__gradbars_legend_maxheight_dim}
+        {\box_ht:c{l__gradbars_legend_tick_##1_box}+\box_dp:c{l__gradbars_legend_tick_##1_box}}}
+    \dim_set:Nn\l__gradbars_legend_tick_left_dim
+      {\fp_to_dim:n{\gradbarsPosition{##2}*\dim_to_fp:n{\gradbars@width}}}
+    \str_if_eq:VnTF\l__gradbars_legend_orientation_tl{horizontal}
+     {\dim_sub:Nn\l__gradbars_legend_tick_left_dim{\box_wd:c{l__gradbars_legend_tick_##1_box}/2}
+      \dim_set:Nn\l__gradbars_legend_tick_right_dim
+        {\l__gradbars_legend_tick_left_dim+\box_wd:c{l__gradbars_legend_tick_##1_box}+4pt}
+      \dim_set:Nn\l__gradbars_legend_extent_dim{\dim_max:nn{\l__gradbars_legend_extent_dim}
+        {\box_ht:c{l__gradbars_legend_tick_##1_box}+\box_dp:c{l__gradbars_legend_tick_##1_box}}}}
+     {\dim_sub:Nn\l__gradbars_legend_tick_left_dim
+        {(\box_ht:c{l__gradbars_legend_tick_##1_box}+\box_dp:c{l__gradbars_legend_tick_##1_box})/2}
+      \dim_set:Nn\l__gradbars_legend_tick_right_dim
+        {\l__gradbars_legend_tick_left_dim+\box_ht:c{l__gradbars_legend_tick_##1_box}+\box_dp:c{l__gradbars_legend_tick_##1_box}+4pt}
+      \dim_set:Nn\l__gradbars_legend_extent_dim{\dim_max:nn{\l__gradbars_legend_extent_dim}
+        {\box_wd:c{l__gradbars_legend_tick_##1_box}}}}
+    \int_set:Nn\l__gradbars_legend_lane_int{1}
+    \bool_set_false:N\l_tmpa_bool
+    \bool_until_do:Nn\l_tmpa_bool
+     {\prop_get:NeNTF\l__gradbars_legend_lanes_prop
+        {\int_use:N\l__gradbars_legend_lane_int}\l_tmpa_tl
+       {\dim_compare:nNnTF{\l__gradbars_legend_tick_left_dim}<{\l_tmpa_tl}
+         {\int_incr:N\l__gradbars_legend_lane_int}{\bool_set_true:N\l_tmpa_bool}}
+       {\bool_set_true:N\l_tmpa_bool}}
+    \prop_put:Nex\l__gradbars_legend_lanes_prop{\int_use:N\l__gradbars_legend_lane_int}
+      {\dim_use:N\l__gradbars_legend_tick_right_dim}
+    \seq_put_right:Nx\l__gradbars_legend_tick_rows_seq{\int_eval:n{\l__gradbars_legend_lane_int-1}}
+    \int_set:Nn\l__gradbars_legend_lane_count_int
+      {\int_max:nn{\l__gradbars_legend_lane_count_int}{\l__gradbars_legend_lane_int}}}
+  \dim_set:Nn\l__gradbars_legend_step_dim{\l__gradbars_legend_extent_dim+4pt}
+  \dim_set:Nn\l__gradbars_legend_missing_y_dim
+    {\dim_min:nn{-16mm}{-\l__gradbars_legend_maxheight_dim/2-8pt}}
+  \str_if_eq:VnT\l__gradbars_legend_orientation_tl{horizontal}
+    {\dim_set:Nn\l__gradbars_legend_missing_y_dim
+      {\dim_min:nn{-16mm}{-\l__gradbars_legend_lane_count_int\l__gradbars_legend_step_dim-8pt}}}}
 \tl_set:Nn\l__gradbars_legend_orientation_tl{horizontal}
 \tl_set:Nn\l__gradbars_legend_missing_tl{true}
 \tl_set:Nn\l__gradbars_legend_kind_tl{heat}
@@ -129,7 +216,7 @@
              {\exp_not:N\def\exp_not:c{gradbars@##1}{\exp_not:v{gradbars@##1}}}}
         \tl_put_right:Nx\l__gradbars_legend_snapshot_tl
           {\ifgradbars@print\exp_not:N\gradbars@printtrue\else\exp_not:N\gradbars@printfalse\fi}
-        \clist_map_inline:nn{kind,names,title,ticks,orientation,missing}
+        \clist_map_inline:nn{kind,names,title,ticks,orientation,missing,layout,duplicates}
           {\tl_put_right:Nx\l__gradbars_legend_snapshot_tl
             {\exp_not:N\tl_set:Nn\exp_not:c{l__gradbars_legend_##1_tl}
               {\exp_not:v{l__gradbars_legend_##1_tl}}}}
@@ -160,6 +247,8 @@
   {width .code:n=\gradbarssetup{width=#1},height .code:n=\gradbarssetup{height=#1},
    legend~missing .code:n=\gradbarssetup{legend~missing=#1},
    legend~missing .default:n=true,
+   legend~layout .code:n=\gradbarssetup{legend~layout=#1},
+   legend~duplicates .code:n=\gradbarssetup{legend~duplicates=#1},
    title .tl_set:N=\l__gradbars_legend_title_tl,
    ticks .tl_set:N=\l__gradbars_legend_ticks_tl,
    orientation .choices:nn={horizontal,vertical}
@@ -193,7 +282,12 @@
        {\gradbarsCheckNumber{##1}{legend~tick}
         \ifgradbars@valid\fp_compare:nF{\l__gradbars_legend_previous_fp<##1 && \gradbars@min<=##1<=\gradbars@max}
           {\gradbarsFail{Legend~ticks~must~increase~within~range}}\fp_set:Nn\l__gradbars_legend_previous_fp{##1}\fi}
-     \str_if_eq:VnT\l__gradbars_legend_orientation_tl{horizontal}{\ifgradbars@valid\__gradbars_legend_tick_layout:\fi}
+     \ifgradbars@valid\__gradbars_legend_duplicates:\fi
+     \ifgradbars@valid
+       \str_if_eq:VnTF\l__gradbars_legend_layout_tl{measured}
+         {\__gradbars_legend_measured_layout:}
+         {\str_if_eq:VnT\l__gradbars_legend_orientation_tl{horizontal}{\__gradbars_legend_tick_layout:}}
+     \fi
      \tl_set:Nx\l__gradbars_alt_tl{Continuous~\gradbars@heatpalette\c_space_tl color~legend.~
        Scale:~\gradbars@min\c_space_tl to~\gradbars@max.~Direction:~\gradbars@better.}
      \str_if_eq:VnT\l__gradbars_legend_missing_tl{true}
@@ -218,9 +312,13 @@
            \draw[draw=black!65,line~width=.3pt](0,0)rectangle(1,1);
            \seq_map_indexed_inline:Nn\l__gradbars_legend_ticks_seq
              {\draw(\gradbarsPosition{##2},0)--++(0,-.25);
-              \node[anchor=north,font=\gradbars@font,inner~sep=2pt,
+              \str_if_eq:VnTF\l__gradbars_legend_layout_tl{measured}
+               {\node[anchor=north,inner~sep=0pt,outer~sep=0pt,
+                  yshift={-\seq_item:Nn\l__gradbars_legend_tick_rows_seq{##1}\l__gradbars_legend_step_dim-2pt}]
+                 at(\gradbarsPosition{##2},-.25){\box_use:c{l__gradbars_legend_tick_##1_box}};}
+               {\node[anchor=north,font=\gradbars@font,inner~sep=2pt,
                 yshift={-\int_eval:n{5*\seq_item:Nn\l__gradbars_legend_tick_rows_seq{##1}}mm}]
-                at(\gradbarsPosition{##2},-.25){\gradbarsFormatEndpoint{##2}};}
+                at(\gradbarsPosition{##2},-.25){\gradbarsFormatEndpoint{##2}};}}
            \node[anchor=south,font=\gradbars@font,text~width=\gradbars@width,align=center]at(.5,1){\l__gradbars_legend_title_tl};
            \end{scope}}
           {\begin{scope}[x=\gradbars@height,y=\gradbars@width]
@@ -231,12 +329,25 @@
              {\draw[white,opacity=.45,line~width=.12pt]
                 (0,\fp_eval:n{##1/256})--(1,\fp_eval:n{##1/256});}
            \draw[draw=black!65,line~width=.3pt](0,0)rectangle(1,1);
-           \seq_map_inline:Nn\l__gradbars_legend_ticks_seq
-             {\node[anchor=west,font=\gradbars@font]at(1,\gradbarsPosition{##1}){\gradbarsFormatEndpoint{##1}};}
-           \node[anchor=south,font=\gradbars@font,text~width=\gradbars@width,align=center]at(.5,1){\l__gradbars_legend_title_tl};\end{scope}}
+           \seq_map_indexed_inline:Nn\l__gradbars_legend_ticks_seq
+             {\str_if_eq:VnTF\l__gradbars_legend_layout_tl{measured}
+               {\node[anchor=west,inner~sep=0pt,outer~sep=0pt,
+                  xshift={\seq_item:Nn\l__gradbars_legend_tick_rows_seq{##1}\l__gradbars_legend_step_dim+4pt}]
+                  at(1,\gradbarsPosition{##2}){\box_use:c{l__gradbars_legend_tick_##1_box}};}
+               {\node[anchor=west,font=\gradbars@font]at(1,\gradbarsPosition{##2}){\gradbarsFormatEndpoint{##2}};}}
+           \str_if_eq:VnTF\l__gradbars_legend_layout_tl{measured}
+            {\node[anchor=south,font=\gradbars@font,text~width=\gradbars@width,align=center,
+              yshift={\l__gradbars_legend_maxheight_dim/2+2pt}]
+              at(.5,1){\l__gradbars_legend_title_tl};}
+            {\node[anchor=south,font=\gradbars@font,text~width=\gradbars@width,align=center]
+              at(.5,1){\l__gradbars_legend_title_tl};}\end{scope}}
          \str_if_eq:VnT\l__gradbars_legend_missing_tl{true}
-          {\path[fill=\gradbars@heatmissing,draw=black!50](0,-16mm)rectangle(4mm,-13mm);
-         \node[anchor=west,font=\gradbars@font]at(5mm,-14.5mm){\gradbars@missingtext :~missing};}}
+          {\str_if_eq:VnTF\l__gradbars_legend_layout_tl{measured}
+            {\begin{scope}[yshift=\l__gradbars_legend_missing_y_dim]
+              \path[fill=\gradbars@heatmissing,draw=black!50](0,0)rectangle(4mm,3mm);
+              \node[anchor=west,font=\gradbars@font]at(5mm,1.5mm){\gradbars@missingtext :~missing};\end{scope}}
+            {\path[fill=\gradbars@heatmissing,draw=black!50](0,-16mm)rectangle(4mm,-13mm);
+         \node[anchor=west,font=\gradbars@font]at(5mm,-14.5mm){\gradbars@missingtext :~missing};}}}
      }\fi
    \fi\group_end:}
 \DeclareDocumentCommand\gradreferencelegend{O{} m}

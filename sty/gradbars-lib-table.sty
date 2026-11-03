@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Internal implementation unless documented.
-\ProvidesPackage{gradbars-lib-table}[2026/10/27 v1.1.1 gradbars lib-table]
+\ProvidesPackage{gradbars-lib-table}[2026/11/03 v1.2.0 gradbars lib-table]
 \RequirePackage{booktabs}
 \RequirePackage{colortbl}
 \RequirePackage{longtable}
@@ -528,6 +528,8 @@
 \gradtablestyle{reference}{preset=paper,rules=booktabs,header~align=c,
   row~stretch=1.25,column~sep=6pt,number~align=decimal}
 \gradtablestyle{distribution}{preset=paper,rules=booktabs,header~align=c,row~stretch=1.6,column~sep=8pt,row~padding=3pt,graphic~width=45mm}
+\gradtablestyle{readable}{preset=paper,rules=rows,header~align=c,row~stretch=1.6,
+ column~sep=8pt,row~padding=3pt,theme=accessible,font={\small},label~width=22mm}
 \gradtablestyle{accessible}{preset=paper,rules=rows,header~align=c,row~stretch=1.4,column~sep=7pt,row~padding=2pt,theme=accessible}
 \gradtablestyle{matrix}{preset=paper,rules=rows,align=c,header~align=c,
   row~stretch=1.35,column~sep=6pt,row~padding=1pt}

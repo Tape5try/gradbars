@@ -1,0 +1,32 @@
+\documentclass{article}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}\usegradbarslibrary{legend}
+
+\newcount\formatCalls
+\gradbarsdeclareformatter{probe}{\global\advance\formatCalls1\relax\rule{16pt}{10pt}g}
+\gradscale{trend}{min=0,max=100}
+\gradlegenddefine{measured}{min=-2,max=8,heat palette=purple-teal,heat center=1,
+ legend layout=measured,legend duplicates=error,legend ticks={-2,0,1,4,8},unit={ long unit}}
+\begin{document}
+\gradheatlegend[width=35mm,height=3mm,legend ticks={0,10,20,30,40,50,60,70,80,90,100},
+ legend layout=measured,font=\Large,precision=0,legend missing=false]\par
+\gradlegenduse[width=65mm,height=3mm]{measured}\par
+\gradlegenduse[width=22mm,height=3mm,orientation=vertical,font=\large]{measured}\par
+{\gradheatlegend[width=25mm,height=3mm,legend layout=measured,formatter=probe,
+ legend ticks={0,25,50,75,100},legend missing=false]}
+\ifnum\formatCalls=5\else\errmessage{Measured formatter must run once per tick}\fi
+\par
+{\gradheatlegend[min=0,max=1,precision=0,legend ticks={0,.1,1},legend duplicates=off,
+ width=30mm,height=3mm,legend layout=measured,legend missing=false]}
+\par\gradsparktarget[scale group=trend]{20,NA,0,75,100}{60}\par
+\gradsparktarget[scale group=trend]{50,50,50}{50}\par
+\gradsparktarget[scale group=trend]{50}{0}\par
+\gradsparktarget[scale group=trend]{NA,NA}{100}\par
+\gradbar[style=readable,width=50mm,min=-100,max=100]{-75}\par
+\gradbar[style=readable,width=50mm,left color=black,right color=white,
+ fill=gradient,height=30pt,font=\Large,text={A wide gradient label}]{100}\par
+\begin{gradtable}[style=readable]
+\gradcolumn{a}{Item}\gradcolumn[type=bar,options={max=100}]{b}{Completion}
+\gradrow{Alpha,80}\gradrow{Beta,0}\gradrow{Gamma,NA}
+\end{gradtable}
+\end{document}

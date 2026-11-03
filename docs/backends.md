@@ -110,3 +110,7 @@ not backend selection. Document-wide PDF/UA conformance requires separate checks
 
 See the [public-only starter](libraries/starter/README.md),
 [domain reports](reports.md) and [stability contract](stability.md).
+
+## v1.2.0 readability and target trends
+
+See [the complete contract and bilingual examples](readability.md) for `legend layout=measured`, `legend duplicates=error`, `text contrast=area`, contrast fallback and `\gradsparktarget`. Defaults and older diagnostics remain unchanged; backend schema 1 remains scalar. New native-only kinds `bar-area` and `spark-target` require explicit TikZ fallback on third-party backends.

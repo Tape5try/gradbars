@@ -1,0 +1,6 @@
+\documentclass{article}
+\usepackage{gradbars}\usegradbarslibrary{legend}
+\gradbarsdeclarebackend{probe}{bar,labels,gradient}{\gradbarsbackenddefault}
+\begin{document}
+\gradsparktarget[backend=probe,spark range=fixed]{10,20}{50}
+\end{document}

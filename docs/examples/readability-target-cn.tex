@@ -1,0 +1,59 @@
+% Author: SuFan; MIT License. Illustrative data only.
+\documentclass{article}
+\usepackage[UTF8]{ctex}
+\usepackage[margin=18mm]{geometry}
+\usepackage{gradbars}\usegradbarslibrary{legend}
+\pagestyle{empty}
+\begin{document}
+\section*{图例、标签与目标趋势}
+\gradheatlegend[min=-2,max=8,heat palette=purple-teal,
+ heat center=1,legend ticks={-2,0,1,4,8},precision=1,
+ width=60mm,height=3mm,unit={ pt},font=\large,
+ legend layout=measured,legend duplicates=error,
+ legend missing=false]
+\qquad
+\gradheatlegend[min=0,max=1,precision=1,
+ legend ticks={0,.2,.4,.6,.8,1},font=\large,
+ width=22mm,height=3mm,legend orientation=vertical,
+ legend layout=measured,legend missing=false]
+\par\bigskip
+\begingroup
+\gradbarssetup{style=readable,width=62mm,
+ min=-100,max=100,precision=0}
+\begin{tabular}{lc}
+正值 & \gradbar{80}\\
+负值 & \gradbar{-65}\\
+零值 & \gradbar{0}\\
+渐变 & \gradbar[min=0,fill=gradient,
+ left color=black,right color=white,
+ text={明暗渐变标签与白底回退}]{100}\\
+\end{tabular}
+\endgroup
+\par\bigskip
+\begingroup
+\gradscale{progress-target}{min=0,max=100}
+\gradbarssetup{width=45mm,height=4ex,
+ precision=0,unit={\%},label width=10mm}
+\begin{tabular}{lc}
+团队 & 进度；虚线目标： 70\%\\
+\hline
+Atlas & \gradsparktarget[scale group=progress-target]
+ {20,35,NA,60,75}{70}\\
+Birch & \gradsparktarget[scale group=progress-target]
+ {50,50,50,50,50}{70}\\
+Cedar & \gradsparktarget[scale group=progress-target]
+ {NA,NA,NA,NA,NA}{70}\\
+\end{tabular}
+\endgroup
+\par\bigskip
+\begin{gradtable}[style=readable]
+\gradcolumn[width=24mm]{task}{工作流}
+\gradcolumn[type=bar,options={max=100,
+ precision=0,unit={\%}}]{progress}{完成率}
+\gradrow{评审,80}
+\gradrow{测试,35}
+\gradrow{待测,NA}
+\end{gradtable}
+\par\medskip
+ 演示数据；虚线为显式参考目标，NA 不替换为零。
+\end{document}

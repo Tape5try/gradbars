@@ -80,3 +80,13 @@ after the theme; solid overrides need `negative fill=solid` and `negative color`
 `\gradsignedbar[options]{negative}{positive}` is built into core; it shares one
 track and zero line while preserving independent observations and error intervals.
 See [the signed-bar API](../docs/api.md#two-signed-observations-on-one-track).
+
+## v1.2.0 可读性 / Readability
+
+图例测量与重复诊断属于 legend 库；区域对比度属于原生渲染器，旧默认保持。
+默认 spark 库新增 `\gradsparktarget[选项]{序列}{目标}`，固定/命名尺度，目标不参与观测。
+新增 readable 图形及表格预设。详见 [中英文说明](../docs/readability.md)。
+
+Measured legends cache one box per tick; duplicate checks require the builtin numeric formatter.
+Area contrast and spark-target require native rendering or explicit TikZ backend fallback.
+All 22 runtime modules are v1.2.0 (2026-11-03); do not mix module versions.

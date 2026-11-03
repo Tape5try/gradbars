@@ -1,0 +1,32 @@
+\documentclass{article}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+\makeatletter\ExplSyntaxOn
+\cs_new_eq:NN\testAreaReference\gradbarsAreaContrast
+\cs_set_protected:Npn\gradbarsAreaContrast
+ {\testAreaReference
+  \iow_term:x{AREA-REFERENCE|\areaCase|
+    \fp_use:N\l__gradbars_contrast_low_fp|
+    \fp_use:N\l__gradbars_contrast_high_fp|
+    \fp_eval:n{max(0,\dim_to_fp:n{\l__gradbars_contrast_left_dim}/\dim_to_fp:n{\gradbars@width})}|
+    \fp_eval:n{min(1,\dim_to_fp:n{\l__gradbars_contrast_right_dim}/\dim_to_fp:n{\gradbars@width})}|
+    \fp_use:N\l__gradbars_contrast_black_fp|\fp_use:N\l__gradbars_contrast_white_fp}}
+\ExplSyntaxOff\makeatother
+\begin{document}
+\gradbarssetup{style=readable,width=60mm,height=30pt,font=\large,
+ min=0,max=100,text={Contrast check},fill=gradient}
+\def\areaCase{forward}
+\gradbar[left color=black,right color=white]{100}\par
+\def\areaCase{reverse}
+\gradbar[left color=white,right color=black]{100}\par
+\def\areaCase{opposing}
+\gradbar[left color=red,right color=blue]{100}\par
+\def\areaCase{negative}
+\gradbar[min=-100,max=0,negative fill=gradient,
+ negative left color=black,negative right color=white]{-100}\par
+\def\areaCase{band}
+\gradbar[track color=white,band={0,50},band color=black,band opacity=.5]{0}\par
+\def\areaCase{large}
+\gradbar[width=25mm,height=6pt,font=\Large,label overflow=allow,
+ left color=black,right color=white]{100}\par
+\end{document}

@@ -1,0 +1,106 @@
+\section{v1.2.0: readability and target trends}
+The new behavior is explicit. Legacy legend layout and center-point text-color
+estimation remain defaults. Data in this chapter are illustrative.
+\subsection{Measured legend rows and columns}
+\key{legend layout=measured} measures width, height and depth, using as many rows
+or columns as needed. The whole legend can extend beyond the ramp length.
+\key{legend duplicates=error} checks builtin numeric labels and reports both raw
+ticks if formatting collapses them. Increase precision or reduce ticks; no values
+are changed automatically. Custom formatters and siunitx are opaque and rejected
+by this duplicate check. Measured layout accepts them and calls each tick formatter
+once, reusing its box without extra Figure tags.
+\begin{demo}{Measured numeric legends}
+\gradheatlegend[min=-2,max=8,heat palette=purple-teal,
+ heat center=1,legend ticks={-2,0,1,4,8},precision=1,
+ width=60mm,height=3mm,unit={ pt},font=\large,
+ legend layout=measured,legend duplicates=error,
+ legend missing=false]
+\qquad
+\gradheatlegend[min=0,max=1,precision=1,
+ legend ticks={0,.2,.4,.6,.8,1},font=\large,
+ width=22mm,height=3mm,legend orientation=vertical,
+ legend layout=measured,legend missing=false]
+\end{demo}
+Shared definitions capture both keys; \key{\gradlegenduse} accepts layout and
+duplicate-check overrides. Defaults are \key{legacy} and \key{off}.
+\clearpage
+\subsection{Contrast over the label area}
+\key{text contrast=area} applies to internal main labels with \key{text color=auto}.
+It bounds the worst contrast over resolved fill, unfilled track and reference-band
+intersections. Each gradient interval uses 32 channel-bounded subdivisions of
+continuous sRGB luminance. It covers negative gradients and large labels;
+\key{contrast minimum=4.5} remains explicit and is not lowered for large fonts.
+\key{contrast failure=warn} reports an insufficient bound; \key{background} draws
+an opaque white panel and black text. Explicit text colors bypass evaluation.
+\begin{demo}{Readable internal labels}
+\begingroup
+\gradbarssetup{style=readable,width=62mm,
+ min=-100,max=100,precision=0}
+\begin{tabular}{lc}
+Positive & \gradbar{80}\\
+Negative & \gradbar{-65}\\
+Zero & \gradbar{0}\\
+Gradient & \gradbar[min=0,fill=gradient,
+ left color=black,right color=white,
+ text={Gradient label with panel}]{100}\\
+\end{tabular}
+\endgroup
+\end{demo}
+Graphic \key{style=readable} selects a rectangular 3ex accessible solid track,
+small centered internal labels and area contrast with panel fallback. Later keys
+override it. \key{contrast canvas=white} declares the background beyond the track;
+set it to the actual cell/page color. The background is not inferred.
+Rounded corners, patterns, compound shapes and overlaid reference/error strokes
+are rejected by inside area evaluation. Inherited transparency, blending, custom
+TikZ drawing, colored glyphs and font effects are outside the model. Heat and stack
+segment labels keep their old algorithms. An existing opaque print-label panel
+is assessed as white and covers underlying patterns, corners and reference strokes. This is not whole-document PDF/UA
+certification. Use outside labels or explicit colors for unsupported drawings.
+\clearpage
+\subsection{Exactly one new combination: spark line plus target}
+\key{\gradsparktarget} takes a sequence and a separate numeric target. It requires
+\key{spark range=fixed} or a named scale and \key{spark type=line}. The target must
+lie within the range, is not an observation and never participates in statistics.
+NA preserves its position and breaks the line. Constant/single-point series use
+the explicit scale; all-missing series retain the target and describe missing data.
+\begin{demo}{Progress against an explicit target}
+\begingroup
+\gradscale{progress-target}{min=0,max=100}
+\gradbarssetup{width=45mm,height=4ex,
+ precision=0,unit={\%},label width=10mm}
+\begin{tabular}{lc}
+Team & Progress; dashed target: 70\%\\
+\hline
+Atlas & \gradsparktarget[scale group=progress-target]
+ {20,35,NA,60,75}{70}\\
+Birch & \gradsparktarget[scale group=progress-target]
+ {50,50,50,50,50}{70}\\
+Cedar & \gradsparktarget[scale group=progress-target]
+ {NA,NA,NA,NA,NA}{70}\\
+\end{tabular}
+\endgroup
+\end{demo}
+The label uses the final position, even if missing. \key{target color} controls
+the dashed horizontal line; the scalar bar \key{target} option stays rejected.
+Automatic alternatives distinguish range, observations and reference, producing
+one Figure. Existing \key{\gradspark} errors remain unchanged. Direct ordinary
+\key{tabular} cells are supported; no new CSV compound record, native column type
+or tabularray helper is added. Scalar backends need explicit TikZ fallback for
+\key{spark-target} and \key{bar-area}.
+\clearpage
+\subsection{A readable native-table preset}
+Table \key{style=readable} adds spacing, small type, accessible colors and a 22mm
+outside-label slot. It preserves column semantics; internal panels require explicit
+\key{options} selecting the graphic style.
+\begin{demo}{Readable completion table}
+\begin{gradtable}[style=readable]
+\gradcolumn[width=24mm]{task}{Workstream}
+\gradcolumn[type=bar,options={max=100,
+ precision=0,unit={\%}}]{progress}{Completion}
+\gradrow{Review,80}
+\gradrow{Testing,35}
+\gradrow{Pending,NA}
+\end{gradtable}
+\end{demo}
+
+\par\smallskip\noindent Standalone source: \texttt{docs/examples/readability-target.tex}.
