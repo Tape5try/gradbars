@@ -1,4 +1,9 @@
 \section{参数速查与使用限制}
+数值对扩展使用 \key{\gradbarsdeclarepairtype} 注册、
+\key{\gradpairgraphic} 调用、\key{\gradbarspairvalue} 读取记录；
+\key{\gradbarsdeclarepaircolumn} 显式声明原生双值列。
+完整签名、缺失规则、能力查询与示例见第~\ref{sec:pair-extensions-cn}~节。
+
 \begingroup\small
 \begin{center}
 \begin{tabularx}{\linewidth}{@{}>{\centering\arraybackslash}p{31mm}>{\centering\arraybackslash}p{25mm}>{\centering\arraybackslash}X@{}}
@@ -145,43 +150,19 @@ CSV 命令包括 \key{\gradbarsloadcsv}、\key{\gradbarscsvtable}、\key{\gradba
 \end{tabularx}
 \end{center}
 
-\clearpage
-\subsection{Tagged PDF 与替代文本}
-在支持 tagging 的 LaTeX 发行版中，在 documentclass 之前使用 DocumentMetadata 开启标记。
-宏包为独立图形自动生成英文替代文本，包括原始数值、单位、量程、参考线、误差距离、
-对比两端与差值、堆叠分段与正负小计，以及趋势中的每个观测和缺失位置。
-区间描述保留上下界与显式点估计，不推断置信水平。图例描述类别名称。
-表格测量过程不生成语义标签，实际图形单元格只生成一次描述。
-
-\begin{codeonly}
-\DocumentMetadata{tagging=on,pdfstandard=ua-2,lang=zh-CN}
-\documentclass{ctexart}
-\usepackage{gradbars}
-\begin{document}
-\gradbar{72}
-
-\gradbar[alt={准确率为百分之七十二，满分为百分之百。}]{72}
-
-\graddumbbell[compare label=delta]{58}{76}
-\end{document}
-\end{codeonly}
-
-\key{alt={描述}} 覆盖自动文本；空值恢复自动生成。
-原有 \key{/tikz/alt={描述}} 写法继续可用。
-
-\key{accessibility} 可选 auto、artifact 或 off。
-auto 是默认值，为图形生成描述；artifact 将图形作为装饰，
-仅用于周围文字已完整表达其信息的情况；off 将标记设置交由外层控制。
-
-未开启 tagging 时这些选项不改变视觉输出。自定义描述应解释单位、类别及图形在当前文档中的含义。
-
-在已有 tikzpicture 内调用宏包时不会创建独立图形标签，应为外层图提供完整替代文本。
-自动描述使用原始数据，不随 precision 舍入；text 仅修改视觉标签，语义描述需通过 alt 覆盖。
-该支持不等于整份文档已符合 PDF/UA；还需检查表头、阅读顺序、字体及其他内容的标记。
+\subsection{便捷命令与精细标签定位}
+声明入口为 \key{\gradbarsnewcommand[声明与图形选项]{\命令名}}。
+完整教程从第~\ref{sec:command-declarations-cn}~节开始；
+声明与定位键的默认值及限制集中在第~\ref{sec:command-reference-cn}~节。
+参数形式见第~\ref{sec:command-signatures-cn}~节，独立参数与双值输入见
+第~\ref{sec:command-data-cn}~节，配色与尺寸见第~\ref{sec:command-colors-cn}~节。
+数字方向见第~\ref{sec:command-positions-cn}~节，轨道与端点参照见
+第~\ref{sec:command-reference-points-cn}~节，间距、锚点及偏移见第~\ref{sec:command-offsets-cn}~节。
+空白与覆盖顺序见第~\ref{sec:command-scope-cn}~节，表格接入见第~\ref{sec:command-tables-cn}~节。
 
 \subsection{已知边界}
 CSV 仅支持逗号分隔的单行字段；数值列可自动计算共享范围。
 
 CSV 不支持字段内换行；旧的 \key{gradbarscsvtable} 不分页，原生 \key{gradtable} 数据源支持 \key{long=true}。趋势线使用等间距观测，不解析日期。
 不要把绘图命令直接放入 siunitx 的数值型 S 列或 PDF 书签。
-宏包已通过 pdfLaTeX、XeLaTeX、LuaLaTeX 的功能检查（包括 CSV）。本中文手册采用 XeLaTeX，英文手册可用 pdfLaTeX 编译。Tagged PDF 支持见上一小节；文档的整体无障碍合规需要独立验证。
+宏包已通过 pdfLaTeX、XeLaTeX、LuaLaTeX 的功能检查（包括 CSV）。本中文手册采用 XeLaTeX，英文手册可用 pdfLaTeX 编译。Tagged PDF 支持见第~\ref{sec:manual-accessibility}~节；文档的整体无障碍合规需要独立验证。

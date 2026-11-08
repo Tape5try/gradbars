@@ -2,7 +2,7 @@
 
 This document retains the former local v1.3.0/v1.4.0 planning labels. Those
 features are included in the actual **v1.2.1** snapshot at the maintainer's request;
-see [the numbering and migration notes](migration-v1.2.1.md).
+see [the change history](../CHANGELOG.md).
 本文沿用原本地规划标签；相关功能保留于本次指定编号 v1.2.1，并未分别发布这些规划版本。
 
 

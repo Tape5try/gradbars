@@ -1,5 +1,4 @@
-\part{快速开始与数据基础}
-
+\part{快速开始}
 
 \section{安装与快速开始}
 \subsection{安装宏包}
@@ -23,7 +22,7 @@ tlmgr 提供所配置 TeX Live 仓库中的版本，新 CTAN 版本可能尚未�
 \begin{lstlisting}[style=manual,language={}]
 texlua scripts/unpack.lua
 \end{lstlisting}
-该命令自动创建缺失的 \key{sty/} 并提取全部二十二个运行文件，无需 shell escape。
+该命令自动创建缺失的 \key{sty/} 并提取全部二十三个运行文件，无需 shell escape。
 直接运行 \key{tex gradbars.ins} 时须确保 \key{sty/} 目录及可读的 \key{sty/README.md} 标记同时存在；
 缺少任一项均使用上述 Lua 入口修复，仅创建目录不足以直接提取。
 随后把 \key{sty/} 目录下的全部 \key{.sty} 文件一起放在主文档旁边，
@@ -59,29 +58,48 @@ texlua scripts/unpack.lua
 \end{document}
 \end{codeonly}
 
-\subsection{统一设置与图形入口}
-\key{\gradbarssetup{参数列表}} 设置当前作用域的默认值；
-\key{\gradbar[参数列表]{数值}} 绘制一个数据条，其中可选参数只覆盖本次绘制。
-数值与最大值可用十进制或 e/E 科学计数数字，不接受逗号、单位或计算表达式。
 
-\begin{example}{示例 1：统一设置与单次覆盖}
-\gradbarssetup{width=23mm,
-  max=100,precision=1,theme=blue}
-\gradbar{72.4}
-
-\gradbar[theme=teal]{92.7}
-
-\gradbar{81.6}
+\subsection{第一张可视化表格}
+下面是可直接编译的完整文档。得分越高越好，耗时越低越好；缺失数据用 NA，不能用零代替。
+\begin{codeonly}
+\documentclass{article}
+\usepackage{gradbars}
+\begin{document}
+\begin{center}
+\begin{gradtable}[width=\linewidth,header align=c]
+  \gradcolumn{method}{Method}
+  \gradcolumn[type=bar,mark=both,
+    options={max=100,precision=1}]{score}{Score}
+  \gradcolumn[type=number,mark=best,
+    options={better=lower,precision=1}]{time}{Time / ms}
+  \gradrow{Baseline,72.4,18.2}
+  \gradrow{Proposed,92.7,11.5}
+  \gradrow{Pending,NA,NA}
+\end{gradtable}
+\end{center}
+\end{document}
+\end{codeonly}
+\begin{example}[text and listing,sidebyside=false]{第一张表格的实际效果与正文代码}
+\begin{center}
+\begin{gradtable}[width=\linewidth,header align=c]
+  \gradcolumn{method}{Method}
+  \gradcolumn[type=bar,mark=both,
+    options={max=100,precision=1}]{score}{Score}
+  \gradcolumn[type=number,mark=best,
+    options={better=lower,precision=1}]{time}{Time / ms}
+  \gradrow{Baseline,72.4,18.2}
+  \gradrow{Proposed,92.7,11.5}
+  \gradrow{Pending,NA,NA}
+\end{gradtable}
+\end{center}
 \end{example}
 
-\subsection{作用域}
-设置遵循普通 TeX 分组规则。在导言区调用会影响整篇文档；
-在一对花括号中调用只影响该组。表格单元格也有自己的分组，
-因此整列共用的设置应放在表格环境之前。
-
-\begin{example}{示例 2：局部设置不会泄漏}
-{\gradbarssetup{theme=gray,max=10}
- \gradbar{8}}
-
-\gradbar{80}
-\end{example}
+\subsection{首次编译排错}
+\begin{description}
+\item[找不到 gradbars.sty] 检查安装位置；手动安装须复制全部运行模块，并保持版本一致。
+\item[中文或字体报错] 中文文档使用 XeLaTeX 与 ctexart；上述英文最小文档也可使用 pdfLaTeX 或 LuaLaTeX。
+\item[命令未定义] 检查是否加载命令所属功能库，所有库加载均放在导言区。
+\item[Invalid value] 先检查是否把单位、分组符号或表达式写进数值参数；地区输入须显式声明规则。
+\end{description}
+编译成功后，先阅读共同基础，再按图形详解选型；已有普通表格可直接查阅表格实战，
+使用外部数据时转到数据与报告。参数速查与常见问题位于最后一部分。

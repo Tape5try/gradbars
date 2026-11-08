@@ -1,4 +1,4 @@
-# Developing gradbars v1.2.2
+# Developing gradbars v1.2.3
 
 This release freezes the documented extension interfaces under the
 [version 1 stability contract](stability.md). Private
@@ -131,7 +131,7 @@ l3build doc
 l3build ctan
 ```
 
-`l3build check` runs eight semantic groups under three engines, extracting runtime
+`l3build check` runs ten semantic groups under three engines, extracting runtime
 modules from the documented source and comparing them with `sty/`. The static
 regression corpus in `tests/cases/` is replayed by `texlua scripts/check.lua`;
 expected failures must fail with their declared diagnostics. Run
@@ -267,9 +267,10 @@ The spark module wraps existing rendering for the two explicit compositions; ful
 
 Two-level grouping is isolated from old single-level build paths. Node identity uses numeric parent identity plus literal leaf text; original source order allocates nodes before assigning selected rows. Parent and leaf data/visible sequences drive summaries. Existing rank caches are reused at the selected node level. Summary separators use noalign-only rules to preserve real longtable keep chains; booktabs midrule can otherwise introduce an alignment row that breaks them.
 
-After `texlua scripts/check.lua`, run `texlua tests/hierarchy-pages.lua` for actual shipout pages (all four rule styles) and `texlua tests/trend-pdf.lua` for real composition Figure/Alt assertions, in addition to `texlua scripts/pdf-check.lua`. All use texlua/TeX Live, with no Python test dependency. `l3build check` covers eight semantic groups and all 23 module extraction comparisons. New example sources in docs/examples are bilingual; build both manuals and inspect changed pages visually.
+After `texlua scripts/check.lua`, run `texlua tests/hierarchy-pages.lua` for actual shipout pages (all four rule styles) and `texlua tests/trend-pdf.lua` for real composition Figure/Alt assertions, in addition to `texlua scripts/pdf-check.lua`. All use texlua/TeX Live, with no Python test dependency. `l3build check` covers ten semantic groups and all 23 module extraction comparisons. New example sources in docs/examples are bilingual; build both manuals and inspect changed pages visually.
 
-This update remains local: do not push, tag, create Releases, build/upload CTAN archives or infer publication authorization from validation commands.
+Validation does not imply publication. Ordinary source pushes, release tags and
+CTAN submissions are distinct delivery operations; check their scope separately.
 
 ## v1.2.1 adapter and report layers
 
@@ -290,7 +291,7 @@ Run the new `v121-*` static cases on all engines. Then run
 `texlua tests/report-pdf.lua` for real combined/delegated/PGF Figure counts and
 alternatives, and the extended `texlua tests/hierarchy-pages.lua` for actual
 metric-card longtable shipout pages as well as the earlier four hierarchy fixtures.
-`l3build check` now covers eight semantic groups, including scoped metric metadata,
+The v1.2.1 snapshot covered eight semantic groups, including scoped metric metadata,
 local adapter registration and independently expected rug/box statistics. Compare
 all 23 docstrip outputs. The documented examples use public APIs only.
 
@@ -304,9 +305,33 @@ each group overwrites it, and current-table result properties are cleared before
 ranking. Existing hierarchy construction selects the same parent/leaf rows.
 
 Use `texlua scripts/benchmark.lua` for fixed-runtime/data phase measurements;
-see [performance methodology](performance.md) for bounds, identities, sample
+see [performance methodology](performance-v1.2.2.md) for bounds, identities, sample
 retention and timing limits. No parser/statistics or opaque formatter cache is
 added. `tests/cases/v122-ranking.tex` checks independent expected values, ties,
 missing/negative/zero values, direction, CSV reload isolation and duplicate work.
 Related hierarchy/PDF/page checks remain necessary; performance does not replace
 them. 本版仅优化既有路径，保留公开接口、默认语义与 backend schema 1。
+
+## Command declaration and positioned-label boundary
+
+The API module owns local command construction and m/O argument validation. The keys module defines opt-in positions; the native renderer resolves dimensional offsets in a temporary text-font context. Only bar/Heat implement explicit placement. The backend dispatcher requires native rendering or explicit TikZ fallback without adding schema-1 fields. See [API](api.md#command-declarations).
+
+## Numeric-pair dispatch boundary
+
+The API module registers pair consumers independently of scalar types/backends.
+Native compare/dumbbell/range validation and normalization run first. The backend
+boundary captures the native continuation and exposes a scoped read-only record;
+`\gradbarspairdefault` executes that continuation at most once. Its once guard
+survives nested boxes and restores the enclosing state on exit. Record access and
+label construction emit no Figure; native delegation retains measurement and
+artifact suppression. A callback must tolerate repeatable host-table trials.
+
+The table library's explicit standard pair proxies retain native two-value parsing,
+scale collection and allocated widths. They admit only compare/dumbbell/range,
+without promoting arbitrary callbacks or enabling scalar ranking/aggregation.
+See [the complete pair contract](pair-extensions.md).
+
+Current semantic regression comprises ten groups. Run `l3build check`, the three-engine
+static suite and `texlua tests/pairs-pdf.lua` after its tagged fixture is built.
+The latter verifies raw alternatives, zero/missing pairs, native/tabularray tables,
+artifact suppression and one outer Figure for an embedded pair composition.

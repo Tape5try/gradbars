@@ -1,0 +1,39 @@
+% !TeX program = xelatex
+% 所有数据与给定区间均为虚构；MIT License。
+\documentclass[fontset=fandol]{ctexart}
+\usepackage[margin=18mm]{geometry}
+\usepackage{gradbars}
+\usepackage{gradbars-contrib-pairs}
+\gradbarsdeclarepaircolumn{service-pair}{frontend=dumbbell,
+ options={min=0,max=100,precision=1,unit={\%}}}
+\gradbarsdeclarepaircolumn{service-span}{frontend=range,
+ options={min=0,max=100,precision=1,unit={\%}}}
+\newcommand\servicetable[2]{%
+ \begin{center}
+ \begin{gradtable}[style=paired-report,theme=#1,width=\linewidth,
+   graphic width=22mm,label width=25mm]
+  \gradcolumn[width=25mm]{name}{服务项目}
+  \gradcolumn[type=service-pair,options={#2}]{pair}{当前 / 参考}
+  \gradcolumn[type=service-span]{span}{给定区间}
+  \gradrow{预约办理,66/82,60/88}
+  \gradrow{上门服务,0/12,0/20}
+  \gradrow{咨询服务,84/NA,NA}
+  \gradrow{社区活动,NA/76,65/85}
+  \gradrow{待复核,NA,NA}
+ \end{gradtable}
+ \end{center}}
+\begin{document}
+\section*{社区服务覆盖率的配对对照}
+示例数据仅用于演示，不代表真实实验结果。
+配对输入顺序为参考值/当前值，原生标签显示顺序为当前值/参考值。
+给定区间由使用者提供，不表示推断得到的置信区间。
+\servicetable{accessible}{}
+\subsection*{黑白交付}
+\servicetable{mono}{color=black,compare color=black!65,track color=black!25}
+\subsection*{只使用公开接口的记录消费者}
+图后数字是当前值减参考值的原值差，再格式化到一位小数；
+n/a 表示这组数据不完整。
+\par\medskip
+\gradpairgraphic[max=100,width=30mm,precision=1]{review-delta}{66}{82}\par\medskip
+\gradpairgraphic[max=100,width=30mm,precision=1]{review-delta}{NA}{0}
+\end{document}

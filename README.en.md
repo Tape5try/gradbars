@@ -1,42 +1,113 @@
 # gradbars
 
-**Inline data graphics for LaTeX text and tables.**
+**Compact data graphics for values, comparisons, composition, trends and distributions in LaTeX text and tables.**
 
-**v1.2.2 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
+**v1.2.3 · Repository source · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
 
-Version 1.2.2, dated 2026-11-07, removes duplicate best/second group-ranking work and adds a reproducible three-engine, phase-based benchmark. All v1.2.1 features, interfaces, default libraries and numeric semantics remain; no cross-call cache is introduced. See [performance notes and reproduction commands](docs/performance.md). This version is scheduled for GitHub source delivery only, without a Release or CTAN submission; formal download links below still refer to published v1.1.0.
-
-[简体中文](README.md) · [Published English manual (v1.1.0)](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-en-v1.1.0.pdf) · [Published Chinese manual (v1.1.0)](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-v1.1.0.pdf) · [CTAN](https://ctan.org/pkg/gradbars)
+[简体中文](README.md) · [Installation](#installation-and-selected-libraries) · [Examples](docs/examples/README.md) · [API reference](docs/api.md) · [Changelog](CHANGELOG.md) · [CTAN](https://ctan.org/pkg/gradbars)
 
 ![gradbars: data bars, stacks, trends and heat cells](docs/images/overview-v1.1.0.svg)
 
-Built on PGF/TikZ, gradbars embeds graphics in existing `tabular` cells or builds visual tables through declared `gradtable` columns and data rows. No `tikzpicture` wrapper or shell escape is required.
+Built on PGF/TikZ, gradbars embeds individual graphics in text and existing tables, or builds reports with declared `gradtable` columns, ranking, summaries and pagination. No `tikzpicture` wrapper or shell escape is required. All example data are illustrative.
 
-Explicit bar themes such as `theme=blue` now select complementary negative colors for all eleven themes. The unthemed negative default remains solid lightred. Use `negative fill=solid,negative color=lightred` after the theme to restore the former appearance. [Full signed-theme gallery](docs/examples/theme-complements.tex).
+## Quick start
 
-Built-in shared signed bars: `\gradsignedbar[min=-50,max=50,error=8,theme=blue]{-24}{24}`. Two observations share a track and zero line while retaining their own uncertainty intervals; no custom clipping macro is needed.
+Compile this complete example:
 
-## New in v1.2.1
+```latex
+\documentclass{article}
+\usepackage{gradbars}
+\begin{document}
+\gradbar[max=100,width=30mm,precision=1]{72.4}
 
-- Explicit scalar column registration, fixed-box dimensions, repeatable measurement and declared raw-value capabilities: [column adapters](docs/column-adapters.md).
-- Optional body-cell graphics/formatting with host headers preserved: [pgfplotstable](docs/pgfplotstable.md).
-- All-sample `\gradboxrug`, scoped `\graddeclaremetric`, cross-table `\gradmetricbind` and positional `\gradmetriccard`: [report metrics and compositions](docs/report-metrics.md).
+\begin{center}
+\begin{gradtable}[width=\linewidth,header align=c]
+  \gradcolumn{method}{Method}
+  \gradcolumn[type=bar,mark=both,
+    options={max=100,precision=1}]{score}{Score}
+  \gradcolumn[type=number,mark=best,
+    options={better=lower,precision=1}]{time}{Time / ms}
+  \gradrow{Baseline,72.4,18.2}
+  \gradrow{Proposed,92.7,11.5}
+  \gradrow{Pending,NA,NA}
+\end{gradtable}
+\end{center}
+\end{document}
+```
 
-[Bilingual standalone examples](docs/examples/README.md) · [v1.2.1 migration](docs/migration-v1.2.1.md)
+Higher scores and lower times are better. `mark=both` marks the best and second-best values. `NA` denotes missing data, not zero. For Chinese content, use an appropriate setup such as XeLaTeX with `ctexart`.
+
+## Declare your own graphic command
+
+Save a graphic's settings once, then supply values and optional per-call overrides:
+
+```latex
+\gradbarsnewcommand[
+  type=bar,args={m O{}},data={#1},options={#2},empty=skip,
+  theme=gray,min=0,max=1,width=25mm,height=5pt,precision=3,
+  label position=right,label distance=1mm
+]{\servicebar}
+
+\servicebar{0.960}
+\servicebar{0.720}[color=teal]
+\servicebar{0.840}[fill=gradient,left color=blue,right color=cyan!20,
+  label position=above,label reference=value,label yshift=2pt]
+```
+
+Signatures can use `{value}{options}`, `{value}[options]` or `[options]{value}`, and expose individual dimensions or colors. Native bar/Heat main labels support explicit sides, reference points, anchors, distances and dimensional offsets. Declarations and calls follow TeX scope.
+
+[Complete example](docs/examples/custom-commands.tex) · [Options and limits](docs/api.md#command-declarations)
+
+## Choose a graphic and table workflow
+
+| Display | Entry point | Read more |
+| --- | --- | --- |
+| Values and signed changes | `\gradbar`, `\gradsignedbar` | [Signed themes](docs/examples/theme-complements.tex) |
+| Paired observations, targets and intervals | `\gradcompare`, `\graddumbbell`, `\gradrange` | [API](docs/api.md) |
+| Composition, ordered observations and color scales | `\gradstack`, `\gradspark`, `\gradheat` | [Examples](docs/examples/README.md) |
+| Sample distributions | `\gradboxplot`, `\gradboxrug` | [Statistics and missing data](docs/distributions.md) |
+| Widths, groups, ranking, summaries and pagination | `gradtable` | [Hierarchical tables](docs/hierarchical-tables.md) |
+| CSV and reusable report metrics | `\gradbarsloadcsv`, `\graddeclaremetric` | [CSV](docs/Chapter/en/csv-en.tex) · [Report metrics](docs/report-metrics.md) |
+
+Call graphics directly in ordinary `tabular` cells, or use collected columns:
+
+```latex
+\gradbarscolumn*{G}{max=1,width=14mm,precision=3,theme=gray}
+\begin{tabular}{lGG}
+Method & \gradbarshead{Precision} & \gradbarshead{Recall}\\
+Alpha & 1.000 & 0.968\\
+Beta & & 0.750\\
+\end{tabular}
+```
+
+The starred form centers labels, leaves blank cells blank, and displays NA as missing. Use `baseline=text` to align graphic labels with neighboring plain numbers.
+
+- For tabularray, load `\usepackage{tabularray}` and `\UseTblrLibrary{gradbars}` in the preamble, then use dedicated columns or cell helpers. [Integration](docs/Chapter/en/tabularray-en.tex)
+- For pgfplotstable, load its explicit body-cell adapter; host headings stay intact. [Adapter contract](docs/pgfplotstable.md)
+- Extend existing workflows with separate public graphic, formatter, column and backend contracts. [Columns](docs/column-adapters.md) · [Starter](docs/libraries/starter/README.md)
+
+## Complete reports and gallery
+
+Numeric pairs have independent registration with `\gradbarsdeclarepairtype`,
+invocation with `\gradpairgraphic`, and scoped record access with
+`\gradbarspairvalue`. Declare standard native two-value columns explicitly with
+`\gradbarsdeclarepaircolumn`; cells contain `66/82` or `NA`. Use `paired-report`
+for a report preset. Ordinary tabular and tabularray can call pair graphics with
+explicit widths.
+
+[Pair contract and limits](docs/pair-extensions.md) · [Complete paired report](docs/examples/paired-report.tex) · [Public extension library](docs/libraries/gradbars-contrib-pairs.sty)
 
 ![One declared report metric used across standalone cards and two summary scopes](docs/images/report-metrics-v1.2.1.png)
 
-[Complete source](docs/examples/report-metrics.tex) · [Rebuild the image](docs/images/report-metrics.md)
+Reuse metric units, ranges and formatting across tables. Gallery images come from real TeX compilation, with rebuildable sources.
 
-## Features
+[Complete report source](docs/examples/report-metrics.tex) · [Rebuild](docs/images/report-metrics.md) · [More complete examples](docs/examples/README.md)
 
-- **Inline graphics:** data bars, signed bars, lollipops, comparisons, dumbbells, bullet charts, intervals, stacks, sparklines and heat cells.
-- **Visual tables:** automatic widths, independent header alignment, spanning headers, groups, best/second-best marking, summaries and pagination.
-- **Data handling:** CSV field binding, sorting, filtering, grouping, automatic column ranges and named shared scales.
-- **Numbers and appearance:** scientific input, optional siunitx formatting, decimal alignment, themes, patterns, table styles and legends.
-- **Accessibility and extensions:** automatic graphic alternative text when LaTeX PDF tagging is enabled, with `alt` overrides; stable registration interfaces for scalar graphics, formatters and contributed libraries.
+<details>
+<summary>More graphics, themes, service-response and hierarchical reports</summary>
 
-## Service response times and status legend (v1.1.1)
+### Service response times and status legend
+
 
 ![Compiled service-response table with Pending, Fast, Normal, Slow and Timeout legend items, and data bars sharing a 0–1000 ms scale](docs/images/service-response-legend-v1.1.1.png)
 
@@ -48,7 +119,7 @@ More [complete table examples](docs/examples/README.md) cover course completion,
 library borrowing channels, energy-use comparisons and batch dimensions, with
 standalone sources and matching chapters in both manuals.
 
-## Signed theme gallery (v1.1.1)
+### Signed theme gallery
 
 ![Eleven themes on shared signed tracks with zero lines and both error whiskers](docs/images/theme-complements-v1.1.1.png)
 
@@ -56,18 +127,18 @@ All rows use the built-in `\gradsignedbar[theme=blue,label=none]{-24}{24}`, shar
 
 [Complete example](docs/examples/theme-complements.tex) · [Rebuild the image](docs/images/theme-complements.md)
 
-## Regional input and hierarchical reports (v1.3.0 / v1.4.0)
+### Regional input and hierarchical reports
 
 ![Regional inputs and fixed reference bands](docs/images/regional-reference-v1.3.0.png)
 
 ![Two-level groups and coordinated endpoint trends](docs/images/hierarchical-trends-v1.4.0.png)
 
 - [Regional numeric input](docs/regional-input.md): explicit per-column separators and canonical values for selection, scales, ranking and summaries; new regional table preset.
-- [Trend compositions](docs/trend-compositions.md): one distinct composition per version, retaining NA positions and explicit shared ranges.
+- [Trend compositions](docs/trend-compositions.md): retaining NA positions and explicit shared ranges.
 - [Two-level CSV reports](docs/hierarchical-tables.md): structured paths, parent/leaf ranks and independent summary scopes; new hierarchical preset and [multipage source](docs/examples/hierarchical-longtable.tex).
 - Executable examples: [regional input](docs/examples/regional-input.tex) / [中文](docs/examples/regional-input-cn.tex), [hierarchical review](docs/examples/hierarchical-teams.tex) / [中文](docs/examples/hierarchical-teams-cn.tex).
 
-## Readability and target trends (v1.2.0)
+### Readability and target trends
 
 ![Measured legends, label contrast panels, separate spark targets and a readable table preset](docs/images/readability-target-v1.2.0.png)
 
@@ -75,7 +146,10 @@ The new layout and contrast behavior are explicit. `\gradsparktarget` separates
 reference targets from observations and preserves missing positions.
 [Usage and limits](docs/readability.md) · [Source](docs/examples/readability-target.tex) · [Rebuild](docs/images/readability-target.md)
 
-## Installation
+</details>
+
+## Installation and selected libraries
+
 
 Requires LaTeX 2025-11-01+, expl3 2025-12-29+ and PGF/TikZ 3.1.11a+.
 Update older distributions before installing this release.
@@ -97,164 +171,43 @@ The TeX Live repository may lag behind CTAN or the development repository. Check
 
 pdfLaTeX, XeLaTeX and LuaLaTeX are supported. Dependencies include PGF/TikZ, xparse and expl3; collected CSV columns and native tables additionally load collcell, array, booktabs, colortbl and longtable. siunitx is optional. The package itself does not load ctex or fontspec.
 
-## Quick start
-
-Compile this complete example:
-
-```latex
-\documentclass{article}
-\usepackage{gradbars}
-\begin{document}
-\gradbar[max=100,width=30mm,precision=1]{72.4}
-
-\begin{gradtable}[width=\linewidth,header align=c]
-  \gradcolumn{method}{Method}
-  \gradcolumn[type=bar,mark=both,
-    options={max=100,precision=1}]{score}{Score}
-  \gradcolumn[type=number,mark=best,
-    options={better=lower,precision=1}]{time}{Time / ms}
-  \gradrow{Baseline,72.4,18.2}
-  \gradrow{Proposed,92.7,11.5}
-  \gradrow{Pending,NA,NA}
-\end{gradtable}
-\end{document}
-```
-
-Higher scores and lower times are better. `mark=both` marks the best and second-best values. `NA` denotes missing data, not zero. For Chinese content, use an appropriate setup such as XeLaTeX with `ctexart`.
-
-## Loading selected libraries
-
-By default, `\usepackage{gradbars}` loads the five libraries `stack,spark,heat,csv,table`.
-Load `distribution,legend,reports` explicitly when needed. Select libraries with:
-
-```latex
-\usepackage[libraries={stack,spark,heat,csv,table}]{gradbars}
-```
-
-| Library | Purpose |
-| :---: | --- |
-| `core` | Basic graphics, numbers, settings and accessibility tagging; always loaded |
-| `stack` | Signed stacks, segment labels and legends |
-| `spark` | Line, bar and win-loss sparklines |
-| `heat` | Sequential and diverging heat cells |
-| `csv` | CSV import, cell access and collected columns |
-| `table` | Native visual tables; automatically loads the four feature dependencies above |
-
-Use `libraries=none` for basic graphics only. Additional libraries must be loaded in the preamble:
+The five default libraries are `stack,spark,heat,csv,table`. Load `distribution`, `legend`, `reports` and `pgfplotstable` explicitly when needed; tabularray uses its own library entry point.
 
 ```latex
 \usepackage[libraries=none]{gradbars}
-\usegradbarslibrary{stack,spark}
+\usegradbarslibrary{stack,spark} % preamble only
 ```
 
-`all` and `none` are modes of the `libraries` option, not library names. Both `\gradbarsset` and `\gradbarssetup` set defaults within the current scope.
-
-## Ordinary tables with numeric cells
-
-```latex
-\gradbarscolumn*{G}{max=1,width=14mm,precision=3,theme=gray}
-\begin{tabular}{lGG}
-Method & \gradbarshead{Precision} & \gradbarshead{Recall}\\
-Alpha & 1.000 & 0.968\\
-Beta & & 0.750\\
-\end{tabular}
-```
-
-The starred form centers labels and keeps empty cells blank; `NA` remains missing. No user-written collector is needed. See [ordinary-table documentation](docs/tabular-columns.md) and the [complete example](docs/examples/precision-recall.tex).
-
-Place a horizontal category legend below a heading without custom swatch macros or a nested table:
-
-```latex
-\gradbarssetup{table legend=true} % false hides the legend row, retaining the title
-\gradtablelegendhead[
-  stack colors={gray,teal,blue,orange,red}
-]{Response status}{Pending,Fast,Normal,Slow,Timeout}
-```
-
-Use `\gradtablelegend[options]{names}` for the swatch row alone. Both commands are in core and need no `legend` library. Labels declare the categories; they do not change bar colors automatically. See the [complete service-response table](docs/examples/service-response-legend.tex) and [legend configuration](docs/legends.md).
-
-## Text baselines in ordinary tables
-
-To align a bar's numeric label with a neighboring plain number in `tabular`,
-explicitly select:
-
-```latex
-\gradbarssetup{width=30mm,max=100,precision=1,baseline=text}
-```
-
-The default `baseline=auto` retains historical graphic placement; upgrading does
-not switch alignment modes. `baseline=text` is already supported in v1.1.0.
-[Complete alignment example](docs/examples/baseline-alignment.tex).
-
-## tabularray integration
-
-With tabularray 2025C (2025-11-27) or newer, load the optional adapter in the preamble:
-
-```latex
-\usepackage{tabularray}
-\usepackage{gradbars}
-\UseTblrLibrary{gradbars}
-```
-
-`G[options]{width}`, `H[options]{width}`, `N[options]{width}` and `D[options]{width}` provide bars, heat cells, numbers and layered comparisons. Protect headers with `{...}`. Cell helpers such as `\gradbarTblr` also work with existing Q/X columns. `label align=cell` centers inside/auto labels across the content area; `label=left` preserves formatted numbers and units. The separate `gradtblr` environment supplies preset styling, while native gradtable supports `style=matrix`. Ordinary documents do not load tabularray automatically. Both manuals include a dedicated integration chapter.
+Core is always loaded. Table automatically loads stack, spark, heat and csv. `all` and `none` are package-option modes, not library names. [Modules and installation](sty/README.md)
 
 ## Data and layout conventions
 
-- Use consistent ranges to compare the same metric. Automatic spark ranges emphasize shape; fix the scale to compare absolute levels.
-- Formatting does not alter raw calculations. `unit` appends text; `value format=percent` computes the value relative to `max`.
-- CSV accepts single-line comma-separated fields read as characters, not executed as TeX. Sparklines use equally spaced observations and do not parse dates.
-- Signed stacks accumulate independently on each side of zero. The default total is the net sum; segment percentages represent shares of absolute contributions.
-- `long=true` enables native table pagination. Place multipage tables in single-column body text, outside floats and minipages.
-- Automatic alternative text covers graphics only. Document reading order, table structure and other accessibility requirements need separate validation.
-
-The opt-in reports library provides [domain report presets](docs/reports.md). Contributors can use the [independent starter](docs/libraries/starter/README.md) and the [public scalar backend contract](docs/backends.md).
+- Compare the same metric on a common scale. Formatting affects display, not raw selection, ranking, statistics or geometry.
+- Zero is valid; NA is missing. CSV fields stay literal and never execute TeX; declare regional separators explicitly.
+- Series use equally spaced positions and retain missing entries. Put native multipage tables in single-column body text with `long=true`.
+- Graphic alternatives do not establish document-wide accessibility. Table structure and reading order require separate validation. [Scope](docs/accessibility.md)
 
 ## Documentation and development
 
-Both manuals pair rendered output with source and cover getting started, graphics, appearance, tables, applications and reference material.
+- Current manual sources: [English main](docs/gradbars-manual-en.tex) · [English chapters](docs/Chapter/en/README.md) · [Chinese main](docs/gradbars-manual.tex) · [Chinese chapters](docs/Chapter/zh-cn/README.md).
+- Published PDFs (v1.1.0): [English manual](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-en-v1.1.0.pdf) · [Chinese manual](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-v1.1.0.pdf). Build the repository version locally.
+- Reference: [API](docs/api.md) · [Stability](docs/stability.md) · [v1.2.3 migration](docs/migration-v1.2.3.md) · [Changelog](CHANGELOG.md).
+- Development: [Modules](sty/README.md) · [Developer guide](docs/developer.md) · [Performance](docs/performance-v1.2.2.md) · [Gallery source](docs/images/readme-gallery.tex).
 
-- [Chinese main source](docs/gradbars-manual.tex) and [Chinese chapters](docs/Chapter/zh-cn/README.md).
-- [English main source](docs/gradbars-manual-en.tex) and [English chapters](docs/Chapter/en/README.md).
-- [v1.3.0 / v1.4.0 migration](docs/migration-v1.4.0.md) · [v1.2.0 migration](docs/migration-v1.2.0.md) · [API reference](docs/api.md), [developer guide](docs/developer.md), [v1.1.1 maintenance notes](docs/migration-v1.1.1.md) and [v1.1.0 migration guide](docs/migration-v1.1.0.md).
-- [Stability contract](docs/stability.md) for public scope, precedence, compatibility and deprecation.
-- [Published source guide (v1.1.0)](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-source-v1.1.0.pdf) for the l3doc and docstrip workflow; build the current guide locally.
-- [Changelog](CHANGELOG.md) for additions, fixes and compatibility changes.
-
-Runtime modules live in `sty/`; the contributed example lives in `docs/libraries/`. From the repository root, run:
+From the repository root:
 
 ```sh
-l3build check
-texlua tests/maintenance.lua
-texlua scripts/docs-check.lua
-texlua scripts/check.lua
-texlua tests/hierarchy-pages.lua
-texlua tests/trend-pdf.lua
 texlua scripts/source.lua --check
+l3build check
+texlua scripts/check.lua
+texlua scripts/docs-check.lua
 l3build doc
 ```
 
-The build uses TeX Live texlua, l3build and latexmk, without Python. The Chinese manual uses XeLaTeX; the English manual and source guide use pdfLaTeX. latexmk handles reruns automatically. PDFs are distributed as GitHub Release assets rather than committed to Git.
-
-`gradbars.dtx` and `gradbars.ins` are reproducible distribution sources;
-`texlua scripts/unpack.lua` creates `sty/` if needed and extracts all 23 runtime
-modules there, leaving the source root free of `.sty` files. Alternatively,
-retain the supplied `sty/README.md` and run `tex gradbars.ins`. Neither command
-requires shell escape. After editing `sty/`, run
-`texlua scripts/source.lua` to synchronize them. Inspect actual Figure alternatives
-and tagged table spans/scopes with `texlua scripts/pdf-check.lua`.
-
-See [release configuration](docs/developer.md#release-configuration). The CTAN source ZIP excludes
-Python files and generated runtime modules; the development repository retains `sty/`.
+Edit runtime sources in `sty/`. Generate dtx/ins with `texlua scripts/source.lua`; source archives extract all matching modules with `texlua scripts/unpack.lua`. Builds use TeX Live texlua, l3build and latexmk without Python. See the [developer guide](docs/developer.md) for full validation, installation and delivery rules.
 
 ## Feedback and license
 
-Report problems through [GitHub Issues](https://github.com/Tape5try/gradbars/issues), including a minimal `.tex` example, engine, package version and relevant log.
+Report a minimal `.tex` example, engine, package version and relevant log through [GitHub Issues](https://github.com/Tape5try/gradbars/issues).
 
-Author and maintainer: SuFan (GitHub: Tape5try). The package and original sources
-are licensed under [MIT](LICENSE). The attributed adaptation in the
-[Precision/Recall example](docs/examples/precision-recall.tex) is CC BY-SA 4.0;
-see its source header. This exception does not relicense the runtime.
-
-[Distributions](docs/distributions.md) · [Shared legends](docs/legends.md) · [Accessibility scope](docs/accessibility.md)
-
-The GitHub tree omits `.dtx/.ins` and local CTAN README templates. l3build and CI generate distribution sources from `sty/`; the CTAN entry is prepared from `README.en.md`.
+Author and maintainer: SuFan (GitHub: Tape5try). The package and original sources use [MIT](LICENSE). The attributed [Precision/Recall example](docs/examples/precision-recall.tex) is adapted under CC BY-SA 4.0; see its source header. This exception does not relicense the runtime.

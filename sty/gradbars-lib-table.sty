@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Internal implementation unless documented.
-\ProvidesPackage{gradbars-lib-table}[2026/11/07 v1.2.2 gradbars lib-table]
+\ProvidesPackage{gradbars-lib-table}[2026/11/08 v1.2.3 gradbars lib-table]
 \RequirePackage{booktabs}
 \RequirePackage{colortbl}
 \RequirePackage{longtable}
@@ -874,4 +874,39 @@
     \box_use:N\l__gradbars_column_box}}
 \ExplSyntaxOff
 
+% Explicit pair proxies reuse native pair allocation; no scalar admission changes.
+\ExplSyntaxOn
+\tl_new:N\l__gradbars_pair_column_frontend_tl
+\tl_new:N\l__gradbars_pair_column_options_tl
+\keys_define:nn{gradbars/pair-column}
+ {frontend .choices:nn={compare,dumbbell,range}
+   {\tl_set_eq:NN\l__gradbars_pair_column_frontend_tl\l_keys_choice_tl},
+  options .tl_set:N=\l__gradbars_pair_column_options_tl}
+\DeclareDocumentCommand\gradbarsdeclarepaircolumn{m m}
+ {\group_begin:\gradbars@validtrue
+  \__gradbars_name_valid:nTF{#1}{}{\gradbarsFail{Invalid~pair~column~name:~#1}}
+  \clist_if_in:NnT\c__gradbars_native_columns_clist{#1}{\gradbarsFail{Reserved~native~column~name:~#1}}
+  \prop_if_in:NnT\l__gradbars_columns_prop{#1}{\gradbarsFail{Column~adapter~already~defined:~#1}}
+  \tl_set:Nn\l__gradbars_pair_column_frontend_tl{dumbbell}
+  \tl_clear:N\l__gradbars_pair_column_options_tl
+  \keys_set:nn{gradbars/pair-column}{#2}
+  \ifgradbars@valid
+   \use:x{\group_end:\prop_put:Nnn\exp_not:N\l__gradbars_columns_prop{#1}
+     {frontend=dumbbell,select=false,rank=false,aggregate=false,
+      pair~frontend={\exp_not:V\l__gradbars_pair_column_frontend_tl},
+      options={\exp_not:V\l__gradbars_pair_column_options_tl}}}
+  \else\group_end:\fi}
+\cs_new_eq:NN\__gradtable_content_before_pairs:\gradtableContent
+\cs_set_protected:Npn\gradtableContent #1
+ {\prop_get:NVNTF\l__gradtable_adapters_prop\l__gradtable_id_tl\l__gradtable_adapter_tl
+   {\exp_args:NV\__gradbars_column_load:n\l__gradtable_adapter_tl
+    \prop_get:NnNTF\l__gradbars_column_record_prop{pair~frontend}\l__gradbars_pair_column_frontend_tl
+     {\gradtablePair{\__gradbars_pair_column_draw:nn}{#1}}
+     {\__gradtable_content_before_pairs:{#1}}}
+   {\__gradtable_content_before_pairs:{#1}}}
+\cs_new_protected:Npn\__gradbars_pair_column_draw:nn #1#2
+ {\use:x{\exp_not:N\gradpairgraphic{\exp_not:V\l__gradbars_pair_column_frontend_tl}
+   {\exp_not:n{#1}}{\exp_not:n{#2}}}}
+\gradtablestyle{paired-report}{style=research,theme=accessible,column~sep=6pt,row~stretch=1.5}
+\ExplSyntaxOff
 \endinput

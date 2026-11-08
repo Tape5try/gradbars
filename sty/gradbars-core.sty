@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Internal implementation unless documented.
-\ProvidesPackage{gradbars-core}[2026/11/07 v1.2.2 gradbars core]
+\ProvidesPackage{gradbars-core}[2026/11/08 v1.2.3 gradbars core]
 \RequirePackage{tikz}
 \RequirePackage{xparse}
 \RequirePackage{expl3}
@@ -60,6 +60,12 @@
 \def\gradbars@accessibility{auto}
 \newif\ifgradbars@capturealt
 \def\gradbars@label{outside}
+\def\gradbars@labelposition{}
+\def\gradbars@labelreference{track}
+\def\gradbars@labeldistance{.6em}
+\def\gradbars@labelxshift{0pt}
+\def\gradbars@labelyshift{0pt}
+\def\gradbars@labelanchor{auto}
 \def\gradbars@baseline{auto}
 \def\gradbars@baselineshift{0pt}
 \def\gradbars@format{value}

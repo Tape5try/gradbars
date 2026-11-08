@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Versioned public scalar backend contract.
-\ProvidesPackage{gradbars-backend}[2026/11/07 v1.2.2 Public backend contract]
+\ProvidesPackage{gradbars-backend}[2026/11/08 v1.2.3 Public backend contract]
 \ExplSyntaxOn
 \cs_generate_variant:Nn\clist_if_in:nnTF{Vn}
 \cs_generate_variant:Nn\clist_if_in:nnF{Vn}
@@ -170,6 +170,18 @@
        {\str_if_eq:VnTF\l__gradbars_backend_fallback_tl{tikz}{#2}
          {\__gradbars_public_error:n{Backend~\l__gradbars_backend_tl~lacks~required~capabilities~for~#1:~\clist_use:Nn\l__gradbars_backend_missing_clist{,~}}}}}
     \group_end:}}
+\cs_new_eq:NN\__gradbars_backend_unpositioned:nn\__gradbars_backend_draw:nn
+\cs_set_protected:Npn\__gradbars_backend_draw:nn #1#2
+ {\tl_if_empty:oTF{\gradbars@labelposition}
+   {\__gradbars_backend_unpositioned:nn{#1}{#2}}
+   {\clist_if_in:nnTF{bar,heat}{#1}
+     {\bool_lazy_or:nnTF{\str_if_eq_p:Vn\l__gradbars_backend_tl{tikz}}
+       {\str_if_eq_p:Vn\l__gradbars_backend_fallback_tl{tikz}}
+       {\str_if_eq:nnTF{#1}{heat}
+         {\str_if_eq:eeTF{\gradbars@labelreference}{track}{#2}
+           {\__gradbars_public_error:n{Heat~label~reference~must~be~track}}}{#2}}
+       {\__gradbars_public_error:n{Positioned~labels~require~native~TikZ~or~explicit~fallback}}}
+     {\__gradbars_public_error:n{Positioned~labels~are~supported~only~for~bar~and~heat}}}}
 \cs_new_protected:Npn\__gradbars_backend_core:
  {\tl_set:Nn\l__gradbars_backend_kind_tl{bar}
   \ifgradbars@stack\tl_set:Nn\l__gradbars_backend_kind_tl{stack}\fi
@@ -189,6 +201,12 @@
       {\str_if_eq:eeT{\gradbars@textcolor}{auto}
         {\tl_set:Nn\l__gradbars_backend_kind_tl{bar-area}}}}
   \exp_args:NV\__gradbars_backend_draw:nn\l__gradbars_backend_kind_tl{\__gradbars_render_tikz:}}
+% Pair consumers intercept only their own already validated native invocation.
+\cs_new_eq:NN\__gradbars_backend_before_pair:\__gradbars_backend_core:
+\cs_set_protected:Npn\__gradbars_backend_core:
+ {\bool_if:NTF\l__gradbars_pair_pending_bool
+   {\__gradbars_pair_dispatch:n{\__gradbars_backend_before_pair:}}
+   {\__gradbars_backend_before_pair:}}
 \@onlypreamble\gradbarsdeclarebackend
 \ExplSyntaxOff
 \endinput

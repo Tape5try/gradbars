@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Stable version-1 public extension entry points.
-\ProvidesPackage{gradbars-api}[2026/11/07 v1.2.2 gradbars public interfaces]
+\ProvidesPackage{gradbars-api}[2026/11/08 v1.2.3 gradbars public interfaces]
 \ExplSyntaxOn
 \prop_new:N\g__gradbars_library_files_prop
 \prop_new:N\g__gradbars_library_dependencies_prop
@@ -149,6 +149,250 @@
            \use:x{\exp_not:c{__gradbars_type_#2:n}{\fp_eval:n{#3}}}\fi}}
      {\__gradbars_public_error:n{Unknown~graphic~type:~#2}}
    \group_end:}
+% Independent pair consumers. Validation and semantics stay with native frontends.
+\prop_new:N\g__gradbars_pair_types_prop
+\prop_new:N\l__gradbars_pair_record_prop
+\tl_new:N\l__gradbars_pair_type_tl
+\tl_new:N\l__gradbars_pair_kind_tl
+\tl_new:N\l__gradbars_pair_left_tl
+\tl_new:N\l__gradbars_pair_right_tl
+\tl_new:N\l__gradbars_pair_native_tl
+\bool_new:N\l__gradbars_pair_pending_bool
+\bool_new:N\l__gradbars_pair_active_bool
+\bool_new:N\l__gradbars_pair_default_bool
+\bool_new:N\g__gradbars_pair_used_bool
+\msg_new:nnn{gradbars}{pair-field}{Pair~record~field~unavailable:~#1.}
+\NewExpandableDocumentCommand\gradbarspairversion{}{1}
+\prg_new_protected_conditional:Npnn\__gradbars_pair_name_conflict:n #1{TF}
+ {\clist_if_in:nnTF{bar,heat,stack,spark,boxplot}{#1}
+   {\prg_return_true:}
+   {\prop_if_in:NnTF\g__gradbars_type_names_prop{#1}{\prg_return_true:}{\prg_return_false:}}}
+\NewDocumentCommand\gradbarsdeclarepairtype{m m +m}
+ {\__gradbars_pair_name_conflict:nTF{#1}
+   {\__gradbars_public_error:n{Pair~type~conflicts~with~scalar~graphic:~#1}}
+   {\__gradbars_name_valid:nTF{#1}
+   {\prop_if_in:NnTF\g__gradbars_pair_types_prop{#1}
+     {\__gradbars_public_error:n{Pair~type~already~registered:~#1}}
+     {\clist_if_in:nnTF{compare,dumbbell,range}{#2}
+       {\prop_gput:Nnn\g__gradbars_pair_types_prop{#1}{#2}
+        \cs_gset_protected:cpn{__gradbars_pair_type_#1:nn}##1##2{#3}}
+       {\__gradbars_public_error:n{Pair~frontend~must~be~compare,~dumbbell~or~range}}}}
+   {\__gradbars_public_error:n{Invalid~pair~type~name:~#1}}}}
+\NewDocumentCommand\gradbarsifpairtypecapable{m m m m}
+ {\prop_get:NnNTF\g__gradbars_pair_types_prop{#1}\l_tmpa_tl
+   {\clist_if_in:nnTF{pair,read-only,missing,shared-scale,clip,native-default}{#2}{#3}
+     {\str_if_eq:VnTF\l_tmpa_tl{#2}{#3}
+       {\str_case:nnF{#2}
+         {{partial-missing}{\str_if_eq:VnTF\l_tmpa_tl{range}{#4}{#3}}
+          {native-column}{\clist_if_in:nnTF{compare,dumbbell,range}{#1}{#3}{#4}}}
+         {#4}}}}
+   {#4}}
+\NewExpandableDocumentCommand\gradbarspairvalue{m}
+ {\bool_if:NTF\l__gradbars_pair_active_bool
+   {\prop_if_in:NnTF\l__gradbars_pair_record_prop{#1}
+     {\prop_item:Nn\l__gradbars_pair_record_prop{#1}}
+     {\msg_expandable_error:nnn{gradbars}{pair-field}{#1}}}
+   {\msg_expandable_error:nnn{gradbars}{pair-field}{#1}}}
+\NewDocumentCommand\gradbarspairlabel{}
+ {\bool_if:NTF\l__gradbars_pair_active_bool
+   {{\gradbars@font\gradbars@labelcontent}}
+   {\__gradbars_public_error:n{Pair~label~requires~an~active~callback}}}
+\NewDocumentCommand\gradbarspairdefault{}
+ {\bool_if:NTF\l__gradbars_pair_active_bool
+   {\bool_if:NTF\g__gradbars_pair_used_bool
+     {\__gradbars_public_error:n{Pair~default~may~be~drawn~only~once}}
+     {\bool_gset_true:N\g__gradbars_pair_used_bool
+      \tl_use:N\l__gradbars_pair_native_tl}}
+   {\__gradbars_public_error:n{Pair~default~requires~an~active~callback}}}
+\NewDocumentCommand\gradpairgraphic{O{} m m m}
+ {\group_begin:
+  \bool_if:NTF\l__gradbars_pair_active_bool
+   {\__gradbars_public_error:n{Recursive~pair~callback}}
+   {\prop_get:NnNTF\g__gradbars_pair_types_prop{#2}\l__gradbars_pair_kind_tl
+     {\tl_set:Nn\l__gradbars_pair_type_tl{#2}
+      \tl_set:Nn\l__gradbars_pair_left_tl{#3}\tl_set:Nn\l__gradbars_pair_right_tl{#4}
+      \bool_set_true:N\l__gradbars_pair_pending_bool
+      \use:c{grad\l__gradbars_pair_kind_tl}[#1]{#3}{#4}}
+     {\__gradbars_public_error:n{Unknown~pair~type:~#2}}}
+  \group_end:}
+\cs_new_protected:Npn\__gradbars_pair_endpoint:nN #1#2
+ {\prop_put:Nnx\l__gradbars_pair_record_prop{raw-#1}{\exp_not:V#2}
+  \tl_set:Nx\l_tmpa_tl{\tl_use:N#2}\tl_trim_spaces:N\l_tmpa_tl
+  \bool_lazy_or:nnTF{\tl_if_empty_p:N\l_tmpa_tl}{\str_if_eq_p:Vn\l_tmpa_tl{NA}}
+   {\prop_put:Nnn\l__gradbars_pair_record_prop{#1}{NA}
+    \prop_put:Nnn\l__gradbars_pair_record_prop{#1-missing}{true}
+    \prop_put:Nnn\l__gradbars_pair_record_prop{#1-position}{NA}
+    \prop_put:Nnn\l__gradbars_pair_record_prop{#1-clipped}{false}}
+   {\prop_put:Nnx\l__gradbars_pair_record_prop{#1}{\fp_eval:n{\l_tmpa_tl}}
+    \prop_put:Nnn\l__gradbars_pair_record_prop{#1-missing}{false}
+    \prop_put:Nnx\l__gradbars_pair_record_prop{#1-position}
+     {\fp_eval:n{max(0,min(1,(\l_tmpa_tl-\gradbars@min)/(\gradbars@max-\gradbars@min)))}}
+    \prop_put:Nnx\l__gradbars_pair_record_prop{#1-clipped}
+     {\fp_compare:nTF{\l_tmpa_tl<\gradbars@min || \l_tmpa_tl>\gradbars@max}{true}{false}}}}
+\cs_new_protected:Npn\__gradbars_pair_record:
+ {\prop_clear:N\l__gradbars_pair_record_prop
+  \prop_put:Nnn\l__gradbars_pair_record_prop{version}{1}
+  \prop_put:NnV\l__gradbars_pair_record_prop{type}\l__gradbars_pair_type_tl
+  \prop_put:NnV\l__gradbars_pair_record_prop{kind}\l__gradbars_pair_kind_tl
+  \str_if_eq:VnTF\l__gradbars_pair_kind_tl{range}
+   {\prop_put:Nnn\l__gradbars_pair_record_prop{left-role}{lower}
+    \prop_put:Nnn\l__gradbars_pair_record_prop{right-role}{upper}}
+   {\prop_put:Nnn\l__gradbars_pair_record_prop{left-role}{reference}
+    \prop_put:Nnn\l__gradbars_pair_record_prop{right-role}{current}}
+  \__gradbars_pair_endpoint:nN{left}\l__gradbars_pair_left_tl
+  \__gradbars_pair_endpoint:nN{right}\l__gradbars_pair_right_tl
+  \prop_put:Nnx\l__gradbars_pair_record_prop{min}{\fp_eval:n{\gradbars@min}}
+  \prop_put:Nnx\l__gradbars_pair_record_prop{max}{\fp_eval:n{\gradbars@max}}
+  \prop_put:Nnx\l__gradbars_pair_record_prop{zero}
+   {\fp_eval:n{max(0,min(1,-\gradbars@min/(\gradbars@max-\gradbars@min)))}}
+  \prop_put:Nnx\l__gradbars_pair_record_prop{width}{\dim_eval:n{\gradbars@width}}
+  \prop_put:Nnx\l__gradbars_pair_record_prop{height}{\dim_eval:n{\gradbars@height}}
+  \clist_map_inline:nn{label,precision,unit,unitcode,unittext,accessibility,comparelabel}
+   {\prop_put:Nnx\l__gradbars_pair_record_prop{##1}{\exp_not:v{gradbars@##1}}}
+  \prop_put:Nnn\l__gradbars_pair_record_prop{delta}{NA}
+  \prop_put:Nnn\l__gradbars_pair_record_prop{complete}{false}
+  \str_if_eq:eeTF{\prop_item:Nn\l__gradbars_pair_record_prop{left-missing}}{true}
+   {\prop_put:Nnx\l__gradbars_pair_record_prop{missing}
+     {\str_if_eq:eeTF{\prop_item:Nn\l__gradbars_pair_record_prop{right-missing}}{true}{both}{left}}}
+   {\str_if_eq:eeTF{\prop_item:Nn\l__gradbars_pair_record_prop{right-missing}}{true}
+     {\prop_put:Nnn\l__gradbars_pair_record_prop{missing}{right}}
+     {\prop_put:Nnn\l__gradbars_pair_record_prop{missing}{none}
+      \prop_put:Nnn\l__gradbars_pair_record_prop{complete}{true}
+      \prop_put:Nnx\l__gradbars_pair_record_prop{delta}
+       {\fp_eval:n{\prop_item:Nn\l__gradbars_pair_record_prop{right}-\prop_item:Nn\l__gradbars_pair_record_prop{left}}}}}
+  \gradbarsBuildAlt
+  \tl_if_empty:oF{\gradbars@alt}{\tl_set:No\l__gradbars_alt_tl{\gradbars@alt}}
+  \prop_put:NnV\l__gradbars_pair_record_prop{alt}\l__gradbars_alt_tl}
+\cs_new_protected:Npn\__gradbars_pair_dispatch:n #1
+ {\group_begin:
+  \bool_set_false:N\l__gradbars_pair_pending_bool
+  \__gradbars_pair_record:
+  \tl_set:Nn\l__gradbars_pair_native_tl{#1}
+  \bool_set_true:N\l__gradbars_pair_active_bool
+  \bool_set_eq:NN\l__gradbars_pair_default_bool\g__gradbars_pair_used_bool
+  \bool_gset_false:N\g__gradbars_pair_used_bool
+  \use:x{\exp_not:c{__gradbars_pair_type_\l__gradbars_pair_type_tl :nn}
+   {\prop_item:Nn\l__gradbars_pair_record_prop{left}}
+   {\prop_item:Nn\l__gradbars_pair_record_prop{right}}}
+  \bool_gset_eq:NN\g__gradbars_pair_used_bool\l__gradbars_pair_default_bool
+  \group_end:}
+\gradbarsdeclarepairtype{compare}{compare}{\gradbarspairdefault}
+\gradbarsdeclarepairtype{dumbbell}{dumbbell}{\gradbarspairdefault}
+\gradbarsdeclarepairtype{range}{range}{\gradbarspairdefault}
+
+% Scoped command declarations. Argument grammar deliberately admits only m/O{}.
+\tl_new:N\l__gradbars_command_type_tl
+\tl_new:N\l__gradbars_command_args_tl
+\tl_new:N\l__gradbars_command_data_tl
+\tl_new:N\l__gradbars_command_options_tl
+\tl_new:N\l__gradbars_command_empty_tl
+\tl_new:N\l__gradbars_command_graphic_tl
+\tl_new:N\l__gradbars_command_rest_tl
+\int_new:N\l__gradbars_command_count_int
+\bool_new:N\l__gradbars_command_valid_bool
+\seq_new:N\l__gradbars_command_refs_seq
+\keys_define:nn{gradbars/command}
+ {type .tl_set:N=\l__gradbars_command_type_tl,
+  args .tl_set:N=\l__gradbars_command_args_tl,
+  data .tl_set:N=\l__gradbars_command_data_tl,
+  options .tl_set:N=\l__gradbars_command_options_tl,
+  empty .choice:,
+  empty/missing .code:n={\tl_set:Nn\l__gradbars_command_empty_tl{missing}},
+  empty/skip .code:n={\tl_set:Nn\l__gradbars_command_empty_tl{skip}},
+  empty/error .code:n={\tl_set:Nn\l__gradbars_command_empty_tl{error}}}
+\cs_new_protected:Npn\__gradbars_command_fail:n #1
+ {\bool_set_false:N\l__gradbars_command_valid_bool
+  \__gradbars_public_error:n{#1}}
+\cs_new_protected:Npn\__gradbars_command_tail:n #1
+ {\tl_set:Nx\l__gradbars_command_rest_tl{\tl_tail:n{#1}}}
+\cs_new_protected:Npn\__gradbars_command_optional:w #1#2\q_stop
+ {\tl_set:Nn\l__gradbars_command_rest_tl{#2}}
+\cs_new_protected:Npn\__gradbars_command_args:
+ {\tl_set_eq:NN\l__gradbars_command_rest_tl\l__gradbars_command_args_tl
+  \int_zero:N\l__gradbars_command_count_int
+  \bool_while_do:nn
+   {\l__gradbars_command_valid_bool && !\tl_if_empty_p:N\l__gradbars_command_rest_tl}
+   {\tl_trim_spaces:N\l__gradbars_command_rest_tl
+    \tl_if_empty:NF\l__gradbars_command_rest_tl
+     {\int_incr:N\l__gradbars_command_count_int
+      \exp_args:NV\tl_if_head_eq_charcode:nNTF\l__gradbars_command_rest_tl m
+       {\exp_args:NV\__gradbars_command_tail:n\l__gradbars_command_rest_tl}
+       {\exp_args:NV\tl_if_head_eq_charcode:nNTF\l__gradbars_command_rest_tl O
+         {\exp_args:NV\__gradbars_command_tail:n\l__gradbars_command_rest_tl
+          \exp_args:NV\tl_if_head_is_group:nTF\l__gradbars_command_rest_tl
+           {\exp_after:wN\__gradbars_command_optional:w\l__gradbars_command_rest_tl\q_stop}
+           {\__gradbars_command_fail:n{Command~args~requires~O~with~a~braced~default}}}
+         {\__gradbars_command_fail:n{Command~args~supports~only~m~and~O~with~a~braced~default}}}}}
+  \int_compare:nNnF{\l__gradbars_command_count_int}<{10}
+   {\__gradbars_command_fail:n{Command~args~supports~at~most~nine~arguments}}
+  \int_compare:nNnF{\l__gradbars_command_count_int}>{0}
+   {\__gradbars_command_fail:n{Command~args~requires~at~least~one~argument}}}
+\cs_new_protected:Npn\__gradbars_command_template:N #1
+ {\tl_set:Nx\l_tmpa_tl{\tl_to_str:V#1}
+  \regex_extract_all:nVN{\#[0-9]}\l_tmpa_tl\l__gradbars_command_refs_seq
+  \seq_map_inline:Nn\l__gradbars_command_refs_seq
+   {\int_set:Nn\l_tmpa_int{\str_item:nn{##1}{-1}}
+    \bool_lazy_or:nnT{\int_compare_p:n{\l_tmpa_int=0}}
+     {\int_compare_p:n{\l_tmpa_int>\l__gradbars_command_count_int}}
+     {\__gradbars_command_fail:n{Command~template~references~an~undeclared~argument}}}}
+\cs_new_protected:Npn\__gradbars_command_draw:nnnnn #1#2#3#4#5
+ {\group_begin:
+  \tl_if_blank:nTF{#4}
+   {\str_case:nn{#2}
+     {{missing}{\__gradbars_command_dispatch:nnn{#1}{NA}{#3,#5}}
+      {skip}{}
+      {error}{\__gradbars_public_error:n{Empty~data~in~declared~command}}}}
+   {\__gradbars_command_dispatch:nnn{#1}{#4}{#3,#5}}
+  \group_end:}
+\cs_new_protected:Npn\__gradbars_command_dispatch:nnn #1#2#3
+ {\prop_if_in:NnTF\g__gradbars_pair_types_prop{#1}
+   {\bool_lazy_and:nnTF{\tl_if_head_is_group_p:n{#2}}{\int_compare_p:n{\tl_count:n{#2}=2}}
+     {\__gradbars_command_pair:nnn{#1}{#2}{#3}}
+     {\str_if_eq:nnTF{#2}{NA}{\gradpairgraphic[#3]{#1}{NA}{NA}}
+       {\__gradbars_public_error:n{Pair~command~data~requires~two~braced~values}}}}
+   {\clist_if_in:nnTF{bar,heat,stack,spark,boxplot}{#1}
+     {\use:c{grad#1}[#3]{#2}}
+     {\gradgraphic[#3]{#1}{#2}}}}
+\cs_new_protected:Npn\__gradbars_command_pair:nnn #1#2#3
+ {\tl_set:Nx\l_tmpa_tl{\tl_tail:n{#2}}
+  \exp_args:NV\tl_if_head_is_group:nTF\l_tmpa_tl
+   {\gradpairgraphic[#3]{#1}#2}
+   {\__gradbars_public_error:n{Pair~command~data~requires~two~braced~values}}}
+\NewDocumentCommand\gradbarsnewcommand{O{} m}
+ {\group_begin:
+  \bool_set_true:N\l__gradbars_command_valid_bool
+  \tl_set:Nn\l__gradbars_command_type_tl{bar}
+  \tl_set:Nn\l__gradbars_command_args_tl{m}
+  \tl_set:Nn\l__gradbars_command_data_tl{##1}
+  \tl_clear:N\l__gradbars_command_options_tl
+  \tl_set:Nn\l__gradbars_command_empty_tl{missing}
+  \keys_set_known:nnN{gradbars/command}{#1}\l__gradbars_command_graphic_tl
+  \tl_if_single_token:nTF{#2}
+   {\token_if_cs:NTF#2
+     {\cs_if_exist:NT#2{\__gradbars_command_fail:n{Command~already~defined:~\token_to_str:N#2}}}
+     {\__gradbars_command_fail:n{Command~name~must~be~one~control~sequence}}}
+   {\__gradbars_command_fail:n{Command~name~must~be~one~control~sequence}}
+  \clist_if_in:nVTF{bar,heat,stack,spark,compare,dumbbell,range,boxplot}\l__gradbars_command_type_tl{}
+   {\prop_if_in:NVF\g__gradbars_type_names_prop\l__gradbars_command_type_tl
+     {\prop_if_in:NVF\g__gradbars_pair_types_prop\l__gradbars_command_type_tl
+       {\__gradbars_command_fail:n{Unknown~command~graphic~type:~\l__gradbars_command_type_tl}}}}
+  \bool_lazy_and:nnT
+   {\prop_if_in_p:NV\g__gradbars_pair_types_prop\l__gradbars_command_type_tl}
+   {\prop_if_in_p:NV\g__gradbars_type_names_prop\l__gradbars_command_type_tl}
+   {\__gradbars_command_fail:n{Ambiguous~graphic~type;~use~gradgraphic~or~gradpairgraphic}}
+  \__gradbars_command_args:
+  \bool_if:NT\l__gradbars_command_valid_bool
+   {\__gradbars_command_template:N\l__gradbars_command_data_tl
+    \__gradbars_command_template:N\l__gradbars_command_options_tl}
+  \bool_if:NTF\l__gradbars_command_valid_bool
+   {\use:x{\group_end:
+     \exp_not:N\NewDocumentCommand\exp_not:n{#2}{\exp_not:V\l__gradbars_command_args_tl}
+      {\exp_not:N\__gradbars_command_draw:nnnnn
+       {\exp_not:V\l__gradbars_command_type_tl}{\exp_not:V\l__gradbars_command_empty_tl}
+       {\exp_not:V\l__gradbars_command_graphic_tl}{\exp_not:V\l__gradbars_command_data_tl}
+       {\exp_not:V\l__gradbars_command_options_tl}}}}
+   {\group_end:}}
+
 \cs_new_protected:Npn\__gradbars_unloaded:n #1
   {\__gradbars_public_error:n{Library~#1~not~loaded;~use~usegradbarslibrary~in~the~preamble}}
 \ProvideDocumentCommand\gradstack{O{} m}{\__gradbars_unloaded:n{stack}}
@@ -196,6 +440,7 @@
 \ProvideDocumentCommand\gradtblrtagging{m}{\__gradbars_tblr_unloaded:}
 \@onlypreamble\usegradbarslibrary
 \@onlypreamble\gradbarsdeclarelibrary
+\ProvideDocumentCommand\gradbarsdeclarepaircolumn{m m}{\__gradbars_unloaded:n{table}}
 \ExplSyntaxOff
 
 \ProvideDocumentCommand\gradbarsdeclarecolumn{m m}{\__gradbars_unloaded:n{table}}

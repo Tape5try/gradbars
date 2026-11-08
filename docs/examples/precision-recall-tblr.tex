@@ -1,0 +1,57 @@
+% !TeX program = xelatex
+% 社区服务站办理质量演示；全部数据均为虚构。
+\documentclass[a4paper,landscape,10pt,fontset=fandol]{ctexart}
+\usepackage[margin=1.2cm]{geometry}
+\usepackage{gradbars}
+\usepackage{tabularray}
+\pagestyle{empty}
+\begin{document}
+\begingroup
+\gradbarsnewcommand[type=bar,args={m},data={#1},empty=skip,
+  theme=gray,min=0,max=1,width=8mm,precision=3,baseline=text,
+  label=outside,label width=6mm,label gap=1mm]{\metricbar}
+\begin{center}
+\begin{tblr}{
+  colspec={Q[l,m]*{8}{Q[c,m]}},
+  colsep=0.8mm,rowsep=1pt,
+  cells={font=\footnotesize},
+  cell{1}{even}={c=2}{c},
+  cell{3-Z}{2-Z}={cmd=\metricbar},
+  hline{1,Z}={0.08em},hline{3}={0.05em},
+  hline{2}={2-3}{0.03em,endpos,lr=-1},
+  hline{2}={4-5}{0.03em,endpos,lr=-1},
+  hline{2}={6-7}{0.03em,endpos,lr=-1},
+  hline{2}={8-9}{0.03em,endpos,lr=-1}
+}
+         & 东城站 & & 南园站 & & 西河站 & & 北湖站 & \\
+服务事项 & 按期率 & 回访率 & 按期率 & 回访率
+     & 按期率 & 回访率 & 按期率 & 回访率 \\
+证件办理 & 0.960 & 0.720 & 0.880 & 0.450
+         & 0.910 & 0.630 & 0.940 & 0.810 \\
+户籍咨询 & 0.840 & 0.380 & 0.930 & 0.760
+         & 0.790 & 0.520 & 0.900 & 0.640 \\
+养老服务 & 0.980 & 0.920 & 0.870 & 0.610
+         &  &  & 0.950 & 0.840 \\
+医疗咨询 & 0.760 & 0.490 & 0.890 & 0.680
+         & 0.920 & 0.800 &  &  \\
+就业登记 & 0.830 & 0.560 & 0.710 & 0.320
+         &  &  & 0.880 & 0.740 \\
+社保查询 & 0.910 & 0.670 & 0.950 & 0.830
+         & 0.860 & 0.410 & 0.780 & 0.590 \\
+住房咨询 & 1.000 & 0.940 & 0.900 & 0.730
+         & 0.820 & 0.580 & 0.960 & 0.860 \\
+档案查阅 & 0.730 & 0.240 & 0.850 & 0.470
+         & 0.680 & 0.000 & 0.890 & 0.620 \\
+便民预约 & 0.990 & 0.870 & 0.920 & 0.690
+         & 0.740 & 0.280 & 0.860 & 0.510 \\
+困难帮扶 & 0.880 & 0.780 & 0.960 & 0.910
+         &  &  & 0.810 & 0.540 \\
+法律咨询 & 0.690 & 0.310 & 0.820 & 0.570
+         & 0.930 & 0.850 &  &  \\
+志愿服务 & 0.900 & 0.650 & 0.770 & 0.430
+         &  &  & 0.850 & 0.180 \\
+\end{tblr}
+\end{center}
+\endgroup
+
+\end{document}

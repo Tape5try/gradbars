@@ -1,0 +1,68 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{gradbars}
+\newcount\commandCount
+\newdimen\labelTestEm
+\makeatletter
+\gradbarsdeclaretype{command-probe}{\global\advance\commandCount1\relax
+ \TYPE{value=#1; max=\gradbars@max; precision=\gradbars@precision}}
+\makeatother
+\gradbarsnewcommand[type=command-probe,max=1,precision=3,args={m O{}},data={#1},options={#2},empty=skip]{\afteropts}
+\gradbarsnewcommand[type=command-probe,max=10,args={O{precision=2} m},data={#2},options={#1}]{\beforeopts}
+\gradbarsnewcommand[type=command-probe,args={m m},data={#1},options={#2}]{\requiredopts}
+\begin{document}
+\START
+\afteropts{0}\afteropts{.75}[max=2,precision=1]\afteropts{}
+\beforeopts{4}\beforeopts[max=20]{5}\requiredopts{6}{max=30}
+\TYPE{callbacks=\the\commandCount}
+\begingroup
+\gradbarsnewcommand{\localbar}
+\ifdefined\localbar\TYPE{local command=present}\fi
+\endgroup
+\ifdefined\localbar\TYPE{local command=leaked}\else\TYPE{local command=absent}\fi
+\makeatletter
+\TYPE{outer max=\gradbars@max; precision=\gradbars@precision}
+\makeatother
+\OMIT
+{\fontsize{20}{24}\selectfont\global\labelTestEm=\fontdimen6\font}
+\setbox0=\hbox{\gradbar[max=1,label position=right,label distance=0pt]{.5}}
+\setbox1=\hbox{\gradbar[max=1,label position=right,label distance=1em,font=\fontsize{20}{24}\selectfont]{.5}}
+\setbox2=\hbox{\gradbar[max=1,label position=right,label distance=0pt,font=\fontsize{20}{24}\selectfont]{.5}}
+\TIMO
+\ExplSyntaxOn
+\dim_compare:nNnTF{\dim_abs:n{\wd1-\wd2-\labelTestEm}}<{.02pt}
+ {\TYPE{em~uses~label~font=yes}}{\TYPE{em~uses~label~font=no}}
+\ExplSyntaxOff
+\OMIT
+\setbox0=\hbox{\gradbar[max=1,label position=right,label distance=0pt]{.5}}
+\setbox1=\hbox{\gradbar[max=1,label position=right,label distance=0pt,label xshift=10pt]{.5}}
+\TIMO
+\ExplSyntaxOn
+\dim_compare:nNnTF{\dim_abs:n{\wd1-\wd0-10pt}}<{.02pt}
+ {\TYPE{xshift~reserves~width=yes}}{\TYPE{xshift~reserves~width=no}}
+\ExplSyntaxOff
+\OMIT
+\setbox0=\hbox{\gradbar[max=1,label=none]{.5}}
+\setbox1=\hbox{\gradbar[max=1,label position=above,label distance=4pt]{.5}}
+\setbox2=\hbox{\gradbar[max=1,label position=below,label distance=4pt]{.5}}
+\TIMO
+\ExplSyntaxOn
+\dim_compare:nNnTF{\ht1}>{\ht0}{\TYPE{above~reserves~height=yes}}{\TYPE{above~reserves~height=no}}
+\dim_compare:nNnTF{\dp2}>{\dp0}{\TYPE{below~reserves~depth=yes}}{\TYPE{below~reserves~depth=no}}
+\ExplSyntaxOff
+\OMIT
+\setbox0=\hbox{\gradbar[max=1,label=outside]{.5}}
+\setbox1=\hbox{\gradbar[max=1,label position=above,label=outside]{.5}}
+\TIMO
+\ifdim\wd0=\wd1\TYPE{legacy label overrides position=yes}\else\TYPE{legacy label overrides position=no}\fi
+\OMIT
+\gradbarsnewcommand[type=heat,width=25mm,height=20pt,label=none]{\fixedheat}
+\setbox0=\hbox{\fixedheat{50}}
+\setbox1=\hbox{\gradheat[width=25mm,height=20pt,label=none]{50}}
+\TIMO
+\ifdim\ht0=\ht1\TYPE{declared heat height honored=yes}\else\TYPE{declared heat height honored=no}\fi
+\OMIT
+\box1\clearpage
+\TIMO
+\END
+\end{document}

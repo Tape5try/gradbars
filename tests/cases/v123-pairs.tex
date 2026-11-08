@@ -1,0 +1,30 @@
+\documentclass{article}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+\usepackage{tabularray}
+\gradbarsdeclarepairtype{boxed-pair}{dumbbell}{\fbox{\gradbarspairdefault}}
+\gradbarsnewcommand[type=boxed-pair,args={m m},data={{#1}{#2}},
+ min=-10,max=100,width=30mm,precision=2]{\reviewpair}
+\gradbarsdeclarepaircolumn{service-pair}{frontend=dumbbell,options={min=0,max=100,precision=1}}
+\gradbarsdeclarepaircolumn{service-range}{frontend=range,options={min=0,max=100,precision=1}}
+\begin{document}
+\gradpairgraphic[min=-10,max=100,width=30mm]{compare}{-5}{72.125}\par\bigskip
+\reviewpair{0}{82.125}\par\bigskip
+\gradpairgraphic[max=100]{dumbbell}{NA}{0}\quad
+\gradpairgraphic[max=100]{dumbbell}{55}{NA}\quad
+\gradpairgraphic[max=100]{range}{NA}{NA}\par\bigskip
+\begin{center}
+\begin{gradtable}[style=paired-report,width=\linewidth]
+ \gradcolumn{name}{Service}
+ \gradcolumn[type=service-pair]{change}{Before / after}
+ \gradcolumn[type=service-range]{span}{Supplied interval}
+ \gradrow{Appointments,66/82,60/85}
+ \gradrow{Home visits,NA/0,NA}
+\end{gradtable}
+\end{center}
+\begin{tblr}{colspec={Q[l,wd=25mm]Q[c,wd=55mm]}}
+Service & Comparison\\
+Appointments & \gradpairgraphic[max=100,width=30mm]{dumbbell}{66}{82}\\
+Home visits & \gradpairgraphic[max=100,width=30mm]{dumbbell}{NA}{0}\\
+\end{tblr}
+\end{document}

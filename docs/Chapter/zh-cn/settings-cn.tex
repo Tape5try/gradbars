@@ -1,0 +1,27 @@
+\section{统一设置、覆盖顺序与作用域}
+\subsection{统一设置与图形入口}
+\key{\gradbarssetup{参数列表}} 设置当前作用域的默认值；
+\key{\gradbar[参数列表]{数值}} 绘制一个数据条，其中可选参数只覆盖本次绘制。
+数值与最大值可用十进制或 e/E 科学计数数字，不接受逗号、单位或计算表达式。
+
+\begin{example}{示例 1：统一设置与单次覆盖}
+\gradbarssetup{width=23mm,
+  max=100,precision=1,theme=blue}
+\gradbar{72.4}
+
+\gradbar[theme=teal]{92.7}
+
+\gradbar{81.6}
+\end{example}
+
+\subsection{作用域}
+设置遵循普通 TeX 分组规则。在导言区调用会影响整篇文档；
+在一对花括号中调用只影响该组。表格单元格也有自己的分组，
+因此整列共用的设置应放在表格环境之前。
+
+\begin{example}{示例 2：局部设置不会泄漏}
+{\gradbarssetup{theme=gray,max=10}
+ \gradbar{8}}
+
+\gradbar{80}
+\end{example}

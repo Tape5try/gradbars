@@ -27,6 +27,114 @@ texlua docs/libraries/starter/check-starter.lua --gradbars-root .
 \key{\gradbarsifbackendcapable{名称}{能力}{是}{否}} 查询声明。
 未知后端、能力不足、递归回调及回调之外读取记录均有诊断。
 复合图形与图例需显式选择 \key{backend fallback=tikz}，默认报错以免静默改变输出。
-默认绘制仍使用 TikZ；本轮提供后端契约，不增加第二套绘图实现。
+默认绘制使用 TikZ；公开后端契约不提供另一套内置绘图实现。
 表格试排可能多次调用回调，因此不要在回调中写外部文件或产生其他可见副作用；
 应尊重暂停标记状态，保留原始数值、单位、裁剪与基线。完整字段和能力说明见 \key{docs/backends.md}。
+
+\clearpage
+\subsection{独立的数值对注册与只读记录}
+\label{sec:pair-extensions-cn}
+比较两个观测时，可以为参考值与当前值建立独立的图形类型。
+\key{\gradbarsdeclarepairtype} 的三个参数依次为类型名称、原生前端和回调；
+前端选择 compare、dumbbell 或 range。
+\key{\gradpairgraphic} 按“选项、类型、左值、右值”调用。
+它不会把复合数据传给旧标量回调，原有 backend schema 1 保持不变。
+
+\begin{example}[text and listing,sidebyside=false]{注册一个保留原生绘制的数值对类型}
+\gradbarsdeclarepairtype{manual-pair}{dumbbell}{\gradbarspairdefault}
+\gradpairgraphic[min=0,max=100,width=35mm,precision=1]
+  {manual-pair}{66.125}{82.875}
+\end{example}
+compare 与 dumbbell 的输入角色是参考值、当前值；原生标签的顺序则为当前值/参考值。
+range 的两个输入是下界、上界，不自动解释为误差或置信区间。
+比较类允许任意一侧或两侧缺失；区间仍要求两端同时有效或同时缺失。
+
+\subsubsection{在回调内读取原值与缺失状态}
+回调接收的两个参数是规范原值或 NA，未经过显示精度舍入。
+\key{\gradbarspairvalue} 可以读取角色、缺失、尺度、位置、尺寸与描述；
+回调外读取或请求未知字段都会报错。
+例如下面在原图之后附加原值之差；不完整的一对显示 n/a。
+\begin{example}[text and listing,sidebyside=false]{原值之差与显示舍入分开处理}
+\ExplSyntaxOn
+\gradbarsdeclarepairtype{manual-pair-delta}{dumbbell}
+ {\gradbarspairdefault\quad
+  \str_if_eq:eeTF{\gradbarspairvalue{complete}}{true}
+   {\gradbarsformatnumber[precision=1]{\gradbarspairvalue{delta}}}
+   {n/a}}
+\ExplSyntaxOff
+\gradpairgraphic[max=100,width=30mm,precision=1]
+  {manual-pair-delta}{66.125}{82.875}\par\medskip
+\gradpairgraphic[max=100,width=30mm,precision=1]
+  {manual-pair-delta}{NA}{0}
+\end{example}
+第一行先用原值求出差 16.75，再显示为一位小数；
+第二行的零是有效观测，但参考值缺失，不能编造一个差值。
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{@{}l X@{}}
+\toprule
+\textbf{主要字段} & \textbf{含义}\\\midrule
+\key{left}, \key{right} & 未舍入的规范数值，缺失侧为 NA。\\
+\key{left-role}, \key{right-role} & reference/current 或 lower/upper。\\
+\key{missing}, \key{complete} & none、left、right、both；两侧都有效时 complete 为 true。\\
+\key{min}, \key{max}, \key{zero} & 已解析的公共范围，以及归一化后的零位置。\\
+\key{left-position}, \key{right-position} & 裁剪到 0--1 的位置；缺失侧为 NA。\\
+\key{left-clipped}, \key{right-clipped} & 原值是否超出显示范围。\\
+\key{delta} & 右值减左值；不完整时为 NA，区间中表示端点跨度。\\
+\key{width}, \key{height}, \key{alt} & 轨道物理尺寸与完整原生描述。\\
+\bottomrule
+\end{tabularx}\end{center}
+裁剪只限制几何位置，不改原值或 delta；显示精度同样不参与几何和原值差计算。
+完整字段、单位选项与接口签名见 \key{docs/pair-extensions.md}。
+
+\subsubsection{能力查询与回调生命周期}
+\key{\gradbarsifpairtypecapable} 接受类型、能力、满足时分支与不满足时分支。
+例如 range 的 partial-missing 查询为否，dumbbell 为是。
+未知类型或未知能力也走否分支。
+\begin{codeonly}
+\gradbarsifpairtypecapable{range}{partial-missing}
+  {允许单侧缺失}{两端必须同时有效或同时缺失}
+\end{codeonly}
+\key{\gradbarspairdefault} 只绘制一次已捕获的原生续体，不再次调用公开前端；
+即使放在额外盒子中，也不能重复委托。
+\key{\gradbarspairlabel} 只排版已有双值标签，不负责位置或 Figure 标记。
+递归调用数值对入口会报错；回调返回后记录访问立即关闭。
+复用原生绘制可保留原始尺寸、基线、裁剪及替代文本；自行增加的文字和布局由回调负责。
+表格试排可能重复执行回调，因此不得依赖外部写入、计数器或全局副作用。
+
+\subsection{在原生表格中显式声明标准双值列}
+\label{sec:pair-columns-cn}
+独立数值对类型不会自动成为表格列。
+\key{\gradbarsdeclarepaircolumn} 提供标准代理，显式选择 compare、dumbbell 或 range，
+不接收任意独立消费者的排版回调。
+声明采用普通 TeX 局部作用域，与原有列共享名称空间，重名会报错。
+\begin{example}[text and listing,sidebyside=false]{配对报告：当前值、参考值与给定区间}
+\begingroup
+\gradbarsdeclarepaircolumn{manual-service}{frontend=dumbbell,
+  options={min=0,max=100,precision=1,unit={\%}}}
+\gradbarsdeclarepaircolumn{manual-span}{frontend=range,
+  options={min=0,max=100,precision=1,unit={\%}}}
+\begin{center}
+\begin{gradtable}[style=paired-report,width=\linewidth,label width=25mm]
+  \gradcolumn[width=25mm]{name}{服务项目}
+  \gradcolumn[type=manual-service]{pair}{当前 / 参考}
+  \gradcolumn[type=manual-span]{span}{给定区间}
+  \gradrow{预约办理,66/82,60/88}
+  \gradrow{上门服务,0/12,0/20}
+  \gradrow{咨询服务,84/NA,NA}
+\end{gradtable}
+\end{center}
+\endgroup
+\end{example}
+双值单元格按左值/右值填写，整格 NA 表示两端缺失。
+范围与列宽沿用原生表格规则：自动范围收集两侧有效观测，
+共享尺度显式绑定，最终分配的宽度仍优先。
+配对列不参与标量筛选、排序、排名或聚合，也不隐式规范地区数字。
+普通 tabular 与 tabularray 可在单元格中直接调用 \key{\gradpairgraphic}；
+tabularray 应给足显式列宽，结构标记另按对应章节启用。
+
+独立完整案例为 \key{docs/examples/paired-report-cn.tex}，
+使用 \key{paired-report} 样式演示 accessible 和 mono 两种主题；
+配套公开接口库为 \key{docs/libraries/gradbars-contrib-pairs.sty}。
+从仓库根目录编译时，把 \key{sty/} 和 \key{docs/libraries/} 都加入 TeX 搜索路径。
+接口准入及其他宿主限制见 \key{docs/pair-extensions.md}。

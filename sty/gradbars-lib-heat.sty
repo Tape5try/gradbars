@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Internal implementation unless documented.
-\ProvidesPackage{gradbars-lib-heat}[2026/11/07 v1.2.2 gradbars lib-heat]
+\ProvidesPackage{gradbars-lib-heat}[2026/11/08 v1.2.3 gradbars lib-heat]
 \ExplSyntaxOff
 \def\gradbars@heatlow{gradbarsBlueLight!15}
 \def\gradbars@heathigh{gradbarsBlue}
@@ -91,7 +91,11 @@
   {\node[fill=gradbarsHeatCell,text=\gradbars@labelcolor,inner~sep=2pt,
      minimum~width=\gradbars@width,minimum~height=\gradbars@height,
      font=\gradbars@font,rounded~corners=\gradbars@rounded](gradbarsheat)
-     {\str_if_eq:eeF{\gradbars@label}{none}{\gradbars@labelcontent}};}
+     {\tl_if_empty:oT{\gradbars@labelposition}{\str_if_eq:eeF{\gradbars@label}{none}{\gradbars@labelcontent}}};
+   \tl_if_empty:oF{\gradbars@labelposition}
+    {\begin{scope}[shift={(gradbarsheat.south~west)}]
+      \str_if_eq:eeT{\gradbars@labelposition}{inside}{\let\gradbars@textcolor\gradbars@labelcolor}
+      \__gradbars_positioned_label:\end{scope}}}
 \ExplSyntaxOff
 
 \ExplSyntaxOff

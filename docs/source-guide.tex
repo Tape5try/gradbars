@@ -31,6 +31,12 @@ The private \cs{\_\_gradbars\_render\_tikz:} function is the default backend
 boundary, not a public callback. No second backend is supplied.
 
 \section{Stable extension contract}
+Numeric pairs use an independent registry and scoped read-only record version~1.
+The pair callback delegates a captured native compare/dumbbell/range continuation
+at most once. Explicit standard pair columns retain native parsing and scales;
+scalar columns and backend schema~1 remain unchanged. See
+\texttt{docs/pair-extensions.md} for fields, missing-value rules and host limits.
+
 The public library, scalar type and numeric formatter registration commands
 documented in \texttt{docs/stability.md} are stable in version 1.
 Library registration is global and loading is confined to the preamble;
@@ -54,7 +60,7 @@ during measurement; fixed and X widths are tested in the PDF structure checks.
 
 The Chinese and English manuals contain tutorials, option and library
 references, rendered examples and source. The developer reference documents
-the private data boundary; \texttt{docs/migration-v1.1.0.md} documents upgrade
+the private data boundary; \texttt{docs/stability.md} documents public scope
 and compatibility rules. The build and archive checks are separate, allowing
 validation without creating a CTAN zip.
 
@@ -66,7 +72,7 @@ logical rows before rendering; repeated tagged headers require LuaLaTeX and
 become artifacts after the first page by default. An explicit describe mode
 rebuilds each header with new marked content under the same logical cells.
 Explicit multilevel header associations use actual structure IDs. See \texttt{docs/accessibility.md} for
-limits, and \texttt{docs/migration-v1.1.0.md} for the complete matching runtime.
+limits, and \texttt{sty/README.md} for the complete matching runtime.
 
 \section{Domain recipes and public backends}
 The opt-in reports library packages correlation, ablation and metric layouts.
@@ -86,7 +92,7 @@ The spark library adds a distinct fixed-scale target composition; schema-1
 backends remain scalar and require explicit native fallback for the new kinds.
 The complete contracts and bilingual examples are in \texttt{docs/readability.md}.
 
-\section{Regional input and hierarchical compositions (v1.3--v1.4)}
+\section{Regional input and hierarchical compositions}
 The numbers module normalizes only explicitly declared input rules before
 canonical validation. CSV scalar bindings normalize copies while literal text
 and datasets retain their safety boundary. Output formatting never supplies data.
@@ -97,8 +103,7 @@ separate visible/data sequences. Parent and leaf rankings reuse numeric caches;
 summary rows remain outside rank and scale inputs. Longtable keep chains use
 noalign-only separators verified against actual shipout labels in four rule modes.
 See the bilingual manuals and the three focused Markdown contracts for complete
-public argument, scope and layout boundaries. These features were included in
-the v1.2.1 snapshot from the former v1.3.0--v1.6.0 plans and remain in v1.2.2.
+public argument, scope and layout boundaries.
 
 
 \section{Adapters and report metrics (v1.2.1)}
@@ -116,4 +121,9 @@ explicit 2048-position bound. The metric card uses the final positional value
 alongside its full history. Both compositions have one combined Figure, and
 custom scalar backends require explicit native fallback. The default five-library
 list and backend schema 1 are unchanged. Full public contracts and bilingual
-examples accompany the API reference; no new backend development is included.
+examples accompany the API reference.
+
+\paragraph{Convenient declarations and positioned labels.}
+The API module constructs scoped m/O document commands from explicit data and option templates.
+The native renderer resolves opt-in bar/Heat label sides and dimensional offsets in measured font boxes.
+Existing backend schema~1 callbacks retain their record; positioned labels require explicit native fallback.

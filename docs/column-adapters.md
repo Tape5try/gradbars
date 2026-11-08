@@ -1,5 +1,8 @@
 # Explicit native column adapters / 显式原生列适配（v1.2.1）
 
+For two observations, use the separate standard
+[pair column proxies](pair-extensions.md). Scalar adapters do not accept compound cells.
+
 The former v1.5.0 plan is included in local v1.2.1 at the maintainer's request.
 旧 v1.5.0 规划本次按用户指定编号并入 v1.2.1，不代表发布了 v1.5.0。
 

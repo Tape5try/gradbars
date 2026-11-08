@@ -1,0 +1,38 @@
+% !TeX program = pdflatex
+% All values and supplied intervals are fictional; MIT License.
+\documentclass{article}
+\usepackage[margin=18mm]{geometry}
+\usepackage{gradbars}
+\usepackage{gradbars-contrib-pairs}
+\gradbarsdeclarepaircolumn{service-pair}{frontend=dumbbell,
+ options={min=0,max=100,precision=1,unit={\%}}}
+\gradbarsdeclarepaircolumn{service-span}{frontend=range,
+ options={min=0,max=100,precision=1,unit={\%}}}
+\newcommand\servicetable[2]{%
+ \begin{center}
+ \begin{gradtable}[style=paired-report,theme=#1,width=\linewidth,
+   graphic width=22mm,label width=25mm]
+  \gradcolumn[width=25mm]{name}{Service}
+  \gradcolumn[type=service-pair,options={#2}]{pair}{Current / reference}
+  \gradcolumn[type=service-span]{span}{Supplied interval}
+  \gradrow{Booking,66/82,60/88}
+  \gradrow{Home visits,0/12,0/20}
+  \gradrow{Help desk,84/NA,NA}
+  \gradrow{Events,NA/76,65/85}
+  \gradrow{Pending,NA,NA}
+ \end{gradtable}
+ \end{center}}
+\begin{document}
+\section*{Service coverage: paired observations}
+All data are illustrative. Pair input is reference/current; native labels show
+current/reference. Supplied intervals are not inferred confidence intervals.
+\servicetable{accessible}{}
+\subsection*{Monochrome delivery}
+\servicetable{mono}{color=black,compare color=black!65,track color=black!25}
+\subsection*{Public-only record consumer}
+The value after each graphic is the unrounded current-minus-reference change,
+formatted to one decimal; n/a means a pair is incomplete.
+\par\medskip
+\gradpairgraphic[max=100,width=30mm,precision=1]{review-delta}{66}{82}\par\medskip
+\gradpairgraphic[max=100,width=30mm,precision=1]{review-delta}{NA}{0}
+\end{document}

@@ -3,7 +3,8 @@
 The supplied renderer remains TikZ. This contract provides registration,
 capability negotiation and a public read-only record for **bar and Heat cells**.
 It does not supply a lightweight renderer or remove the PGF/TikZ dependency.
-Compound data records remain a separate extension task.
+Numeric pairs use the independent [pair extension contract](pair-extensions.md),
+with their own schema version and callbacks. They do not extend this scalar record.
 
 ```latex
 \gradbarsdeclarebackend{my-backend}

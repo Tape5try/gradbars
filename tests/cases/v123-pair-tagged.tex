@@ -1,0 +1,32 @@
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+\usepackage{tabularray}
+\UseTblrLibrary{gradbars}
+\gradbarsdeclarepairtype{delegate}{dumbbell}{\gradbarspairdefault}
+\gradbarsdeclarepaircolumn{review-pair}{frontend=dumbbell,options={min=0,max=100,precision=0}}
+\setlength{\parindent}{0pt}
+\begin{document}
+\gradpairgraphic[max=100,precision=0]{delegate}{20.125}{72.875}\par\bigskip
+\gradpairgraphic[max=100]{delegate}{NA}{0}\quad
+\gradpairgraphic[max=100]{range}{NA}{NA}\par\bigskip
+\begin{gradtable}[style=paired-report,width=120mm,label width=30mm]
+\gradcolumn[width=25mm]{name}{Service}
+\gradcolumn[type=review-pair]{pair}{Before / after}
+\gradrow{Alpha,66/82}\gradrow{Beta,NA/0}
+\end{gradtable}
+\par\bigskip
+\gradtblrtagging{head rows=1,row headers=1}
+\begin{tblr}{colspec={Q[l,wd=25mm]Q[c,wd=55mm]}}
+Service & Comparison\\
+Alpha & \gradpairgraphic[max=100,width=25mm]{delegate}{66}{82}\\
+Beta & \gradpairgraphic[max=100,width=25mm]{delegate}{NA}{0}\\
+\end{tblr}
+\par\bigskip
+\gradpairgraphic[accessibility=artifact]{delegate}{10}{20}
+\tikz[alt={Outer paired panel.}]{
+ \node at (0,0) {\gradpairgraphic[label=none,width=20mm]{delegate}{10}{20}};
+ \node at (3,0) {\gradpairgraphic[label=none,width=20mm]{delegate}{30}{40}};
+}
+\end{document}

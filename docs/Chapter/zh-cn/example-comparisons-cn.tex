@@ -1,4 +1,4 @@
-\section{完整案例：前后对比与目标评价}
+\subsection{前后对比与目标评价}
 下面用同一尺度比较方法改进前后的得分，并将目标偏差单独表达。
 数据为演示值；哑铃图例写在表注，避免读者混淆两个端点。
 \begin{example}[text and listing,sidebyside=false]{示例 71：实验前后对比表}
@@ -28,3 +28,33 @@ C & \graddumbbell[style=study-change]{65}{65}
 
 背景轨道采用 \key{track color=black!40} 加深，并以 \key{stem width=.9pt} 增强连线；
 灰线表示完整的 0--100 量程，蓝线仅连接前后两个观测值。
+
+\subsubsection{社区服务覆盖率：显式双值列}
+同一指标的两次观测用空心、实心端点区分，输入按参考值/当前值填写。
+下面复用 \key{paired-report} 样式，并将使用者给定的区间作为独立列。
+所有值均为虚构；区间不表示自动推断的置信范围。
+\begin{example}[text and listing,sidebyside=false]{社区服务配对报告}
+\begingroup
+\gradbarsdeclarepaircolumn{case-service}{frontend=dumbbell,
+  options={min=0,max=100,precision=1,unit={\%}}}
+\gradbarsdeclarepaircolumn{case-span}{frontend=range,
+  options={min=0,max=100,precision=1,unit={\%}}}
+\begin{center}
+\begin{gradtable}[style=paired-report,width=\linewidth,label width=25mm]
+ \gradcolumn[width=25mm]{name}{服务项目}
+ \gradcolumn[type=case-service]{pair}{当前 / 参考}
+ \gradcolumn[type=case-span]{span}{给定区间}
+ \gradrow{预约办理,66/82,60/88}
+ \gradrow{上门服务,0/12,0/20}
+ \gradrow{咨询服务,84/NA,NA}
+ \gradrow{社区活动,NA/76,65/85}
+\end{gradtable}
+\end{center}
+\endgroup
+\end{example}
+零与单侧缺失分别保留，不能把“缺少参考值”解释为“从零增长”。
+黑白版本将表格选项改为 \key{theme=mono}，并在双值列设置
+\key{options={color=black,compare color=black!65,track color=black!25}}，
+保留实心与空心端点；区间列继续使用打印纹理。
+独立完整源码见 \key{docs/examples/paired-report-cn.tex}；
+数值对记录和列适配说明见第~\ref{sec:pair-extensions-cn}~节。

@@ -16,7 +16,7 @@
 \tcbuselibrary{listings,skins,breakable}
 \usepackage{fancyhdr}
 \usepackage[colorlinks=true,linkcolor=gradbarsBlue,urlcolor=gradbarsTeal,
-  pdftitle={gradbars v1.2.2 宏包手册},pdfauthor={SuFan}]{hyperref}
+  pdftitle={gradbars v1.2.3 宏包手册},pdfauthor={SuFan}]{hyperref}
 \definecolor{manualCode}{HTML}{EEEEFF}
 \definecolor{manualResult}{HTML}{FAFAE6}
 \definecolor{manualLine}{HTML}{DCE3ED}
@@ -37,7 +37,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\small\sffamily\color{manualMuted}gradbars\quad 宏包手册}
-\fancyhead[R]{\small\sffamily\color{manualMuted}v1.2.2}
+\fancyhead[R]{\small\sffamily\color{manualMuted}v1.2.3}
 \fancyfoot[L]{\footnotesize\color{manualMuted}效果与源码对照 \enspace / \enspace XeLaTeX}
 \fancyfoot[R]{\small\thepage}
 \renewcommand{\headrulewidth}{.3pt}
@@ -109,47 +109,44 @@
 \fontsize{9}{11}\selectfont\tableofcontents
 \endgroup
 \par\vspace{4mm}
-{\small\color{manualMuted}\textbf{阅读指南}\par
-本手册把安装说明、参数、编号示例、选型指南与常见问题集中在同一文档中。
-其中包括六个应用表格，以及双栏论文、跨页长表、黑白打印和幻灯片的真实排版案例。
-浅黄色区域展示实际排版效果，浅紫色区域展示生成该效果的源码。
-全书按入门、图形、外观、专属表格、案例与参考六部分组织。源码中的空行用于区分示例。
-示例框内的效果与源码来自同一段代码，避免两者脱节。\par
-\vspace{3mm}
-适用于 gradbars 1.2.2。示例数据仅用于演示，不代表真实实验结果。\par}
+{\small\color{manualMuted}示例数据仅用于演示，不代表真实实验结果。\par}
 
-\medskip
-\textbf{v1.2.2（2026-11-07）。}
-每组只计算一次最佳与次佳排名，保留并列、缺失、父组/叶组和高低优先语义。
-新增可复现的 TeX/Lua 分阶段性能基准；不增加公开选项或跨调用缓存。
-全部既有功能、接口和默认加载保留；本版交付 GitHub 源码，不创建 Release 或提交 CTAN。
-性能基准使用 \texttt{texlua scripts/benchmark.lua}，详见开发仓库的
-\texttt{docs/performance.md}；计时不能代替正确性、分页或无障碍检查。
-
-% Chapters, in reading order.
+% Stable chapter entry points; feature prose and examples belong in Chapter/zh-cn/.
 \include{Chapter/zh-cn/install-cn}
-\include{Chapter/zh-cn/libraries-cn}
-\include{Chapter/zh-cn/extensions-cn}
-\include{Chapter/zh-cn/selection-cn}
 \include{Chapter/zh-cn/values-cn}
+\include{Chapter/zh-cn/settings-cn}
 \include{Chapter/zh-cn/styles-cn}
 \include{Chapter/zh-cn/number-format-cn}
+\include{Chapter/zh-cn/research-numbers-cn}
+\include{Chapter/zh-cn/selection-cn}
 \include{Chapter/zh-cn/signed-bars-cn}
-\include{Chapter/zh-cn/stack-cn}
-\include{Chapter/zh-cn/stack-legend-cn}
 \include{Chapter/zh-cn/compare-cn}
 \include{Chapter/zh-cn/dumbbell-cn}
 \include{Chapter/zh-cn/change-cn}
+\include{Chapter/zh-cn/references-cn}
+\include{Chapter/zh-cn/stack-cn}
+\include{Chapter/zh-cn/stack-legend-cn}
 \include{Chapter/zh-cn/spark-cn}
 \include{Chapter/zh-cn/distribution-cn}
-\include{Chapter/zh-cn/references-cn}
+\include{Chapter/zh-cn/boxrug-cn}
 \include{Chapter/zh-cn/heat-cn}
-\include{Chapter/zh-cn/legends-cn}
-\include{Chapter/zh-cn/readability-cn}
+\include{Chapter/zh-cn/tabular-cn}
+\include{Chapter/zh-cn/table-cn}
+\include{Chapter/zh-cn/table-graphics-cn}
+\include{Chapter/zh-cn/table-alignment-cn}
+\include{Chapter/zh-cn/table-width-cn}
+\include{Chapter/zh-cn/headers-cn}
+\include{Chapter/zh-cn/groups-cn}
+\include{Chapter/zh-cn/summaries-cn}
+\include{Chapter/zh-cn/longtable-cn}
+\include{Chapter/zh-cn/csv-cn}
 \include{Chapter/zh-cn/regional-cn}
+\include{Chapter/zh-cn/column-scales-cn}
 \include{Chapter/zh-cn/hierarchy-cn}
-\include{Chapter/zh-cn/adapters-cn}
 \include{Chapter/zh-cn/report-metrics-cn}
+\include{Chapter/zh-cn/reports-cn}
+\include{Chapter/zh-cn/table-definitions-cn}
+\include{Chapter/zh-cn/complete-examples-cn}
 \include{Chapter/zh-cn/themes-cn}
 \include{Chapter/zh-cn/labels-cn}
 \include{Chapter/zh-cn/collision-cn}
@@ -160,29 +157,15 @@
 \include{Chapter/zh-cn/categories-cn}
 \include{Chapter/zh-cn/patterns-cn}
 \include{Chapter/zh-cn/presets-cn}
-\include{Chapter/zh-cn/table-cn}
-\include{Chapter/zh-cn/table-graphics-cn}
-\include{Chapter/zh-cn/table-alignment-cn}
-\include{Chapter/zh-cn/column-scales-cn}
-\include{Chapter/zh-cn/table-width-cn}
-\include{Chapter/zh-cn/headers-cn}
-\include{Chapter/zh-cn/groups-cn}
-\include{Chapter/zh-cn/summaries-cn}
 \include{Chapter/zh-cn/table-themes-cn}
-\include{Chapter/zh-cn/table-definitions-cn}
-\include{Chapter/zh-cn/reports-cn}
-\include{Chapter/zh-cn/longtable-cn}
-\include{Chapter/zh-cn/tabularray-cn}
-\include{Chapter/zh-cn/csv-cn}
-\include{Chapter/zh-cn/research-numbers-cn}
-\include{Chapter/zh-cn/example-models-cn}
-\include{Chapter/zh-cn/example-overview-cn}
-\include{Chapter/zh-cn/example-palettes-cn}
-\include{Chapter/zh-cn/example-comparisons-cn}
-\include{Chapter/zh-cn/example-contributions-cn}
-\include{Chapter/zh-cn/example-trends-cn}
-\include{Chapter/zh-cn/example-scenarios-cn}
+\include{Chapter/zh-cn/legends-cn}
+\include{Chapter/zh-cn/readability-cn}
 \include{Chapter/zh-cn/layouts-cn}
+\include{Chapter/zh-cn/accessibility-cn}
+\include{Chapter/zh-cn/libraries-cn}
+\include{Chapter/zh-cn/tabularray-cn}
+\include{Chapter/zh-cn/adapters-cn}
+\include{Chapter/zh-cn/extensions-cn}
 \include{Chapter/zh-cn/faq-cn}
 \include{Chapter/zh-cn/reference-cn}
 

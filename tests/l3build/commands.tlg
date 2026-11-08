@@ -1,0 +1,17 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+value=0; max=1; precision=3
+value=0.75; max=2; precision=1
+value=4; max=10; precision=2
+value=5; max=20; precision=1
+value=6; max=30; precision=1
+callbacks=5
+local command=present
+local command=absent
+outer max=100; precision=1
+em uses label font=yes
+xshift reserves width=yes
+above reserves height=yes
+below reserves depth=yes
+legacy label overrides position=yes
+declared heat height honored=yes

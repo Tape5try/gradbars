@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Internal implementation unless documented.
-\ProvidesPackage{gradbars-render-tikz}[2026/11/07 v1.2.2 gradbars render-tikz]
+\ProvidesPackage{gradbars-render-tikz}[2026/11/08 v1.2.3 gradbars render-tikz]
 \ExplSyntaxOn
 \cs_new_protected:Npn \gradbarsDrawBand
   {
@@ -307,7 +307,79 @@
         \fi
       }
   }
-\cs_new_protected:Npn \gradbarsDrawMainLabel
+% Explicit positioning is opt-in and does not reinterpret legacy label modes.
+\dim_new:N\l__gradbars_label_em_dim
+\dim_new:N\l__gradbars_label_ex_dim
+\dim_new:N\l__gradbars_label_x_dim
+\dim_new:N\l__gradbars_label_y_dim
+\dim_new:N\l__gradbars_label_distance_dim
+\dim_new:N\l__gradbars_label_xshift_dim
+\dim_new:N\l__gradbars_label_yshift_dim
+\tl_new:N\l__gradbars_label_anchor_tl
+\cs_new_protected:Npn\__gradbars_label_length:nn #1#2
+ {\tl_set:Nx\l_tmpa_tl{#2}
+  \regex_match:nVF{\A\s*[+\-]?(\d+(\.\d*)?|\.\d+)\s*(pt|mm|cm|in|bp|pc|dd|cc|sp|em|ex)\s*\Z}\l_tmpa_tl
+   {\gradbarsFail{Invalid~label~length:~#1}}}
+\cs_new_protected:Npn\__gradbars_label_resolve:NN #1#2
+ {\tl_set:Nx\l_tmpa_tl{#2}
+  \tl_replace_all:Nnn\l_tmpa_tl{em}{\l__gradbars_label_em_dim}
+  \tl_replace_all:Nnn\l_tmpa_tl{ex}{\l__gradbars_label_ex_dim}
+  \dim_set:Nn#1{\l_tmpa_tl}}
+\cs_new_protected:Npn\__gradbars_positioned_label:
+ {\str_if_eq:eeF{\gradbars@labelposition}{none}
+   {\gradbars@validtrue
+    \__gradbars_label_length:nn{distance}{\gradbars@labeldistance}
+    \__gradbars_label_length:nn{xshift}{\gradbars@labelxshift}
+    \__gradbars_label_length:nn{yshift}{\gradbars@labelyshift}
+    \ifgradbars@valid
+     \gradbarsMeasure\gradbars@labelbox\gradbars@font{\kern1em}
+     \dim_set:Nn\l__gradbars_label_em_dim{\wd\gradbars@labelbox}
+     \gradbarsMeasure\gradbars@labelbox\gradbars@font{\kern1ex}
+     \dim_set:Nn\l__gradbars_label_ex_dim{\wd\gradbars@labelbox}
+     \__gradbars_label_resolve:NN\l__gradbars_label_distance_dim\gradbars@labeldistance
+     \__gradbars_label_resolve:NN\l__gradbars_label_xshift_dim\gradbars@labelxshift
+     \__gradbars_label_resolve:NN\l__gradbars_label_yshift_dim\gradbars@labelyshift
+     \dim_compare:nNnTF{\l__gradbars_label_distance_dim}<{0pt}
+      {\gradbarsFail{Label~distance~must~be~nonnegative}}
+      {\dim_set:Nn\l__gradbars_label_x_dim{\gradbars@width/2}
+       \dim_set:Nn\l__gradbars_label_y_dim{\gradbars@height/2}
+       \str_if_eq:eeT{\gradbars@labelreference}{value}
+        {\ifgradbars@missing\else\dim_set:Nn\l__gradbars_label_x_dim{\gradbars@xend}\fi}
+       \str_case_e:nn{\gradbars@labelposition}
+        {{above}{\dim_set:Nn\l__gradbars_label_y_dim{\gradbars@height+\l__gradbars_label_distance_dim}
+                  \tl_set:Nn\l__gradbars_label_anchor_tl{south}}
+         {below}{\dim_set:Nn\l__gradbars_label_y_dim{-\l__gradbars_label_distance_dim}
+                  \tl_set:Nn\l__gradbars_label_anchor_tl{north}}
+         {left}{\str_if_eq:eeT{\gradbars@labelreference}{track}{\dim_zero:N\l__gradbars_label_x_dim}
+                 \dim_sub:Nn\l__gradbars_label_x_dim{\l__gradbars_label_distance_dim}
+                 \tl_set:Nn\l__gradbars_label_anchor_tl{east}}
+         {right}{\str_if_eq:eeT{\gradbars@labelreference}{track}
+                   {\dim_set:Nn\l__gradbars_label_x_dim{\gradbars@width}}
+                  \dim_add:Nn\l__gradbars_label_x_dim{\l__gradbars_label_distance_dim}
+                  \tl_set:Nn\l__gradbars_label_anchor_tl{west}}
+         {inside}{\tl_set:Nn\l__gradbars_label_anchor_tl{center}}}
+       \str_if_eq:eeF{\gradbars@labelanchor}{auto}
+        {\tl_set:No\l__gradbars_label_anchor_tl{\gradbars@labelanchor}}
+       \dim_add:Nn\l__gradbars_label_x_dim{\l__gradbars_label_xshift_dim}
+       \dim_add:Nn\l__gradbars_label_y_dim{\l__gradbars_label_yshift_dim}
+       \def\gradbars@placement{positioned}\gradbars@insidefalse
+       \str_if_eq:eeT{\gradbars@labelposition}{inside}{\gradbars@insidetrue}
+       \let\gradbars@labelcolor\gradbars@textcolor
+       \str_if_eq:eeT{\gradbars@textcolor}{auto}
+        {\def\gradbars@labelcolor{black}
+         \ifgradbars@inside
+          \edef\gradbars@labelx{\dim_use:N\l__gradbars_label_x_dim}
+          \gradbarsMainBackground
+         \fi}
+       \gradbarsMeasure\gradbars@labelbox\gradbars@font
+        {\color{\gradbars@labelcolor}\gradbars@labelcontent}
+       \node[anchor=\l__gradbars_label_anchor_tl,inner~sep=0pt,outer~sep=0pt,
+         text=\gradbars@labelcolor] at
+         (\dim_use:N\l__gradbars_label_x_dim,\dim_use:N\l__gradbars_label_y_dim)
+         {\usebox\gradbars@labelbox};}
+    \fi}}
+
+\cs_new_protected:Npn \__gradbars_legacy_main_label:
   {\bool_lazy_and:nnTF
      {\str_if_eq_p:ee{\gradbars@labelalign}{cell}}
      {\str_if_eq_p:ee{\gradbars@label}{inside} || \str_if_eq_p:ee{\gradbars@label}{auto}}
@@ -325,6 +397,9 @@
         [gradbars~label~background] at (\gradbars@labelx,.5*\gradbars@height)
         {\usebox\gradbars@labelbox};}
      {\__gradbars_draw_graphic_label:}}
+\cs_new_protected:Npn\gradbarsDrawMainLabel
+ {\tl_if_empty:oTF{\gradbars@labelposition}
+   {\__gradbars_legacy_main_label:}{\__gradbars_positioned_label:}}
 \cs_new_protected:Npn \gradbarsResolveBaseline
   {
     \pgfmathsetlengthmacro\gradbars@baseliney{.5*\gradbars@height-\gradbars@baselineoffset}

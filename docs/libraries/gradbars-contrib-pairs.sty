@@ -1,0 +1,12 @@
+% Author: SuFan. MIT License. Public interfaces only.
+\ProvidesPackage{gradbars-contrib-pairs}[2026/11/08 Paired review example]
+\RequirePackage{gradbars}
+\gradbarsrequireversion{1.2.3}
+\ExplSyntaxOn
+\gradbarsdeclarepairtype{review-delta}{dumbbell}
+ {\gradbarspairdefault\quad
+  \str_if_eq:eeTF{\gradbarspairvalue{complete}}{true}
+   {\gradbarsformatnumber[precision=1]{\gradbarspairvalue{delta}}}
+   {\textnormal{n/a}}}
+\ExplSyntaxOff
+\endinput

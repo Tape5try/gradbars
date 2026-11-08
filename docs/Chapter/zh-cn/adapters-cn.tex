@@ -1,5 +1,5 @@
-\section{显式列适配与样本组合（v1.2.1）}
-本节实现原 v1.5.0 规划，按用户指定并入 v1.2.1。新入口均须显式使用，旧独立图形注册不会自动成为表格列。以下为虚构复核数据。
+\section{显式列适配与 pgfplotstable 集成}
+新入口均须显式使用，旧独立图形注册不会自动成为表格列。以下为虚构复核数据。
 \begin{example}[text and listing,sidebyside=false]{公开标准前端代理}
 \begingroup
 \gradbarsdeclarecolumn{review-proxy}{frontend=bar,
@@ -18,22 +18,6 @@
 \subsection{固定单行盒的接入契约}
 \key{box} 还须指定已注册的标量图形及正的 box width、box height，box depth 非负。回调可查询声明尺寸：\par\key{\gradbarscolumnwidth}、\allowbreak\key{\gradbarscolumnheight}、\allowbreak\key{\gradbarscolumndepth} 返回声明尺寸；分配图宽必须足够，实测内容超声明尺寸时报错。表格可设 \key{label width=0pt}，不再保留标签槽。
 试排可重复调用并丢弃结果，表格回调不得写文件、增计数、添加标签或全局修改。包装保持文本基线、不额外生成 Figure；这些表格准入条件不追溯限制独立回调。完整公开示例见 \texttt{docs/libraries/gradbars-contrib-columns.sty}。
-\clearpage
-\subsection{箱线图与全部原始样本}
-\begin{example}[text and listing,sidebyside=false]{同源样本，不分箱、不抽样}
-\begin{gradtable}[style=rug-report,width=\linewidth]
-\gradcolumn[width=25mm]{batch}{Batch}
-\gradcolumn[type=boxrug,scale=fixed,
- options={min=0,max=20,height=6mm,label=none}]
- {samples}{Box plot and raw rug}
-\gradrow{Atlas,{0,2,2,4,8,16,NA}}
-\gradrow{Birch,{0,0,0,NA}}
-\gradrow{Cedar,{2,3,4,5,6}}
-\gradrow{Dune,{NA,NA}}
-\end{gradtable}
-\end{example}
-独立调用 \key{\gradboxrug[options]{raw samples}}；默认高 5ex。每条短线对应一个有效观测，重复位置可重叠但重数不变。沿用 type-7 分位数、1.5-IQR 实际观测须和离群点，不抖动、不抽样、不自动分箱。最多接收 2048 个原始位置（含 NA），不接受预计算摘要。
-零、单样本、常量、全缺失沿用既有统计；固定、自动、命名范围与裁剪不改变统计。一个组合只生成一个 Figure，包含统计和保留重复值的完整有效样本列表。表格样式 \key{rug-report} 和图形样式 \key{sample-rug} 均为显式选择。
 \clearpage
 \subsection{可选 pgfplotstable 单元格}
 导言区显式 \key{\usegradbarslibrary{pgfplotstable}}；它加载外部 pgfplotstable，默认五库不变。本手册已显式加载。

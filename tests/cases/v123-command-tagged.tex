@@ -1,0 +1,20 @@
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage{gradbars}
+\usepackage{tabularray}
+\UseTblrLibrary{gradbars}
+\gradbarsnewcommand[type=bar,args={m O{}},data={#1},options={#2},
+ empty=skip,max=1,width=15mm,label position=right,label distance=2pt]{\cellscore}
+\begin{document}
+\cellscore{.75}[label position=above,alt={Declared standalone bar.}]\par\bigskip
+\gradtblrtagging{head rows=1,row headers=1}
+\begin{tblr}{colspec={Q[l,wd=20mm]Q[c,wd=35mm]},cell{2-Z}{2}={cmd=\cellscore}}
+Item & Score\\
+Alpha & .6\\
+Zero & 0\\
+Pending & NA\\
+Blank & \\
+\end{tblr}
+\par\bigskip
+\gradheat[max=1,width=15mm,label position=below,alt={Positioned heat cell.}]{.8}
+\end{document}

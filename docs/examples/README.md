@@ -1,5 +1,26 @@
 # Complete table examples / 完整表格示例
 
+## Paired observations / 配对观测
+
+[English](paired-report.tex) · [中文](paired-report-cn.tex) · [Public-only consumer](../libraries/gradbars-contrib-pairs.sty) · [Contract](../pair-extensions.md).
+
+Both reports use the same fictional values, explicit native pair proxies, accessible
+and monochrome themes, zero, one-sided NA and supplied intervals. The consumer
+reads a scoped raw pair record and delegates native drawing once. Independent
+types do not automatically become native columns.
+
+从仓库根目录编译时，将运行目录和配套库目录加入搜索路径：
+
+```sh
+mkdir -p build/examples
+TEXINPUTS="$PWD/sty:$PWD/docs/libraries:" xelatex -interaction=nonstopmode \
+  -halt-on-error -output-directory=build/examples docs/examples/paired-report-cn.tex
+```
+
+Use pdfLaTeX, XeLaTeX or LuaLaTeX for the English source; Chinese uses XeLaTeX
+or LuaLaTeX. A standalone project may instead copy the contributed library beside
+its main document. All required interfaces are public.
+
 All new scenarios use illustrative data and existing public interfaces. English
 standalone sources compile with pdfLaTeX, XeLaTeX or LuaLaTeX. The manuals also
 provide Chinese labels and explain the same values and rules.
@@ -69,3 +90,11 @@ Use pdfLaTeX for English and XeLaTeX for Chinese; no shell escape is required.
 Shared data: [report-metrics.csv](../data/report-metrics.csv).
 Public-only third-party library: [gradbars-contrib-columns.sty](../libraries/gradbars-contrib-columns.sty).
 Contracts: [adapters](../column-adapters.md), [PGF](../pgfplotstable.md), [metrics/compositions](../report-metrics.md).
+
+## 社区服务站办理质量（中文手册新增案例）
+
+- [横向 A4 中文独立源码](precision-recall-tblr.tex)：四个虚构社区服务站、十二类服务事项、按期率与回访率两级表头、8mm 灰色短条与右侧数值；区分尚未统计的空白与真实零值。使用 ctexart、tabularray 和公开图形接口，以 XeLaTeX（或 LuaLaTeX）编译。该案例已加入中文手册的“完整案例”章，英文手册暂未同步。
+
+## v1.2.3 便捷命令（本地开发）
+
+- [中文示例](custom-commands-cn.tex) / [English](custom-commands.tex)：m/O 参数格式、主题/单色/双色渐变、四向标签位置与单位偏移。中文用 XeLaTeX 或 LuaLaTeX，英文可用三引擎。数值对后端扩展主线仍待完成，这些示例只包装既有图形。

@@ -1,0 +1,74 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{gradbars}
+\newcount\paircalls
+\gradbarsdeclarepairtype{probe}{dumbbell}{%
+ \global\advance\paircalls1\relax
+ \TYPE{args=#1/#2; roles=\gradbarspairvalue{left-role}/\gradbarspairvalue{right-role}}%
+ \TYPE{missing=\gradbarspairvalue{missing}; complete=\gradbarspairvalue{complete}; delta=\gradbarspairvalue{delta}}%
+ \TYPE{positions=\gradbarspairvalue{left-position}/\gradbarspairvalue{right-position}; clipped=\gradbarspairvalue{left-clipped}/\gradbarspairvalue{right-clipped}}%
+ \TYPE{range=\gradbarspairvalue{min}/\gradbarspairvalue{max}; precision=\gradbarspairvalue{precision}}%
+ \gradbarspairdefault}
+\gradbarsdeclarepairtype{interval-probe}{range}{%
+ \TYPE{interval roles=\gradbarspairvalue{left-role}/\gradbarspairvalue{right-role}; delta=\gradbarspairvalue{delta}}%
+ \gradbarspairdefault}
+\gradbarsdeclarepairtype{clip-probe}{dumbbell}{%
+ \xdef\clipPair{\gradbarspairvalue{left}/\gradbarspairvalue{right}; positions=\gradbarspairvalue{left-position}/\gradbarspairvalue{right-position}; clipped=\gradbarspairvalue{left-clipped}/\gradbarspairvalue{right-clipped}}%
+ \gradbarspairdefault}
+\gradbarsnewcommand[type=probe,args={m m},data={{#1}{#2}},min=-10,max=10,label=none]{\paircommand}
+\begin{document}
+\START
+\TYPE{scalar schema=\gradbarsbackendversion; pair schema=\gradbarspairversion}
+\gradbarsifpairtypecapable{probe}{partial-missing}{\TYPE{partial=yes}}{\TYPE{partial=no}}
+\gradbarsifpairtypecapable{range}{partial-missing}{\TYPE{range partial=yes}}{\TYPE{range partial=no}}
+\gradbarsifpairtypecapable{probe}{native-column}{\TYPE{custom column=yes}}{\TYPE{custom column=no}}
+\gradbarsifpairtypecapable{dumbbell}{native-column}{\TYPE{builtin column=yes}}{\TYPE{builtin column=no}}
+\gradbarsifpairtypecapable{unknown}{pair}{\TYPE{unknown=yes}}{\TYPE{unknown=no}}
+\gradbarsifbackendcapable{tikz}{pair}{\TYPE{scalar pair capability=yes}}{\TYPE{scalar pair capability=no}}
+\setbox0=\hbox{\gradpairgraphic[min=-10,max=10,precision=0,label=none]{probe}{-2.125}{0}}
+\setbox0=\hbox{\gradpairgraphic[min=-10,max=10,label=none]{probe}{NA}{0}}
+\setbox0=\hbox{\gradpairgraphic[min=-10,max=10,label=none]{probe}{0}{NA}}
+\setbox0=\hbox{\gradpairgraphic[min=-10,max=10,label=none]{probe}{NA}{NA}}
+\setbox0=\hbox{\paircommand{-5}{5}}
+\setbox0=\hbox{\gradpairgraphic[min=-10,max=10,label=none]{interval-probe}{-3}{8}}
+\ExplSyntaxOn
+\bool_if:NTF\l__gradbars_pair_active_bool{\TYPE{context=leaked}}{\TYPE{context=closed}}
+\ExplSyntaxOff
+\TYPE{calls=\the\paircalls}
+\OMIT
+\setbox0=\hbox{\gradpairgraphic[min=-10,max=10,label=none]{clip-probe}{-20}{15}}
+\TIMO
+\TYPE{clip raw=\clipPair}
+\OMIT
+\setbox0=\hbox{\gradpairgraphic[max=100,width=30mm,precision=2]{dumbbell}{20.125}{72.875}}
+\setbox1=\hbox{\graddumbbell[max=100,width=30mm,precision=2]{20.125}{72.875}}
+\TIMO
+\ifdim\wd0=\wd1\ifdim\ht0=\ht1\ifdim\dp0=\dp1\TYPE{native dimensions=identical}\fi\fi\fi
+\ExplSyntaxOn
+\bool_if:NTF\g__gradbars_pair_used_bool{\TYPE{delegate guard=leaked}}{\TYPE{delegate guard=restored}}
+\cs_set_protected:cpn{__gradbars_pair_type_dumbbell:nn}#1#2
+ {\xdef\pairTableRange{\gradbarspairvalue{min}/\gradbarspairvalue{max}}\gradbarspairdefault}
+\ExplSyntaxOff
+\OMIT
+\gradbarsdeclarepaircolumn{scale-proxy}{frontend=dumbbell}
+\begin{center}
+\begin{gradtable}[width=110mm,scale=column]
+\gradcolumn{name}{Item}\gradcolumn[type=scale-proxy]{v}{Pair}
+\gradrow{A,-5/15}\gradrow{B,20/NA}\gradrow{C,NA/0}
+\end{gradtable}
+\end{center}
+\TIMO
+\TYPE{native pair column range=\pairTableRange}
+\OMIT
+\gradscale{pair-test-scale}{min=-10,max=100}
+\begin{center}
+\begin{gradtable}[width=110mm,scale group=pair-test-scale]
+\gradcolumn{name}{Item}\gradcolumn[type=scale-proxy]{v}{Pair}
+\gradrow{A,30/70}
+\end{gradtable}
+\end{center}
+\TIMO
+\TYPE{native pair shared range=\pairTableRange}
+\OMIT\box0\clearpage\TIMO
+\END
+\end{document}

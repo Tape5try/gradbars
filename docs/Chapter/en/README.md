@@ -44,7 +44,7 @@ Edit each section in its own file. Compile the main document, not a chapter.
 | [legends.tex](legends-en.tex) | Continuous and shared legends |
 
 | [reports.tex](reports-en.tex) | Domain report presets |
-| [extensions.tex](extensions-en.tex) | Third-party starter and public scalar backend contract |
+| [extensions.tex](extensions-en.tex) | Third-party starter, scalar backend and independent pair contract |
 
 - [v1.3.0 regional input / 地区输入](regional-en.tex)
 - [v1.4.0 hierarchy / 两级报告](hierarchy-en.tex)

@@ -37,3 +37,109 @@ rendering still uses TikZ. This contract does not supply a second renderer.
 Callbacks may run during discarded table measurements: avoid external writes,
 respect suspended tagging and preserve raw data, units, clipping and baselines.
 The complete field and capability contract is in \key{docs/backends.md}.
+
+\clearpage
+\subsection{Independent pair consumers and read-only records}
+\label{sec:pair-extensions-en}
+\key{\gradbarsdeclarepairtype} registers a name, a native frontend
+(compare, dumbbell or range), and a callback. Invoke it with
+\key{\gradpairgraphic[options]{type}{left}{right}}.
+Scalar callbacks and backend schema 1 retain their original contracts.
+\begin{demo}{A registered pair that delegates native rendering}
+\gradbarsdeclarepairtype{manual-pair}{dumbbell}{\gradbarspairdefault}
+\gradpairgraphic[min=0,max=100,width=35mm,precision=1]
+  {manual-pair}{66.125}{82.875}
+\end{demo}
+Comparison inputs are reference/current, although native labels show
+current/reference. Range inputs are lower/upper, not inferred uncertainty.
+Comparisons allow one or both observations missing; ranges require both
+endpoints present or both missing. Zero is always an observation.
+
+\subsubsection{Reading raw values and missing state}
+The callback receives two canonical, unrounded numbers or NA. Expandable
+\key{\gradbarspairvalue} reads the snapshot only during the callback;
+unknown fields and out-of-context access are errors.
+\begin{demo}{Compute a difference before display rounding}
+\ExplSyntaxOn
+\gradbarsdeclarepairtype{manual-pair-delta}{dumbbell}
+ {\gradbarspairdefault\quad
+  \str_if_eq:eeTF{\gradbarspairvalue{complete}}{true}
+   {\gradbarsformatnumber[precision=1]{\gradbarspairvalue{delta}}}
+   {n/a}}
+\ExplSyntaxOff
+\gradpairgraphic[max=100,width=30mm,precision=1]
+  {manual-pair-delta}{66.125}{82.875}\par\medskip
+\gradpairgraphic[max=100,width=30mm,precision=1]
+  {manual-pair-delta}{NA}{0}
+\end{demo}
+The first difference is 16.75 before formatting; the second pair has a genuine
+zero but no reference, so its difference is unavailable.
+\begin{center}\small
+\begin{tabularx}{\linewidth}{@{}l X@{}}
+\toprule
+\textbf{Fields} & \textbf{Meaning}\\\midrule
+\key{left}, \key{right} & Canonical unrounded values or NA.\\
+\key{left-role}, \key{right-role} & reference/current or lower/upper.\\
+\key{missing}, \key{complete} & none/left/right/both; complete requires both valid.\\
+\key{min}, \key{max}, \key{zero} & Resolved shared range and normalized zero.\\
+\key{left-position}, \key{right-position} & Clipped normalized positions; NA for a missing side.\\
+\key{left-clipped}, \key{right-clipped} & Whether the original side exceeds the display range.\\
+\key{delta} & Right minus left, or NA; a range span is not inferred uncertainty.\\
+\key{width}, \key{height}, \key{alt} & Physical track dimensions and native full alternative.\\
+\bottomrule
+\end{tabularx}\end{center}
+Clipping and precision do not modify raw values or delta.
+\par Full contract: \key{docs/pair-extensions.md}.
+
+\subsubsection{Capability queries and callback lifecycle}
+\key{\gradbarsifpairtypecapable} takes a type, capability, yes branch and no branch.
+For example, partial-missing is false for range and true for dumbbell. Unknown
+types and features take the no branch.
+\begin{source}
+\gradbarsifpairtypecapable{range}{partial-missing}
+  {Partial data supported}{Both endpoints must be present or missing}
+\end{source}
+\key{\gradbarspairdefault} draws the captured continuation once, including when
+boxed, without a second public frontend or Figure wrapper.
+\key{\gradbarspairlabel} typesets the existing full pair label without placement
+or tagging. Recursive pair calls are errors; record access closes on return.
+Delegation retains native baseline, size, clipping and alternatives. Added
+content remains the consumer's layout/accessibility responsibility. Table
+measurements may repeat callbacks; avoid external writes, counters and globals.
+
+\subsection{Explicit standard pair columns}
+\label{sec:pair-columns-en}
+Independent pair types never become native columns automatically.
+\key{\gradbarsdeclarepaircolumn} admits standard compare/dumbbell/range proxies,
+not arbitrary standalone consumer callbacks. Declarations are local, share the
+column namespace, and reject visible duplicates.
+\begin{demo}{A paired report with supplied intervals}
+\begingroup
+\gradbarsdeclarepaircolumn{manual-service}{frontend=dumbbell,
+  options={min=0,max=100,precision=1,unit={\%}}}
+\gradbarsdeclarepaircolumn{manual-span}{frontend=range,
+  options={min=0,max=100,precision=1,unit={\%}}}
+\begin{center}
+\begin{gradtable}[style=paired-report,width=\linewidth,label width=25mm]
+  \gradcolumn[width=25mm]{name}{Service}
+  \gradcolumn[type=manual-service]{pair}{Current / reference}
+  \gradcolumn[type=manual-span]{span}{Supplied interval}
+  \gradrow{Booking,66/82,60/88}
+  \gradrow{Home visits,0/12,0/20}
+  \gradrow{Help desk,84/NA,NA}
+\end{gradtable}
+\end{center}
+\endgroup
+\end{demo}
+Cells use left/right; whole NA means two missing sides. Native column ranges
+include both valid observations; shared scales and final width allocation retain
+precedence. Pair columns are not scalar filtering/sorting/ranking/aggregation
+inputs and do not infer regional normalization.
+Ordinary tabular and tabularray cells may call \key{\gradpairgraphic} explicitly;
+give tabularray sufficient explicit widths and enable structure tagging separately.
+
+The same-data standalone \key{docs/examples/paired-report.tex} shows accessible
+and mono themes of paired-report. Its public-only consumer is
+\key{docs/libraries/gradbars-contrib-pairs.sty}; include both sty/ and
+docs/libraries/ on the TeX search path when compiling from the repository root.
+See \key{docs/pair-extensions.md} for admission and host limits.

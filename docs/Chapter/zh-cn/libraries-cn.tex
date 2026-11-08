@@ -1,3 +1,5 @@
+\part{高级集成与参考}
+
 \section{按需加载库与公开扩展接口}
 \subsection{默认完整加载与最小模式}
 \key{\usepackage{gradbars}} 保持默认完整加载，已有文档可继续使用原命令。\par
@@ -18,7 +20,7 @@
 重复加载不重复定义；未知库、缺少文件、循环依赖和未加载的命令均有明确错误提示。
 库加载只在导言区执行；选择 \key{formatter=siunitx} 时仍需用户显式加载 siunitx v3。
 \subsection{全部内置可加载库}
-v1.0.0 注册了以下六个内置库名。核心始终加载，另外五个为功能库：
+核心始终加载，以下五个功能库默认加载：
 \begin{description}
 \item[\key{core}] 基础数据条、比较条、哑铃、区间、参考标记、评价规则和图例，
 以及数值处理、设置接口与无障碍标记。始终自动加载，无须单独指定。
@@ -30,7 +32,7 @@ v1.0.0 注册了以下六个内置库名。核心始终加载，另外五个为�
 \item[\key{table}] 专属 \key{gradtable} 表格，提供列定义、分组、汇总、共享尺度、排名、
 样式和跨页布局。自动加载核心及 \key{stack}、\key{spark}、\key{heat}、\key{csv}。
 \end{description}
-以下写法列出全部六个库；显式列出 \key{core} 是允许的，但并非必需：
+以下写法列出核心与默认五库；显式列出 \key{core} 是允许的，但并非必需：
 \begin{codeonly}
 \usepackage[libraries={core,stack,spark,heat,csv,table}]{gradbars}
 \end{codeonly}
@@ -45,6 +47,8 @@ v1.0.0 注册了以下六个内置库名。核心始终加载，另外五个为�
 \key{table-data}、\key{table-layout} 和 \key{model} 是内部模块，不作为公开库名单独加载。
 第三方库须先通过 \key{\gradbarsdeclarelibrary} 注册；本章的 \key{demo} 是配套示例，
 不是内置库。
+
+此外可按需加载 distribution、legend、reports 和 pgfplotstable。distribution 提供箱线统计，legend 提供连续与共享图例，reports 提供报告预设，pgfplotstable 提供外部表格单元格适配；均不改变默认五库。
 
 \subsection{统一设置与作用域}
 \key{\gradbarsset{...}} 与 \key{\gradbarssetup{...}} 使用相同选项、作用域和覆盖规则。
@@ -91,7 +95,7 @@ v1.0.0 注册了以下六个内置库名。核心始终加载，另外五个为�
 \end{gradtable}
 \end{center}
 \end{example}
-该示例不访问私有变量。开发者参考见 \key{docs/developer.md}，迁移说明见 \key{docs/migration-v1.1.0.md}。
+该示例不访问私有变量。开发者参考见 \key{docs/developer.md}，公开接口的兼容规则见 \key{docs/stability.md}。
 \subsection{安装与发布文件}
 CTAN 源码包应先在根目录运行 \key{texlua scripts/unpack.lua}，自动创建 \key{sty/} 并提取运行文件。
 手动安装时应把 \key{sty/} 目录中的全部 \key{.sty}
@@ -100,11 +104,524 @@ GitHub 开发仓库的构建入口为 \key{l3build check}、\key{l3build doc} �
 \key{texlua scripts/check.lua} 验证。CTAN 源码包不附带 \key{tests/}，可提取源码并重建文档；完整测试应在开发仓库运行。
 \subsection{版本 1 的兼容性契约}
 已文档化的公开命令、选项、默认值与库依赖规则保持稳定。
-兼容新增采用次版本；删除接口或更改默认值、数据语义采用主版本。
+兼容更新保留已有接口、默认值与数据语义。
+删除接口或更改默认值、数据语义采用主版本。
 弃用接口在版本 1 期间继续可用；私有变量与内部模块文件名不属于稳定承诺。
 契约范围、覆盖顺序和回调限制见 \key{docs/stability.md}。
 支持环境为 LaTeX 2025-11-01、expl3 2025-12-29、PGF/\manualTikZ{} 3.1.11a 或更新版本，
-安装时须保持全部二十二个运行文件（含可选功能库与适配库）的版本一致。
+安装时须保持全部二十三个运行文件（含可选功能库与适配库）的版本一致。
 \key{gradbars.dtx} 和 \key{gradbars.ins} 可通过 docstrip 提取同一套运行模块；
 \key{texlua scripts/source.lua --check} 验证两者一致性。
 源码说明采用 l3doc，面向用户的效果与源码手册继续按章节维护。
+
+\clearpage
+\subsection{声明便捷图形命令}
+\label{sec:command-declarations-cn}
+同一份报告常常重复使用相同的配色、尺度和标签位置。
+\key{\gradbarsnewcommand} 可以把这些设置保存成一个有名字的绘图命令，
+以后在正文或单元格中只填数值，需要例外时再覆盖某个选项。
+它适合“同一种指标，多次绘制”的场景；原有 \key{\gradbar} 等入口仍可直接使用。
+
+\subsubsection{先声明，再调用}
+声明的最后一对花括号里写带反斜杠的命令名。
+下面把社区服务完成率保存为 \key{\servicebar}：固定范围为 0 到 1，
+数值显示三位小数，数字放在轨道右侧。
+\begin{example}[text and listing,sidebyside=false]{一个命令，反复填写数值}
+\begingroup
+\gradbarsnewcommand[
+  type=bar,theme=gray,min=0,max=1,
+  width=25mm,height=5pt,precision=3,
+  label position=right,label distance=1mm
+]{\servicebar}
+\servicebar{0.960}\qquad\servicebar{0.720}
+\endgroup
+\end{example}
+这里没有设置 \key{args}，所以新命令只有一个必填参数。
+0.960 和 0.720 是原始比例，不需要先乘以 100。
+声明中的 \key{precision=3} 只控制显示位数，条长仍使用原值。
+
+\subsubsection{放进自己的文档}
+中文文档可用下面的完整骨架，以 XeLaTeX 编译。
+把声明放在导言区，就能在全文使用；例子中的分组只用于隔离手册各个演示。
+\begin{codeonly}
+\documentclass[fontset=fandol]{ctexart}
+\usepackage{gradbars}
+\gradbarsnewcommand[
+  type=bar,theme=gray,min=0,max=1,
+  width=25mm,height=5pt,precision=3,
+  label position=right,label distance=1mm
+]{\servicebar}
+\begin{document}
+示例数据仅用于演示，不代表真实实验结果。
+\servicebar{0.960}\qquad\servicebar{0.720}
+\end{document}
+\end{codeonly}
+\note{命令名不能与已有命令重名。声明只创建当前作用域内的命令，
+不会替换原命令，也不会自动加载功能库。声明选项速查见第~\ref{sec:command-reference-cn}~节。}
+
+\subsection{选择花括号与方括号的参数形式}
+\label{sec:command-signatures-cn}
+\key{args} 决定调用时要写几组参数、用什么括号。
+\key{m} 是必填参数，用花括号填写；\key{O{默认值}} 是可选参数，用方括号填写。
+\key{data} 指定哪一个参数提供数据，\key{options} 指定哪一个参数提供本次绘图选项。
+下面三种声明效果相同，只改变调用习惯。代码中的参数引用从左到右编号。
+
+\subsubsection{两个必填参数：数值和选项都写花括号}
+适合希望每次显式填写选项的模板。第二个参数不需要设置时，也要保留空花括号。
+\begin{example}[text and listing,sidebyside=false]{调用形式：数值、必填选项}
+\begingroup
+\gradbarsnewcommand[
+  args={m m},data={#1},options={#2},
+  max=1,width=25mm,precision=3,theme=gray
+]{\requiredbar}
+\requiredbar{0.720}{color=teal}\qquad
+\requiredbar{0.960}{}
+\endgroup
+\end{example}
+
+\subsubsection{数值在前，覆盖选项放在后面的方括号}
+这是“平时只填数值，偶尔改样式”的常用形式。
+没有写方括号时，\key{O{}} 给出空选项，不覆盖声明中保存的设置。
+\begin{example}[text and listing,sidebyside=false]{调用形式：数值、可选选项}
+\begingroup
+\gradbarsnewcommand[
+  args={m O{}},data={#1},options={#2},
+  max=1,width=25mm,precision=3,theme=gray
+]{\afterbar}
+\afterbar{0.720}[color=teal]\qquad\afterbar{0.960}
+\endgroup
+\end{example}
+
+\subsubsection{覆盖选项在前，数值在后}
+若习惯原生 \key{\gradbar[选项]{数值}} 的顺序，可以把可选参数放在最前面。
+此时数据来自第二个参数，两个映射也要交换，不能只改 \key{args}。
+\begin{example}[text and listing,sidebyside=false]{调用形式：可选选项、数值}
+\begingroup
+\gradbarsnewcommand[
+  args={O{} m},data={#2},options={#1},
+  max=1,width=25mm,precision=3,theme=gray
+]{\beforebar}
+\beforebar[color=teal]{0.720}\qquad\beforebar{0.960}
+\endgroup
+\end{example}
+目前支持一至九个参数，只接受 \key{m} 和带花括号默认值的 \key{O}。
+不是任意 xparse 参数语法；不使用无默认值的可选参数或星号参数。
+
+\subsection{把宽度、颜色或另一数值作为独立参数}
+\label{sec:command-data-cn}
+\subsubsection{不必把所有设置都塞进一组选项}
+如果每次只需要调整宽度和颜色，可以把它们分别做成参数。
+下面按“数值、宽度、可选颜色”声明三个参数；颜色默认 gray。
+\key{options} 把这些参数拼成普通绘图选项，宽度由使用者填写单位。
+\begin{example}[text and listing,sidebyside=false]{数值、宽度与可选颜色分别填写}
+\begingroup
+\gradbarsnewcommand[
+  type=bar,args={m m O{gray}},data={#1},
+  options={width=#2,color=#3},
+  min=0,max=1,height=5pt,precision=3,
+  label position=right,label distance=1mm
+]{\sizedbar}
+\sizedbar{0.960}{18mm}[teal]\par\medskip
+\sizedbar{0.720}{30mm}
+\endgroup
+\end{example}
+第一行使用 teal，第二行省略可选颜色，因此使用 gray。
+省略方括号与写空方括号不同：\key{O{gray}} 在省略时提供默认颜色；
+显式写空方括号则传入空内容，不能把它当成“恢复默认值”。
+
+\subsubsection{选择图形类型与数据形状}
+声明命令是对已有公开图形的包装；数据仍按对应图形的格式填写。
+\begin{center}\small
+\begin{tabularx}{\linewidth}{@{}l l X@{}}
+\toprule
+\textbf{type} & \textbf{所属库} & \textbf{数据写法}\\\midrule
+\key{bar} & core & 一个数值，如 0.720。\\
+\key{heat} & heat & 一个数值；用色阶显示大小。\\
+\key{stack} & stack & 逗号分隔的分段值，如 20,30,50。\\
+\key{spark} & spark & 有顺序的观测，如 10,NA,30,40。\\
+\key{compare}, \key{dumbbell} & core & 参考值与当前值，分别保留一组花括号。\\
+\key{range} & core & 下界与上界，分别保留一组花括号。\\
+\key{boxplot} & distribution & 原始样本列表，如 0,2,2,4,8。\\
+\bottomrule
+\end{tabularx}\end{center}
+默认加载包含 heat、stack 和 spark；boxplot 需要在导言区额外加载 distribution。
+若使用最小加载模式，其他类型也要先加载其所属库。
+也可以选用已通过 \key{\gradbarsdeclaretype} 注册的标量类型，
+回调内部的固定选项仍按该回调自身的覆盖规则执行。
+\par 数值对类型也可注册后使用，须按下文双值格式映射两个参数。
+注册命令与完整记录接口见第~\ref{sec:pair-extensions-cn}~节。
+
+\subsubsection{列表数据也可以声明为命令}
+列表仍作为一个必填参数整体传入，不要把逗号列表拆成多个命令参数。
+使用下例箱线图前，在导言区增加以下加载语句；默认加载已包含 stack 和 spark。
+\begin{codeonly}
+\usegradbarslibrary{distribution}
+\end{codeonly}
+\begin{example}[text and listing,sidebyside=false]{堆叠、趋势和原始样本箱线图}
+\begingroup
+\gradbarsnewcommand[type=stack,max=100,
+  width=35mm,label=none]{\partsbar}
+\gradbarsnewcommand[type=spark,spark range=fixed,
+  min=0,max=100,width=35mm,label=none]{\trendbar}
+\gradbarsnewcommand[type=boxplot,min=0,max=10,
+  width=35mm,label=none]{\samplebox}
+\partsbar{20,30,50}\par\medskip
+\trendbar{0,20,NA,60,100}\par\medskip
+\samplebox{0,2,2,4,8}
+\endgroup
+\end{example}
+趋势中的 NA 保留原来的观测位置；箱线图传入的是原始样本，
+不是预先计算好的五数概括。这里使用各类型原有的标签选项，未启用精细定位。
+
+\subsubsection{双值图形要保留两组数据}
+\begin{example}[text and listing,sidebyside=false]{两次观测的哑铃图}
+\begingroup
+\gradbarsnewcommand[
+  type=dumbbell,args={m m},data={{#1}{#2}},
+  min=0,max=1,width=30mm,precision=3
+]{\pairbar}
+\pairbar{0.420}{0.780}
+\endgroup
+\end{example}
+\key{data} 中最外层花括号包住整个模板，内部两组花括号分别包住两个观测。
+这两个值不会被解释为误差或置信区间。
+
+\subsection{主题、单色、双色渐变与尺寸}
+\label{sec:command-colors-cn}
+\subsubsection{三种配色方式逐次选择}
+条形主题是一组预设，可能同时设置填充模式、轨道颜色和负值颜色。
+仅指定 \key{color} 会切换为单色填充。
+自定两端渐变时，请明确写 \key{fill=gradient}，再写左右颜色；
+左右表示几何方向，不会自动交换成“较小值”和“较大值”。
+\begin{example}[text and listing,sidebyside=false]{同一数值的三种配色}
+\begingroup
+\gradbarsnewcommand[
+  args={m O{}},data={#1},options={#2},
+  min=0,max=1,width=30mm,height=6pt,precision=3,
+  label position=right,label distance=1mm
+]{\colorbar}
+\colorbar{0.720}[theme=gray]\par\medskip
+\colorbar{0.720}[color=teal]\par\medskip
+\colorbar{0.720}[fill=gradient,
+  left color=blue,right color=cyan!20]
+\endgroup
+\end{example}
+主题与单项设置按书写顺序生效。
+例如先写 \key{theme=gray} 再写 \key{color=teal}，最终是青绿色单色；
+反过来则应用后写的 gray 主题。
+条形跨零时，\key{color} 只改正值填充；负值颜色应按负值主题或专用负值选项配置。
+
+\subsubsection{宽高与字体各自控制什么}
+\begin{example}[text and listing,sidebyside=false]{只改变宽度，再改变高度和标签字体}
+\begingroup
+\gradbarsnewcommand[
+  args={m O{}},data={#1},options={#2},
+  theme=gray,max=1,width=20mm,height=5pt,precision=3,
+  label position=right,label distance=1mm
+]{\sizebar}
+\sizebar{0.720}\par\medskip
+\sizebar{0.720}[width=35mm]\par\medskip
+\sizebar{0.720}[width=35mm,height=3mm,font={\small\bfseries}]
+\endgroup
+\end{example}
+\key{width} 是轨道宽度，\key{height} 是轨道高度，两者须为正长度。
+右侧标签及间距会增加整个图形的实际宽度；上方或下方标签会增加实际高度或深度。
+变更 \key{font} 只改变标签字体，不会把整个图形等比例缩放。
+尺寸改变不会改变数值的含义；跨表比较时仍应保持相同范围。
+
+\subsubsection{Heat 有自己的色阶选项}
+\key{type=heat} 使用 \key{heat palette}，也可设置 \key{heat low color} 与
+\key{heat high color}。其单元格在数值对应处取色，不是在同一个单元格内从左向右绘制双色条。
+条形的 theme、color、left/right color 不能代替这些 Heat 色阶设置。
+
+\subsection{把数字放在上、下、左、右或内部}
+\label{sec:command-positions-cn}
+\key{label position} 显式选择主数值标签的位置。
+先固定数据与图形尺寸，只改变方向，便容易看出差别。
+下面所有数字都是 0.720，间距均为 2pt，定位参照均为完整轨道。
+\begin{example}[text and listing,sidebyside=false]{六种位置模式对照}
+\begingroup
+\gradbarsnewcommand[
+  args={m O{}},data={#1},options={#2},theme=gray,
+  max=1,width=28mm,height=5pt,precision=3,
+  label reference=track,label distance=2pt
+]{\positionbar}
+\renewcommand{\arraystretch}{2.4}
+\begin{tabular}{@{}ll@{}}
+above  & \positionbar{0.720}[label position=above] \\
+below  & \positionbar{0.720}[label position=below] \\
+left   & \positionbar{0.720}[label position=left] \\
+right  & \positionbar{0.720}[label position=right] \\
+inside & \positionbar{0.720}[label position=inside,height=4mm] \\
+none   & \positionbar{0.720}[label position=none] \\
+\end{tabular}
+\endgroup
+\end{example}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}l l X@{}}
+\toprule
+\textbf{位置} & \textbf{默认锚点} & \textbf{数字相对轨道的位置}\\\midrule
+\key{above} & south & 轨道上方，数字下边缘靠近轨道。\\
+\key{below} & north & 轨道下方，数字上边缘靠近轨道。\\
+\key{left} & east & 轨道左侧，数字右边缘靠近轨道。\\
+\key{right} & west & 轨道右侧，数字左边缘靠近轨道。\\
+\key{inside} & center & 默认在轨道中心；忽略间距，保留附加偏移。\\
+\key{none} & 不适用 & 不绘制主数值标签。\\
+\bottomrule
+\end{tabularx}\end{center}
+\key{label anchor=auto} 会自动采用上表对应的锚点。
+inside 示例额外增加高度，以免数字比填充区域还高；这不改变数字格式。
+这些精细位置目前用于原生 bar 和 Heat 主标签，
+不会把 spark、stack 或双值图形的其他标签改成同一布局。
+
+\subsection{选择轨道还是数值端点作为参照}
+\label{sec:command-reference-points-cn}
+\subsubsection{track：数字跟随完整轨道}
+\key{label reference=track} 是默认值。
+对于上方、下方和内部位置，水平参照点是轨道中心；
+对于左、右位置，参照点分别是轨道左端、右端。
+因此同一列中即使数值不同，使用 track 时也能保持相同的标签位置。
+\begin{example}[text and listing,sidebyside=false]{固定在轨道上方中央}
+\begingroup
+\gradbarsnewcommand[
+  max=1,width=40mm,height=5pt,precision=3,theme=gray,
+  label position=above,label reference=track,label distance=2pt
+]{\trackbar}
+\trackbar{0.300}\par\medskip\trackbar{0.800}
+\endgroup
+\end{example}
+
+\subsubsection{value：数字跟随彩色条的数值端点}
+原生 bar 还可使用 \key{label reference=value}。
+上方与下方位置会把数字移到彩色条的端点附近；
+左右位置也以该端点为水平参照，再加间距。
+\begin{example}[text and listing,sidebyside=false]{同一组数据，改为跟随条尾}
+\begingroup
+\gradbarsnewcommand[
+  max=1,width=40mm,height=5pt,precision=3,theme=gray,
+  label position=above,label reference=value,label distance=2pt
+]{\endpointbar}
+\endpointbar{0.300}\par\medskip\endpointbar{0.800}
+\endgroup
+\end{example}
+负值使用其负向数值端点；出现范围裁剪时，位置使用裁剪后的端点，
+显示和替代文本仍遵守原始数值的语义。
+缺失值没有有效端点，因此改用轨道中心作为参照。
+
+\subsubsection{Heat 只使用 track}
+Heat 没有随数值变长的彩色条，因此仅支持 track，不支持 value。
+\begin{example}[text and listing,sidebyside=false]{Heat 色块与上方数值}
+\begingroup
+\gradbarsnewcommand[
+  type=heat,heat palette=teal,min=0,max=1,
+  width=22mm,height=4mm,precision=3,
+  label position=above,label reference=track,label distance=2pt
+]{\serviceheat}
+\serviceheat{0.300}\qquad\serviceheat{0.800}
+\endgroup
+\end{example}
+
+\subsection{用间距、锚点与偏移微调位置}
+\label{sec:command-offsets-cn}
+\subsubsection{三个长度分别控制什么}
+\key{label distance} 是从所选方向留出的间距，默认 .6em，必须非负。
+\key{label xshift} 与 \key{label yshift} 是在定位之后再移动数字，默认均为 0pt。
+正的 xshift 向右，负值向左；正的 yshift 向上，负值向下。
+它们只移动标签，不改变条长、范围或原值。
+\begin{example}[text and listing,sidebyside=false]{先加间距，再附加横纵偏移}
+\begingroup
+\gradbarsnewcommand[
+  args={m O{}},data={#1},options={#2},
+  max=1,width=40mm,height=5pt,precision=3,theme=gray,
+  label position=above,label reference=value,label distance=2pt
+]{\offsetbar}
+\offsetbar{0.720}\par\medskip
+\offsetbar{0.720}[label distance=6pt]\par\medskip
+\offsetbar{0.720}[label xshift=-.5em,label yshift=2pt]
+\endgroup
+\end{example}
+
+\subsubsection{锚点是数字盒子上的哪个点}
+定位参照点确定后，\key{label anchor} 决定将数字盒子的哪个位置对齐到它。
+例如数字在上方时，south 让数字下边缘的中点对准参照点；
+south west 改为数字左下角对准，文字从该点向右延伸。
+\begin{example}[text and listing,sidebyside=false]{相同参照点，不同文字对齐方式}
+\begingroup
+\gradbarsnewcommand[
+  args={m O{}},data={#1},options={#2},max=1,
+  width=40mm,height=5pt,precision=3,theme=gray,
+  label position=above,label reference=value,label distance=2pt
+]{\anchorbar}
+\anchorbar{0.720}[label anchor=south west]\par\medskip
+\anchorbar{0.720}[label anchor=south]\par\medskip
+\anchorbar{0.720}[label anchor=south east]
+\endgroup
+\end{example}
+可选锚点为 auto、center、north、south、east、west，
+以及 north east、north west、south east、south west；双词名称中保留空格。
+改锚点后数字可能向轨道内延伸，间距不再代表最近的文字边缘距离。
+
+\subsubsection{单位怎样填写}
+新定位的三项长度接受“十进制数字＋单位”，例如 2pt、1mm、-.5em。
+支持 pt、mm、cm、in、bp、pc、dd、cc、sp、em、ex。
+em 和 ex 根据调用时实际标签字体计算；放大标签字体后，相同的 .6em 也会变大。
+不要填无单位数字、\key{\dimexpr}、算式或长度宏；固定物理间距可选 pt 或 mm。
+内部定位忽略 distance，但仍执行 xshift、yshift。
+
+\subsection{空白、缺失、零与局部覆盖}
+\label{sec:command-scope-cn}
+\subsubsection{先决定空白单元格如何处理}
+\key{empty} 只检查数据模板替换后的内容是否为空或全空格。
+它不把零当空白，也不删除显式 NA。三种策略如下。
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}l X@{}}
+\toprule
+\textbf{声明选项} & \textbf{效果}\\\midrule
+\key{empty=missing} & 默认策略。空白转成 NA，按原生图形的缺失规则显示。\\
+\key{empty=skip} & 空白不产生任何内容，适合保持表格空格。\\
+\key{empty=error} & 空白立即报错，适合要求每项数据都填写的模板。\\
+\bottomrule
+\end{tabularx}\end{center}
+\begin{example}[text and listing,sidebyside=false]{空白跳过，零和 NA 仍然可见}
+\begingroup
+\gradbarsnewcommand[
+  empty=skip,max=1,width=25mm,height=5pt,precision=3,
+  theme=gray,label position=right,label distance=1mm
+]{\optionalbar}
+\begin{tabular}{@{}ll@{}}
+空白 & \optionalbar{} \\
+零 & \optionalbar{0} \\
+显式缺失 & \optionalbar{NA} \\
+\end{tabular}
+\endgroup
+\end{example}
+如果数据模板是两组花括号，即使其中一个参数为空，模板本身也不是全空白；
+此时各端点的缺失规则交给对应双值图形处理。
+分段列表或趋势中的 NA 同样保留其原生含义，不由 empty 策略逐项删除。
+
+\subsubsection{外层默认、声明选项、本次选项}
+对于内置图形，先继承调用处设置，再应用声明中保存的图形选项，
+最后应用 \key{options} 映射出的本次选项。
+\begin{example}[text and listing,sidebyside=false]{本次改色后，下一次恢复声明设置}
+\begingroup
+\gradbarssetup{theme=blue,max=100}
+\gradbarsnewcommand[
+  args={m O{}},data={#1},options={#2},
+  theme=gray,max=1,width=25mm,precision=3,
+  label position=right,label distance=1mm
+]{\scopedbar}
+\scopedbar{0.720}\par\medskip
+\scopedbar{0.720}[color=teal]\par\medskip
+\scopedbar{0.720}
+\endgroup
+\end{example}
+声明不是对全部环境状态的冻结：未保存的选项仍继承调用处的值。
+命令定义与单次调用均遵循 TeX 分组；在组内声明的名字，出组后不再可用。
+命名共享尺度与表格最终分配的宽度仍按各自契约生效，不能用便捷命令绕过。
+
+\subsection{把声明命令用于普通表格与 tabularray}
+\label{sec:command-tables-cn}
+\subsubsection{普通 tabular：单元格中直接调用}
+先统一声明格式，再逐个填写数据。上、下方标签会增大图形盒子，
+但表格仍需要给单元格留足间距；可设置 \key{\arraystretch} 或行间距。
+\begin{example}[text and listing,sidebyside=false]{相同范围的社区服务完成率}
+\begingroup
+\gradbarsnewcommand[
+  theme=gray,max=1,width=25mm,height=5pt,precision=3,
+  label position=right,label distance=1mm,baseline=text
+]{\tablebar}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{@{}lll@{}}
+\toprule
+服务项目 & 东站 & 西站 \\\midrule
+预约办理 & \tablebar{0.960} & \tablebar{0.810} \\
+上门服务 & \tablebar{0.720} & \tablebar{0.880} \\
+\bottomrule
+\end{tabular}
+\endgroup
+\end{example}
+这里所有值共用 0 到 1 的范围；\key{baseline=text} 用于文字基线对齐，
+不会代替 label position，也不会只移动数字。
+
+\subsubsection{tabularray：让 cmd 自动处理数据区}
+下例需要在导言区加载 tabularray 及其 booktabs 库。
+仅为正文数据区设置 \key{cmd}，让表头继续作为普通文字处理。
+\key{empty=skip} 会保留空单元格，NA 则明确显示缺失。
+\begin{codeonly}
+% 导言区：在已有 \usepackage{gradbars} 后添加
+\usepackage{tabularray}
+\UseTblrLibrary{booktabs}
+\end{codeonly}
+\begin{example}[text and listing,sidebyside=false]{数据区自动使用同一个命令}
+\begingroup
+\gradbarsnewcommand[
+  empty=skip,theme=gray,max=1,width=20mm,height=5pt,
+  precision=3,label position=right,label distance=1mm
+]{\cellbar}
+\begin{tblr}{
+  colspec={Q[l,wd=25mm]Q[c,wd=38mm]Q[c,wd=38mm]},
+  cell{2-Z}{2-Z}={cmd=\cellbar}
+}
+服务项目 & 东站 & 西站 \\
+预约办理 & 0.960 & 0 \\
+上门服务 & & NA \\
+\end{tblr}
+\endgroup
+\end{example}
+\key{cmd} 会把单元格内容作为参数传入，适合只有一个数据参数的声明。
+若需要第二个必填参数，应在单元格内显式调用或另写适配包装。
+新命令不会注册 \key{gradcolumn} 的新列类型，也不自动完成 CSV 绑定、排名或统计。
+这里的 tblr 示例没有开启结构标记；需要 Tagged PDF 时，应另按无障碍章节设置表格结构。
+带标记用例的已验证范围限于显式列宽，自然宽度的带标记布局尚未验证。
+
+\subsection{声明与定位选项速查、常见问题}
+\label{sec:command-reference-cn}
+\subsubsection{声明选项}
+\begin{center}\small
+\begin{tabularx}{\linewidth}{@{}l l X@{}}
+\toprule
+\textbf{选项} & \textbf{默认值} & \textbf{用途与限制}\\\midrule
+\key{type} & \key{bar} & 选择已有图形或已注册标量、数值对类型。\\
+\key{args} & \key{m} & 一至九个参数，仅 m 与带默认值的 O。\\
+\key{data} & 第一个参数 & 数据模板；双值类型须保留两组花括号。\\
+\key{options} & 空 & 每次调用的选项模板，在声明中的图形选项之后应用。\\
+\key{empty} & \key{missing} & 空白策略：missing、skip、error。\\
+\bottomrule
+\end{tabularx}\end{center}
+其他选项直接使用对应图形的公开键，不会因为声明而获得新的含义。
+
+\subsubsection{定位选项}
+\begin{center}\small
+\begin{tabularx}{\linewidth}{@{}l l X@{}}
+\toprule
+\textbf{选项} & \textbf{默认值} & \textbf{用途与限制}\\\midrule
+\key{label position} & 未启用 & above、below、left、right、inside、none；仅原生 bar/Heat。\\
+\key{label reference} & \key{track} & track 或 value；Heat 只能使用 track。\\
+\key{label distance} & \key{.6em} & 非负间距；inside 忽略。\\
+\key{label xshift} & \key{0pt} & 正值右移，负值左移。\\
+\key{label yshift} & \key{0pt} & 正值上移，负值下移。\\
+\key{label anchor} & \key{auto} & 自动按方向选择，也可显式选择中心、边或角。\\
+\bottomrule
+\end{tabularx}\end{center}
+
+\subsubsection{遇到问题时检查什么}
+\begin{description}
+\item[命令已经定义] 换一个未使用的名字；重复声明不能当作修改样式的方法。
+\item[参数不够或引用越界] 核对 args 的参数数量、data/options 的引用，以及实际调用的括号顺序。
+\item[只换了参数形式，结果却不对] 数值与选项调换顺序后，data/options 也必须一起调换。
+\item[图形库未加载] 在导言区加载所属库；声明不会隐式加载 distribution 等库。
+\item[数字没有移动] 核对是否在后面又写了旧的 label 选项；后写的旧模式会恢复原布局。
+\item[位置或参照不受支持] 精细定位仅用于 bar/Heat；Heat 使用 track，双值图形保留原标签规则。
+\item[长度报错] 为 distance、xshift、yshift 填写带单位的十进制数；distance 不接受负数。
+\item[数字与相邻内容碰撞] 增加列宽或行距，或减小字体、间距及偏移；宏包不自动避让相邻内容。
+\end{description}
+
+\subsubsection{与旧标签及其他后端共用}
+旧的 \key{label=outside} 等模式保持原有行为。
+同一组选项中，最后写旧 label 会退出新定位，最后写 label position 会启用新定位。
+旧的 \key{label width}、\key{label gap} 继续用于旧槽位布局；
+新定位使用实际标签盒子、distance 与偏移，不预留同样的固定槽位。
+实际标签的宽、高、深及位移会参与图形测量，但固定单元格仍须安排足够空间。
+新定位要求原生 TikZ，第三方后端须显式选择 \key{backend fallback=tikz}；
+不向 schema 1 增加字段。区域对比度模式不支持新定位，自动文字颜色也不表示整体对比度认证。

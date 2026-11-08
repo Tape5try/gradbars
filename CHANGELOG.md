@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.3 — 2026-11-08
+
+Source update; no release tag, GitHub Release or CTAN submission.
+
+- Add independent numeric-pair registration, scoped read-only version-1 records, capability queries and once-only native delegation for comparison, dumbbell and range frontends. Preserve original scalar APIs and backend schema 1.
+- Add explicit standard pair-column proxies and the `paired-report` preset. Preserve zero, side-specific missing values, unrounded inputs, shared scales and native table/tagging contracts. Supply a public-only extension library and bilingual color/monochrome service-report examples.
+
+- Add scoped `\gradbarsnewcommand` declarations with m/O signatures, data/option templates, duplicate/reference checks and explicit empty-data policies. Delegate supported scalar, pair, sequence and sample wrappers to existing public frontends.
+- Add opt-in native bar/Heat label sides, track/value references, anchors and signed length offsets. Resolve em/ex in the actual label font, reserve actual label bounds, retain legacy modes and require explicit TikZ fallback for third-party backends.
+- Synchronize all 23 runtime modules to v1.2.3; preserve numeric semantics, default libraries and backend schema 1. Reorganize the Chinese manual and both READMEs around user workflows. See [upgrade notes](docs/migration-v1.2.3.md).
+
 ## 1.2.2 — 2026-11-07
 
 GitHub source delivery; no release tag, GitHub Release or CTAN submission.
@@ -8,7 +19,7 @@ GitHub source delivery; no release tag, GitHub Release or CTAN submission.
 - Add a bounded TeX/Lua benchmark with immutable runtime/data identities, individual samples, first/subsequent process measurements and phase medians for parsing, statistics, ranking, measurement and the complete bar path. Do not claim flushed OS caches, pure drawing timings or measured OS peak memory.
 - Add regression assertions for distinct ranks, negative/zero/missing values, group isolation and CSV reloads. Retain existing hierarchy, pagination and PDF checks. No cross-call or formatter/box cache is added.
 - Keep static/PDF runner Lua font caches under their build directories so restricted environments do not require a writable global TeX cache; benchmark runs also use a local cache.
-- Synchronize all 23 runtime modules and bilingual documentation; see [performance notes](docs/performance.md).
+- Synchronize all 23 runtime modules and bilingual documentation; see [performance notes](docs/performance-v1.2.2.md).
 
 ## 1.2.1 — 2026-11-07
 

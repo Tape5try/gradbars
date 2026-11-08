@@ -1,6 +1,6 @@
 # Version 1 Stability Contract
 
-This contract applies to the documented public interfaces of gradbars 1.2.2,
+This contract applies to the documented public interfaces of gradbars 1.2.3,
 including the former local 1.3.0/1.4.0 plans and preserved 1.2.0, 1.1.1, 1.1.0 and 1.0.0 contracts.
 It covers their arguments, option meaning, scope, library dependencies, data
 semantics and documented errors. It does not promise identical PDF bytes,
@@ -26,6 +26,7 @@ ctex/Fandol. texlua, l3build and latexmk are build tools; no Python files are re
 | CSV and existing tables | `\gradbarsloadcsv`, `\gradbarcsv`, `\gradbarscsvcell`, `\gradbarscsvstyle`, `\gradbarscsvtable`, `\gradbarscolumn` (including `*`), `\gradbarshead` |
 | Native tables | `gradtable`, `\gradcolumn`, `\gradrow`, `\gradsummary`, `\gradgroup`, `\gradheader`, `\gradspan`, `\gradtablestyle`, `\gradtableschema`, `\graduseschema` |
 | Library extensions | `\gradbarsdeclarelibrary`, `\usegradbarslibrary`, `\gradbarsiflibraryloaded` |
+| Command declarations | `\gradbarsnewcommand` (v1.2.3) |
 | Scalar extensions | `\gradbarsdeclaretype`, `\gradgraphic` |
 | Formatter extensions | `\gradbarsdeclareformatter`, `\gradbarsformatnumber` |
 | Optional tabularray integration | `\gradtblrsetup`, `\gradtblrcell`, `\gradbarTblr`, `\gradheatTblr`, `\gradnumberTblr`, `\gradcompareTblr`, G/H/N/D columns and `gradtblr` |
@@ -96,7 +97,7 @@ themes. This is a documented visual exception: themes now reset both signs,
 including negative endpoints and fill mode. Without an explicit theme, the
 historical solid lightred negative default remains. Left-to-right overrides, grouping,
 print and threshold precedence, positive colors and data semantics remain.
-See [migration notes](migration-v1.1.1.md). This exception does not relax the
+See [the theme and signed-observation interfaces](api.md). This exception does not relax the
 major-version rule for other default changes.
 
 The explicitly requested built-in `\gradsignedbar[options]{negative}{positive}`
@@ -183,3 +184,13 @@ remain authoritative for selection/ranks/summaries, count suppresses units. Hist
 is positional; final NA remains current missing. Rug multiplicity/type-7 statistics
 are preserved with an explicit 2048-position limit. Each combination has one Figure;
 measurement creates no duplicates. Prior unbound report commands/defaults remain.
+
+## v1.2.3 extension compatibility
+
+`\gradbarsnewcommand` follows local scope and existing frontend semantics; opt-in
+label positioning retains legacy modes. Numeric pairs use a separate global
+registry and scoped record version 1, without adding fields to scalar backend
+schema 1. Standard native pair columns are explicit, scoped declarations; old
+scalar columns do not acquire compound input. The default five libraries and
+numeric meanings remain unchanged. See [command declarations](api.md#command-declarations)
+and the [pair contract](pair-extensions.md).

@@ -1,0 +1,22 @@
+\part{表格实战}
+
+\section{在已有 tabular 中使用图形}
+已有表格无需改写为 gradtable：先把独立图形命令放入普通单元格，保持宿主表格的布局。
+\begin{example}[text and listing,sidebyside=false]{普通表格中的共同尺度}
+\begingroup
+\gradbarssetup{max=100,width=30mm,precision=1,baseline=text}
+\begin{tabular}{lcc}
+\toprule
+Method & Score & Time / ms\\
+\midrule
+Baseline & \gradbar{72.4} & 18.2\\
+Proposed & \gradbar{92.7} & 11.5\\
+Pending & \gradbar{NA} & NA\\
+\bottomrule
+\end{tabular}
+\endgroup
+\end{example}
+同列图形共用范围和宽度；baseline=text 使图中标签与旁边数字按文字基线对齐。
+默认 baseline=auto 保持原有图形位置，需要对齐时显式选择。
+只想在单元格中填写数字时，可用 \key{\gradbarscolumn} 声明收集列，详见 CSV 数据导入与智能标签章节。
+需要声明列、排名、汇总或原生数据源时，再使用下一节的 gradtable。

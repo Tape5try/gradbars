@@ -1,4 +1,4 @@
-\section{v1.4.0：两级报告与首末趋势}
+\section{两级报告与首末趋势}
 \subsection{同一序列的双面板}
 \key{\gradsparkcompare} 用第一位置和最后位置生成左侧哑铃，右侧保留全过程趋势。
 两面板共用一个明确的范围和单位，要求固定范围或命名尺度，且仅支持线型趋势。
@@ -75,7 +75,7 @@ data 使用该节点全部绑定原始行，可含被筛选或 limit 移除的�
 \key{style=hierarchical} 设置无障碍配色、行距与缩进叶标题。
 原生 \key{long=true} 中父子标题连接首行，逐级摘要链连接相应末行；数据行之间可以分页。
 单行或完整连接链须能放入一页。booktabs、grid、rows、none 四种横线样式均以实际 PDF 出页页码验证。
-本版不新增完整层级 Tagged PDF 表结构保证或 PDF/UA 认证。
+层级表格不承诺完整的 Tagged PDF 表结构保证或 PDF/UA 认证。
 
 完整 72 行跨页报告见 \texttt{docs/examples/hierarchical-longtable.tex}，需编译两次。
 中英文短例位于 \texttt{docs/examples/}；契约见 \texttt{docs/hierarchical-tables.md} 与

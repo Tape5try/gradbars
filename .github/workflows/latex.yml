@@ -39,6 +39,8 @@ jobs:
           texlua tests/hierarchy-pages.lua
           texlua tests/trend-pdf.lua
           texlua tests/report-pdf.lua
+          texlua tests/commands-pdf.lua
+          texlua tests/pairs-pdf.lua
       - name: Check label-area contrast against independent numeric references
         run: texlua tests/contrast-reference.lua
       - name: Check accessible palette contrast

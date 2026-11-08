@@ -1,0 +1,32 @@
+% !TeX program = pdflatex
+% Illustrative command examples; all values are fictional.
+\documentclass{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{gradbars,booktabs}
+\gradbarsnewcommand[type=bar,args={m O{}},data={#1},options={#2},empty=skip,
+ theme=gray,min=0,max=1,width=25mm,height=4mm,precision=3,
+ label position=right,label distance=1mm]{\servicebar}
+\gradbarsnewcommand[type=bar,args={O{} m},data={#2},options={#1},
+ min=0,max=1,width=25mm,height=4mm,precision=3]{\optionfirst}
+\gradbarsnewcommand[type=bar,args={m m},data={#1},options={#2},
+ min=0,max=1,width=25mm,height=4mm,precision=3]{\requiredbar}
+\gradbarsnewcommand[type=dumbbell,args={m m},data={{#1}{#2}},
+ min=0,max=1,width=25mm,precision=3]{\pairbar}
+\begin{document}
+\section*{Custom commands and label placement}
+All values are illustrative.
+\begin{center}
+\renewcommand{\arraystretch}{2.8}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Theme and right label & \servicebar{.960} \\
+Solid and left label & \servicebar{.720}[color=teal,label position=left] \\
+Gradient and above label & \servicebar{.840}[fill=gradient,left color=blue,right color=cyan!20,label position=above,label reference=value,label yshift=2pt] \\
+Below label and offsets & \servicebar{.480}[label position=below,label distance=.4em,label xshift=-2pt] \\
+Leading optional options & \optionfirst[color=orange]{.650} \\
+Two mandatory arguments & \requiredbar{.530}{color=purple!50} \\
+Two observations & \pairbar{.420}{.780} \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{document}

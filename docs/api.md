@@ -646,7 +646,7 @@ ties, missing values, higher/lower directions, parent/leaf scopes and raw-value
 semantics are unchanged. There is no new runtime option or cross-call cache.
 组内最佳与次佳共用一次排名计算；已有参数、并列、缺失、方向及父组/叶组语义不变。
 No benchmark result is an API speed guarantee. See [reproduction and measurement
-limits](performance.md).
+limits](performance-v1.2.2.md).
 
 ## CSV sorting and filtering (v0.0.5)
 
@@ -1002,7 +1002,7 @@ Custom formatters work with graphic labels and ordinary number columns and rejec
 decimal alignment. The engine adds literal unit/percent suffixes; semantic units
 still require siunitx. Callbacks do not become statistical input. Private commands
 and variables remain outside the contract. See [developer.md](developer.md),
-[migration-v1.1.0.md](migration-v1.1.0.md) and
+[the stability contract](stability.md) and
 [the contributed library](libraries/gradbars-contrib-demo.sty).
 
 ## Stable version 1 contract
@@ -1191,3 +1191,100 @@ Complete typed keys, defaults, width/baseline and callback admission rules:
 metric range/group identity, units, direction and format cannot conflict.
 Raw scalar capabilities and fixed-box content dimensions are explicitly declared.
 Histories and sample lists are not silently admitted to scalar statistics.
+
+## Command declarations
+
+`\gradbarsnewcommand[declaration and graphic keys]{\command}` defines a local,
+protected document command. It never replaces an existing command. Defaults are
+`type=bar,args={m},data={#1},options={},empty=missing`.
+
+```latex
+\gradbarsnewcommand[
+  type=bar,args={m O{}},data={#1},options={#2},empty=skip,
+  theme=gray,min=0,max=1,width=8mm,height=5pt,precision=3,
+  label position=right,label distance=1mm
+]{\servicebar}
+\servicebar{0.960}
+\servicebar{0.720}[color=teal,width=12mm]
+```
+
+| Declaration key | Contract |
+| --- | --- |
+| `type` | bar, heat, stack, spark, compare, dumbbell, range, boxplot, or an already registered scalar or pair type |
+| `args` | One to nine arguments, using only `m` and `O{default}`; `m m`, `m O{}`, `O{} m` select `{value}{options}`, `{value}[options]`, `[options]{value}` |
+| `data` | Data template with references to declared arguments; pair types require `data={{#1}{#2}}` |
+| `options` | Graphic-option template, applied after fixed declaration keys |
+| `empty` | Whitespace-only data: `missing` passes NA, `skip` produces no content, `error` diagnoses it; zero always remains data |
+
+Templates can also expose individual settings as positional arguments:
+
+```latex
+\gradbarsnewcommand[type=bar,args={m m O{gray}},data={#1},
+  options={width=#2,color=#3},min=0,max=1,precision=3]{\sizedbar}
+\sizedbar{0.960}{12mm}[teal]
+\sizedbar{0.720}{20mm} % default gray
+```
+
+Other keys are ordinary graphic options. Order is surrounding setup, declaration
+options, then mapped call options; explicit shared-scale and table-width rules
+remain authoritative. Templates are trusted TeX source, not a CSV execution path.
+Optional defaults are preserved as tokens. Missing libraries keep their existing
+load diagnostics; declarations never load a library inside the document. A
+registered standalone type does not become a native table column; its callback retains its own option/override contract. Pair arguments
+are two observations, not an inferred error interval.
+
+### Explicit label placement
+
+`label position=above|below|left|right|inside|none` opts into native bar/Heat main
+label placement. The declaration helper also wraps other public graphics, whose
+legacy label contracts remain unchanged; they diagnose explicit placement rather
+than silently ignoring it. No other public defaults change.
+
+| Key | Default | Meaning |
+| --- | --- | --- |
+| `label reference` | track | `track` uses the full track/cell; `value` uses the clipped bar endpoint, with track center for missing data; Heat requires track |
+| `label distance` | .6em | Nonnegative distance from the selected side; ignored for inside |
+| `label xshift` | 0pt | Additional horizontal shift, positive right |
+| `label yshift` | 0pt | Additional vertical shift, positive up |
+| `label anchor` | auto | auto, center, north, south, east, west, north east, north west, south east, south west |
+
+Lengths accept signed decimal numbers followed by pt, mm, cm, in, bp, pc, dd,
+cc, sp, em or ex. No unitless numbers or general expressions are accepted. em/ex
+are resolved in the actual label font at use time. Anchors default to south,
+north, east, west and center for above, below, left, right and inside respectively.
+Tagged tabularray examples use explicit column widths and opt-in table structure tagging; natural-width tagged layout is outside the newly verified scope.
+Inside ignores distance but retains x/y shifts. TikZ accounts for the actual label
+box in width, height and depth, including shifts; fixed table cells still require
+sufficient allocated space. Explicit placement does not promise collision avoidance.
+
+```latex
+\servicebar{0.720}[label position=above,label reference=value,
+  label distance=2pt,label xshift=-.3em,label yshift=1pt]
+```
+
+`label width` and `label gap` retain their legacy slot semantics; explicit placement uses the actual text box, `label distance` and shifts instead.
+Legacy `label=outside|inside|none|end|auto|left` restores legacy placement when
+written later. New explicit placement is not represented by schema 1: third-party
+backends must request `backend fallback=tikz`; no new scalar record fields or
+capabilities are silently assumed. Area-contrast mode is outside this placement
+contract; center-point automatic text color remains a heuristic, not a contrast
+certification. Heat colors continue to use `heat palette`, `heat low color` and
+`heat high color`, independently of bar fills.
+
+## Independent numeric-pair extensions
+
+`\gradbarsdeclarepairtype{name}{compare|dumbbell|range}{callback}` registers a
+pair consumer globally. `\gradpairgraphic[options]{name}{left}{right}` validates
+through that native frontend and invokes the callback with canonical, unrounded
+arguments (`NA` for missing). `\gradbarspairvalue{field}` exposes its scoped,
+read-only version-1 record; `\gradbarspairdefault` delegates native drawing once.
+`\gradbarspairlabel` reuses the native formatted pair label without adding a Figure.
+Query support with `\gradbarsifpairtypecapable{name}{feature}{yes}{no}`.
+
+`\gradbarsdeclarepaircolumn{name}{frontend=dumbbell,options={...}}` explicitly
+admits standard compare/dumbbell/range proxies into native `gradtable`; cells use
+`left/right` or whole-cell `NA`. The `paired-report` style supplies a report preset.
+Ordinary tabular/tabularray can call pair graphics with explicit widths. These
+interfaces do not change old scalar types, column capabilities or backend schema 1.
+See [record fields, missing/range rules, scope, capability matrix and host limits](pair-extensions.md)
+and [the complete report](examples/paired-report.tex).

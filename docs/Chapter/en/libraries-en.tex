@@ -103,7 +103,7 @@ formatter and table style. Register its dependencies and load it in the preamble
 \end{center}
 \end{demo}
 The example uses no private variables. See \key{docs/developer.md} and
-\key{docs/migration-v1.1.0.md} for callback limits, dependencies and migration.
+\key{docs/stability.md} for callback limits, dependencies and compatibility.
 \subsection{Install the complete release}
 For a CTAN source archive, first run \key{texlua scripts/unpack.lua} from its root
 to create \key{sty/} and extract the runtime files. Install all matching
@@ -115,12 +115,67 @@ Native versions must match. In the GitHub checkout, use \key{l3build check},
 regression checks require the development checkout.
 \subsection{Version 1 compatibility contract}
 The documented public commands, keys, defaults and dependency rules are stable.
-Compatible additions use a minor release; removals or changes to defaults/data
+Compatible updates preserve existing interfaces, defaults and data semantics.
+Removals or changes to defaults/data
 semantics require a major release. Deprecated interfaces remain available
 throughout version 1. Internal module files and private variables are excluded.
 See \key{docs/stability.md} for scope, precedence and callback restrictions.
 The supported baseline is LaTeX 2025-11-01, expl3 2025-12-29 and PGF/\manualTikZ{}
-3.1.11a or newer. Install all twenty-two matching runtime files, including optional feature libraries and adapters, together.
+3.1.11a or newer. Install all twenty-three matching runtime files, including optional feature libraries and adapters, together.
 The generated \key{gradbars.dtx} and \key{gradbars.ins} reproduce those modules
 using docstrip; \key{texlua scripts/source.lua --check} verifies consistency.
 The l3doc source guide complements the illustrated manuals.
+
+\subsection{Declaring convenient graphic commands}
+\key{\gradbarsnewcommand[declaration and graphic keys]{\command}} creates a scoped
+command without replacing existing names. Defaults are bar, one mandatory argument,
+and data from the first argument. Only \key{m} and \key{O{default}} argument specifications are
+accepted, with one to nine arguments.
+\begin{demo}{A reusable command with trailing optional overrides}
+\begingroup
+\gradbarsnewcommand[type=bar,args={m O{}},data={#1},options={#2},
+ empty=skip,theme=gray,min=0,max=1,width=12mm,height=5pt,
+ precision=3,label position=right,label distance=1mm]{\servicebar}
+\servicebar{0.960}\par\medskip
+\servicebar{0.720}[color=teal,width=20mm]\par\medskip
+\servicebar{0.400}[label position=above,label reference=value,
+ label distance=2pt,label xshift=-.3em,label yshift=1pt]
+\endgroup
+\end{demo}
+Use \key{args={m m}} for two mandatory arguments, mapping the first to data
+and the second to options. \key{args={O{} m}} places optional settings first;
+map the second argument to data and the first to options.
+Supported types are bar, heat, stack, spark, compare, dumbbell, range, boxplot,
+and registered scalar or pair types. Pair types require two grouped values;
+see Section~\ref{sec:pair-extensions-en} for their independent record contract:
+\begin{source}
+\gradbarsnewcommand[type=dumbbell,args={m m},
+  data={{#1}{#2}}]{\pairbar}
+\end{source}
+Required libraries remain explicit.
+Whitespace-only input follows \key{empty=missing|skip|error}; zero is always data,
+and explicit NA stays missing. Options apply after surrounding setup and fixed
+command keys, without changing named-scale or allocated-table-width rules.
+
+\subsection{Color and explicit label placement}
+Choose a bar theme, a solid \key{color=gray!60}, or explicit
+\key{fill=gradient}, \key{left color=blue} and \key{right color=cyan!20}. Later settings override
+earlier ones. Heat continues to use heat palette/low/high color keys.
+\key{label position} accepts above, below, left, right, inside or none, opting into native bar/Heat
+main-label placement. Other types retain their own label contracts and diagnose
+unsupported explicit placement. \key{label reference=track} uses the full track;
+bars also accept value, using the clipped endpoint or track center when missing.
+Heat requires track. \key{label distance} defaults to .6em, must be nonnegative,
+and is ignored inside. \key{label xshift} and \key{label yshift} default to 0pt,
+with positive values moving right and up. Lengths are signed decimal numbers with
+pt, mm, cm, in, bp, pc, dd, cc, sp, em or ex; em/ex use the actual label font.
+Unitless values and general expressions are rejected.
+\key{label anchor=auto} selects the appropriate edge; explicit center, north,
+south, east, west and the four two-word corner anchors are also supported.
+Actual shifted bounds contribute width, height and depth; fixed cells still need
+enough space. No automatic collision avoidance is promised. Later legacy
+\key{label=outside} etc. restores old placement. Explicit placement requires
+native TikZ or \key{backend fallback=tikz}; schema 1 is unchanged. Area contrast
+is outside this contract; automatic text color is not a contrast certification.
+
+Tagged tabularray examples use explicit column widths and opt-in table tagging; natural-width tagged layout has not been verified.

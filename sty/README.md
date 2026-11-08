@@ -90,13 +90,13 @@ See [the signed-bar API](../docs/api.md#two-signed-observations-on-one-track).
 
 Measured legends cache one box per tick; duplicate checks require the builtin numeric formatter.
 Area contrast and spark-target require native rendering or explicit TikZ backend fallback.
-All 23 runtime modules are v1.2.2 (2026-11-07); do not mix module versions.
+All 23 runtime modules are v1.2.3 (2026-11-08); do not mix module versions.
 
 ## v1.3.0 / v1.4.0 本地功能 / Local features
 
 `gradbars-numbers.sty` adds explicit `\gradbarsparsenumber`; CSV scalar columns opt in via `input decimal` and `input grouping`. `gradbars-lib-spark.sty` adds fixed-band and endpoint/trend compositions. `gradbars-table-data.sty` and `gradbars-table-layout.sty` implement structured two-level CSV grouping, scoped statistics and native longtable keep chains. New table presets are regional and hierarchical; new native column type is trendcompare. Old interfaces/defaults and backend schema 1 remain.
 
-核心数值入口、CSV 列适配、组合图形和层级表格分别保留模块边界；不从 formatter 反推数据，不添加轻量后端。本轮仅本地更新，无 GitHub/CTAN 上传。详见[地区输入](../docs/regional-input.md)、[组合图形](../docs/trend-compositions.md)和[层级表格](../docs/hierarchical-tables.md)。
+核心数值入口、CSV 列适配、组合图形和层级表格分别保留模块边界；不从 formatter 反推数据，不添加轻量后端。详见[地区输入](../docs/regional-input.md)、[组合图形](../docs/trend-compositions.md)和[层级表格](../docs/hierarchical-tables.md)。
 
 ## v1.2.1 指定编号快照 / Requested snapshot number
 
@@ -108,16 +108,25 @@ v1.3.0/v1.4.0 功能；规划编号不是已发布版本。新增显式 `\gradba
 The v1.2.1 snapshot introduced the optional pgfplotstable module; the
 original default five-library list and backend schema 1 are unchanged. Scoped
 metric/column declarations are distinct from global standalone type registrations.
-Read the [migration notes](../docs/migration-v1.2.1.md),
-[column adapter contract](../docs/column-adapters.md),
+Read the [column adapter contract](../docs/column-adapters.md),
 [PGF adapter](../docs/pgfplotstable.md) and
-[report metric contract](../docs/report-metrics.md). This update stays local.
+[report metric contract](../docs/report-metrics.md).
 
 ## v1.2.2 性能 / Performance
 
 组内最佳/次佳复用同一次排名结果，表级与父组/叶组含义不变；不增加跨调用缓存。
 `gradbars-table-data.sty` owns this optimization; `gradbars-lib-table.sty`
 declares the additional scratch result property, which is not a public cache.
-All 23 runtime modules match v1.2.2. Reproduce measurements with
-`texlua scripts/benchmark.lua`; see [performance notes](../docs/performance.md).
+The v1.2.2 snapshot synchronized all 23 runtime modules. Reproduce measurements with
+`texlua scripts/benchmark.lua`; see [performance notes](../docs/performance-v1.2.2.md).
 GitHub source delivery only; no Release or CTAN submission for this version.
+
+## v1.2.3 命令声明与数值对 / Commands and numeric pairs
+
+`gradbars-api.sty` owns scoped `\gradbarsnewcommand`, the independent pair registry
+and read-only pair record. `gradbars-backend.sty` captures native pair continuations;
+its scalar schema remains 1. The table library supplies explicit standard pair
+columns and `paired-report`. The keys/renderer modules add opt-in bar/Heat label
+placement. All 23 runtime modules match v1.2.3; install the complete set together.
+See [upgrade notes](../docs/migration-v1.2.3.md) and
+[the pair extension contract](../docs/pair-extensions.md).

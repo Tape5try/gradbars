@@ -1,0 +1,37 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+scalar schema=1; pair schema=1
+partial=yes
+range partial=no
+custom column=no
+builtin column=yes
+unknown=no
+scalar pair capability=no
+args=-2.125/0; roles=reference/current
+missing=none; complete=true; delta=2.125
+positions=0.39375/0.5; clipped=false/false
+range=-10/10; precision=0
+args=NA/0; roles=reference/current
+missing=left; complete=false; delta=NA
+positions=NA/0.5; clipped=false/false
+range=-10/10; precision=1
+args=0/NA; roles=reference/current
+missing=right; complete=false; delta=NA
+positions=0.5/NA; clipped=false/false
+range=-10/10; precision=1
+args=NA/NA; roles=reference/current
+missing=both; complete=false; delta=NA
+positions=NA/NA; clipped=false/false
+range=-10/10; precision=1
+args=-5/5; roles=reference/current
+missing=none; complete=true; delta=10
+positions=0.25/0.75; clipped=false/false
+range=-10/10; precision=1
+interval roles=lower/upper; delta=11
+context=closed
+calls=5
+clip raw=-20/15; positions=0/1; clipped=true/true
+native dimensions=identical
+delegateguard=restored
+native pair column range=-5/20
+native pair shared range=-10/100
