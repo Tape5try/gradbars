@@ -45,3 +45,9 @@ Edit each section in its own file. Compile the main document, not a chapter.
 
 | [reports.tex](reports-en.tex) | Domain report presets |
 | [extensions.tex](extensions-en.tex) | Third-party starter and public scalar backend contract |
+
+- [v1.3.0 regional input / 地区输入](regional-en.tex)
+- [v1.4.0 hierarchy / 两级报告](hierarchy-en.tex)
+
+- [v1.2.1 adapters / 列适配](adapters-en.tex)
+- [v1.2.1 report metrics / 报告指标](report-metrics-en.tex)

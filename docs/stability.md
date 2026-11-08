@@ -1,7 +1,7 @@
 # Version 1 Stability Contract
 
-This contract applies to the documented public interfaces of gradbars 1.2.0,
-including the preserved 1.1.1, 1.1.0 and 1.0.0 contracts.
+This contract applies to the documented public interfaces of gradbars 1.2.2,
+including the former local 1.3.0/1.4.0 plans and preserved 1.2.0, 1.1.1, 1.1.0 and 1.0.0 contracts.
 It covers their arguments, option meaning, scope, library dependencies, data
 semantics and documented errors. It does not promise identical PDF bytes,
 font metrics across engines, compilation speed or private implementation names.
@@ -20,7 +20,8 @@ ctex/Fandol. texlua, l3build and latexmk are build tools; no Python files are re
 | Family | Public interfaces |
 | --- | --- |
 | Settings | `\gradbarssetup`, its alias `\gradbarsset`, `\gradbarsstyle`, `\gradscale` |
-| Graphics | `\gradbar`, `\gradsignedbar`, `\gradstack`, `\gradspark`, `\gradsparktarget`, `\gradheat`, `\gradcompare`, `\graddumbbell`, `\gradrange`, `\gradbullet`, `\gradintervals` |
+| Graphics | `\gradbar`, `\gradsignedbar`, `\gradstack`, `\gradspark`, `\gradsparktarget`, `\gradsparkband`, `\gradsparkcompare`, `\gradheat`, `\gradcompare`, `\graddumbbell`, `\gradrange`, `\gradbullet`, `\gradintervals` |
+| Numeric input | `\gradbarsparsenumber` (explicit, locally assigned canonical output) |
 | Categories | `\gradbarscategory`, `\gradbarslegend`, `\gradtablelegend`, `\gradtablelegendhead` |
 | CSV and existing tables | `\gradbarsloadcsv`, `\gradbarcsv`, `\gradbarscsvcell`, `\gradbarscsvstyle`, `\gradbarscsvtable`, `\gradbarscolumn` (including `*`), `\gradbarshead` |
 | Native tables | `gradtable`, `\gradcolumn`, `\gradrow`, `\gradsummary`, `\gradgroup`, `\gradheader`, `\gradspan`, `\gradtablestyle`, `\gradtableschema`, `\graduseschema` |
@@ -154,3 +155,31 @@ The [starter](libraries/starter/README.md) uses public interfaces only.
 ## Version 1.2 additions
 
 All [readability options](readability.md) are explicit. Legacy legend layout and center-point contrast remain defaults. The spark-target entry has independent reference data and fixed/named scale requirements; it does not relax old spark diagnostics or create new scalar table records. Unsupported area rendering and opaque duplicate checks are diagnosed.
+
+## v1.3.0 / v1.4.0 explicit additions
+
+[Regional input](regional-input.md) is an opt-in helper/CSV scalar-column layer; strict existing inputs do not guess separators. Normalization precedes existing selection, scales, ranking and aggregation; output formatters never provide data.
+
+[Two-level CSV grouping](hierarchical-tables.md) is a separate entry with structured parent/leaf paths. Legacy single-level group keys retain their meaning. Global selection precedes grouping; parent/leaf ranks use selected raw values, summaries have independent explicit scopes, and neither adds hidden per-group scales.
+
+[Fixed-band and endpoint/trend compositions](trend-compositions.md) require explicit ranges and preserve NA positions. New native backend kinds require native support or explicit TikZ fallback; schema stays 1. Native trendcompare columns are compound inputs, not arbitrary scalar adapters. Pagination keeps apply when each indivisible chain fits the page. No expanded PDF/UA Table claim is made.
+
+## v1.2.1 adapters and metric contract
+
+The maintainer requests actual version 1.2.1 for the former 1.5.0/1.6.0 plans,
+retaining the earlier local planned features. Public numeric version comparisons
+use 1.2.1. This is an explicit numbering exception, not a general patch feature policy.
+
+New [column declarations](column-adapters.md) are scoped and separate from old
+standalone types. Table callbacks require fixed/repeatable layout and no external
+side effects; this admission rule does not retroactively constrain independent
+callbacks. New [pgfplotstable cells](pgfplotstable.md) are optional and preserve
+the host reader/header contract, without claiming native CSV safety or table tags.
+
+New [report metric declarations](report-metrics.md) are scoped, explicit and
+scalar. They freeze range/group identity, unit, direction and numeric formatting;
+no role-based computation, implicit units or conversion is introduced. Raw values
+remain authoritative for selection/ranks/summaries, count suppresses units. History
+is positional; final NA remains current missing. Rug multiplicity/type-7 statistics
+are preserved with an explicit 2048-position limit. Each combination has one Figure;
+measurement creates no duplicates. Prior unbound report commands/defaults remain.

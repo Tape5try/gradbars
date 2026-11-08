@@ -114,3 +114,18 @@ See the [public-only starter](libraries/starter/README.md),
 ## v1.2.0 readability and target trends
 
 See [the complete contract and bilingual examples](readability.md) for `legend layout=measured`, `legend duplicates=error`, `text contrast=area`, contrast fallback and `\gradsparktarget`. Defaults and older diagnostics remain unchanged; backend schema 1 remains scalar. New native-only kinds `bar-area` and `spark-target` require explicit TikZ fallback on third-party backends.
+
+## v1.3.0 / v1.4.0 compositions
+
+New native-only kinds are `spark-band` and `spark-compare`. The public backend
+kind query recognizes them. A scalar third-party backend must explicitly select
+`backend fallback=tikz`; without fallback capability validation fails before its
+callback runs. No compound callback record is exposed and schema remains 1.
+See [composition range, panel and Figure contracts](trend-compositions.md).
+
+### v1.2.1 raw sample and metric compositions
+
+`box-rug` and `metric-card` are native composition kinds. The scalar custom
+backend contract is unchanged: request explicit `backend fallback=tikz` for these
+kinds. They produce one combined Figure and suspend measurement alternatives.
+The schema number remains 1; no l3draw backend or automatic fallback is introduced.

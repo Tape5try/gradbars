@@ -1,0 +1,59 @@
+\section{报告级指标与当前值趋势卡（v1.2.1）}
+原 v1.6.0 规划并入本次编号；\key{reports} 库新增显式指标声明，旧 \key{\gradmetric} 和 \key{\gradmetriccolumn} 配方及默认值保持。以下为虚构复核评分。
+\begin{example}[text and listing,sidebyside=false]{一个声明，三个独立入口}
+\begingroup
+\gradscale{review-range}{min=0,max=100}
+\graddeclaremetric{review}{title={Review score},role=score,
+ unit={\,pt},better=higher,precision=1,
+ scale group=review-range,aggregate=mean}
+\gradmetricuse[width=35mm]{review}{80}\quad
+\gradmetricnumber{review}{0}\par\medskip
+\gradmetriccard{review}{0,40,NA,80}\par\medskip
+\gradmetriccard{review}{20,40,NA}
+\endgroup
+\end{example}
+声明字段包括必填 title、role（scalar/score/count/duration/ratio）、unit/unit code/unit text、better（higher/lower）、formatter、precision、number format、value format、固定 min/max、可选 scale group/legend group，以及 aggregate（none/count/sum/mean/min/max）。默认范围 0--100、方向 higher、精度 1、无单位、无聚合；角色不推断运算或评分。
+声明遵循 TeX 分组，可见重名、未知 ID/字段、格式/单位/方向/范围冲突有诊断。
+命名尺度与图例身份冻结，源字段在使用处绑定；单位文字或 siunitx 宏不触发换算。
+\key{\gradmetricinfo{id}{field}} 可展开查询。
+\clearpage
+\subsection{两张表共享口径}
+\begin{example}[text and listing,sidebyside=false]{使用处绑定不同字段}
+\begingroup
+\graddeclaremetric{review}{title={Review score},role=score,
+ unit={\,pt},min=0,max=100,aggregate=mean}
+\gradbarsloadcsv{reviews}{docs/data/report-metrics.csv}
+\begin{gradtable}[data=reviews,style=metric-report,
+ width=\linewidth,sort=score,order=descending,limit=2]
+\gradcolumn[source=Project,width=25mm]{project}{Project}
+\gradmetricbind[source=Review,mark=both]{review}{score}
+\gradsummary{Visible mean}
+\end{gradtable}\par\medskip
+\begin{gradtable}[data=reviews,style=metric-report,
+ width=\linewidth,limit=2]
+\gradcolumn[source=Project,width=25mm]{project}{Project}
+\gradmetricbind[source=Followup]{review}{score}
+\gradsummary[scope=data]{Data mean}
+\end{gradtable}
+\endgroup
+\end{example}
+第一表先全局排序与 limit，可见均值 60 pt；第二表只显示两行，但 data 摘要含全部有效随访值，均值 50 pt。原始值参与排序、排名和汇总，formatter 仅显示；count 摘要抑制单位。可复用已有 schema。指标卡列入口 \key{\gradmetriccardcolumn[options]{id}{column}} 绑定历史，禁止标量排序、排名、聚合与地区输入；不会偷偷加入“当前值”统计。
+\clearpage
+\subsection{指标卡：末位置与面板尺寸}
+\key{\gradmetriccard[options]{id}{history}} 接收非空序列，当前值严格取末位置。末位 NA 不回退，历史缺失保留位置并断线；单点、常量、零及全缺失均支持。两个面板共享指标范围与单位，不建立双轴、不自动重算尺度。
+\begin{example}[text and listing,sidebyside=false]{末位置缺失仍然是当前缺失}
+\begingroup
+\graddeclaremetric{review}{title={Review score},role=score,
+ min=0,max=100,unit={\,pt},aggregate=mean}
+\begin{gradtable}[style=metric-report,width=\linewidth]
+\gradcolumn[width=25mm]{project}{Project}
+\gradmetriccardcolumn[options={height=6mm,
+ label width=12mm}]{review}{history}
+\gradrow{Atlas,{0,40,NA,80}}
+\gradrow{Birch,{20,40,NA}}
+\gradrow{Cedar,{0}}\gradrow{Dune,{NA,NA}}
+\end{gradtable}
+\endgroup
+\end{example}
+独立样式 metric-card 默认图宽 70mm、高 5ex；card panel gap 默认 3mm，先扣间距再按 card panel ratio=0.4 分配当前条。ratio 严格在 0 与 1 之间，gap 非负，每面板还预留标记/描边边缘，内部宽必须足够。独立外置/左标签另加槽宽与间隙；原生表格分配已扣这些开销。
+一个指标卡生成一个 Figure，描述完整历史、末位当前值、范围、单位和指标元数据。显式 alt、artifact/off、嵌入图形与试排去重沿用已有规则。新 backend kind 为 metric-card 与 box-rug，自定义标量后端须显式 TikZ 回退；schema 保持 1。完整字段及冲突契约见 \texttt{docs/report-metrics.md}。

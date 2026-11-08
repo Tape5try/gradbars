@@ -16,5 +16,12 @@
 \prop_if_in:NnTF\g__gradtable_styles_prop{reference}
   {\TYPE{reference~style=registered}}{\TYPE{reference~style=missing}}
 \ExplSyntaxOff
+\gradbarsparsenumber[decimal=comma,grouping=point]{1.234,5}{\parsed}
+\TYPE{declared input=\parsed}
+\begingroup
+\gradbarsparsenumber{0}{\parsed}
+\TYPE{local zero=\parsed}
+\endgroup
+\TYPE{input scope=\parsed}
 \END
 \end{document}

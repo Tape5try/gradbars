@@ -1,0 +1,8 @@
+\documentclass{article}
+\setlength{\parindent}{0pt}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+\gradbarsdeclarebackend{scalar}{bar,labels,gradient}{\gradbarsbackenddefault}
+\begin{document}
+\gradsparkcompare[backend=scalar,spark range=fixed,width=60mm]{10,20}
+\end{document}

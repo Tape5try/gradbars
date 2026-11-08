@@ -1,6 +1,6 @@
 # gradbars 运行模块说明
 
-GitHub 开发仓库在本目录保存 gradbars 的 22 个 `.sty` 运行文件；CTAN 源码包需先提取这些文件。使用时从 `gradbars.sty` 加载宏包，由入口管理内部模块与功能库；不要分别加载内部模块，也不要混用不同版本的文件。
+GitHub 开发仓库在本目录保存 gradbars 的 23 个 `.sty` 运行文件；CTAN 源码包需先提取这些文件。使用时从 `gradbars.sty` 加载宏包，由入口管理内部模块与功能库；不要分别加载内部模块，也不要混用不同版本的文件。
 
 ## 入口与基础模块
 
@@ -31,8 +31,9 @@ GitHub 开发仓库在本目录保存 gradbars 的 22 个 `.sty` 运行文件；
 | `gradbars-lib-distribution.sty` | `distribution` | 分布统计与箱线图：原始样本或预计算摘要、type 7 分位数、IQR、须及异常值，提供 `\gradboxplot`、`\gradboxsummary` 等。 |
 | `gradbars-lib-legend.sty` | `legend` | 连续色阶、共享图例与参考符号；提供 `\gradheatlegend`、`\gradlegenddefine`、`\gradlegenduse` 和 `\gradreferencelegend`。 |
 | `gradbars-lib-reports.sty` | `reports` | 领域报告预设：相关系数矩阵、消融实验、指标表的图形样式、表格样式和列助手；不自动推断显著性或综合评分。 |
+| `gradbars-lib-pgfplotstable.sty` | `pgfplotstable` | 显式可选的正文单元格图形与数字格式化；保留宿主表头和读取规则，不自动继承原生表格能力。 |
 
-`table` 依赖 `stack,spark,heat,csv`，`legend` 依赖 `heat`，`reports` 依赖 `table,legend`；加载器会自动补齐依赖。
+`table` 依赖 `stack,spark,heat,csv`，`legend` 依赖 `heat`，`reports` 依赖 `table,legend`；加载器会自动补齐依赖。`pgfplotstable` 只依赖 core 与显式加载的外部 pgfplotstable；Heat 单元格另需 heat 库。
 
 `\gradtablelegend[选项]{名称列表}` 与 `\gradtablelegendhead[选项]{标题}{名称列表}`
 属于 core，`libraries=none` 即可使用，无需 `legend` 库。前者横向排列类别，后者在其上方居中放置普通文本标题。
@@ -60,7 +61,7 @@ texlua scripts/unpack.lua
 
 该命令会自动创建 `sty/` 及缺失的 README 标记，并从 `.dtx/.ins` 提取全部运行模块。直接运行 `tex gradbars.ins` 要求 `sty/` 目录及可读的 `sty/README.md` 标记同时存在；普通 TeX 不能自行创建缺失目录。CTAN 可能移除近乎空的 `sty/`，目录或标记缺失时均应使用 Lua 入口，仅自行创建目录不足以直接运行 `.ins`。
 
-将全部 22 个 `.sty` 文件一起安装到 `TEXMFHOME/tex/latex/gradbars/`，或放到主 `.tex` 文件所在目录，无需 shell escape。
+将全部 23 个 `.sty` 文件一起安装到 `TEXMFHOME/tex/latex/gradbars/`，或放到主 `.tex` 文件所在目录，无需 shell escape。
 
 完整回归测试保留在 GitHub 的 `tests/`，不随 CTAN 源码包分发。源码包可运行 `l3build unpack` 和 `l3build doc`；`l3build check`、`scripts/check.lua` 和 `scripts/pdf-check.lua` 的完整检查需在 GitHub 开发仓库运行。
 
@@ -89,4 +90,34 @@ See [the signed-bar API](../docs/api.md#two-signed-observations-on-one-track).
 
 Measured legends cache one box per tick; duplicate checks require the builtin numeric formatter.
 Area contrast and spark-target require native rendering or explicit TikZ backend fallback.
-All 22 runtime modules are v1.2.0 (2026-11-03); do not mix module versions.
+All 23 runtime modules are v1.2.2 (2026-11-07); do not mix module versions.
+
+## v1.3.0 / v1.4.0 本地功能 / Local features
+
+`gradbars-numbers.sty` adds explicit `\gradbarsparsenumber`; CSV scalar columns opt in via `input decimal` and `input grouping`. `gradbars-lib-spark.sty` adds fixed-band and endpoint/trend compositions. `gradbars-table-data.sty` and `gradbars-table-layout.sty` implement structured two-level CSV grouping, scoped statistics and native longtable keep chains. New table presets are regional and hierarchical; new native column type is trendcompare. Old interfaces/defaults and backend schema 1 remain.
+
+核心数值入口、CSV 列适配、组合图形和层级表格分别保留模块边界；不从 formatter 反推数据，不添加轻量后端。本轮仅本地更新，无 GitHub/CTAN 上传。详见[地区输入](../docs/regional-input.md)、[组合图形](../docs/trend-compositions.md)和[层级表格](../docs/hierarchical-tables.md)。
+
+## v1.2.1 指定编号快照 / Requested snapshot number
+
+本次按用户指定将原规划 v1.5.0/v1.6.0 功能合并为 v1.2.1，保留此前本地
+v1.3.0/v1.4.0 功能；规划编号不是已发布版本。新增显式 `\gradbarsdeclarecolumn`、
+可选 `pgfplotstable` 库、`\gradboxrug`、`\graddeclaremetric` 与绑定/指标卡入口。
+新增表格样式 `adapter-report`、`rug-report`、`metric-report`，图形样式 `sample-rug`、`metric-card`。
+
+The v1.2.1 snapshot introduced the optional pgfplotstable module; the
+original default five-library list and backend schema 1 are unchanged. Scoped
+metric/column declarations are distinct from global standalone type registrations.
+Read the [migration notes](../docs/migration-v1.2.1.md),
+[column adapter contract](../docs/column-adapters.md),
+[PGF adapter](../docs/pgfplotstable.md) and
+[report metric contract](../docs/report-metrics.md). This update stays local.
+
+## v1.2.2 性能 / Performance
+
+组内最佳/次佳复用同一次排名结果，表级与父组/叶组含义不变；不增加跨调用缓存。
+`gradbars-table-data.sty` owns this optimization; `gradbars-lib-table.sty`
+declares the additional scratch result property, which is not a public cache.
+All 23 runtime modules match v1.2.2. Reproduce measurements with
+`texlua scripts/benchmark.lua`; see [performance notes](../docs/performance.md).
+GitHub source delivery only; no Release or CTAN submission for this version.

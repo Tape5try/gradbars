@@ -1,0 +1,33 @@
+\documentclass{article}
+\setlength{\parindent}{0pt}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+
+\def\NeverExecute{\errmessage{CSV text executed}}
+\gradbarsdeclareformatter{opaque}{X}
+\gradbarsloadcsv{regional}{v130-regional.csv}
+\ExplSyntaxOn
+\cs_new_eq:NN\assertSummaryOriginal\gradtableBuildSummary
+\cs_set_protected:Npn\gradtableBuildSummary
+ {\assertSummaryOriginal
+  \clist_map_inline:nn{point,comma,space}
+   {\fp_compare:nNnF{\prop_item:Nn\l__gradtable_summary_values_prop{##1}}={745}
+     {\errmessage{Regional aggregate is not canonical}}}
+  \int_compare:nNnF{\seq_count:N\l__gradtable_rows_seq}={2}{\errmessage{Global limit changed}}
+  \clist_set:Nx\l_tmpa_clist{\seq_item:Nn\l__gradtable_rows_seq{1}}
+  \str_if_eq:eeF{\clist_item:Nn\l_tmpa_clist{1}}{Alpha}{\errmessage{Regional numeric sorting failed}}
+  \str_if_eq:eeF{\clist_item:Nn\l_tmpa_clist{5}}{1.234,5}{\errmessage{Text input was normalized}}}
+\ExplSyntaxOff
+\begin{document}
+\begin{gradtable}[data=regional,style=regional,sort=point,order=descending,
+ filter={point>=0},limit=2,width=\linewidth]
+\gradcolumn[source=Name,width=26mm]{name}{Name}
+\gradcolumn[type=bar,source=Point,input grouping=comma,scale=column,aggregate=mean,
+ options={precision=1}]{point}{Point}
+\gradcolumn[type=number,source=Comma,input decimal=comma,input grouping=point,
+ aggregate=mean,formatter=opaque,number align=none]{comma}{Comma}
+\gradcolumn[type=number,source=Space,input grouping=space,aggregate=mean]{space}{Space}
+\gradcolumn[source=Text,width=40mm]{text}{Literal}
+\gradsummary[scope=data]{Mean}
+\end{gradtable}
+\end{document}

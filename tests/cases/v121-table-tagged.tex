@@ -1,0 +1,13 @@
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+\usegradbarslibrary{reports,distribution}
+\graddeclaremetric{quality}{title={Review score},role=score,unit={\,pt},better=higher,min=0,max=100,precision=1,aggregate=mean}
+\setlength{\parindent}{0pt}
+\begin{document}
+\begin{gradtable}[width=150mm]
+\gradcolumn[width=25mm]{name}{Project}\gradmetricbind{quality}{score}\gradmetriccardcolumn{quality}{trend}
+\gradcolumn[type=boxrug,options={height=5mm}]{samples}{Raw samples}
+\gradrow{A,80,{0,NA,80},{0,2,2,4}}\gradrow{B,0,{0,NA},{NA,NA}}\end{gradtable}\par
+\end{document}

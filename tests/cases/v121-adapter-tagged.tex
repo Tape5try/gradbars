@@ -1,0 +1,10 @@
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}\usepackage[margin=15mm]{geometry}\usepackage{gradbars}\usegradbarslibrary{reports,distribution,legend}
+\gradbarsdeclarecolumn{proxy}{frontend=bar}
+\gradbarsdeclaretype{fixed}{\gradbar[width=\gradbarscolumnwidth,height=4pt,label=none]{#1}}
+\gradbarsdeclarecolumn{fixed}{frontend=box,graphic=fixed,box width=25mm,box height=10pt,box depth=8pt}
+\setlength{\parindent}{0pt}\begin{document}
+\begin{gradtable}[width=140mm,label width=0pt]
+\gradcolumn[width=25mm]{name}{Project}\gradcolumn[type=proxy]{score}{Score}\gradcolumn[type=fixed]{other}{Fixed}
+\gradrow{A,80,40}\gradrow{B,0,NA}\end{gradtable}
+\end{document}

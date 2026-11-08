@@ -1,0 +1,22 @@
+\documentclass[fontset=fandol]{ctexart}
+\usepackage[margin=16mm]{geometry}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\usegradbarslibrary{pgfplotstable}
+\pgfplotsset{compat=1.18}
+\gradpgfplotstablecolumn[min=0,max=100,height=4pt]{Score}{bar}{45mm}
+\gradpgfplotstablecolumn[precision=1,unit={\,ms}]{Time}{number}{24mm}
+\begin{document}
+\section*{外部表格的单元格适配}
+虚构演示数据；表头由 pgfplotstable 管理，仅正文单元格交给 gradbars。\par\medskip
+\pgfplotstabletypeset[col sep=comma,
+ columns/Project/.style={string type},
+ columns/Score/.append style={column name={\textbf{评分}}},
+ columns/Time/.append style={column name={用时}}]{
+Project,Score,Time
+Atlas,80,12.5
+Birch,0,0
+Cedar,40,N/A
+Dune,NA,20
+}
+\end{document}

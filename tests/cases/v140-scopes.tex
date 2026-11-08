@@ -1,0 +1,39 @@
+\documentclass{article}
+\setlength{\parindent}{0pt}
+\usepackage[margin=15mm]{geometry}\usepackage{gradbars}
+\gradbarsloadcsv{teams}{v140-hierarchy.csv}
+\ExplSyntaxOn
+\cs_new_eq:NN\checkScopeSummary\gradtableBuildSummary
+\cs_set_protected:Npn\gradtableBuildSummary
+ {\checkScopeSummary
+  \str_if_eq:VnTF\l__gradtable_hierarchy_rank_tl{parent}
+   {\prop_if_in:NnT\l__gradtable_group_summary_values_prop{2/score}{\errmessage{Disabled leaf summary was computed}}
+    \prop_if_in:NnF\l__gradtable_group_summary_values_prop{1/score}{\errmessage{Parent summary missing}}}
+   {\prop_if_in:NnT\l__gradtable_group_summary_values_prop{1/score}{\errmessage{Disabled parent summary was computed}}
+    \prop_if_in:NnF\l__gradtable_group_summary_values_prop{2/score}{\errmessage{Leaf summary missing}}}}
+\cs_new_eq:NN\checkScopeHighlight\gradtableHighlight
+\cs_set_protected:Npn\gradtableHighlight #1#2
+ {\checkScopeHighlight{#1}{#2}
+  \str_if_eq:nnT{#1}{score}
+   {\int_compare:nNnT{\l__gradtable_row_int}={3}
+     {\str_if_eq:VnTF\l__gradtable_hierarchy_rank_tl{parent}
+       {\cs_if_eq:NNF\gradtableEmphasis\underline{\errmessage{Parent rank selected wrong node}}}
+       {\cs_if_eq:NNF\gradtableEmphasis\gradtableBest{\errmessage{Leaf rank selected wrong node}}}}}}
+\ExplSyntaxOff
+\newcommand{\scopeColumns}{%
+\gradcolumn[source=Name,width=30mm]{name}{Method}%
+\gradcolumn[source=Region]{region}{Region}%
+\gradcolumn[source=Team]{team}{Team}%
+\gradcolumn[source=Score,type=number,aggregate=mean,mark=both]{score}{Score}}
+\begin{document}
+\begin{center}
+\begin{gradtable}[data=teams,group levels={region,team},rank scope=parent,parent summary=true]
+\scopeColumns
+\end{gradtable}
+\end{center}
+\begin{center}
+\begin{gradtable}[data=teams,group levels={region,team},rank scope=leaf,leaf summary=true]
+\scopeColumns
+\end{gradtable}
+\end{center}
+\end{document}

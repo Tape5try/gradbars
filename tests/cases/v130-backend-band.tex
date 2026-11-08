@@ -1,0 +1,8 @@
+\documentclass{article}
+\setlength{\parindent}{0pt}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+\gradbarsdeclarebackend{scalar}{bar,labels,gradient}{\gradbarsbackenddefault}
+\begin{document}
+\gradsparkband[backend=scalar,spark range=fixed]{10,20}{20}{60}
+\end{document}

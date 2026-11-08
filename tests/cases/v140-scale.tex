@@ -1,0 +1,33 @@
+\documentclass{article}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\gradbarsloadcsv{teams}{v140-scale.csv}
+\makeatletter\ExplSyntaxOn
+\cs_new_eq:NN\savedAutoTrendRanges\gradtableAutoRanges
+\cs_set_protected:Npn\gradtableAutoRanges
+ {\savedAutoTrendRanges
+  \group_begin:\gradtableConfigure{trend}
+  \fp_compare:nNnF{\gradbars@min}={-10}{\errmessage{Trend scale omitted interior minimum}}
+  \str_if_eq:VnTF\l__gradtable_scale_scope_tl{data}
+   {\fp_compare:nNnF{\gradbars@max}={110}{\errmessage{Data trend scale omitted hidden observations}}}
+   {\fp_compare:nNnF{\gradbars@max}={80}{\errmessage{Visible trend scale included hidden observations}}}
+  \group_end:}
+\ExplSyntaxOff\makeatother
+\newcommand{\trendColumns}{%
+\gradcolumn[source=Name,width=24mm]{name}{Method}%
+\gradcolumn[source=Score,type=number,aggregate=sum]{score}{Score}%
+\gradcolumn[source=Trend,type=trendcompare,scale=column,include zero=false,options={precision=0,compare label=delta}]{trend}{Endpoint / trend}%
+\gradsummary[scope=data]{Total}}
+\begin{document}
+\begin{center}
+\begin{gradtable}[data=teams,filter={score<85},scale scope=visible]
+\trendColumns
+\end{gradtable}
+\end{center}
+\begin{center}
+\begin{gradtable}[data=teams,filter={score<85},scale scope=data]
+\trendColumns
+\end{gradtable}
+\end{center}
+\end{document}

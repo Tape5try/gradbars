@@ -1,0 +1,9 @@
+\documentclass{article}
+\setlength{\parindent}{0pt}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+\gradbarsloadcsv{teams}{v140-hierarchy.csv}
+\begin{document}\begin{gradtable}[data=teams,group levels={region,team},rank scope=group]
+\gradcolumn[source=Region]{region}{Region}\gradcolumn[source=Team]{team}{Team}
+\gradcolumn[source=Score,type=number]{score}{Score}
+\end{gradtable}\end{document}

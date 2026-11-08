@@ -64,7 +64,7 @@ function M.runtime(dir)
       count = count+1
     end
   end
-  assert(count == 22, 'Expected 22 runtime modules'); print('Docstrip round trip: 22 modules match.')
+  assert(count == 23, 'Expected 23 runtime modules'); print('Docstrip round trip: 23 modules match.')
 end
 function M.clean(dir)
   assert(dir:match('^build/[%w/_-]+$'), 'Refuse to clean outside build/')
@@ -101,11 +101,11 @@ Alternatively, if sty/README.md is present, run:
 tex gradbars.ins
 ```
 
-The sty/ directory receives all 22 extracted .sty files. Plain TeX does not create
+The sty/ directory receives all 23 extracted .sty files. Plain TeX does not create
 directories; use the Lua entry above if sty/ or its README marker is missing.
 No runtime .sty files are written into the source root.
 
-Install all 22 extracted .sty files from sty/ together in TEXMFHOME/tex/latex/gradbars/,
+Install all 23 extracted .sty files from sty/ together in TEXMFHOME/tex/latex/gradbars/,
 or place the complete set alongside your document. Refresh the filename database
 if required by your distribution. Do not install only gradbars.sty.
 
@@ -259,7 +259,7 @@ if arg and arg[0] and arg[0]:match('release%.lua$') then
     for name,date,ver in M.read('gradbars.dtx'):gmatch('\\ProvidesPackage{([^}]+)}%[([%d/]+) v([%d.]+)') do
       assert(date==d and ver==v, 'Module metadata mismatch: '..name);modules=modules+1
     end
-    assert(modules==22,'Expected metadata for all 22 modules')
+    assert(modules==23,'Expected metadata for all 23 modules')
     assert(M.read('CHANGELOG.md'):find('## '..v..' — '..d:gsub('/','-'),1,true),'CHANGELOG release metadata mismatch')
     for _,file in ipairs({'README.md','README.en.md'}) do
       assert(M.read(file):find('**v'..v..' ·',1,true), 'README version mismatch: '..file)

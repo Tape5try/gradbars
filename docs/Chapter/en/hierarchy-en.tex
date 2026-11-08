@@ -1,0 +1,108 @@
+\section{v1.4.0: two-level reports and endpoint trends}
+\subsection{One series, two coordinated panels}
+\key{\gradsparkcompare} derives a left dumbbell from the first and last positions,
+and preserves the complete series on the right. Both panels share one explicit
+range and unit. A fixed range or named scale is required; only line type is supported.
+\begin{demo}{Project scores: endpoints do not skip NA}
+\begingroup
+\gradscale{project-score}{min=0,max=100}
+\gradbarssetup{width=65mm,height=5ex,
+ precision=0,label width=20mm,compare label=delta}
+\begin{tabular}{lc}
+Project & First / last and complete trend\\
+\hline
+Atlas & \gradsparkcompare[scale group=project-score]
+ {20,40,NA,80}\\
+Birch & \gradsparkcompare[scale group=project-score]
+ {NA,30,60,90}\\
+Elm & \gradsparkcompare[scale group=project-score]
+ {20,50,65,NA}\\
+\end{tabular}
+\endgroup
+\end{demo}
+NA retains its position. A missing endpoint omits that marker and the connector;
+the other endpoint remains, but the delta is missing. Single-point input uses
+the same observation twice; empty input is an error. Default \key{compare label=values}
+prints first/last; \key{delta} prints last minus first in the same unit.
+Explicit text overrides the label; percent comparison labels are rejected.
+
+\key{width} includes both panels, the default 3mm gap and two outer allowances
+of marker size plus 1pt. \key{compare panel ratio=.4} divides the remaining width;
+it must be strictly between zero and one, and the gap must be nonnegative.
+Each panel must exceed twice the allowance. Outside labels reserve extra space.
+Each composition produces one Figure with full series and endpoint alternatives;
+explicit alt, artifact/off and embedded TikZ retain existing rules.
+\clearpage
+\subsection{Two explicit CSV text levels}
+\key{group levels} accepts exactly two distinct declared text column IDs.
+It is separate from old \key{group by} and manual groups; they cannot be mixed.
+The illustrative CSV interleaves North and South; both have a Review team.
+\begin{tcblisting}{enhanced,breakable,listing engine=listings,
+ listing options={style=gradmanual},text and listing,
+ title={Hierarchical project review, visible means and parent ranks},
+ colback=gradbarsTrack!50,colbacklower=blue!3,colframe=gradbarsInk!25,
+ coltitle=gradbarsInk,colbacktitle=gradbarsTrack,fonttitle=\bfseries,
+ boxrule=.4pt,arc=0pt,left=3mm,right=3mm,top=2mm,bottom=2mm,
+ before upper={\setlength{\parskip}{6pt}\small}}
+\gradbarsloadcsv{projects}{docs/data/hierarchical-teams.csv}
+\begin{center}
+\begin{gradtable}[data=projects,style=hierarchical,
+ width=\linewidth,group levels={region,team},
+ rank scope=parent,parent summary=true,leaf summary=true,
+ parent summary label={Region mean},
+ leaf summary label={Team mean},label width=17mm]
+\gradcolumn[source=Project,width=22mm]{project}{Project}
+\gradcolumn[source=Region,width=17mm]{region}{Region}
+\gradcolumn[source=Team,width=18mm]{team}{Team}
+\gradcolumn[source=Score,type=number,width=20mm,
+ aggregate=mean,mark=both,options={precision=1}]{score}{Score}
+\gradcolumn[source=Trend,type=trendcompare,
+ options={min=0,max=100,height=5mm,precision=0,
+ compare label=delta}]{trend}{Endpoints / trend}
+\gradsummary{All visible}
+\end{gradtable}
+\end{center}
+\end{tcblisting}
+Groups follow first appearance in the original CSV. Parent identity plus literal
+leaf text forms a structured path, so same-named children remain separate.
+Outer spaces are trimmed; empty keys use the missing heading label, whereas
+literal NA is a distinct text key. Commas and slashes do not split paths.
+\subsection{Selection, scope and native compound columns}
+Selection remains filter, stable global sort, global limit, then grouping. Rows
+retain the selected order within each leaf; groups retain source appearance order.
+No implicit group limit or group scale is added.
+
+\key{rank scope=table} remains default; \key{parent} ranks selected rows across
+one parent's leaves, and \key{leaf} ranks within one path. Ties and the second
+distinct value use canonical raw numbers. Old \key{rank scope=group} is rejected
+for the new hierarchy. Summary rows never participate in ranks or scales.
+
+\key{parent summary} and \key{leaf summary} default to false and can be enabled
+independently. Each level has its own label and \key{scope=visible|data} via
+\key{parent summary scope} or \key{leaf summary scope}; defaults are visible.
+Data scope uses all bound rows in that node, even filtered or limited ones;
+completely invisible groups still have no headings or summaries.
+Column \key{aggregate} remains explicit. Overall \key{\gradsummary} has its own
+scope. Legacy group summary keys are not used with two levels.
+
+Native \key{type=trendcompare} accepts canonical braced lists or quoted CSV
+series, defaults to 4ex height and resolves one range for both panels.
+\key{scale=column} uses every valid observation, respecting table scale scope.
+No scalar sort, filter, mark, aggregate or regional input applies to this compound
+column. No arbitrary custom column adapter or tabularray helper is added.
+
+\subsection{Long tables and layout limits}
+\key{style=hierarchical} supplies accessible colors, row spacing and indented leaf
+headings. In native \key{long=true} tables, parent/child headings stay with the
+first row, and each summary chain with its last row; data rows can span pages.
+An indivisible row/keep-chain must fit within a page. Booktabs, grid, rows and
+none rule modes are checked against actual PDF shipout pages. This is no new
+complete hierarchy Tagged PDF contract or PDF/UA certification.
+
+Compile \path{docs/examples/hierarchical-longtable.tex} twice for the complete
+72-row multipage report. Matching English and Chinese short examples are in
+\path{docs/examples/}. Detailed contracts: \path{docs/hierarchical-tables.md}
+and \path{docs/trend-compositions.md}.
+
+Custom scalar backends require explicit TikZ fallback for \key{spark-compare};
+backend schema remains 1.

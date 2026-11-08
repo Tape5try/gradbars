@@ -2,9 +2,9 @@
 
 **Inline data graphics for LaTeX text and tables.**
 
-**v1.2.0 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
+**v1.2.2 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
 
-Development snapshot, dated 2026-11-03; v1.2.0 has not been published. Adds opt-in measured legends, duplicate numeric-tick diagnostics, label-area contrast, readable presets and a spark-line/target combination while retaining existing interfaces and defaults. [Usage and limits](docs/readability.md). Downloads below still refer to published v1.1.0.
+Version 1.2.2, dated 2026-11-07, removes duplicate best/second group-ranking work and adds a reproducible three-engine, phase-based benchmark. All v1.2.1 features, interfaces, default libraries and numeric semantics remain; no cross-call cache is introduced. See [performance notes and reproduction commands](docs/performance.md). This version is scheduled for GitHub source delivery only, without a Release or CTAN submission; formal download links below still refer to published v1.1.0.
 
 [简体中文](README.md) · [Published English manual (v1.1.0)](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-en-v1.1.0.pdf) · [Published Chinese manual (v1.1.0)](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-v1.1.0.pdf) · [CTAN](https://ctan.org/pkg/gradbars)
 
@@ -15,6 +15,18 @@ Built on PGF/TikZ, gradbars embeds graphics in existing `tabular` cells or build
 Explicit bar themes such as `theme=blue` now select complementary negative colors for all eleven themes. The unthemed negative default remains solid lightred. Use `negative fill=solid,negative color=lightred` after the theme to restore the former appearance. [Full signed-theme gallery](docs/examples/theme-complements.tex).
 
 Built-in shared signed bars: `\gradsignedbar[min=-50,max=50,error=8,theme=blue]{-24}{24}`. Two observations share a track and zero line while retaining their own uncertainty intervals; no custom clipping macro is needed.
+
+## New in v1.2.1
+
+- Explicit scalar column registration, fixed-box dimensions, repeatable measurement and declared raw-value capabilities: [column adapters](docs/column-adapters.md).
+- Optional body-cell graphics/formatting with host headers preserved: [pgfplotstable](docs/pgfplotstable.md).
+- All-sample `\gradboxrug`, scoped `\graddeclaremetric`, cross-table `\gradmetricbind` and positional `\gradmetriccard`: [report metrics and compositions](docs/report-metrics.md).
+
+[Bilingual standalone examples](docs/examples/README.md) · [v1.2.1 migration](docs/migration-v1.2.1.md)
+
+![One declared report metric used across standalone cards and two summary scopes](docs/images/report-metrics-v1.2.1.png)
+
+[Complete source](docs/examples/report-metrics.tex) · [Rebuild the image](docs/images/report-metrics.md)
 
 ## Features
 
@@ -43,6 +55,17 @@ standalone sources and matching chapters in both manuals.
 All rows use the built-in `\gradsignedbar[theme=blue,label=none]{-24}{24}`, sharing `min=-50,max=50,error=8,width=72mm` and changing only the theme name. The table supplies the adjacent numeric labels; negative values use complementary colors.
 
 [Complete example](docs/examples/theme-complements.tex) · [Rebuild the image](docs/images/theme-complements.md)
+
+## Regional input and hierarchical reports (v1.3.0 / v1.4.0)
+
+![Regional inputs and fixed reference bands](docs/images/regional-reference-v1.3.0.png)
+
+![Two-level groups and coordinated endpoint trends](docs/images/hierarchical-trends-v1.4.0.png)
+
+- [Regional numeric input](docs/regional-input.md): explicit per-column separators and canonical values for selection, scales, ranking and summaries; new regional table preset.
+- [Trend compositions](docs/trend-compositions.md): one distinct composition per version, retaining NA positions and explicit shared ranges.
+- [Two-level CSV reports](docs/hierarchical-tables.md): structured paths, parent/leaf ranks and independent summary scopes; new hierarchical preset and [multipage source](docs/examples/hierarchical-longtable.tex).
+- Executable examples: [regional input](docs/examples/regional-input.tex) / [中文](docs/examples/regional-input-cn.tex), [hierarchical review](docs/examples/hierarchical-teams.tex) / [中文](docs/examples/hierarchical-teams-cn.tex).
 
 ## Readability and target trends (v1.2.0)
 
@@ -192,7 +215,7 @@ Both manuals pair rendered output with source and cover getting started, graphic
 
 - [Chinese main source](docs/gradbars-manual.tex) and [Chinese chapters](docs/Chapter/zh-cn/README.md).
 - [English main source](docs/gradbars-manual-en.tex) and [English chapters](docs/Chapter/en/README.md).
-- [v1.2.0 migration](docs/migration-v1.2.0.md) · [API reference](docs/api.md), [developer guide](docs/developer.md), [v1.1.1 maintenance notes](docs/migration-v1.1.1.md) and [v1.1.0 migration guide](docs/migration-v1.1.0.md).
+- [v1.3.0 / v1.4.0 migration](docs/migration-v1.4.0.md) · [v1.2.0 migration](docs/migration-v1.2.0.md) · [API reference](docs/api.md), [developer guide](docs/developer.md), [v1.1.1 maintenance notes](docs/migration-v1.1.1.md) and [v1.1.0 migration guide](docs/migration-v1.1.0.md).
 - [Stability contract](docs/stability.md) for public scope, precedence, compatibility and deprecation.
 - [Published source guide (v1.1.0)](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-source-v1.1.0.pdf) for the l3doc and docstrip workflow; build the current guide locally.
 - [Changelog](CHANGELOG.md) for additions, fixes and compatibility changes.
@@ -204,6 +227,8 @@ l3build check
 texlua tests/maintenance.lua
 texlua scripts/docs-check.lua
 texlua scripts/check.lua
+texlua tests/hierarchy-pages.lua
+texlua tests/trend-pdf.lua
 texlua scripts/source.lua --check
 l3build doc
 ```
@@ -211,7 +236,7 @@ l3build doc
 The build uses TeX Live texlua, l3build and latexmk, without Python. The Chinese manual uses XeLaTeX; the English manual and source guide use pdfLaTeX. latexmk handles reruns automatically. PDFs are distributed as GitHub Release assets rather than committed to Git.
 
 `gradbars.dtx` and `gradbars.ins` are reproducible distribution sources;
-`texlua scripts/unpack.lua` creates `sty/` if needed and extracts all 22 runtime
+`texlua scripts/unpack.lua` creates `sty/` if needed and extracts all 23 runtime
 modules there, leaving the source root free of `.sty` files. Alternatively,
 retain the supplied `sty/README.md` and run `tex gradbars.ins`. Neither command
 requires shell escape. After editing `sty/`, run

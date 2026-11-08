@@ -1,6 +1,11 @@
 -- MIT: replay static TeX regressions under all supported engines using texlua.
 local lfs = require('lfs')
 local r = dofile('scripts/release.lua')
+-- Keep Lua font caches writable without changing the user's global TeX setup.
+local cache = lfs.currentdir() .. '/build/native-check/tex-cache'
+r.write('build/native-check/tex-cache/.keep', '')
+os.setenv('TEXMFVAR', cache)
+os.setenv('TEXMFCACHE', cache)
 local engines = #arg > 0 and arg or {'pdflatex','xelatex','lualatex'}
 local cases = dofile('tests/cases/manifest.lua')
 local snapshot='build/native-check/runtime-'..table.concat(engines,'-')

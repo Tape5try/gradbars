@@ -1,0 +1,5 @@
+Item,Amount,Note
+Books,"1.234,50","1.234,50 stays literal here"
+Journals,"250,25",Quoted decimal comma
+Archive,0,True zero
+Pending,NA,Not yet measured

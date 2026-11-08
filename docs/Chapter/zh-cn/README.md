@@ -59,3 +59,9 @@
 
 | [reports.tex](reports-cn.tex) | Domain report presets |
 | [extensions.tex](extensions-cn.tex) | Third-party starter and public scalar backend contract |
+
+- [v1.3.0 regional input / 地区输入](regional-cn.tex)
+- [v1.4.0 hierarchy / 两级报告](hierarchy-cn.tex)
+
+- [v1.2.1 adapters / 列适配](adapters-cn.tex)
+- [v1.2.1 report metrics / 报告指标](report-metrics-cn.tex)

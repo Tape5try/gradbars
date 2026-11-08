@@ -1,0 +1,58 @@
+\section{显式列适配与样本组合（v1.2.1）}
+本节实现原 v1.5.0 规划，按用户指定并入 v1.2.1。新入口均须显式使用，旧独立图形注册不会自动成为表格列。以下为虚构复核数据。
+\begin{example}[text and listing,sidebyside=false]{公开标准前端代理}
+\begingroup
+\gradbarsdeclarecolumn{review-proxy}{frontend=bar,
+ select=true,rank=true,aggregate=true,
+ options={min=0,max=100,precision=0}}
+\begin{gradtable}[style=adapter-report,width=\linewidth]
+\gradcolumn[width=25mm]{project}{Project}
+\gradcolumn[type=review-proxy,mark=both,
+ aggregate=mean]{score}{Score}
+\gradrow{Atlas,80}\gradrow{Birch,0}\gradrow{Cedar,NA}
+\gradsummary{Mean}
+\end{gradtable}
+\endgroup
+\end{example}
+名称和声明遵循 TeX 分组，可见重名或内置名称冲突报错。\key{frontend} 支持 bar、heat、bullet、number、box；选择、排名、聚合能力分别声明，默认关闭。原值参与运算，formatter 仅负责显示。
+\subsection{固定单行盒的接入契约}
+\key{box} 还须指定已注册的标量图形及正的 box width、box height，box depth 非负。回调可查询声明尺寸：\par\key{\gradbarscolumnwidth}、\allowbreak\key{\gradbarscolumnheight}、\allowbreak\key{\gradbarscolumndepth} 返回声明尺寸；分配图宽必须足够，实测内容超声明尺寸时报错。表格可设 \key{label width=0pt}，不再保留标签槽。
+试排可重复调用并丢弃结果，表格回调不得写文件、增计数、添加标签或全局修改。包装保持文本基线、不额外生成 Figure；这些表格准入条件不追溯限制独立回调。完整公开示例见 \texttt{docs/libraries/gradbars-contrib-columns.sty}。
+\clearpage
+\subsection{箱线图与全部原始样本}
+\begin{example}[text and listing,sidebyside=false]{同源样本，不分箱、不抽样}
+\begin{gradtable}[style=rug-report,width=\linewidth]
+\gradcolumn[width=25mm]{batch}{Batch}
+\gradcolumn[type=boxrug,scale=fixed,
+ options={min=0,max=20,height=6mm,label=none}]
+ {samples}{Box plot and raw rug}
+\gradrow{Atlas,{0,2,2,4,8,16,NA}}
+\gradrow{Birch,{0,0,0,NA}}
+\gradrow{Cedar,{2,3,4,5,6}}
+\gradrow{Dune,{NA,NA}}
+\end{gradtable}
+\end{example}
+独立调用 \key{\gradboxrug[options]{raw samples}}；默认高 5ex。每条短线对应一个有效观测，重复位置可重叠但重数不变。沿用 type-7 分位数、1.5-IQR 实际观测须和离群点，不抖动、不抽样、不自动分箱。最多接收 2048 个原始位置（含 NA），不接受预计算摘要。
+零、单样本、常量、全缺失沿用既有统计；固定、自动、命名范围与裁剪不改变统计。一个组合只生成一个 Figure，包含统计和保留重复值的完整有效样本列表。表格样式 \key{rug-report} 和图形样式 \key{sample-rug} 均为显式选择。
+\clearpage
+\subsection{可选 pgfplotstable 单元格}
+导言区显式 \key{\usegradbarslibrary{pgfplotstable}}；它加载外部 pgfplotstable，默认五库不变。本手册已显式加载。
+\begin{example}[text and listing,sidebyside=false]{保留表头，仅格式化正文}
+\begingroup
+\gradpgfplotstablecolumn[min=0,max=100]
+ {Score}{bar}{40mm}
+\gradpgfplotstablecolumn[precision=1,unit={\,ms}]
+ {Time}{number}{24mm}
+\pgfplotstabletypeset[col sep=comma,
+ columns/Project/.style={string type},
+ columns/Score/.append style={column name={\textbf{Score}}}]{
+Project,Score,Time
+Atlas,80,12.5
+Birch,0,0
+Cedar,40,N/A
+Dune,NA,20
+}
+\endgroup
+\end{example}
+独立单元格入口为 \key{\gradpgfplotstablecell[options]{bar|heat|number}{width}{value}}。默认文本基线、无标签，空白及 NA/N/A/null 映射缺失；\key{pgf missing} 替换非空标记列表，零保留。Heat 另需加载 heat 库。宽度包含标签，外置/左标签先扣槽宽和间隙；内容实测超宽报错。
+本适配不继承原生 CSV 的选择、分组、排名、摘要、自动尺度或整表标记。上游仍接受 pgfplotstable 的可信 TeX 输入，不提供原生 CSV 的字符安全承诺。完整契约见 \texttt{docs/pgfplotstable.md}，独立双语源码见 \texttt{docs/examples/}。

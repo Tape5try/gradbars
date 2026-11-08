@@ -1,0 +1,5 @@
+Name,Point,Comma,Space,Text
+Alpha,"1,234.5","1.234,5",1 234.5,"1.234,5"
+Beta,1000.5,"1.000,5",1000.5,"literal \NeverExecute"
+Gamma,0,0,0,NA
+Missing,NA,NA,NA,

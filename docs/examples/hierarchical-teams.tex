@@ -1,0 +1,45 @@
+% MIT; illustrative data. Compile from repository root.
+\documentclass{article}
+\usepackage[margin=18mm]{geometry}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\pagestyle{empty}
+\begin{document}
+\section*{Regional project review}
+\gradbarsloadcsv{projects}{docs/data/hierarchical-teams.csv}
+\begin{center}
+\begin{gradtable}[data=projects,style=hierarchical,
+ width=\linewidth,group levels={region,team},
+ rank scope=parent,parent summary=true,leaf summary=true,
+ parent summary label={Region mean},
+ leaf summary label={Team mean},label width=17mm]
+\gradcolumn[source=Project,width=22mm]{project}{Project}
+\gradcolumn[source=Region,width=17mm]{region}{Region}
+\gradcolumn[source=Team,width=18mm]{team}{Team}
+\gradcolumn[source=Score,type=number,width=20mm,
+ aggregate=mean,mark=both,options={precision=1}]{score}{Score}
+\gradcolumn[source=Trend,type=trendcompare,
+ options={min=0,max=100,height=5mm,precision=0,
+ compare label=delta}]{trend}{Endpoints / trend}
+\gradsummary{All visible}
+\end{gradtable}
+\end{center}
+\bigskip
+\begingroup
+\gradscale{project-score}{min=0,max=100}
+\gradbarssetup{width=65mm,height=5ex,
+ precision=0,label width=20mm,compare label=delta}
+\begin{tabular}{lc}
+Project & First / last and complete trend\\
+\hline
+Atlas & \gradsparkcompare[scale group=project-score]
+ {20,40,NA,80}\\
+Birch & \gradsparkcompare[scale group=project-score]
+ {NA,30,60,90}\\
+Elm & \gradsparkcompare[scale group=project-score]
+ {20,50,65,NA}\\
+\end{tabular}
+\endgroup
+\par\medskip
+Same-named teams belong to separate regional paths. NA endpoints remain missing.
+\end{document}

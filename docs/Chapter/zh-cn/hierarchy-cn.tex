@@ -1,0 +1,82 @@
+\section{v1.4.0：两级报告与首末趋势}
+\subsection{同一序列的双面板}
+\key{\gradsparkcompare} 用第一位置和最后位置生成左侧哑铃，右侧保留全过程趋势。
+两面板共用一个明确的范围和单位，要求固定范围或命名尺度，且仅支持线型趋势。
+\begin{example}[text and listing,sidebyside=false]{项目得分：首末缺失不跳过}
+\begingroup
+\gradscale{project-score}{min=0,max=100}
+\gradbarssetup{width=65mm,height=5ex,
+ precision=0,label width=20mm,compare label=delta}
+\begin{tabular}{lc}
+项目 & 首末对比与全过程趋势\\
+\hline
+Atlas & \gradsparkcompare[scale group=project-score]
+ {20,40,NA,80}\\
+Birch & \gradsparkcompare[scale group=project-score]
+ {NA,30,60,90}\\
+Elm & \gradsparkcompare[scale group=project-score]
+ {20,50,65,NA}\\
+\end{tabular}
+\endgroup
+\end{example}
+NA 保留位置；缺失端点不画标记及连接线，有效另一端仍保留，但差值缺失。
+单点同时作为首末，空序列报错。默认 \key{compare label=values} 显示首末值，
+\key{delta} 显示同单位的末减首；显式 text 覆盖标签，不支持 percent 对比标签。
+
+\key{width} 包含双面板、默认 3mm 间距和两端各“标记尺寸加 1pt”的外延余量。
+\key{compare panel ratio=.4} 分配剩余图宽，须严格在 0 与 1 之间，间距非负。
+每个面板须宽于两倍余量；外置标签另占空间。一次组合生成一个 Figure，描述完整序列、
+首末与差值，继续遵循显式 alt、artifact/off 和嵌入 TikZ 的既有规则。
+\clearpage
+\subsection{显式 CSV 两级文本分组}
+\key{group levels} 接收恰好两个不同的已声明文本列 ID，与旧 \key{group by} 及手工组分离，不能混用。
+演示 CSV 交错排列 North 与 South，两者均含名为 Review 的小组。
+\begin{example}[text and listing,sidebyside=false,breakable]{区域项目评审：可见均值与父级排名}
+\gradbarsloadcsv{projects}{docs/data/hierarchical-teams.csv}
+\begin{center}
+\begin{gradtable}[data=projects,style=hierarchical,
+ width=\linewidth,group levels={region,team},
+ rank scope=parent,parent summary=true,leaf summary=true,
+ parent summary label={区域均值},
+ leaf summary label={小组均值},label width=17mm]
+\gradcolumn[source=Project,width=22mm]{project}{项目}
+\gradcolumn[source=Region,width=17mm]{region}{区域}
+\gradcolumn[source=Team,width=18mm]{team}{小组}
+\gradcolumn[source=Score,type=number,width=20mm,
+ aggregate=mean,mark=both,options={precision=1}]{score}{得分}
+\gradcolumn[source=Trend,type=trendcompare,
+ options={min=0,max=100,height=5mm,precision=0,
+ compare label=delta}]{trend}{首末 / 趋势}
+\gradsummary{可见行均值}
+\end{gradtable}
+\end{center}
+\end{example}
+父组和叶组按原始 CSV 首次出现顺序组织。结构化路径保留父组身份与子组原文，
+不同父组下的同名子组不合并；裁剪首尾空格，空键使用缺失组标题，而字面 NA 是独立文本键。
+逗号、斜杠不是路径分隔符。
+\subsection{选择顺序、作用域与原生复合列}
+流程继续为筛选、全局稳定排序、全局 limit、分组；叶组内部保留已选排序，组保持原始首次出现顺序。
+不增加隐式组内 limit 或组内尺度。
+
+\key{rank scope=table} 仍为默认；\key{parent} 比较同父组全部可见叶组的数据，
+\key{leaf} 只比较同一路径。按规范原值判断并列和第二不同值，缺失不参与。
+两级分组不使用旧 \key{rank scope=group}，摘要不参与排名和尺度。
+
+\key{parent summary} 与 \key{leaf summary} 默认 false，可分别启用；各自拥有 label 与 scope 键。
+\key{parent summary scope}、\key{leaf summary scope} 接受 visible 或 data，默认 visible。
+data 使用该节点全部绑定原始行，可含被筛选或 limit 移除的行；完全不可见组不显示标题或摘要。
+列 aggregate 仍须明确声明，总 \key{\gradsummary} 拥有独立作用域；旧单层摘要键不能混用。
+
+原生 \key{type=trendcompare} 接收规范数字列表或 CSV 引号内序列，默认高 4ex，双面板一次解析同一尺度。
+\key{scale=column} 读取全部有效观测并遵循表格尺度作用域，不把复合序列作为标量筛选、排序、
+标记、聚合或地区输入。没有新增任意自定义列适配或 tabularray 辅助命令。
+
+\subsection{长表与排版边界}
+\key{style=hierarchical} 设置无障碍配色、行距与缩进叶标题。
+原生 \key{long=true} 中父子标题连接首行，逐级摘要链连接相应末行；数据行之间可以分页。
+单行或完整连接链须能放入一页。booktabs、grid、rows、none 四种横线样式均以实际 PDF 出页页码验证。
+本版不新增完整层级 Tagged PDF 表结构保证或 PDF/UA 认证。
+
+完整 72 行跨页报告见 \texttt{docs/examples/hierarchical-longtable.tex}，需编译两次。
+中英文短例位于 \texttt{docs/examples/}；契约见 \texttt{docs/hierarchical-tables.md} 与
+\texttt{docs/trend-compositions.md}。自定义标量后端须为 \key{spark-compare} 显式启用 TikZ 回退，后端模式仍为 1。

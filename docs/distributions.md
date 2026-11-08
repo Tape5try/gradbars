@@ -67,3 +67,15 @@ They do not silently combine samples across rows.
 `style=distribution` adds a 45mm graphic width, booktabs rules, row stretch 1.6,
 8pt separation and 3pt padding. `style=accessible` uses row rules, 1.4 stretch,
 7pt separation, 2pt padding and the accessible table theme. Both are opt-in.
+
+## Box plus all-sample rug / 箱线图＋原始样本 rug（v1.2.1）
+
+`\gradboxrug[options]{raw samples}` and native `type=boxrug` reuse exactly the
+statistics above and draw every valid raw observation below the box. Duplicates
+overlap but retain multiplicity; no jitter, sampling or binning occurs. The input
+limit is 2048 positions including NA. Precomputed summaries cannot recover
+positions and are rejected. See the [complete contract](report-metrics.md) and
+[English](examples/column-adapters.tex) / [中文](examples/column-adapters-cn.tex) sources.
+
+每条短线对应一个有效原始样本，重复值保留；四分位数、须与离群点的计算不变。
+零、缺失、单样本、常量与裁剪规则沿用箱线图，新增明确输入上限。

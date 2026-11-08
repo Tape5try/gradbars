@@ -2,9 +2,9 @@
 
 **在 LaTeX 正文和表格中呈现数值、比较、组成与趋势。**
 
-**v1.2.0 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
+**v1.2.2 · pdfLaTeX / XeLaTeX / LuaLaTeX · MIT**
 
-开发版更新于 2026-11-03，尚未发布 v1.2.0 正式版本。新增显式图例刻度诊断与测量布局、标签区域对比度、readable 预设，以及趋势线＋目标线组合；保留已有接口与默认语义。[v1.2.0 用法与边界](docs/readability.md)。下方下载链接仍指向已发布的 v1.1.0。
+v1.2.2 更新于 2026-11-07：消除分组最佳/次佳排名的重复计算，增加可复现的三引擎分阶段性能基准。保留 v1.2.1 的全部功能、接口、默认五库和数值语义，不引入跨调用缓存。详见[性能说明与重建命令](docs/performance.md)。本版按计划交付 GitHub 源码，不创建 Release 或提交 CTAN；下方正式下载链接仍指向已发布 v1.1.0。
 
 [English](README.en.md) · [已发布中文手册（v1.1.0）](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-v1.1.0.pdf) · [已发布英文手册（v1.1.0）](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-manual-en-v1.1.0.pdf) · [CTAN](https://ctan.org/pkg/gradbars)
 
@@ -23,6 +23,18 @@ gradbars 基于 PGF/TikZ，既可将单个图形嵌入现有 `tabular`，也可�
 - **数据处理**：CSV 字段绑定、排序、筛选、分组、自动列尺度和命名共享尺度。
 - **数字与外观**：科学计数输入、可选 siunitx 格式化、小数点对齐、主题、纹理、表格样式与图例。
 - **无障碍与扩展**：启用 LaTeX PDF tagging 后自动生成图形替代文本，支持 `alt` 覆盖；提供稳定的图形、格式化器和第三方库注册接口。
+
+## v1.2.1 新增接口
+
+- 显式自定义标量列：`\gradbarsdeclarecolumn`，按原值声明选择、排名与聚合能力；固定盒回调有明确尺寸和测量契约。[列适配](docs/column-adapters.md)
+- 可选 `pgfplotstable` 库：指定正文列的图形/数字，保留宿主表头，不改变默认依赖。[外部适配](docs/pgfplotstable.md)
+- 原始样本组合 `\gradboxrug`，保留全部有效样本及重数；报告声明 `\graddeclaremetric` 冻结单位、方向、格式和范围，配合 `\gradmetricbind` 与 `\gradmetriccard` 跨表使用。[指标与组合契约](docs/report-metrics.md)
+
+[完整中英文示例](docs/examples/README.md) · [v1.2.1 升级说明](docs/migration-v1.2.1.md)
+
+![同一报告指标用于独立数据条、末位置趋势卡和两张摘要作用域不同的表格](docs/images/report-metrics-v1.2.1-cn.png)
+
+[图中完整源码](docs/examples/report-metrics-cn.tex) · [效果图重建](docs/images/report-metrics.md)
 
 ## 效果展示
 
@@ -73,6 +85,17 @@ gradbars 基于 PGF/TikZ，既可将单个图形嵌入现有 `tabular`，也可�
 这是 `service-response-legend-v1.1.1` 的实际编译效果。`\gradtablelegendhead` 将标题与横向色块图例组合为表头；`table legend=false` 可隐藏图例行并保留标题。示例逐行指定状态颜色，未测数据使用 `NA`。
 
 [完整示例源码](docs/examples/service-response-legend.tex) · [图片重建方法](docs/images/service-response-legend.md)
+
+### 地区输入与两级报告（v1.3.0 / v1.4.0）
+
+![地区输入与固定参考带](docs/images/regional-reference-v1.3.0.png)
+
+![两级分组与首末趋势](docs/images/hierarchical-trends-v1.4.0.png)
+
+- [显式地区输入](docs/regional-input.md)：按列声明小数与分组符号，规范数值统一用于筛选、排序、排名、尺度和汇总；新增 regional 表格预设。
+- [固定参考带与首末趋势组合](docs/trend-compositions.md)：每版增加一个独立组合，完整保留缺失位置，共用明确尺度。
+- [两级 CSV 报告](docs/hierarchical-tables.md)：结构化组路径、父级或叶级排名、独立摘要作用域；新增 hierarchical 预设及[跨页示例](docs/examples/hierarchical-longtable.tex)。
+- 可编译示例：[中文地区输入](docs/examples/regional-input-cn.tex) / [English](docs/examples/regional-input.tex)，[中文层级报告](docs/examples/hierarchical-teams-cn.tex) / [English](docs/examples/hierarchical-teams.tex)。
 
 ### 可读性与目标趋势（v1.2.0）
 
@@ -218,7 +241,7 @@ Beta & & 0.750\\
 - [中文主文件](docs/gradbars-manual.tex)与[中文章节](docs/Chapter/zh-cn/README.md)。
 - [完整表格案例](docs/examples/README.md)：课程完成进度、借阅渠道构成、能耗前后对比与批次尺寸分布，均附独立源码。
 - [英文主文件](docs/gradbars-manual-en.tex)与[英文章节](docs/Chapter/en/README.md)。
-- [v1.2.0 升级说明](docs/migration-v1.2.0.md) · [API 参考](docs/api.md)、[开发者指南](docs/developer.md)、[v1.1.1 维护说明](docs/migration-v1.1.1.md)和[v1.1.0 迁移指南](docs/migration-v1.1.0.md)。
+- [v1.3.0 / v1.4.0 升级说明](docs/migration-v1.4.0.md) · [v1.2.0 升级说明](docs/migration-v1.2.0.md) · [API 参考](docs/api.md)、[开发者指南](docs/developer.md)、[v1.1.1 维护说明](docs/migration-v1.1.1.md)和[v1.1.0 迁移指南](docs/migration-v1.1.0.md)。
 - [稳定接口契约](docs/stability.md)：公开接口范围、覆盖顺序、兼容性和弃用约定。
 - [已发布源码说明（v1.1.0）](https://github.com/Tape5try/gradbars/releases/download/v1.1.0/gradbars-source-v1.1.0.pdf)：l3doc 文档与 docstrip 源码流程；当前版本可本地构建。
 - [变更记录](CHANGELOG.md)：版本新增、修复与兼容性变化。
@@ -230,13 +253,15 @@ l3build check
 texlua tests/maintenance.lua
 texlua scripts/docs-check.lua
 texlua scripts/check.lua
+texlua tests/hierarchy-pages.lua
+texlua tests/trend-pdf.lua
 texlua scripts/source.lua --check
 l3build doc
 ```
 
 构建使用 TeX Live 自带的 texlua、l3build 和 latexmk，不依赖 Python。中文手册使用 XeLaTeX，英文手册与源码说明使用 pdfLaTeX；latexmk 自动判断重编译次数。PDF 不提交到 Git，通过 GitHub Release 下载。
 
-`gradbars.dtx` 与 `gradbars.ins` 是可复现的发行源码。运行 `texlua scripts/unpack.lua` 可自动创建 `sty/` 并提取全部 22 个运行模块；根目录不生成 `.sty` 文件。若保留发行包中的 `sty/README.md`，也可直接运行 `tex gradbars.ins`。两种方式均无需开启 shell escape。
+`gradbars.dtx` 与 `gradbars.ins` 是可复现的发行源码。运行 `texlua scripts/unpack.lua` 可自动创建 `sty/` 并提取全部 23 个运行模块；根目录不生成 `.sty` 文件。若保留发行包中的 `sty/README.md`，也可直接运行 `tex gradbars.ins`。两种方式均无需开启 shell escape。
 开发时修改 `sty/` 后运行 `texlua scripts/source.lua` 同步发行源码。
 使用 `texlua scripts/pdf-check.lua` 检查实际 PDF 的替代文本、表格表头及跨行跨列结构。
 

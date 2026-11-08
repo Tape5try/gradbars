@@ -1,0 +1,18 @@
+\documentclass{article}
+\setlength{\parindent}{0pt}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+
+\gradscale{fixed}{min=-100,max=100}
+\begin{document}
+\gradsparkband[scale group=fixed,width=50mm,height=8mm]{-80,0,NA,80}{-20}{40}\par
+\gradsparkband[scale group=fixed,width=50mm,height=8mm]{NA,NA}{-100}{100}\par
+\gradsparkband[scale group=fixed,width=50mm,height=8mm,print]{0,0,0}{-20}{40}\par
+\gradsparkcompare[scale group=fixed,width=60mm,height=8mm]{-80,0,NA,80}\par
+\gradsparkcompare[scale group=fixed,width=60mm,height=8mm,compare label=delta]{NA,20,80}\par
+\gradsparkcompare[scale group=fixed,width=60mm,height=8mm]{20,NA}\par
+\gradsparkcompare[scale group=fixed,width=60mm,height=8mm]{NA,NA}\par
+\gradsparkcompare[scale group=fixed,width=60mm,height=8mm]{50}\par
+\gradsparkcompare[scale group=fixed,width=60mm,height=8mm,print]{-50,0,50}\par
+\gradspark[width=60mm,height=8mm]{20,40,60}\par
+\end{document}

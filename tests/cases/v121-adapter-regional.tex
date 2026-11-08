@@ -1,0 +1,8 @@
+\documentclass{article}\usepackage[margin=15mm]{geometry}\usepackage{gradbars}\usegradbarslibrary{reports,distribution,legend}
+\gradbarsloadcsv{r}{v130-regional.csv}
+\gradbarsdeclarecolumn{proxy}{frontend=bar,select=true,aggregate=true}
+
+\setlength{\parindent}{0pt}\begin{document}
+\begin{gradtable}[data=r,width=120mm,sort=x,order=descending]
+\gradcolumn[source=Name,width=30mm]{item}{Item}\gradcolumn[source=Comma,type=proxy,input decimal=comma,input grouping=point,aggregate=sum,options={max=3000}]{x}{Amount}\gradsummary{Sum}\end{gradtable}
+\end{document}

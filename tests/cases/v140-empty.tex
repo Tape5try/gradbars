@@ -1,0 +1,22 @@
+\documentclass{article}
+\setlength{\parindent}{0pt}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+
+\gradbarsloadcsv{teams}{v140-hierarchy.csv}
+\ExplSyntaxOn
+\cs_new_eq:NN\checkEmptySummary\gradtableBuildSummary
+\cs_set_protected:Npn\gradtableBuildSummary
+ {\checkEmptySummary
+  \seq_if_empty:NF\l__gradtable_rows_seq{\errmessage{Empty selection gained rows}}
+  \prop_if_empty:NF\l__gradtable_parent_starts_prop{\errmessage{Empty selection gained headings}}
+  \prop_if_empty:NF\l__gradtable_group_summary_values_prop{\errmessage{Empty selection gained group summaries}}}
+\ExplSyntaxOff
+\begin{document}
+\begin{gradtable}[data=teams,group levels={region,team},filter={score>1000},
+ parent summary=true,leaf summary=true]
+\gradcolumn[source=Name,width=30mm]{name}{Name}
+\gradcolumn[source=Region]{region}{Region}\gradcolumn[source=Team]{team}{Team}
+\gradcolumn[source=Score,type=number,aggregate=mean]{score}{Score}\gradsummary{All}
+\end{gradtable}
+\end{document}

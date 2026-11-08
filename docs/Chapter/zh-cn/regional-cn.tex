@@ -1,0 +1,57 @@
+\section{v1.3.0：显式地区输入与固定参考带}
+旧数字入口继续使用小数点十进制或科学计数法。新命令只按明确声明的规则解析，
+输出规范数字并遵循 TeX 局部赋值；每次调用先重置输入默认值，显示 formatter 不参与解析。
+\begin{example}[text and listing,sidebyside=false]{声明小数逗号与千位分组}
+\gradbarsparsenumber[decimal=comma,grouping=point]
+ {1.234,5}{\purchaseAmount}
+\gradbar[max=2000,width=55mm,precision=1]{\purchaseAmount}
+\end{example}
+\key{decimal=point|comma}；\key{grouping=none|point|comma|space}，两种符号必须不同。
+整数分组首组一至三位，之后恰三位；小数与指数不分组。space 仅指普通 ASCII 空格，
+首尾空格会裁剪。空输入和大写 NA 表示缺失，零仍为有效观测。指数是最多三位的有符号整数。
+归一化后复用已有位数与数值边界，表达式、单位、NaN、无穷仍报错，不自动猜测歧义。
+\subsection{CSV 列显式选择入口规则}
+下例数据文件的小数逗号字段使用 CSV 双引号。只有显式声明的 CSV 标量列
+number、bar、bullet、heat 接受地区输入；文本列与原始数据集不变。
+规范数字先于筛选、排序、排名、尺度和汇总建立，显示格式不改变计算结果。
+\begin{example}[text and listing,sidebyside=false]{图书采购金额：按规范原值求和}
+\gradbarsloadcsv{purchases}{docs/data/regional-input.csv}
+\begin{center}
+\begin{gradtable}[data=purchases,style=regional]
+\gradcolumn[source=Item,width=26mm]{item}{项目}
+\gradcolumn[source=Amount,type=number,width=30mm,
+ input decimal=comma,input grouping=point,
+ aggregate=sum,options={precision=2}]{amount}{金额}
+\gradsummary{合计}
+\end{gradtable}
+\end{center}
+\end{example}
+表格 \key{style=regional} 设置无障碍配色、间距与数字小数对齐，不选择地区规则。
+\clearpage
+\subsection{趋势线与固定参考带}
+\key{\gradsparkband} 依次接收序列、参考下界和上界，要求固定范围或命名尺度及线型趋势。
+上下界须在范围内严格递增；填色使用 \key{band color}，\key{band opacity} 须在 0 到 1 之间。
+\begin{example}[text and listing,sidebyside=false]{馆藏流通率：固定参考区间 45--65\%}
+\begingroup
+\gradscale{circulation}{min=0,max=100}
+\gradbarssetup{width=55mm,height=5ex,
+ precision=0,unit={\%},label width=12mm}
+\begin{tabular}{lc}
+馆藏类别 & 流通率；参考区间：45--65\%\\
+\hline
+文学 & \gradsparkband[scale group=circulation]
+ {35,55,NA,60,68}{45}{65}\\
+科学 & \gradsparkband[scale group=circulation]
+ {60,60,60,60,60}{45}{65}\\
+历史 & \gradsparkband[scale group=circulation]
+ {NA,NA,NA,NA,NA}{45}{65}\\
+\end{tabular}
+\endgroup
+\end{example}
+参考带只表示用户提供的参考区间，不是观测，也不自动称为置信区间；不改变范围、不填补缺失。
+NA 保留位置并打断趋势；全部缺失时仍显示参考带。打印模式采用灰色填充和虚线边界。
+一次组合只生成一个 Figure，自动替代文本保留完整序列、范围与参考说明。
+旧趋势入口及其错误保持；自定义标量后端须为 \key{spark-band} 显式启用 TikZ 回退。
+
+独立源码见 \texttt{docs/examples/regional-input-cn.tex}；完整输入矩阵见
+\texttt{docs/regional-input.md}。

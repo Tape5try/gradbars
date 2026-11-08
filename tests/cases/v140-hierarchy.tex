@@ -1,0 +1,48 @@
+\documentclass{article}
+\setlength{\parindent}{0pt}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+
+\gradbarsloadcsv{teams}{v140-hierarchy.csv}
+\ExplSyntaxOn
+\cs_new_eq:NN\checkGroupsOriginal\gradtableBuildGroups
+\cs_set_protected:Npn\gradtableBuildGroups
+ {\checkGroupsOriginal
+  \int_compare:nNnF{\l__gradtable_group_count_int}={5}{\errmessage{Hierarchy node collision}}
+  \int_compare:nNnF{\seq_count:N\l__gradtable_rows_seq}={3}{\errmessage{Global limit not respected}}
+  \str_if_eq:eeF{\prop_item:Nn\l__gradtable_row_groups_prop{1}}{2}{\errmessage{Source parent ordering changed}}
+  \str_if_eq:eeF{\prop_item:Nn\l__gradtable_row_groups_prop{3}}{4}{\errmessage{Same-named children merged}}
+  \clist_set:Nx\l_tmpa_clist{\seq_item:Nn\l__gradtable_rows_seq{1}}
+  \str_if_eq:eeF{\clist_item:Nn\l_tmpa_clist{1}}{Alpha}{\errmessage{Stable tie ordering changed}}}
+\cs_new_eq:NN\checkSummaryOriginal\gradtableBuildSummary
+\cs_set_protected:Npn\gradtableBuildSummary
+ {\checkSummaryOriginal
+  \fp_compare:nF{abs(\prop_item:Nn\l__gradtable_group_summary_values_prop{1/score}-230/3)<.00001}
+    {\errmessage{Parent data summary is wrong}}
+  \fp_compare:nNnF{\prop_item:Nn\l__gradtable_group_summary_values_prop{2/score}}={80}
+    {\errmessage{Leaf visible summary is wrong}}
+  \fp_compare:nNnF{\prop_item:Nn\l__gradtable_group_summary_values_prop{3/score}}={90}
+    {\errmessage{South data summary is wrong}}
+  \prop_if_in:NnT\l__gradtable_group_summary_values_prop{5/score}
+    {\errmessage{Undisplayed leaf acquired a summary}}}
+\cs_new_eq:NN\checkRankOriginal\gradtableRank
+\cs_set_protected:Npn\gradtableRank
+ {\checkRankOriginal
+  \fp_compare:nNnF{\prop_item:Nn\l__gradtable_group_best_prop{1/score}}={80}
+    {\errmessage{Parent rank used hidden rows}}
+  \prop_if_in:NnT\l__gradtable_group_second_prop{1/score}
+    {\errmessage{Tied parent values acquired second rank}}}
+\ExplSyntaxOff
+\begin{document}
+\begin{gradtable}[data=teams,style=hierarchical,group levels={region,team},
+ rank scope=parent,parent summary=true,leaf summary=true,parent summary scope=data,
+ sort=score,order=descending,filter={score>=80},limit=3,width=\linewidth]
+\gradcolumn[source=Name,width=30mm]{name}{Method}
+\gradcolumn[source=Region,width=20mm]{region}{Region}
+\gradcolumn[source=Team,width=20mm]{team}{Team}
+\gradcolumn[source=Score,type=number,aggregate=mean,mark=both,width=18mm]{score}{Score}
+\gradcolumn[source=Trend,type=trendcompare,options={min=0,max=100,height=6mm,
+ compare label=delta}]{trend}{Endpoint / trend}
+\gradsummary{All visible}
+\end{gradtable}
+\end{document}

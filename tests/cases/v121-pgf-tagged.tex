@@ -1,0 +1,14 @@
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}\usepackage[libraries=none]{gradbars}\usegradbarslibrary{pgfplotstable}\pgfplotsset{compat=1.18}
+\gradpgfplotstablecolumn[min=0,max=100]{score}{bar}{35mm}
+\gradpgfplotstablecolumn[precision=2,unit={\,ms}]{time}{number}{22mm}
+\setlength{\parindent}{0pt}
+\begin{document}
+\pgfplotstabletypeset[col sep=comma,columns/name/.style={string type},columns/score/.append style={column name={\textbf{Score}}}]{
+name,score,time
+A,70,2.5
+B,0,NA
+C,NA,0
+}
+\gradpgfplotstablecell[pgf missing={none},label=outside,label width=10mm,min=0,max=100]{bar}{40mm}{none}
+\end{document}

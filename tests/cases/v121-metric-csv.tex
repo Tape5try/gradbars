@@ -1,0 +1,19 @@
+\documentclass{article}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+\usegradbarslibrary{reports,distribution}
+\graddeclaremetric{quality}{title={Review score},role=score,unit={\,pt},better=higher,min=0,max=100,precision=1,aggregate=mean}\gradbarsloadcsv{reports}{v121-report.csv}
+\ExplSyntaxOn
+\cs_new_eq:NN\reportSavedSummary\gradtableBuildSummary
+\cs_set_protected:Npn\gradtableBuildSummary{\reportSavedSummary
+ \str_if_eq:VnTF\l__gradtable_summary_scope_tl{visible}
+  {\fp_compare:nNnF{\prop_item:Nn\l__gradtable_summary_values_prop{score}}={60}{\errmessage{Wrong visible metric mean}}}
+  {\fp_compare:nNnF{\prop_item:Nn\l__gradtable_summary_values_prop{score}}={40}{\errmessage{Wrong data metric mean}}}}
+\ExplSyntaxOff
+\setlength{\parindent}{0pt}
+\begin{document}
+\begin{gradtable}[data=reports,style=metric-report,width=120mm,sort=score,order=descending,limit=2]
+\gradcolumn[source=Name,width=28mm]{name}{Project}\gradmetricbind[source=Score,mark=both]{quality}{score}\gradsummary{Visible mean}\end{gradtable}\par
+\begin{gradtable}[data=reports,style=metric-report,width=120mm,limit=2]
+\gradcolumn[source=Name,width=28mm]{name}{Project}\gradmetricbind[source=Other]{quality}{score}\gradsummary[scope=data]{Data mean}\end{gradtable}\par
+\end{document}

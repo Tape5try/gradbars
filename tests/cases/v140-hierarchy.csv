@@ -1,0 +1,6 @@
+Region,Team,Name,Score,Trend
+North,Shared,Alpha,80,"20,35,NA,80"
+South,Shared,Beta,90,"30,NA,60,90"
+North,Other,Gamma,70,"40,50,NA,70"
+North,Shared,Delta,80,"NA,40,60,80"
+South,Shared,Epsilon,NA,"20,NA,NA,NA"

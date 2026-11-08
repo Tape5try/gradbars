@@ -1,0 +1,12 @@
+\documentclass{article}\usepackage[margin=15mm]{geometry}\usepackage{gradbars}\usegradbarslibrary{reports,distribution,legend}
+\graddeclaremetric{counted}{title=Counted,unit={\,ms},aggregate=count}
+\makeatletter\ExplSyntaxOn
+\cs_new_eq:NN\testSummaryNumber\gradtableNumber
+\cs_set_protected:Npn\gradtableNumber #1
+ {\tl_if_empty:oT{\gradbars@unit}{\fp_compare:nNnF{#1}={2}{\errmessage{Wrong count}}}\testSummaryNumber{#1}}
+\ExplSyntaxOff\makeatother
+\setlength{\parindent}{0pt}\begin{document}
+\begin{gradtable}[width=120mm,style=metric-report]
+\gradcolumn[width=25mm]{name}{Project}\gradmetricbind{counted}{x}
+\gradrow{A,0}\gradrow{B,2}\gradrow{C,NA}\gradsummary{Count}\end{gradtable}
+\end{document}

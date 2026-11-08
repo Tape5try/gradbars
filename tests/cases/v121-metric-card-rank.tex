@@ -1,0 +1,9 @@
+\documentclass{article}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+\usegradbarslibrary{reports,distribution}
+\graddeclaremetric{quality}{title={Review score},role=score,unit={\,pt},better=higher,min=0,max=100,precision=1,aggregate=mean}
+\setlength{\parindent}{0pt}
+\begin{document}
+\begin{gradtable}\gradmetriccardcolumn[mark=both]{quality}{x}\gradrow{{20,30}}\end{gradtable}\par
+\end{document}

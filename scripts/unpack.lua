@@ -21,5 +21,5 @@ local ok, _, code = os.execute('tex -interaction=nonstopmode -halt-on-error grad
 if ok ~= true and ok ~= 0 then os.exit(code or 1) end
 local n = 0
 for name in lfs.dir('sty') do if name:match('%.sty$') then n = n + 1 end end
-assert(n == 22, 'Expected 22 extracted modules in sty/, found ' .. n)
-print('Extracted 22 runtime modules into sty/.')
+assert(n == 23, 'Expected 23 extracted modules in sty/, found ' .. n)
+print('Extracted 23 runtime modules into sty/.')

@@ -1,0 +1,14 @@
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+\begin{document}
+\begin{center}
+\begin{gradtable}[width=\linewidth]
+\gradcolumn[width=25mm]{name}{Project}
+\gradcolumn[type=trendcompare,options={min=0,max=100,compare label=delta}]{trend}{Endpoint / trend}
+\gradrow{Atlas,{0,NA,80}}
+\gradrow{Birch,{NA,40,NA}}
+\end{gradtable}
+\end{center}
+\end{document}

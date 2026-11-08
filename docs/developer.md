@@ -1,4 +1,4 @@
-# Developing gradbars v1.1.1
+# Developing gradbars v1.2.2
 
 This release freezes the documented extension interfaces under the
 [version 1 stability contract](stability.md). Private
@@ -7,7 +7,7 @@ implementation details; they are not an extension contract.
 
 ## Runtime structure
 
-The twenty-two matching runtime modules, including optional feature libraries and tabularray adapters, are stored in `sty/`. The builders and tests add
+The twenty-three matching runtime modules, including optional feature libraries and tabularray adapters, are stored in `sty/`. The builders and tests add
 this directory to the TeX search path; l3build installs its contents as package
 files. The contributed example remains in `docs/libraries/`.
 
@@ -131,7 +131,7 @@ l3build doc
 l3build ctan
 ```
 
-`l3build check` runs seven semantic groups under three engines, extracting runtime
+`l3build check` runs eight semantic groups under three engines, extracting runtime
 modules from the documented source and comparing them with `sty/`. The static
 regression corpus in `tests/cases/` is replayed by `texlua scripts/check.lua`;
 expected failures must fail with their declared diagnostics. Run
@@ -214,7 +214,7 @@ CSV selection, ranking or aggregates for tblr.
 `texlua scripts/source.lua`. Use `--check` to reject drift and verify
 docstrip extraction of every module. The l3doc driver builds a source guide;
 the manuals continue using bilingual chapter sources. From the source-package
-root, `texlua scripts/unpack.lua` creates `sty/` if needed and extracts all 22
+root, `texlua scripts/unpack.lua` creates `sty/` if needed and extracts all 23
 modules without shell escape. Plain `tex gradbars.ins` also writes there, but
 requires both an existing `sty/` directory and its readable `sty/README.md`
 marker. If either is missing, use the Lua entry above; creating the directory
@@ -258,3 +258,55 @@ See [the complete contract and bilingual examples](readability.md) for `legend l
 Run `texlua tests/contrast-reference.lua` after the three-engine static suite. It independently compares six actual label-box geometry records per engine against 10,001-point sRGB references, including opposing gradients, reversed/negative ramps, band compositing and large type. Bounds must enclose the references and remain within the documented numerical tolerance. The actual-PDF fixture asserts six Figures, separate reference/missing descriptions and artifact/off suppression.
 
 Ordinary branch pushes and pull requests run `l3build check` and `l3build doc`; CTAN archive construction/installation checks and release-asset upload are gated to explicit tag builds. This v1.2.0 update is a repository push only: no tag, GitHub Release or CTAN package/submission.
+
+## v1.3.0 / v1.4.0 local implementation
+
+Regional normalization lives in numbers and is called only by the public explicit helper or typed CSV scalar-column bindings. Preserve the original CSV dataset and literal text. Canonical values must be established before existing filter/sort/limit, rank, scale and aggregate paths. Test bad grouping, ambiguity, units/expressions, bounds, missing/zero and local assignments separately from output formatters.
+
+The spark module wraps existing rendering for the two explicit compositions; full series and endpoint state are retained. New backend kinds are spark-band and spark-compare, with explicit fallback for scalar backends. Schema remains 1. Native trendcompare resolves one range across all observations, has allocated panel width and no scalar adapter privileges.
+
+Two-level grouping is isolated from old single-level build paths. Node identity uses numeric parent identity plus literal leaf text; original source order allocates nodes before assigning selected rows. Parent and leaf data/visible sequences drive summaries. Existing rank caches are reused at the selected node level. Summary separators use noalign-only rules to preserve real longtable keep chains; booktabs midrule can otherwise introduce an alignment row that breaks them.
+
+After `texlua scripts/check.lua`, run `texlua tests/hierarchy-pages.lua` for actual shipout pages (all four rule styles) and `texlua tests/trend-pdf.lua` for real composition Figure/Alt assertions, in addition to `texlua scripts/pdf-check.lua`. All use texlua/TeX Live, with no Python test dependency. `l3build check` covers eight semantic groups and all 23 module extraction comparisons. New example sources in docs/examples are bilingual; build both manuals and inspect changed pages visually.
+
+This update remains local: do not push, tag, create Releases, build/upload CTAN archives or infer publication authorization from validation commands.
+
+## v1.2.1 adapter and report layers
+
+The v1.2.1 snapshot used that number at the maintainer's explicit request, including
+the former v1.5.0/v1.6.0 plans. All 23 modules match. Keep the old default five
+libraries and backend schema 1. `gradbars-lib-pgfplotstable.sty` is independently
+opt-in, depending on core and pgfplotstable only; heat is an explicit extra.
+
+The table module owns the locally scoped column registry, typed capabilities,
+fixed-box callback dimensions and context guard. Data/layout modules keep canonical
+normalization, raw statistics and allocated/label width handling. Reports owns
+metric metadata, frozen resolved semantic guards, per-use bindings and alt metadata.
+The spark module reuses panel layout for current-value/history; distribution reuses
+its original type-7 statistics and adds a raw-sample rug drawing path and bound.
+Do not derive statistics from labels or turn callbacks into an arbitrary layout API.
+
+Run the new `v121-*` static cases on all engines. Then run
+`texlua tests/report-pdf.lua` for real combined/delegated/PGF Figure counts and
+alternatives, and the extended `texlua tests/hierarchy-pages.lua` for actual
+metric-card longtable shipout pages as well as the earlier four hierarchy fixtures.
+`l3build check` now covers eight semantic groups, including scoped metric metadata,
+local adapter registration and independently expected rug/box statistics. Compare
+all 23 docstrip outputs. The documented examples use public APIs only.
+
+## v1.2.2 ranking and performance checks
+
+`gradtableRankBeforeSeven` already produces both best and second distinct
+values. The group wrapper calls it once per group and copies both properties
+across its temporary TeX group, instead of rerunning the complete calculation.
+The extra global property is a private scratch bridge, not a cross-table cache;
+each group overwrites it, and current-table result properties are cleared before
+ranking. Existing hierarchy construction selects the same parent/leaf rows.
+
+Use `texlua scripts/benchmark.lua` for fixed-runtime/data phase measurements;
+see [performance methodology](performance.md) for bounds, identities, sample
+retention and timing limits. No parser/statistics or opaque formatter cache is
+added. `tests/cases/v122-ranking.tex` checks independent expected values, ties,
+missing/negative/zero values, direction, CSV reload isolation and duplicate work.
+Related hierarchy/PDF/page checks remain necessary; performance does not replace
+them. 本版仅优化既有路径，保留公开接口、默认语义与 backend schema 1。

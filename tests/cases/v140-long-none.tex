@@ -1,0 +1,36 @@
+\documentclass{article}
+\setlength{\parindent}{0pt}
+\usepackage[paperwidth=190mm,paperheight=145mm,margin=12mm]{geometry}
+\usepackage{gradbars}
+\usepackage{refcount}
+\gradbarsloadcsv{longteams}{v140-long.csv}
+\newcount\headingCount
+\makeatletter\ExplSyntaxOn
+\cs_new_eq:NN\savedHeading\gradtableGroupTitle
+\cs_set_protected:Npn\gradtableGroupTitle #1
+ {\global\advance\headingCount1\relax\label{heading-\the\headingCount}\savedHeading{#1}}
+\cs_new_eq:NN\savedGroupedCell\gradtableGroupedCell
+\cs_set_protected:Npn\gradtableGroupedCell #1#2#3
+ {\str_if_eq:nnT{#2}{name}{\label{row-#1}}\savedGroupedCell{#1}{#2}{#3}}
+\bool_new:N\l_test_group_cell_bool
+\cs_new_eq:NN\savedOverallSummaryCell\gradtableSummaryCell
+\cs_set_protected:Npn\gradtableSummaryCell #1
+ {\bool_if:NF\l_test_group_cell_bool{\str_if_eq:nnT{#1}{name}{\label{overall-summary}}}\savedOverallSummaryCell{#1}}
+\cs_new_eq:NN\savedGroupSummaryCell\gradtableGroupSummaryCell
+\cs_set_protected:Npn\gradtableGroupSummaryCell #1#2
+ {\group_begin:\bool_set_true:N\l_test_group_cell_bool
+  \str_if_eq:nnT{#2}{name}{\label{summary-#1}}\savedGroupSummaryCell{#1}{#2}\group_end:}
+\ExplSyntaxOff\makeatother
+\begin{document}
+\begin{gradtable}[data=longteams,style=hierarchical,rules=none,long=true,width=\linewidth,
+ group levels={region,team},rank scope=leaf,parent summary=true,leaf summary=true,
+ parent summary label={Parent total},leaf summary label={Leaf total},caption={Two-level endpoint trends}]
+\gradcolumn[source=Name,width=26mm]{name}{Method}
+\gradcolumn[source=Region,width=18mm]{region}{Region}
+\gradcolumn[source=Team,width=18mm]{team}{Team}
+\gradcolumn[source=Score,type=number,aggregate=mean,mark=both,width=20mm]{score}{Score}
+\gradcolumn[source=Trend,type=trendcompare,options={min=0,max=100,height=6mm,
+ compare label=delta}]{trend}{Endpoints / trend}
+\gradsummary{All visible}
+\end{gradtable}
+\end{document}

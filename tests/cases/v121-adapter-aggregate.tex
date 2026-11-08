@@ -1,0 +1,9 @@
+\documentclass{article}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+\usegradbarslibrary{reports,distribution}
+\gradbarsdeclarecolumn{proxy}{frontend=bar}
+\setlength{\parindent}{0pt}
+\begin{document}
+\begin{gradtable}\gradcolumn[type=proxy,aggregate=mean]{x}{X}\gradrow{2}\end{gradtable}\par
+\end{document}

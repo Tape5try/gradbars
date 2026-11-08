@@ -1,0 +1,15 @@
+% Public-only native column extension example. MIT; all values illustrative.
+\ProvidesPackage{gradbars-contrib-columns}[2026/11/07 v1.0.0 Explicit column adapters]
+\gradbarsrequireversion{1.2.1}
+\gradbarsdeclarecolumn{review-score}{frontend=bar,select=true,rank=true,
+ aggregate=true,options={min=0,max=100,theme=accessible,precision=0}}
+% Admitted table callbacks must be repeatable and have no external side effects.
+% Fixed box dimensions use the table's text baseline; no extra label is reserved.
+\gradbarsdeclaretype{review-stamp}{%
+ \makebox[\gradbarscolumnwidth][c]{\scriptsize
+  \def\sampleValue{#1}\def\sampleMissing{NA}%
+  \ifx\sampleValue\sampleMissing\textendash
+  \else\gradbarsformatnumber{#1}\fi}}
+\gradbarsdeclarecolumn{review-stamp}{frontend=box,graphic=review-stamp,
+ box width=20mm,box height=10pt,box depth=4pt}
+\endinput

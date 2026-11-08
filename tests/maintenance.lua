@@ -160,7 +160,7 @@ end
 local function modules(dir)
   local n=0
   for name in lfs.dir(dir) do if name:match('%.sty$') then n=n+1 end end
-  assert(n==22,'Incomplete extraction in '..dir);no_root_modules()
+  assert(n==23,'Incomplete extraction in '..dir);no_root_modules()
 end
 execute('tex -interaction=nonstopmode -halt-on-error gradbars.ins','Run texlua scripts/unpack.lua')
 execute('texlua scripts/unpack.lua');modules('sty')

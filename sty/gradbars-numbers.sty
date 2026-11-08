@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Internal implementation unless documented.
-\ProvidesPackage{gradbars-numbers}[2026/11/03 v1.2.0 gradbars numbers]
+\ProvidesPackage{gradbars-numbers}[2026/11/07 v1.2.2 gradbars numbers]
 \ExplSyntaxOff
 % v0.0.8: bounded scientific input, optional SI formatting and decimal anchors.
 \ExplSyntaxOn
@@ -73,4 +73,61 @@
 \ExplSyntaxOff
 
 \ExplSyntaxOff
+% v1.3: explicit input normalization; never replace the strict scalar parser.
+\ExplSyntaxOn
+\tl_new:N\l__gradbars_input_decimal_tl
+\tl_new:N\l__gradbars_input_grouping_tl
+\tl_new:N\l__gradbars_input_pattern_tl
+\tl_new:N\l__gradbars_input_decimal_pattern_tl
+\tl_new:N\l__gradbars_input_group_pattern_tl
+\tl_new:N\l__gradbars_input_normal_tl
+\keys_define:nn{gradbars/input}
+ {decimal .choices:nn={point,comma}
+   {\tl_set_eq:NN\l__gradbars_input_decimal_tl\l_keys_choice_tl},
+  grouping .choices:nn={none,point,comma,space}
+   {\tl_set_eq:NN\l__gradbars_input_grouping_tl\l_keys_choice_tl}}
+\cs_new_protected:Npn\__gradbars_normalize_input:n #1
+ {\tl_set:Nx\l__gradbars_input_normal_tl{#1}
+  \tl_trim_spaces:N\l__gradbars_input_normal_tl
+  \str_if_eq:VVTF\l__gradbars_input_decimal_tl\l__gradbars_input_grouping_tl
+   {\gradbarsFail{Input~decimal~and~grouping~separators~must~differ}}
+   {\tl_if_empty:NT\l__gradbars_input_normal_tl{\tl_set:Nn\l__gradbars_input_normal_tl{NA}}
+    \str_if_eq:VnF\l__gradbars_input_normal_tl{NA}
+     {\str_if_eq:VnTF\l__gradbars_input_decimal_tl{point}
+       {\tl_set:Nn\l__gradbars_input_decimal_pattern_tl{\.}}
+       {\tl_set:Nn\l__gradbars_input_decimal_pattern_tl{,}}
+      \str_case:Vn\l__gradbars_input_grouping_tl
+       {{none}{\tl_set:Nn\l__gradbars_input_group_pattern_tl{\d+}}
+        {point}{\tl_set:Nn\l__gradbars_input_group_pattern_tl{(?:\d+|\d{1,3}(?:\.\d{3})+)}}
+        {comma}{\tl_set:Nn\l__gradbars_input_group_pattern_tl{(?:\d+|\d{1,3}(?:,\d{3})+)}}
+        {space}{\tl_set:Nn\l__gradbars_input_group_pattern_tl{(?:\d+|\d{1,3}(?:\x{20}\d{3})+)}}}
+      \tl_set:Nx\l__gradbars_input_pattern_tl
+       {\exp_not:n{\A[+\-]?(?:}\exp_not:V\l__gradbars_input_group_pattern_tl
+         \exp_not:n{(?:}\exp_not:V\l__gradbars_input_decimal_pattern_tl\exp_not:n{\d*)?|}
+         \exp_not:V\l__gradbars_input_decimal_pattern_tl\exp_not:n{\d+)(?:[eE][+\-]?\d{1,3})?\Z}}
+      \exp_args:NVV\regex_match:nnTF\l__gradbars_input_pattern_tl\l__gradbars_input_normal_tl
+       {\str_case:Vn\l__gradbars_input_grouping_tl
+         {{point}{\tl_remove_all:Nn\l__gradbars_input_normal_tl{.}}
+          {comma}{\tl_remove_all:Nn\l__gradbars_input_normal_tl{,}}
+          {space}{\tl_remove_all:Nn\l__gradbars_input_normal_tl{~}}}
+        \str_if_eq:VnT\l__gradbars_input_decimal_tl{comma}
+          {\tl_replace_all:Nnn\l__gradbars_input_normal_tl{,}{.}}
+        \gradbarsCheckNumber{\l__gradbars_input_normal_tl}{normalized~input}
+        \ifgradbars@valid
+          \tl_set:Nx\l__gradbars_input_normal_tl{\fp_eval:n{\l__gradbars_input_normal_tl}}
+        \fi}
+       {\gradbarsFail{Invalid~regional~number~or~digit~grouping}}}}}
+\NewDocumentCommand\gradbarsparsenumber{O{} m m}
+ {\group_begin:\gradbars@validtrue
+  \keys_set:nn{gradbars/input}{decimal=point,grouping=none,#1}
+  \__gradbars_normalize_input:n{#2}
+  \tl_if_single_token:nTF{#3}
+   {\token_if_cs:NTF#3{}
+     {\gradbarsFail{Numeric~output~must~be~a~control~sequence}}}
+   {\gradbarsFail{Numeric~output~must~be~a~single~control~sequence}}
+  \ifgradbars@valid
+    \use:x{\group_end:\cs_set:Npn\exp_not:N#3{\exp_not:V\l__gradbars_input_normal_tl}}
+  \else\group_end:\fi}
+\ExplSyntaxOff
+
 \endinput

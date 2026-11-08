@@ -1,0 +1,5 @@
+\documentclass{article}\usepackage[margin=15mm]{geometry}\usepackage{gradbars}\usegradbarslibrary{reports,distribution,legend}
+\gradlegenddefine{a}{min=0,max=100}\gradlegenddefine{b}{min=0,max=100}\graddeclaremetric{metric}{title=X,legend group=a}
+\setlength{\parindent}{0pt}\begin{document}
+\gradmetricuse[legend group=b]{metric}{20}
+\end{document}

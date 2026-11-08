@@ -46,3 +46,26 @@ adaptation retains the license statement at the top of its own file.
 
 - [Readability and target trends](readability-target.tex): three-engine English example, measured legends, internal contrast panels and a separate target reference.
 - [可读性与目标趋势](readability-target-cn.tex)：中文版本，用 XeLaTeX 或 LuaLaTeX；演示数据，目标不参与观测。
+
+## v1.3.0 / v1.4.0
+
+- [Regional purchase input](regional-input.tex) / [中文](regional-input-cn.tex): explicit decimal/grouping rules, canonical sums, regional preset and fixed circulation reference band.
+- [Hierarchical project review](hierarchical-teams.tex) / [中文](hierarchical-teams-cn.tex): structured two-level CSV groups, parent ranks, level means, missing endpoints and full trends.
+- [Multipage hierarchical report](hierarchical-longtable.tex): 72 rows, repeated headers, attached headings and per-level summaries; compile twice.
+
+Run from the repository root; these sources read docs/data CSV fixtures. English sources support all three engines; Chinese sources use XeLaTeX or LuaLaTeX with ctex/Fandol. Data are illustrative. Per-version presets and combinations are explicit; old defaults remain.
+
+## v1.2.1 adapters, raw samples and declared report metrics
+
+All values are fictitious. Build from the repository root with the `sty/` runtime.
+Use pdfLaTeX for English and XeLaTeX for Chinese; no shell escape is required.
+
+| English | 中文 | Demonstration / 演示 |
+| --- | --- | --- |
+| [column-adapters.tex](column-adapters.tex) | [column-adapters-cn.tex](column-adapters-cn.tex) | Public-only standard/fixed-box column extension; all-sample box+rug |
+| [pgfplotstable-cells.tex](pgfplotstable-cells.tex) | [pgfplotstable-cells-cn.tex](pgfplotstable-cells-cn.tex) | Optional body hook, protected headings, zero and missing numbers |
+| [report-metrics.tex](report-metrics.tex) | [report-metrics-cn.tex](report-metrics-cn.tex) | One metric across two tables and standalone graphics, visible/data summaries, final-NA history |
+
+Shared data: [report-metrics.csv](../data/report-metrics.csv).
+Public-only third-party library: [gradbars-contrib-columns.sty](../libraries/gradbars-contrib-columns.sty).
+Contracts: [adapters](../column-adapters.md), [PGF](../pgfplotstable.md), [metrics/compositions](../report-metrics.md).

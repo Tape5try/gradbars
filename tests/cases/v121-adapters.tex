@@ -1,0 +1,21 @@
+\documentclass{article}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+\usegradbarslibrary{reports,distribution}
+\gradbarsdeclarecolumn{proxy}{frontend=bar,select=true,rank=true,aggregate=true,options={min=0,max=100,label=none}}
+\gradbarsdeclarecolumn{digits}{frontend=number,aggregate=true}
+\gradbarsdeclaretype{independent}{\gradbar[width=\gradbarscolumnwidth,height=4pt,label=none]{#1}}
+\gradbarsdeclarecolumn{fixed}{frontend=box,graphic=independent,box width=30mm,box height=12pt,box depth=8pt}
+
+\setlength{\parindent}{0pt}
+\begin{document}
+\begin{gradtable}[style=adapter-report,width=140mm]
+\gradcolumn[width=25mm]{name}{Project}
+\gradcolumn[type=proxy,aggregate=mean,mark=both]{score}{Score}
+\gradcolumn[type=digits,aggregate=sum,width=25mm]{number}{Number}
+\gradrow{A,0,0}\gradrow{B,80,2}\gradrow{C,NA,NA}\gradsummary{Summary}
+\end{gradtable}\par
+\begin{gradtable}[width=100mm]\gradcolumn[width=30mm]{name}{Project}\gradcolumn[type=fixed]{value}{Fixed}
+\gradrow{A,50}\gradrow{B,NA}\end{gradtable}\par
+
+\end{document}

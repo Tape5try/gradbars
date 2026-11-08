@@ -1,0 +1,57 @@
+\section{Report metrics and current-value cards (v1.2.1)}
+The former v1.6.0 plan is included in this snapshot. The reports library adds explicit declarations; old \key{\gradmetric} and \key{\gradmetriccolumn} recipes and defaults remain unchanged. Review data are fictitious.
+\begin{demo}{One declaration, three standalone uses}
+\begingroup
+\gradscale{review-range}{min=0,max=100}
+\graddeclaremetric{review}{title={Review score},role=score,
+ unit={\,pt},better=higher,precision=1,
+ scale group=review-range,aggregate=mean}
+\gradmetricuse[width=35mm]{review}{80}\quad
+\gradmetricnumber{review}{0}\par\medskip
+\gradmetriccard{review}{0,40,NA,80}\par\medskip
+\gradmetriccard{review}{20,40,NA}
+\endgroup
+\end{demo}
+Fields include required title, role (scalar/score/count/duration/ratio), unit/unit code/unit text, better (higher/lower), formatter, precision, number format, value format, fixed min/max, optional scale group/legend group and aggregate (none/count/sum/mean/min/max). Defaults are range 0--100, higher, precision 1, no unit and no aggregation. Roles imply no math or combined score.
+Declarations follow TeX scope. Visible duplicates, unknown IDs/fields and semantic conflicts are errors. Range/group identity, unit, direction and format are frozen; bind source fields at use. Unit text and siunitx macros do not convert values. Expandable \key{\gradmetricinfo{id}{field}} queries metadata.
+\clearpage
+\subsection{Two tables with one metric contract}
+\begin{demo}{Bind different source fields at use}
+\begingroup
+\graddeclaremetric{review}{title={Review score},role=score,
+ unit={\,pt},min=0,max=100,aggregate=mean}
+\gradbarsloadcsv{reviews}{docs/data/report-metrics.csv}
+\begin{gradtable}[data=reviews,style=metric-report,
+ width=\linewidth,sort=score,order=descending,limit=2]
+\gradcolumn[source=Project,width=25mm]{project}{Project}
+\gradmetricbind[source=Review,mark=both]{review}{score}
+\gradsummary{Visible mean}
+\end{gradtable}\par\medskip
+\begin{gradtable}[data=reviews,style=metric-report,
+ width=\linewidth,limit=2]
+\gradcolumn[source=Project,width=25mm]{project}{Project}
+\gradmetricbind[source=Followup]{review}{score}
+\gradsummary[scope=data]{Data mean}
+\end{gradtable}
+\endgroup
+\end{demo}
+The first table sorts and limits globally, giving visible mean 60 pt. The second shows two rows but its data summary includes all valid follow-up values, mean 50 pt. Raw values drive ranking and summaries; formatters only display. Count summaries suppress units. Existing schemas remain reusable. \key{\gradmetriccardcolumn[options]{id}{column}} binds history; scalar selection, ranking, aggregation and regional input are rejected. No hidden current scalar is added to statistics.
+\clearpage
+\subsection{Cards: final position and panel dimensions}
+\key{\gradmetriccard[options]{id}{history}} takes a nonempty positional series. Current means the last position, with no fallback at final NA. Missing positions break the line and remain in the history; one point, constants, zero and all-missing input work. Both panels share the metric range/unit, without a second axis or independent rescaling.
+\begin{demo}{A missing final position stays missing}
+\begingroup
+\graddeclaremetric{review}{title={Review score},role=score,
+ min=0,max=100,unit={\,pt},aggregate=mean}
+\begin{gradtable}[style=metric-report,width=\linewidth]
+\gradcolumn[width=25mm]{project}{Project}
+\gradmetriccardcolumn[options={height=6mm,
+ label width=12mm}]{review}{history}
+\gradrow{Atlas,{0,40,NA,80}}
+\gradrow{Birch,{20,40,NA}}
+\gradrow{Cedar,{0}}\gradrow{Dune,{NA,NA}}
+\end{gradtable}
+\endgroup
+\end{demo}
+Standalone metric-card defaults to 70mm drawing width and 5ex height. Deduct card panel gap (3mm), then assign card panel ratio (0.4) to the current bar. Ratio is strictly between 0 and 1, gap nonnegative; each panel also reserves marker/stroke padding and needs sufficient interior width. Standalone left/outside labels add their slot and gap; native allocation already deducts them.
+One Figure describes the complete history, current final position, range, unit and metric metadata. Explicit alt, artifact/off, embedding and measurement suppression retain existing rules. New native backend kinds metric-card and box-rug require explicit TikZ fallback for scalar backends; schema remains 1. See \texttt{docs/report-metrics.md} for fields and conflicts.

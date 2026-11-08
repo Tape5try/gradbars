@@ -1,0 +1,9 @@
+Parent,Child,Name,Score
+,"x,y",Empty,0
+NA,"x,y",LiteralNA,1
+" A ","x,y",Trimmed,2
+A,x/y,Slash,3
+A,,EmptyChild,4
+A,NA,LiteralChild,5
+"B/x",y,OtherPath,6
+B,x/y,OtherParent,7

@@ -26,6 +26,7 @@ gradbars_CTAN/
 wiki-v0.0.4/
 wiki-v0.0.4-PUBLISH.md
 ROADMAP.md
+/AGENTS.md
 
 .DS_Store
 Thumbs.db

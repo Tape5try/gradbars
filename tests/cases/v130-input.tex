@@ -1,0 +1,29 @@
+\documentclass{article}
+\setlength{\parindent}{0pt}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+
+\ExplSyntaxOn
+\cs_new_protected:Npn\assertValue #1#2
+ {\fp_compare:nNnF{#1}={#2}{\errmessage{Normalized value differs}}}
+\ExplSyntaxOff
+\begin{document}
+\gradbarsparsenumber{1234.5}\valueA\assertValue{\valueA}{1234.5}
+\gradbarsparsenumber[grouping=comma]{1,234.5}\valueB\assertValue{\valueB}{\valueA}
+\gradbarsparsenumber[decimal=comma,grouping=point]{1.234,5}\valueC\assertValue{\valueC}{\valueA}
+\gradbarsparsenumber[grouping=space]{1 234.5}\valueD\assertValue{\valueD}{\valueA}
+\gradbarsparsenumber[decimal=comma,grouping=space]{-1 234,5E-3}\valueE\assertValue{\valueE}{-1.2345}
+\gradbarsparsenumber{+0e100}\valueF\assertValue{\valueF}{0}
+\gradbarsparsenumber{.5}\valueF\assertValue{\valueF}{.5}
+\gradbarsparsenumber{1.}\valueF\assertValue{\valueF}{1}
+\gradbarsparsenumber{1e100}\valueF\assertValue{\valueF}{1e100}
+\gradbarsparsenumber{1e-100}\valueF\assertValue{\valueF}{1e-100}
+\def\localValue{unchanged}
+{\gradbarsparsenumber[decimal=comma]{1,234}\localValue\assertValue{\localValue}{1.234}}
+\ifx\localValue\empty\errmessage{Output leaked}\fi
+\def\expected{unchanged}\ifx\localValue\expected\else\errmessage{Output scope leaked}\fi
+\gradbarsparsenumber{NA}\missingA\gradbarsparsenumber{}\missingB
+\ifx\missingA\missingB\else\errmessage{Missing normalization differs}\fi
+\gradbarsparsenumber{0}\zeroValue\ifx\missingA\zeroValue\errmessage{Zero became missing}\fi
+\gradbar[max=2000,precision=0]{\valueA}
+\end{document}

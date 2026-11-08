@@ -1,0 +1,37 @@
+% MIT; illustrative data. Compile from repository root.
+\documentclass[UTF8,fontset=fandol]{ctexart}
+\usepackage[margin=18mm]{geometry}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\pagestyle{empty}
+\begin{document}
+\section*{地区数字采购表与流通率参考带}
+\gradbarsloadcsv{purchases}{docs/data/regional-input.csv}
+\begin{center}
+\begin{gradtable}[data=purchases,style=regional]
+\gradcolumn[source=Item,width=26mm]{item}{项目}
+\gradcolumn[source=Amount,type=number,width=30mm,
+ input decimal=comma,input grouping=point,
+ aggregate=sum,options={precision=2}]{amount}{金额}
+\gradsummary{合计}
+\end{gradtable}
+\end{center}
+\bigskip
+\begingroup
+\gradscale{circulation}{min=0,max=100}
+\gradbarssetup{width=55mm,height=5ex,
+ precision=0,unit={\%},label width=12mm}
+\begin{tabular}{lc}
+馆藏类别 & 流通率；参考区间：45--65\%\\
+\hline
+文学 & \gradsparkband[scale group=circulation]
+ {35,55,NA,60,68}{45}{65}\\
+科学 & \gradsparkband[scale group=circulation]
+ {60,60,60,60,60}{45}{65}\\
+历史 & \gradsparkband[scale group=circulation]
+ {NA,NA,NA,NA,NA}{45}{65}\\
+\end{tabular}
+\endgroup
+\par\medskip
+数据仅为演示；参考带不表示自动估计的置信区间。
+\end{document}

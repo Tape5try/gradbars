@@ -1,0 +1,62 @@
+\documentclass{article}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+\gradbarsloadcsv{sample}{v122-ranks.csv}
+\newcount\rankingTable
+\ExplSyntaxOn
+\int_new:N\g__test_rank_calls_int
+\cs_new_eq:NN\testRankPass\gradtableRankBeforeSeven
+\cs_set_protected:Npn\gradtableRankBeforeSeven
+ {\int_gincr:N\g__test_rank_calls_int\testRankPass}
+\cs_new_protected:Npn\testRankValue#1#2#3
+ {\prop_get:NnNTF#1{#2}\l_tmpa_tl
+   {\fp_compare:nNnF{\l_tmpa_tl}={#3}{\errmessage{Incorrect~rank~#2}}}
+   {\errmessage{Missing~rank~#2}}}
+\cs_new_protected:Npn\testRankAbsent#1#2
+ {\prop_if_in:NnT#1{#2}{\errmessage{Unexpected~rank~#2}}}
+\cs_new_eq:NN\testRankOriginal\gradtableRank
+\cs_set_protected:Npn\gradtableRank
+ {\int_gzero:N\g__test_rank_calls_int\testRankOriginal
+  \int_compare:nNnF{\g__test_rank_calls_int}={\l__gradtable_group_count_int+1}
+    {\errmessage{Repeated~group~ranking}}
+  \ifnum\rankingTable=1\relax
+   \testRankValue\l__gradtable_group_best_prop{1/high}{10}
+   \testRankValue\l__gradtable_group_second_prop{1/high}{8}
+   \testRankValue\l__gradtable_group_best_prop{1/low}{3}
+   \testRankValue\l__gradtable_group_second_prop{1/low}{7}
+   \testRankValue\l__gradtable_group_best_prop{2/high}{-1}
+   \testRankValue\l__gradtable_group_second_prop{2/high}{-2}
+   \testRankValue\l__gradtable_group_best_prop{2/low}{0}
+   \testRankValue\l__gradtable_group_second_prop{2/low}{2}
+   \testRankValue\l__gradtable_group_best_prop{1/tied}{5}
+   \testRankAbsent\l__gradtable_group_second_prop{1/tied}
+   \testRankAbsent\l__gradtable_group_best_prop{3/high}
+   \testRankAbsent\l__gradtable_group_second_prop{3/low}
+  \else
+   \testRankValue\l__gradtable_group_best_prop{1/high}{3}
+   \testRankValue\l__gradtable_group_second_prop{1/high}{1}
+   \testRankValue\l__gradtable_group_best_prop{1/low}{4}
+   \testRankValue\l__gradtable_group_second_prop{1/low}{6}
+   \testRankValue\l__gradtable_group_best_prop{1/tied}{0}
+   \testRankAbsent\l__gradtable_group_second_prop{1/tied}
+   \testRankAbsent\l__gradtable_group_best_prop{2/high}
+  \fi}
+\ExplSyntaxOff
+\newcommand{\testColumns}{%
+\gradcolumn[source=Name,width=20mm]{name}{Service}%
+\gradcolumn[source=Group,width=12mm]{group}{Group}%
+\gradcolumn[source=High,type=number,mark=both,width=18mm]{high}{Higher}%
+\gradcolumn[source=Low,type=number,mark=both,width=18mm,options={better=lower}]{low}{Lower}%
+\gradcolumn[source=Tied,type=number,mark=both,width=18mm]{tied}{Tied}}
+\begin{document}
+\rankingTable=1
+\begin{gradtable}[data=sample,group by=group,rank scope=group]
+\testColumns
+\end{gradtable}
+\par\medskip
+\gradbarsloadcsv{sample}{v122-reload.csv}
+\rankingTable=2
+\begin{gradtable}[data=sample,group by=group,rank scope=group]
+\testColumns
+\end{gradtable}
+\end{document}

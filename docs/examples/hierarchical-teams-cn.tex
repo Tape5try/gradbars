@@ -1,0 +1,45 @@
+% MIT; illustrative data. Compile from repository root.
+\documentclass[UTF8,fontset=fandol]{ctexart}
+\usepackage[margin=18mm]{geometry}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\pagestyle{empty}
+\begin{document}
+\section*{区域项目评审}
+\gradbarsloadcsv{projects}{docs/data/hierarchical-teams.csv}
+\begin{center}
+\begin{gradtable}[data=projects,style=hierarchical,
+ width=\linewidth,group levels={region,team},
+ rank scope=parent,parent summary=true,leaf summary=true,
+ parent summary label={区域均值},
+ leaf summary label={小组均值},label width=17mm]
+\gradcolumn[source=Project,width=22mm]{project}{项目}
+\gradcolumn[source=Region,width=17mm]{region}{区域}
+\gradcolumn[source=Team,width=18mm]{team}{小组}
+\gradcolumn[source=Score,type=number,width=20mm,
+ aggregate=mean,mark=both,options={precision=1}]{score}{得分}
+\gradcolumn[source=Trend,type=trendcompare,
+ options={min=0,max=100,height=5mm,precision=0,
+ compare label=delta}]{trend}{首末 / 趋势}
+\gradsummary{可见行均值}
+\end{gradtable}
+\end{center}
+\bigskip
+\begingroup
+\gradscale{project-score}{min=0,max=100}
+\gradbarssetup{width=65mm,height=5ex,
+ precision=0,label width=20mm,compare label=delta}
+\begin{tabular}{lc}
+项目 & 首末对比与全过程趋势\\
+\hline
+Atlas & \gradsparkcompare[scale group=project-score]
+ {20,40,NA,80}\\
+Birch & \gradsparkcompare[scale group=project-score]
+ {NA,30,60,90}\\
+Elm & \gradsparkcompare[scale group=project-score]
+ {20,50,65,NA}\\
+\end{tabular}
+\endgroup
+\par\medskip
+不同区域下的同名小组保持独立；首末缺失不回退到中间有效值。
+\end{document}

@@ -1,0 +1,37 @@
+\documentclass{article}\usepackage[T1]{fontenc}\usepackage{lmodern}
+\usepackage[margin=16mm]{geometry}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\usegradbarslibrary{reports,legend}
+\gradscale{review-range}{min=0,max=100}
+\graddeclaremetric{review}{title={Review score},role=score,
+ unit={\,pt},better=higher,precision=1,
+ scale group=review-range,aggregate=mean}
+\gradbarsloadcsv{reviews}{docs/data/report-metrics.csv}
+\gradtableschema{review-columns}{
+ \gradcolumn[source=Project,width=28mm]{project}{Project}
+ \gradmetricbind[source=Review,mark=both]{review}{score}
+ \gradmetriccardcolumn[source=History,
+  options={height=5mm,label width=10mm}]{review}{history}}
+\begin{document}
+\section*{Report metrics across tables}
+Fictitious data; one metric freezes the range, unit and direction.\par
+\medskip
+\gradmetricuse[width=40mm]{review}{80}\quad
+\gradmetricnumber{review}{0}\par\medskip
+\gradmetriccard{review}{0,40,NA,80}\par\medskip
+\gradmetriccard{review}{20,40,NA}\par\medskip
+\textbf{Table 1: top two; visible mean 60.0 pt}\par
+\begin{gradtable}[data=reviews,style=metric-report,width=\linewidth,
+ sort=score,order=descending,limit=2]
+ \graduseschema{review-columns}\gradsummary{Mean}
+\end{gradtable}\par\medskip
+\textbf{Table 2: follow-up values; data mean 50.0 pt}\par
+\begin{gradtable}[data=reviews,style=metric-report,width=\linewidth,
+ limit=2]
+ \gradcolumn[source=Project,width=28mm]{project}{Project}
+ \gradmetricbind[source=Followup,mark=both]{review}{score}
+ \gradsummary[scope=data]{Mean}
+\end{gradtable}\par
+The current value is the last history position; final NA does not fall back. Table 2 shows two rows but summarizes all valid follow-up values.
+\end{document}

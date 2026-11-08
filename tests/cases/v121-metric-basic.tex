@@ -1,0 +1,19 @@
+\documentclass{article}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+\usegradbarslibrary{reports,distribution}
+\graddeclaremetric{quality}{title={Review score},role=score,unit={\,pt},better=higher,min=0,max=100,precision=1,aggregate=mean}
+\setlength{\parindent}{0pt}
+\begin{document}
+\gradmetricuse{quality}{0}\par\gradmetricnumber{quality}{NA}\par
+\gradmetriccard{quality}{0,40,NA,80}\par
+\gradmetriccard{quality}{0,40,NA}\par
+\gradmetriccard[print]{quality}{0}\par
+\gradmetriccard{quality}{NA,NA}\par\par
+\gradmetriccard{quality}{50,50,50}\par
+\begin{gradtable}[style=metric-report,width=150mm]
+\gradcolumn[width=20mm]{name}{Project}\gradmetricbind[mark=both]{quality}{score}
+\gradmetriccardcolumn[options={height=5mm}]{quality}{trend}
+\gradrow{A,80,{0,40,80}}\gradrow{B,0,{0,NA}}\gradsummary{Mean}\end{gradtable}\par
+\gradmetric{40}
+\end{document}

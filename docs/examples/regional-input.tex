@@ -1,0 +1,37 @@
+% MIT; illustrative data. Compile from repository root.
+\documentclass{article}
+\usepackage[margin=18mm]{geometry}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\pagestyle{empty}
+\begin{document}
+\section*{Regional purchases and circulation reference}
+\gradbarsloadcsv{purchases}{docs/data/regional-input.csv}
+\begin{center}
+\begin{gradtable}[data=purchases,style=regional]
+\gradcolumn[source=Item,width=26mm]{item}{Item}
+\gradcolumn[source=Amount,type=number,width=30mm,
+ input decimal=comma,input grouping=point,
+ aggregate=sum,options={precision=2}]{amount}{Amount}
+\gradsummary{Total}
+\end{gradtable}
+\end{center}
+\bigskip
+\begingroup
+\gradscale{circulation}{min=0,max=100}
+\gradbarssetup{width=55mm,height=5ex,
+ precision=0,unit={\%},label width=12mm}
+\begin{tabular}{lc}
+Collection & Circulation; reference: 45--65\%\\
+\hline
+Literature & \gradsparkband[scale group=circulation]
+ {35,55,NA,60,68}{45}{65}\\
+Science & \gradsparkband[scale group=circulation]
+ {60,60,60,60,60}{45}{65}\\
+History & \gradsparkband[scale group=circulation]
+ {NA,NA,NA,NA,NA}{45}{65}\\
+\end{tabular}
+\endgroup
+\par\medskip
+Illustrative data; the band is a fixed reference, not a confidence interval.
+\end{document}

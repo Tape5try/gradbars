@@ -1,5 +1,48 @@
 # Changelog
 
+## 1.2.2 — 2026-11-07
+
+GitHub source delivery; no release tag, GitHub Release or CTAN submission.
+
+- Compute each group's best and second distinct values in one ranking pass instead of two, preserving table/parent/leaf ranking, ties, missing values and higher/lower directions. No public API, default or numeric meaning changes.
+- Add a bounded TeX/Lua benchmark with immutable runtime/data identities, individual samples, first/subsequent process measurements and phase medians for parsing, statistics, ranking, measurement and the complete bar path. Do not claim flushed OS caches, pure drawing timings or measured OS peak memory.
+- Add regression assertions for distinct ranks, negative/zero/missing values, group isolation and CSV reloads. Retain existing hierarchy, pagination and PDF checks. No cross-call or formatter/box cache is added.
+- Keep static/PDF runner Lua font caches under their build directories so restricted environments do not require a writable global TeX cache; benchmark runs also use a local cache.
+- Synchronize all 23 runtime modules and bilingual documentation; see [performance notes](docs/performance.md).
+
+## 1.2.1 — 2026-11-07
+
+Local development only. The maintainer explicitly requested this patch-numbered
+feature snapshot: it includes the former v1.5.0/v1.6.0 roadmap scopes, retaining
+the prior local v1.3.0/v1.4.0 implementation. Those labels were local plans, not
+separately published releases. No GitHub upload, tag, Release or CTAN archive/submission.
+
+- Add explicit, scoped native scalar column adapters with declared raw selection/rank/aggregate capabilities, standard frontend proxies, fixed-box dimensions and a repeatable measurement contract. Preserve independent scalar callback behavior.
+- Add an optional pgfplotstable library for body-cell bars, heat and numbers, protected host headers, explicit missing mappings and total width checks. Keep the original default library list.
+- Add one raw distribution composition: box plus every valid sample rug, duplicates retained, type-7/IQR statistics unchanged, explicit 2048-position bound, no summary-only input.
+- Add scoped report metric declarations and explicit standalone/native bindings, frozen units/direction/format/range/group identity, source binding at use, raw statistics and preserved count semantics.
+- Add one report composition: final-position current bar plus complete history trend, with no fallback at final NA, shared metric/range/unit, explicit panel budgets and one combined Figure. History is not scalar summary data.
+- Compare resolved shared-legend signatures without re-expanding formatting macros, avoiding false conflicts for identical unit macros. Freeze explicit metric percent denominators as part of numeric formatting.
+- Add three table presets, public-only extensions, bilingual manuals/examples and numeric/error/PDF/pagination tests. All 23 runtime modules are v1.2.1; backend schema remains 1.
+
+
+## Former 1.4.0 plan — 2026-11-07
+
+Local development update only; not uploaded to GitHub/CTAN and not released.
+
+- Add explicit CSV `group levels={parent,leaf}` with structured literal paths, source-appearance group order, parent/leaf ranks and independent visible/data summaries. Preserve global selection order and old single-level behavior.
+- Add the hierarchical native-table preset and actual-page longtable checks for heading/summary keep chains across four rule modes.
+- Add `\gradsparkcompare` and native `type=trendcompare`: same-series first/last dumbbell plus full trend, shared value range/unit, explicit panel dimensions and missing-endpoint semantics, one Figure alternative.
+- Synchronize bilingual manuals, standalone project review/longtable examples and API/stability/developer contracts. All 22 runtime modules are v1.4.0; backend schema stays 1.
+
+## Former 1.3.0 plan — 2026-11-07
+
+Implemented locally as part of the v1.4.0 development snapshot; not published separately.
+
+- Add `\gradbarsparsenumber` and opt-in CSV scalar-column decimal/grouping rules. Validate grouping, then reuse the strict canonical validator before geometry/selection/statistics; text fields, CSV safety, units and output formatting remain independent.
+- Add `\gradsparkband` for a line series with a fixed reference interval and explicit range. Reference bounds do not become observations or an inferred confidence interval.
+- Add the regional native-table preset, bilingual purchase/circulation examples and input/error/scope regressions. Existing scalar and spark input defaults remain.
+
 ## 1.2.0 — 2026-11-03
 
 Development snapshot; repository update only, without a GitHub Release or CTAN package/submission.

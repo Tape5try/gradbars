@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Private table layout layer.
-\ProvidesPackage{gradbars-table-layout}[2026/11/03 v1.2.0 gradbars table layout]
+\ProvidesPackage{gradbars-table-layout}[2026/11/07 v1.2.2 gradbars table layout]
 \ExplSyntaxOn
 \cs_new_protected:Npn \gradtableConfigure #1
   {\prop_get:NnN \l__gradtable_types_prop {#1}\l__gradtable_type_tl
@@ -11,6 +11,9 @@
    \gradtableConfigureTheme
    \pgfkeys{/gradbars,width=\l__gradtable_graphic_dim}
    \str_if_eq:VnT\l__gradtable_type_tl{heat}{\pgfkeys{/gradbars,height=3ex}}
+   \str_if_eq:VnT\l__gradtable_type_tl{trendcompare}{\pgfkeys{/gradbars,height=4ex}}
+   \str_case:Vn\l__gradtable_type_tl
+    {{boxrug}{\pgfkeys{/gradbars,height=5ex}}{metriccard}{\pgfkeys{/gradbars,height=5ex}}}
    \prop_get:NnN\l__gradtable_formatters_prop{#1}\l_tmpa_tl
    \pgfkeys{/gradbars,unit~code={},unit~text={},formatter/.expand~once=\l_tmpa_tl}
    \prop_get:NnN\l__gradtable_number_align_prop{#1}\l__gradtable_number_align_tl
@@ -65,7 +68,10 @@
      {dumbbell}{\gradtablePair{\graddumbbell}{#1}}
      {stack}{\str_if_eq:nnTF{#1}{NA}{\gradbar{NA}}{\gradstack{#1}}}
      {boxplot}{\gradboxplot[box~range=fixed]{#1}}
+     {boxrug}{\use:x{\exp_not:N\gradboxrug[box~range=fixed,height=\gradbars@height]{\exp_not:n{#1}}}}
      {spark}{\gradspark{#1}}
+     {trendcompare}{\use:x{\exp_not:N\gradsparkcompare
+       [height=\gradbars@height,spark~range=fixed]{\exp_not:n{#1}}}}
      {interval}{\str_if_eq:nnTF {#1}{NA}
        {\gradrange{NA}{NA}}
        {\seq_set_split:Nnn \l__gradtable_interval_seq {/}{#1}
@@ -207,15 +213,13 @@
          \int_compare:nNnT{\l__gradtable_col_int}>{1}{\tl_put_right:Nn\l__gradtable_body_tl{&}}
          \tl_put_right:Nx\l__gradtable_body_tl
            {\exp_not:N\gradtableGroupedCell{\int_use:N\l__gradtable_row_int}{\exp_not:V\l__gradtable_id_tl}{\exp_not:n{####1}}}}
-      \bool_set_false:N\l_tmpa_bool
-      \prop_if_in:NxT\l__gradtable_group_ends_prop{\int_use:N\l__gradtable_row_int}
-        {\bool_set_true:N\l_tmpa_bool}
+      \gradtableRowSummaryPending
       \bool_if:nTF{(\l__gradtable_summary_bool &&
         \int_compare_p:nNn{\l__gradtable_row_int}={\seq_count:N\l__gradtable_rows_seq}) ||
         (\l__gradtable_group_summary_bool && \l_tmpa_bool)}
         {\tl_put_right:Nn\l__gradtable_body_tl{\\*}}
         {\tl_put_right:Nn\l__gradtable_body_tl{\\}}
-      \str_if_eq:VnT\l__gradtable_rules_tl{grid}{\tl_put_right:Nn\l__gradtable_body_tl{\hline}}
+      \gradtableAppendRowGridRule
       \gradtableAppendGroupSummary
       \str_if_eq:VnT\l__gradtable_rules_tl{rows}
         {\int_compare:nNnT{\l__gradtable_row_int}<{\seq_count:N\l__gradtable_rows_seq}
@@ -768,4 +772,108 @@
   {\gradtableMeasureSummaryBeforeEight\gradtableMeasureDecimals}
 \ExplSyntaxOff
 \ExplSyntaxOff
+\ExplSyntaxOn
+\cs_new_protected:Npn\gradtableRowSummaryPending
+ {\bool_set_false:N\l_tmpa_bool
+  \bool_if:NTF\l__gradtable_hierarchy_bool
+   {\bool_if:NT\l__gradtable_leaf_summary_bool
+     {\prop_if_in:NxT\l__gradtable_group_ends_prop{\int_use:N\l__gradtable_row_int}
+       {\bool_set_true:N\l_tmpa_bool}}
+    \bool_if:NT\l__gradtable_parent_summary_bool
+     {\prop_if_in:NxT\l__gradtable_parent_ends_prop{\int_use:N\l__gradtable_row_int}
+       {\bool_set_true:N\l_tmpa_bool}}}
+   {\prop_if_in:NxT\l__gradtable_group_ends_prop{\int_use:N\l__gradtable_row_int}
+     {\bool_set_true:N\l_tmpa_bool}}}
+\cs_new_eq:NN\__gradtable_highlight_before_hierarchy:\gradtableHighlight
+\cs_set_protected:Npn\gradtableHighlight #1#2
+ {\bool_lazy_and:nnTF{\l__gradtable_hierarchy_bool}
+   {!\str_if_eq_p:Vn\l__gradtable_hierarchy_rank_tl{table}}
+   {\str_if_eq:VnTF\l__gradtable_hierarchy_rank_tl{parent}
+     {\prop_get:NxN\l__gradtable_row_parents_prop{\int_use:N\l__gradtable_row_int}\l__gradtable_group_id_tl}
+     {\prop_get:NxN\l__gradtable_row_groups_prop{\int_use:N\l__gradtable_row_int}\l__gradtable_group_id_tl}
+    \prop_clear:N\l__gradtable_best_prop\prop_clear:N\l__gradtable_second_prop
+    \prop_get:NxNT\l__gradtable_group_best_prop{\l__gradtable_group_id_tl/#1}\l_tmpa_tl
+     {\prop_put:NnV\l__gradtable_best_prop{#1}\l_tmpa_tl}
+    \prop_get:NxNT\l__gradtable_group_second_prop{\l__gradtable_group_id_tl/#1}\l_tmpa_tl
+     {\prop_put:NnV\l__gradtable_second_prop{#1}\l_tmpa_tl}
+    \gradtableHighlightBeforeSeven{#1}{#2}}
+   {\__gradtable_highlight_before_hierarchy:{#1}{#2}}}
+\cs_new_eq:NN\__gradtable_insert_before_hierarchy:\gradtableInsertGroup
+\cs_set_protected:Npn\gradtableInsertGroup
+ {\bool_if:NTF\l__gradtable_hierarchy_bool
+   {\prop_get:NxNT\l__gradtable_groups_prop{\int_use:N\l__gradtable_row_int}\l__gradtable_hierarchy_leaf_title_tl
+     {\prop_get:NxNT\l__gradtable_parent_starts_prop{\int_use:N\l__gradtable_row_int}\l__gradtable_parent_id_tl
+       {\prop_get:NVN\l__gradtable_group_labels_prop\l__gradtable_parent_id_tl\l__gradtable_group_key_tl
+        \prop_put:NxV\l__gradtable_groups_prop{\int_use:N\l__gradtable_row_int}\l__gradtable_group_key_tl
+        \__gradtable_insert_before_hierarchy:}
+      \prop_put:Nxx\l__gradtable_groups_prop{\int_use:N\l__gradtable_row_int}
+        {\exp_not:N\hspace*{1em}\exp_not:V\l__gradtable_hierarchy_leaf_title_tl}
+      \__gradtable_insert_before_hierarchy:}}
+   {\__gradtable_insert_before_hierarchy:}}
+\cs_new_eq:NN\__gradtable_use_summary_before_hierarchy:\gradtableUseGroupSummary
+\cs_set_protected:Npn\gradtableUseGroupSummary #1
+ {\__gradtable_use_summary_before_hierarchy:{#1}
+  \bool_if:NT\l__gradtable_hierarchy_bool
+   {\str_if_eq:eeTF{\prop_item:Nn\l__gradtable_node_kind_prop{#1}}{parent}
+     {\bool_set_eq:NN\l__gradtable_summary_bool\l__gradtable_parent_summary_bool
+      \tl_set_eq:NN\l__gradtable_summary_label_tl\l__gradtable_parent_summary_label_tl}
+     {\bool_set_eq:NN\l__gradtable_summary_bool\l__gradtable_leaf_summary_bool
+      \tl_set_eq:NN\l__gradtable_summary_label_tl\l__gradtable_leaf_summary_label_tl}}}
+% Booktabs' longtable midrule is an alignment row and can split a keep chain.
+% Use a noalign-only separator for hierarchy summaries.
+\cs_new:Npn\gradtableHierarchyRule
+ {\noalign{\nobreak\vskip\aboverulesep\nobreak
+   {\CT@arc@\hrule height\lightrulewidth}\nobreak\vskip\belowrulesep\nobreak}}
+\cs_new_protected:Npn\gradtableAppendRowGridRule
+ {\str_if_eq:VnT\l__gradtable_rules_tl{grid}
+   {\bool_if:nTF{\l__gradtable_hierarchy_bool &&
+      ((\l__gradtable_summary_bool && \int_compare_p:nNn{\l__gradtable_row_int}={\seq_count:N\l__gradtable_rows_seq}) ||
+       (\l__gradtable_group_summary_bool && \l_tmpa_bool))}
+     {\tl_put_right:Nn\l__gradtable_body_tl{\gradtableGroupRule}}
+     {\tl_put_right:Nn\l__gradtable_body_tl{\hline}}}}
+\cs_new_protected:Npn\gradtableHierarchySummary:nn #1#2
+ {\str_if_eq:VnT\l__gradtable_rules_tl{booktabs}
+   {\tl_put_right:Nn\l__gradtable_body_tl{\gradtableHierarchyRule}}
+  \tl_if_empty:NF\l__gradtable_summary_color_tl
+   {\tl_put_right:Nx\l__gradtable_body_tl{\exp_not:N\rowcolor{\exp_not:V\l__gradtable_summary_color_tl}}}
+  \int_zero:N\l__gradtable_summary_col_int
+  \seq_map_inline:Nn\l__gradtable_columns_seq
+   {\int_incr:N\l__gradtable_summary_col_int
+    \int_compare:nNnT{\l__gradtable_summary_col_int}>{1}{\tl_put_right:Nn\l__gradtable_body_tl{&}}
+    \int_compare:nNnTF{#1}={0}
+     {\tl_put_right:Nn\l__gradtable_body_tl{\gradtableSummaryCell{##1}}}
+     {\tl_put_right:Nx\l__gradtable_body_tl{\exp_not:N\gradtableGroupSummaryCell{#1}{\exp_not:n{##1}}}}}
+  \int_compare:nNnTF{#2}={1}
+   {\tl_put_right:Nn\l__gradtable_body_tl{\\*}}{\tl_put_right:Nn\l__gradtable_body_tl{\\}}
+  \str_if_eq:VnT\l__gradtable_rules_tl{grid}
+   {\int_compare:nNnTF{#2}={1}
+     {\tl_put_right:Nn\l__gradtable_body_tl{\gradtableGroupRule}}
+     {\tl_put_right:Nn\l__gradtable_body_tl{\hline}}}}
+\cs_new_eq:NN\__gradtable_overall_before_hierarchy:\gradtableAppendSummary
+\cs_set_protected:Npn\gradtableAppendSummary
+ {\bool_if:NTF\l__gradtable_hierarchy_bool
+   {\bool_if:NT\l__gradtable_summary_bool{\gradtableHierarchySummary:nn{0}{0}}}
+   {\__gradtable_overall_before_hierarchy:}}
+\cs_new_eq:NN\__gradtable_append_before_hierarchy:\gradtableAppendGroupSummary
+\cs_set_protected:Npn\gradtableAppendGroupSummary
+ {\bool_if:NTF\l__gradtable_hierarchy_bool
+   {\bool_if:NT\l__gradtable_leaf_summary_bool
+     {\prop_get:NxNT\l__gradtable_group_ends_prop{\int_use:N\l__gradtable_row_int}\l__gradtable_leaf_id_tl
+       {\bool_set:Nn\l_tmpa_bool{\l__gradtable_summary_bool &&
+          \int_compare_p:nNn{\l__gradtable_row_int}={\seq_count:N\l__gradtable_rows_seq}}
+        \bool_if:NT\l__gradtable_parent_summary_bool
+         {\prop_if_in:NxT\l__gradtable_parent_ends_prop{\int_use:N\l__gradtable_row_int}
+           {\bool_set_true:N\l_tmpa_bool}}
+        \bool_if:NTF\l_tmpa_bool
+         {\exp_args:NV\gradtableHierarchySummary:nn\l__gradtable_leaf_id_tl{1}}
+         {\exp_args:NV\gradtableHierarchySummary:nn\l__gradtable_leaf_id_tl{0}}}}
+    \bool_if:NT\l__gradtable_parent_summary_bool
+     {\prop_get:NxNT\l__gradtable_parent_ends_prop{\int_use:N\l__gradtable_row_int}\l__gradtable_parent_id_tl
+       {\bool_if:nTF{\l__gradtable_summary_bool &&
+          \int_compare_p:nNn{\l__gradtable_row_int}={\seq_count:N\l__gradtable_rows_seq}}
+         {\exp_args:NV\gradtableHierarchySummary:nn\l__gradtable_parent_id_tl{1}}
+         {\exp_args:NV\gradtableHierarchySummary:nn\l__gradtable_parent_id_tl{0}}}}}
+   {\__gradtable_append_before_hierarchy:}}
+\ExplSyntaxOff
+
 \endinput

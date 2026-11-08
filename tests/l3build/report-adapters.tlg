@@ -1,0 +1,10 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+metric=Review score; role=score; aggregate=mean
+range=0,100; better=higher
+local title=Local
+metric scope=local
+adapter=registered
+rug n=6; missing=1; Q=2,3,7; whiskers=0,8
+box n=6; missing=1; Q=2,3,7; whiskers=0,8
+optional PGF=not loaded

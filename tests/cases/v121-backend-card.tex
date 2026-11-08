@@ -1,0 +1,6 @@
+\documentclass{article}\usepackage{gradbars}\usegradbarslibrary{distribution,reports}
+\graddeclaremetric{score}{title=Score}
+\newcount\calls\gradbarsdeclarebackend{scalar}{bar,labels,gradient}{\global\advance\calls1\gradbarsbackenddefault}
+\begin{document}
+\gradmetriccard[backend=scalar]{score}{0,80}
+\end{document}

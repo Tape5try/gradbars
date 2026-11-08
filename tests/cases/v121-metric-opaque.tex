@@ -1,0 +1,13 @@
+\documentclass{article}\usepackage[margin=15mm]{geometry}\usepackage{gradbars}\usegradbarslibrary{reports,distribution,legend}
+\gradbarsdeclareformatter{opaque}{X}
+\graddeclaremetric{metric}{title=Metric,formatter=opaque,aggregate=mean}
+\gradbarsloadcsv{r}{v121-report.csv}
+\ExplSyntaxOn\cs_new_eq:NN\testSummary\gradtableBuildSummary
+\cs_set_protected:Npn\gradtableBuildSummary{\testSummary
+\fp_compare:nNnF{\prop_item:Nn\l__gradtable_summary_values_prop{x}}={60}{\errmessage{Formatter changed data}}}
+\ExplSyntaxOff
+\setlength{\parindent}{0pt}\begin{document}
+\begin{gradtable}[data=r,width=120mm,sort=x,order=descending,limit=2]
+\gradcolumn[source=Name,width=25mm]{name}{Project}\gradmetricbind[source=Score]{metric}{x}
+\gradsummary{Mean}\end{gradtable}
+\end{document}

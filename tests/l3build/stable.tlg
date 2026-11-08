@@ -3,3 +3,6 @@ Don't change this file in any respect.
 stable scalar callback count=2
 model scope=local
 reference style=registered
+declared input=1234.5
+local zero=0
+input scope=1234.5

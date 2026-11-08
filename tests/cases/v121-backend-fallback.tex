@@ -1,0 +1,10 @@
+\documentclass{article}\usepackage{gradbars}\usegradbarslibrary{distribution,reports}
+\graddeclaremetric{score}{title=Score}
+\newcount\calls\gradbarsdeclarebackend{scalar}{bar,labels,gradient}{\global\advance\calls1\gradbarsbackenddefault}
+\begin{document}
+\gradbarsifbackendcapable{tikz}{box-rug}{}{\errmessage{No native rug}}
+\gradbarsifbackendcapable{tikz}{metric-card}{}{\errmessage{No native card}}
+\gradboxrug[backend=scalar,backend fallback=tikz]{0,2,2,4}\par
+\gradmetriccard[backend=scalar,backend fallback=tikz]{score}{0,80}
+\ifnum\calls=0\else\errmessage{Compound reached scalar backend}\fi
+\end{document}

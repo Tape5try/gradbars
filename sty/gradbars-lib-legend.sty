@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Continuous and shared semantic legends.
-\ProvidesPackage{gradbars-lib-legend}[2026/11/03 v1.2.0 Shared legends]
+\ProvidesPackage{gradbars-lib-legend}[2026/11/07 v1.2.2 Shared legends]
 \ExplSyntaxOn
 \cs_generate_variant:Nn\seq_set_from_clist:Nn{NV}
 \cs_generate_variant:Nn\prop_to_keyval:N{c}
@@ -10,6 +10,7 @@
 \tl_new:N\l__gradbars_legend_missing_tl
 \tl_new:N\l__gradbars_legend_kind_tl
 \tl_new:N\l__gradbars_legend_group_tl
+\tl_new:N\l__gradbars_legend_expected_tl
 \tl_new:N\l__gradbars_legend_snapshot_tl
 \tl_new:N\l__gradbars_legend_signature_tl
 \prop_new:N\l__gradbars_legends_prop
@@ -168,8 +169,8 @@
 \cs_new_protected:Npn\__gradbars_legend_check:
   {\tl_if_empty:NF\l__gradbars_legend_group_tl
      {\__gradbars_legend_signature:
-      \str_if_eq:eeF{\l__gradbars_legend_signature_tl}
-        {\prop_item:NV\l__gradbars_legend_signatures_prop\l__gradbars_legend_group_tl}
+      \prop_get:NVN\l__gradbars_legend_signatures_prop\l__gradbars_legend_group_tl\l__gradbars_legend_expected_tl
+      \str_if_eq:VVF\l__gradbars_legend_signature_tl\l__gradbars_legend_expected_tl
         {\gradbarsFail{Conflicting~scale,~unit~or~palette~for~shared~legend}}}}
 \cs_new_eq:NN\__gradbars_resolve_before_legend:\gradbarsResolveScaleGroup
 \cs_set_protected:Npn\gradbarsResolveScaleGroup

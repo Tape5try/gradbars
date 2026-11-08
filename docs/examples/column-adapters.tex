@@ -1,0 +1,29 @@
+\documentclass{article}\usepackage[T1]{fontenc}\usepackage{lmodern}
+\usepackage[margin=16mm]{geometry}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\usegradbarslibrary{distribution}
+\gradbarsdeclarelibrary{sample-columns}{table}{docs/libraries/gradbars-contrib-columns.sty}
+\usegradbarslibrary{sample-columns}
+\begin{document}
+\section*{Explicit column adapters and raw sample distributions}
+Fictitious review data; the extension library uses public APIs only.
+\par
+\begin{gradtable}[style=adapter-report,width=\linewidth,label width=0pt]
+ \gradcolumn[width=28mm]{project}{Project}
+ \gradcolumn[type=review-score,mark=both,aggregate=mean]{score}{Score}
+ \gradcolumn[type=review-stamp,width=24mm]{stamp}{Fixed box}
+ \gradrow{Atlas,80,80}\gradrow{Birch,0,0}\gradrow{Cedar,40,40}
+ \gradsummary{Mean}
+\end{gradtable}\par\bigskip
+\par
+\begin{gradtable}[style=rug-report,width=\linewidth]
+ \gradcolumn[width=28mm]{batch}{Batch}
+ \gradcolumn[type=boxrug,scale=fixed,
+  options={box range=fixed,min=0,max=20,height=6mm,label=none}]{sample}{Box plot and all raw samples}
+ \gradrow{Atlas,{0,2,2,4,8,16,NA}}
+ \gradrow{Birch,{0,0,0,NA}}\gradrow{Cedar,{2,3,4,5,6}}
+ \gradrow{Dune,{NA,NA}}
+\end{gradtable}\par
+Each rug tick is a valid sample; duplicate ticks overlap while counts retain multiplicity. Zero is observed, NA is missing. Neither fixed-box nor sample columns contributes hidden summary statistics.
+\end{document}

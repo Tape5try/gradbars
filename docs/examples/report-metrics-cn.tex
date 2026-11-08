@@ -1,0 +1,37 @@
+\documentclass[fontset=fandol]{ctexart}
+\usepackage[margin=16mm]{geometry}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\usegradbarslibrary{reports,legend}
+\gradscale{review-range}{min=0,max=100}
+\graddeclaremetric{review}{title={复核评分},role=score,
+ unit={\,pt},better=higher,precision=1,
+ scale group=review-range,aggregate=mean}
+\gradbarsloadcsv{reviews}{docs/data/report-metrics.csv}
+\gradtableschema{review-columns}{
+ \gradcolumn[source=Project,width=28mm]{project}{项目}
+ \gradmetricbind[source=Review,mark=both]{review}{score}
+ \gradmetriccardcolumn[source=History,
+  options={height=5mm,label width=10mm}]{review}{history}}
+\begin{document}
+\section*{跨表复用报告指标}
+虚构演示数据；同一指标冻结范围、单位和方向。\par
+\medskip
+\gradmetricuse[width=40mm]{review}{80}\quad
+\gradmetricnumber{review}{0}\par\medskip
+\gradmetriccard{review}{0,40,NA,80}\par\medskip
+\gradmetriccard{review}{20,40,NA}\par\medskip
+\textbf{表一：前两项，可见均值 60.0 pt}\par
+\begin{gradtable}[data=reviews,style=metric-report,width=\linewidth,
+ sort=score,order=descending,limit=2]
+ \graduseschema{review-columns}\gradsummary{均值}
+\end{gradtable}\par\medskip
+\textbf{表二：随访数据，全部有效数据均值 50.0 pt}\par
+\begin{gradtable}[data=reviews,style=metric-report,width=\linewidth,
+ limit=2]
+ \gradcolumn[source=Project,width=28mm]{project}{项目}
+ \gradmetricbind[source=Followup,mark=both]{review}{score}
+ \gradsummary[scope=data]{均值}
+\end{gradtable}\par
+当前值取历史末位置：末位 NA 不回退。第二张表只显示前两行，但摘要使用全部有效随访值。
+\end{document}

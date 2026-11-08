@@ -1,0 +1,22 @@
+\documentclass{article}
+\setlength{\parindent}{0pt}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+
+\gradbarsloadcsv{literal}{v140-literal.csv}
+\ExplSyntaxOn
+\cs_new_eq:NN\checkLiteralGroups\gradtableBuildGroups
+\cs_set_protected:Npn\gradtableBuildGroups
+ {\checkLiteralGroups
+  \int_compare:nNnF{\seq_count:N\l__gradtable_parents_seq}={5}{\errmessage{Parent literal keys merged}}
+  \int_compare:nNnF{\l__gradtable_group_count_int}={13}{\errmessage{Structured leaf path collision}}
+  \seq_if_in:NnF\l__gradtable_parents_seq{1}{\errmessage{Empty parent removed}}}
+\ExplSyntaxOff
+\begin{document}
+\begin{gradtable}[data=literal,group levels={parent,child},rank scope=leaf,
+ parent summary=true,leaf summary=true,parent summary label={Parent total},leaf summary label={Leaf total}]
+\gradcolumn[source=Name,width=30mm]{name}{Name}
+\gradcolumn[source=Parent]{parent}{Parent}\gradcolumn[source=Child]{child}{Child}
+\gradcolumn[source=Score,type=number,aggregate=count]{score}{Count}
+\end{gradtable}
+\end{document}

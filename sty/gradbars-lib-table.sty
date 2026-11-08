@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Internal implementation unless documented.
-\ProvidesPackage{gradbars-lib-table}[2026/11/03 v1.2.0 gradbars lib-table]
+\ProvidesPackage{gradbars-lib-table}[2026/11/07 v1.2.2 gradbars lib-table]
 \RequirePackage{booktabs}
 \RequirePackage{colortbl}
 \RequirePackage{longtable}
@@ -65,7 +65,7 @@
    header~color .tl_set:N = \l__gradtable_header_color_tl,
    rule~color .tl_set:N = \l__gradtable_rule_color_tl}
 \keys_define:nn {gradbars/table/column}
-  {type .choices:nn = {text,number,bar,bullet,interval,compare,dumbbell,stack,spark,heat,boxplot}
+  {type .choices:nn = {text,number,bar,bullet,interval,compare,dumbbell,stack,spark,heat,boxplot,trendcompare}
      {\tl_set_eq:NN \l__gradtable_type_tl \l_keys_choice_tl},
    options .tl_set:N = \l__gradtable_options_tl,
    align .choices:nn = {auto,l,c,r}{\tl_set_eq:NN\l__gradtable_align_tl\l_keys_choice_tl},
@@ -88,6 +88,7 @@
    \tl_if_blank:nT {#2}{\gradtableError{Column~identifier~must~not~be~empty}}
    \prop_if_in:NnT \l__gradtable_types_prop {#2}{\gradtableError{Duplicate~column~identifier}}
    \tl_set:Nn \l__gradtable_type_tl {text}
+   \tl_clear:N\l__gradtable_adapter_tl\tl_clear:N\l__gradtable_metric_tl
    \tl_clear:N \l__gradtable_options_tl
    \tl_set_eq:NN\l__gradtable_align_tl\l__gradtable_default_align_tl
    \tl_set_eq:NN\l__gradtable_headalign_tl\l__gradtable_default_headalign_tl
@@ -105,8 +106,17 @@
    \tl_set_eq:NN\l__gradtable_scale_group_tl\l__gradtable_default_scale_group_tl
    \fp_set_eq:NN\l__gradtable_scale_padding_fp\l__gradtable_default_scale_padding_fp
    \bool_set_eq:NN\l__gradtable_scale_nice_bool\l__gradtable_default_scale_nice_bool
+   \tl_set:Nn\l__gradtable_input_decimal_tl{point}
+   \tl_set:Nn\l__gradtable_input_grouping_tl{none}
+   \bool_set_false:N\l__gradtable_input_explicit_bool
    \keys_set:nn {gradbars/table/column}{#1}
-   \str_if_eq:VnT\l__gradtable_type_tl{boxplot}{\gradbarsiflibraryloaded{distribution}{}{\gradtableError{Load~distribution~library~before~boxplot~columns}}}
+   \gradtableBindAdapter{#2}
+   \cs_if_exist:NT\__gradbars_bind_metric_column:n{\__gradbars_bind_metric_column:n{#2}}
+   \gradtableStoreInput{#2}
+   \str_case:Vn\l__gradtable_type_tl
+    {{boxplot}{\gradbarsiflibraryloaded{distribution}{}{\gradtableError{Load~distribution~library~before~boxplot~columns}}}
+     {boxrug}{\gradbarsiflibraryloaded{distribution}{}{\gradtableError{Load~distribution~library~before~boxrug~columns}}}
+     {metriccard}{\gradbarsiflibraryloaded{reports}{}{\gradtableError{Load~reports~library~before~metriccard~columns}}}}
    \gradtableStoreNumericFormat{#2}
    \dim_compare:nNnT{\l__gradtable_colwidth_dim}<{0pt}{\gradtableError{Column~width~must~be~nonnegative}}
    \prop_put:Nnx\l__gradtable_fixed_prop{#2}{\dim_use:N\l__gradtable_colwidth_dim}
@@ -161,6 +171,8 @@
 
 \DeclareDocumentEnvironment{gradtable}{O{} +b}
   {\group_begin:
+   \prop_clear:N\l__gradtable_input_prop
+   \prop_clear:N\l__gradtable_adapters_prop\prop_clear:N\l__gradtable_metrics_prop
    \prop_clear:N\l__gradtable_fixed_prop
    \prop_clear:N\l__gradtable_weights_prop
    \prop_clear:N\l__gradtable_plots_prop
@@ -196,7 +208,9 @@
       column~sep=6pt,row~padding=0pt,header~color=auto,rule~color=black,group~color=gradbarsTrack,group~sep=4pt,width=0pt,min~text~width=12mm,min~graphic~width=12mm,
       long=false,caption={},label={},continued~text={(continued)},data={},scale=fixed,include~zero=true,
       sort={},sort~keys={},order=ascending,filter={},limit=0,scale~scope=data,
-      group~by={},rank~scope=table,group~summary=false,group~summary~scope=visible,
+      group~by={},group~levels={},rank~scope=table,
+      parent~summary=false,leaf~summary=false,parent~summary~scope=visible,leaf~summary~scope=visible,
+      parent~summary~label={Parent~summary},leaf~summary~label={Leaf~summary},group~summary=false,group~summary~scope=visible,
       group~summary~label={Summary},group~missing~label={(ungrouped)},
       scale~group={},scale~padding=0,scale~nice=false,theme=none,font={},
       summary~color=auto,summary~font={\bfseries\boldmath},
@@ -569,6 +583,7 @@
 \prop_new:N\l__gradtable_group_second_prop
 \prop_new:N\l__gradtable_group_summary_values_prop
 \prop_new:N\g__gradtable_group_result_prop
+\prop_new:N\g__gradtable_group_second_result_prop
 \prop_new:N\g__gradtable_group_widths_prop
 \int_new:N\l__gradtable_group_count_int
 \int_new:N\l__gradtable_group_col_int
@@ -658,6 +673,205 @@
 \ExplSyntaxOff
 
 \ExplSyntaxOff
+\ExplSyntaxOn
+\prop_new:N\l__gradtable_input_prop
+\tl_new:N\l__gradtable_input_decimal_tl
+\tl_new:N\l__gradtable_input_grouping_tl
+\bool_new:N\l__gradtable_input_explicit_bool
+\keys_define:nn{gradbars/table/column}
+ {input~decimal .choices:nn={point,comma}
+   {\tl_set_eq:NN\l__gradtable_input_decimal_tl\l_keys_choice_tl
+    \bool_set_true:N\l__gradtable_input_explicit_bool},
+  input~grouping .choices:nn={none,point,comma,space}
+   {\tl_set_eq:NN\l__gradtable_input_grouping_tl\l_keys_choice_tl
+    \bool_set_true:N\l__gradtable_input_explicit_bool}}
+\cs_new_protected:Npn\gradtableStoreInput #1
+ {\bool_if:NT\l__gradtable_input_explicit_bool
+   {\tl_if_empty:NT\l__gradtable_data_tl{\gradtableError{Regional~column~input~requires~CSV~data}}
+    \str_case:VnF\l__gradtable_type_tl{{number}{}{bar}{}{bullet}{}{heat}{}}
+      {\gradtableError{Regional~input~requires~a~scalar~numeric~column}}
+    \str_if_eq:VVT\l__gradtable_input_decimal_tl\l__gradtable_input_grouping_tl
+      {\gradtableError{Input~decimal~and~grouping~separators~must~differ}}
+    \prop_put:Nnx\l__gradtable_input_prop{#1}
+      {decimal=\l__gradtable_input_decimal_tl,grouping=\l__gradtable_input_grouping_tl}}}
+\gradtablestyle{regional}{style=research,column~sep=7pt,row~stretch=1.4,
+ row~padding=2pt,theme=accessible}
+\ExplSyntaxOff
+\ExplSyntaxOn
+\tl_new:N\l__gradtable_group_levels_tl
+\bool_new:N\l__gradtable_hierarchy_bool
+\tl_new:N\l__gradtable_hierarchy_rank_tl
+\bool_new:N\l__gradtable_parent_summary_bool
+\bool_new:N\l__gradtable_leaf_summary_bool
+\tl_new:N\l__gradtable_parent_summary_scope_tl
+\tl_new:N\l__gradtable_leaf_summary_scope_tl
+\tl_new:N\l__gradtable_parent_summary_label_tl
+\tl_new:N\l__gradtable_leaf_summary_label_tl
+\tl_new:N\l__gradtable_parent_column_tl
+\tl_new:N\l__gradtable_leaf_column_tl
+\int_new:N\l__gradtable_parent_column_int
+\int_new:N\l__gradtable_leaf_column_int
+\tl_new:N\l__gradtable_parent_key_tl
+\tl_new:N\l__gradtable_leaf_key_tl
+\tl_new:N\l__gradtable_parent_id_tl
+\tl_new:N\l__gradtable_leaf_id_tl
+\tl_new:N\l__gradtable_path_tl
+\tl_new:N\l__gradtable_hierarchy_leaf_title_tl
+\seq_new:N\l__gradtable_parents_seq
+\prop_new:N\l__gradtable_parent_ids_prop
+\prop_new:N\l__gradtable_leaf_ids_prop
+\prop_new:N\l__gradtable_node_kind_prop
+\prop_new:N\l__gradtable_row_parents_prop
+\prop_new:N\l__gradtable_parent_starts_prop
+\prop_new:N\l__gradtable_parent_ends_prop
+\keys_define:nn{gradbars/table}
+ {group~levels .tl_set:N=\l__gradtable_group_levels_tl,
+  rank~scope .choices:nn={table,group,parent,leaf}
+    {\tl_set_eq:NN\l__gradtable_rank_scope_tl\l_keys_choice_tl},
+  parent~summary .bool_set:N=\l__gradtable_parent_summary_bool,
+  leaf~summary .bool_set:N=\l__gradtable_leaf_summary_bool,
+  parent~summary~scope .choices:nn={visible,data}
+    {\tl_set_eq:NN\l__gradtable_parent_summary_scope_tl\l_keys_choice_tl},
+  leaf~summary~scope .choices:nn={visible,data}
+    {\tl_set_eq:NN\l__gradtable_leaf_summary_scope_tl\l_keys_choice_tl},
+  parent~summary~label .tl_set:N=\l__gradtable_parent_summary_label_tl,
+  leaf~summary~label .tl_set:N=\l__gradtable_leaf_summary_label_tl}
+\gradtablestyle{hierarchical}{style=regional,group~sep=3pt,column~sep=5pt,
+ row~stretch=1.35,group~color=gradbarsCudBlue!10}
+\ExplSyntaxOff
+
+
+% Explicit scalar column adapters are distinct from standalone graphic types.
+\ExplSyntaxOn
+\prop_new:N\l__gradbars_columns_prop
+\prop_new:N\l__gradbars_column_record_prop
+\prop_new:N\l__gradtable_adapters_prop
+\prop_new:N\l__gradtable_metrics_prop
+\tl_new:N\l__gradtable_adapter_tl
+\tl_new:N\l__gradtable_metric_tl
+\tl_new:N\l__gradbars_column_record_tl
+\bool_new:N\l__gradbars_column_active_bool
+\dim_new:N\l__gradbars_column_width_dim
+\dim_new:N\l__gradbars_column_height_dim
+\dim_new:N\l__gradbars_column_depth_dim
+\box_new:N\l__gradbars_column_box
+\clist_const:Nn\c__gradbars_native_columns_clist
+ {text,number,bar,bullet,interval,compare,dumbbell,stack,spark,heat,boxplot,trendcompare,boxrug,metriccard}
+\cs_generate_variant:Nn\prop_set_from_keyval:Nn{NV}
+\keys_define:nn{gradbars/column-adapter}
+ {frontend .choices:nn={bar,heat,bullet,number,box}
+   {\prop_put:NnV\l__gradbars_column_record_prop{frontend}\l_keys_choice_tl},
+  options .code:n=\prop_put:Nnn\l__gradbars_column_record_prop{options}{#1},
+  graphic .code:n=\prop_put:Nnn\l__gradbars_column_record_prop{graphic}{#1},
+  select .choices:nn={true,false}{\prop_put:NnV\l__gradbars_column_record_prop{select}\l_keys_choice_tl},
+  rank .choices:nn={true,false}{\prop_put:NnV\l__gradbars_column_record_prop{rank}\l_keys_choice_tl},
+  aggregate .choices:nn={true,false}{\prop_put:NnV\l__gradbars_column_record_prop{aggregate}\l_keys_choice_tl},
+  box~width .code:n=\prop_put:Nnx\l__gradbars_column_record_prop{box~width}{\dim_eval:n{#1}},
+  box~height .code:n=\prop_put:Nnx\l__gradbars_column_record_prop{box~height}{\dim_eval:n{#1}},
+  box~depth .code:n=\prop_put:Nnx\l__gradbars_column_record_prop{box~depth}{\dim_eval:n{#1}}}
+\DeclareDocumentCommand\gradbarsdeclarecolumn{m m}
+ {\group_begin:\gradbars@validtrue
+  \__gradbars_name_valid:nTF{#1}{}{\gradbarsFail{Invalid~column~adapter~name:~#1}}
+  \clist_if_in:NnT\c__gradbars_native_columns_clist{#1}{\gradbarsFail{Reserved~native~column~name:~#1}}
+  \prop_if_in:NnT\l__gradbars_columns_prop{#1}{\gradbarsFail{Column~adapter~already~defined:~#1}}
+  \prop_set_from_keyval:Nn\l__gradbars_column_record_prop
+   {frontend=bar,options={},graphic={},select=false,rank=false,aggregate=false,box~width=0pt,box~height=0pt,box~depth=0pt}
+  \keys_set:nn{gradbars/column-adapter}{#2}
+  \str_if_eq:eeT{\prop_item:Nn\l__gradbars_column_record_prop{frontend}}{box}
+   {\prop_if_in:NeF\g__gradbars_type_names_prop{\prop_item:Nn\l__gradbars_column_record_prop{graphic}}
+      {\gradbarsFail{Box~adapter~requires~a~registered~scalar~graphic}}
+    \dim_compare:nNnF{\prop_item:Nn\l__gradbars_column_record_prop{box~width}}>{0pt}
+      {\gradbarsFail{Box~adapter~requires~positive~box~width}}
+    \dim_compare:nNnF{\prop_item:Nn\l__gradbars_column_record_prop{box~height}}>{0pt}
+      {\gradbarsFail{Box~adapter~requires~positive~box~height}}
+    \dim_compare:nNnT{\prop_item:Nn\l__gradbars_column_record_prop{box~depth}}<{0pt}
+      {\gradbarsFail{Box~adapter~requires~nonnegative~box~depth}}}
+  \ifgradbars@valid
+   \use:x{\group_end:\prop_put:Nnn\exp_not:N\l__gradbars_columns_prop{#1}
+     {\exp_not:e{\prop_to_keyval:N\l__gradbars_column_record_prop}}}
+  \else\group_end:\fi}
+\cs_new_protected:Npn\__gradbars_column_load:n #1
+ {\prop_get:NnN\l__gradbars_columns_prop{#1}\l__gradbars_column_record_tl
+  \prop_set_from_keyval:NV\l__gradbars_column_record_prop\l__gradbars_column_record_tl}
+\keys_define:nn{gradbars/table/column}
+ {type .code:n=
+   {\tl_clear:N\l__gradtable_adapter_tl
+    \clist_if_in:NnTF\c__gradbars_native_columns_clist{#1}
+     {\tl_set:Nn\l__gradtable_type_tl{#1}}
+     {\prop_if_in:NnTF\l__gradbars_columns_prop{#1}
+       {\tl_set:Nn\l__gradtable_adapter_tl{#1}\__gradbars_column_load:n{#1}
+        \tl_set:Nx\l__gradtable_type_tl{\prop_item:Nn\l__gradbars_column_record_prop{frontend}}
+        \str_if_eq:VnT\l__gradtable_type_tl{box}{\tl_set:Nn\l__gradtable_type_tl{bar}}}
+       {\gradtableError{Unknown~native~column~type:~#1}}}}}
+\cs_new_protected:Npn\gradtableBindAdapter #1
+ {\tl_if_empty:NF\l__gradtable_adapter_tl
+   {\exp_args:NV\__gradbars_column_load:n\l__gradtable_adapter_tl
+    \prop_put:NnV\l__gradtable_adapters_prop{#1}\l__gradtable_adapter_tl
+    \tl_set:Nx\l__gradtable_options_tl
+     {\exp_not:e{\prop_item:Nn\l__gradbars_column_record_prop{options}},\exp_not:V\l__gradtable_options_tl}
+    \str_if_eq:VnF\l__gradtable_mark_tl{none}
+      {\str_if_eq:eeF{\prop_item:Nn\l__gradbars_column_record_prop{rank}}{true}
+        {\gradtableError{Column~adapter~does~not~declare~rank~capability}}}
+    \str_if_eq:VnF\l__gradtable_aggregate_tl{none}
+      {\str_if_eq:eeF{\prop_item:Nn\l__gradbars_column_record_prop{aggregate}}{true}
+        {\gradtableError{Column~adapter~does~not~declare~aggregate~capability}}}}}
+\msg_new:nnn{gradbars}{column-context}{Column~dimensions~require~an~active~box~adapter.}
+\NewExpandableDocumentCommand\gradbarscolumnwidth{}
+ {\bool_if:NTF\l__gradbars_column_active_bool{\dim_use:N\l__gradbars_column_width_dim}
+   {\msg_expandable_error:nn{gradbars}{column-context}}}
+\NewExpandableDocumentCommand\gradbarscolumnheight{}
+ {\bool_if:NTF\l__gradbars_column_active_bool{\dim_use:N\l__gradbars_column_height_dim}
+   {\msg_expandable_error:nn{gradbars}{column-context}}}
+\NewExpandableDocumentCommand\gradbarscolumndepth{}
+ {\bool_if:NTF\l__gradbars_column_active_bool{\dim_use:N\l__gradbars_column_depth_dim}
+   {\msg_expandable_error:nn{gradbars}{column-context}}}
+\gradtablestyle{adapter-report}{style=research,theme=accessible,column~sep=6pt,row~padding=2pt}
+\gradtablestyle{rug-report}{style=distribution,column~sep=6pt,row~stretch=1.4}
+\ExplSyntaxOff
+
 \RequirePackage{gradbars-table-data}
 \RequirePackage{gradbars-table-layout}
+
+\ExplSyntaxOn
+\cs_new_eq:NN\__gradtable_selection_before_adapters:\gradtableSelectionType
+\cs_set_protected:Npn\gradtableSelectionType #1
+ {\__gradtable_selection_before_adapters:{#1}
+  \prop_get:NnNT\l__gradtable_adapters_prop{#1}\l__gradtable_adapter_tl
+   {\exp_args:NV\__gradbars_column_load:n\l__gradtable_adapter_tl
+    \str_if_eq:eeF{\prop_item:Nn\l__gradbars_column_record_prop{select}}{true}
+     {\gradtableError{Column~adapter~does~not~declare~select~capability}}}}
+\cs_new_eq:NN\__gradtable_configure_before_adapters:\gradtableConfigure
+\cs_set_protected:Npn\gradtableConfigure #1
+ {\__gradtable_configure_before_adapters:{#1}
+  \prop_get:NnNT\l__gradtable_adapters_prop{#1}\l__gradtable_adapter_tl
+   {\exp_args:NV\__gradbars_column_load:n\l__gradtable_adapter_tl
+    \str_if_eq:eeT{\prop_item:Nn\l__gradbars_column_record_prop{frontend}}{box}
+     {\def\gradbars@label{none}}}}
+\cs_new_eq:NN\__gradtable_content_before_adapters:\gradtableContent
+\cs_set_protected:Npn\gradtableContent #1
+ {\prop_get:NVNTF\l__gradtable_adapters_prop\l__gradtable_id_tl\l__gradtable_adapter_tl
+   {\exp_args:NV\__gradbars_column_load:n\l__gradtable_adapter_tl
+    \str_if_eq:eeTF{\prop_item:Nn\l__gradbars_column_record_prop{frontend}}{box}
+     {\__gradtable_adapter_box:n{#1}}{\__gradtable_content_before_adapters:{#1}}}
+   {\__gradtable_content_before_adapters:{#1}}}
+\cs_new_protected:Npn\__gradtable_adapter_box:n #1
+ {\dim_set:Nn\l__gradbars_column_width_dim{\prop_item:Nn\l__gradbars_column_record_prop{box~width}}
+  \dim_set:Nn\l__gradbars_column_height_dim{\prop_item:Nn\l__gradbars_column_record_prop{box~height}}
+  \dim_set:Nn\l__gradbars_column_depth_dim{\prop_item:Nn\l__gradbars_column_record_prop{box~depth}}
+  \dim_compare:nNnT{\l__gradbars_column_width_dim}>{\gradbars@width+.2pt}
+   {\gradtableError{Box~adapter~exceeds~allocated~graphic~width}}
+  \bool_set_true:N\l__gradbars_column_active_bool
+  \hbox_set:Nn\l__gradbars_column_box
+   {\use:x{\exp_not:N\gradgraphic{\prop_item:Nn\l__gradbars_column_record_prop{graphic}}{\exp_not:n{#1}}}}
+  \bool_set_false:N\l__gradbars_column_active_bool
+  \bool_if:nT
+   {\dim_compare_p:nNn{\box_wd:N\l__gradbars_column_box}>{\l__gradbars_column_width_dim+.2pt} ||
+    \dim_compare_p:nNn{\box_ht:N\l__gradbars_column_box}>{\l__gradbars_column_height_dim+.2pt} ||
+    \dim_compare_p:nNn{\box_dp:N\l__gradbars_column_box}>{\l__gradbars_column_depth_dim+.2pt}}
+   {\gradtableError{Box~adapter~content~exceeds~declared~dimensions}}
+  \makebox[\l__gradbars_column_width_dim][c]
+   {\rule[-\l__gradbars_column_depth_dim]{0pt}{\dim_eval:n{\l__gradbars_column_height_dim+\l__gradbars_column_depth_dim}}
+    \box_use:N\l__gradbars_column_box}}
+\ExplSyntaxOff
+
 \endinput

@@ -1,0 +1,29 @@
+\documentclass[fontset=fandol]{ctexart}
+\usepackage[margin=16mm]{geometry}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\usegradbarslibrary{distribution}
+\gradbarsdeclarelibrary{sample-columns}{table}{docs/libraries/gradbars-contrib-columns.sty}
+\usegradbarslibrary{sample-columns}
+\begin{document}
+\section*{显式列适配与原始样本分布}
+虚构复核数据；扩展库仅使用公开 API。
+\par
+\begin{gradtable}[style=adapter-report,width=\linewidth,label width=0pt]
+ \gradcolumn[width=28mm]{project}{项目}
+ \gradcolumn[type=review-score,mark=both,aggregate=mean]{score}{评分}
+ \gradcolumn[type=review-stamp,width=24mm]{stamp}{固定盒}
+ \gradrow{Atlas,80,80}\gradrow{Birch,0,0}\gradrow{Cedar,40,40}
+ \gradsummary{均值}
+\end{gradtable}\par\bigskip
+\par
+\begin{gradtable}[style=rug-report,width=\linewidth]
+ \gradcolumn[width=28mm]{batch}{批次}
+ \gradcolumn[type=boxrug,scale=fixed,
+  options={box range=fixed,min=0,max=20,height=6mm,label=none}]{sample}{箱线图与全部原始样本}
+ \gradrow{Atlas,{0,2,2,4,8,16,NA}}
+ \gradrow{Birch,{0,0,0,NA}}\gradrow{Cedar,{2,3,4,5,6}}
+ \gradrow{Dune,{NA,NA}}
+\end{gradtable}\par
+rug 的每条短线对应一个有效样本；重复值重叠但计数保留。零是有效值，NA 是缺失；摘要不参与盒列和样本列的统计。
+\end{document}

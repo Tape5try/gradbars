@@ -9,13 +9,14 @@
 \usepackage{gradbars}
 \usepackage{tabularray}
 \UseTblrLibrary{gradbars}
-\usegradbarslibrary{distribution,legend,reports}
+\usegradbarslibrary{distribution,legend,reports,pgfplotstable}
+\pgfplotsset{compat=1.18}
 \usepackage{booktabs,array,tabularx,amsmath}
 \usepackage{tcolorbox}
-\tcbuselibrary{listings,skins}
+\tcbuselibrary{listings,skins,breakable}
 \usepackage{fancyhdr}
 \usepackage[colorlinks=true,linkcolor=gradbarsBlue,urlcolor=gradbarsTeal,
-  pdftitle={gradbars v1.2.0 宏包手册},pdfauthor={SuFan}]{hyperref}
+  pdftitle={gradbars v1.2.2 宏包手册},pdfauthor={SuFan}]{hyperref}
 \definecolor{manualCode}{HTML}{EEEEFF}
 \definecolor{manualResult}{HTML}{FAFAE6}
 \definecolor{manualLine}{HTML}{DCE3ED}
@@ -36,7 +37,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\small\sffamily\color{manualMuted}gradbars\quad 宏包手册}
-\fancyhead[R]{\small\sffamily\color{manualMuted}v1.2.0}
+\fancyhead[R]{\small\sffamily\color{manualMuted}v1.2.2}
 \fancyfoot[L]{\footnotesize\color{manualMuted}效果与源码对照 \enspace / \enspace XeLaTeX}
 \fancyfoot[R]{\small\thepage}
 \renewcommand{\headrulewidth}{.3pt}
@@ -109,19 +110,21 @@
 \endgroup
 \par\vspace{4mm}
 {\small\color{manualMuted}\textbf{阅读指南}\par
-本手册把安装说明、参数、77 个编号示例、选型指南与常见问题集中在同一文档中。
+本手册把安装说明、参数、编号示例、选型指南与常见问题集中在同一文档中。
 其中包括六个应用表格，以及双栏论文、跨页长表、黑白打印和幻灯片的真实排版案例。
 浅黄色区域展示实际排版效果，浅紫色区域展示生成该效果的源码。
 全书按入门、图形、外观、专属表格、案例与参考六部分组织。源码中的空行用于区分示例。
 示例框内的效果与源码来自同一段代码，避免两者脱节。\par
 \vspace{3mm}
-适用于 gradbars 1.2.0。示例数据仅用于演示，不代表真实实验结果。\par}
+适用于 gradbars 1.2.2。示例数据仅用于演示，不代表真实实验结果。\par}
 
 \medskip
-\textbf{v1.2.0 可读性更新（2026-11-03，开发版尚未正式发布）。}
-新增显式图例测量布局、数字刻度重复诊断、标签区域对比度，以及趋势线与目标线组合。
-配套 readable 图形与表格预设；已有布局、文字颜色默认与数据语义保持。
-支持的背景模型及接入边界见 v1.2.0 专章。
+\textbf{v1.2.2（2026-11-07）。}
+每组只计算一次最佳与次佳排名，保留并列、缺失、父组/叶组和高低优先语义。
+新增可复现的 TeX/Lua 分阶段性能基准；不增加公开选项或跨调用缓存。
+全部既有功能、接口和默认加载保留；本版交付 GitHub 源码，不创建 Release 或提交 CTAN。
+性能基准使用 \texttt{texlua scripts/benchmark.lua}，详见开发仓库的
+\texttt{docs/performance.md}；计时不能代替正确性、分页或无障碍检查。
 
 % Chapters, in reading order.
 \include{Chapter/zh-cn/install-cn}
@@ -143,6 +146,10 @@
 \include{Chapter/zh-cn/heat-cn}
 \include{Chapter/zh-cn/legends-cn}
 \include{Chapter/zh-cn/readability-cn}
+\include{Chapter/zh-cn/regional-cn}
+\include{Chapter/zh-cn/hierarchy-cn}
+\include{Chapter/zh-cn/adapters-cn}
+\include{Chapter/zh-cn/report-metrics-cn}
 \include{Chapter/zh-cn/themes-cn}
 \include{Chapter/zh-cn/labels-cn}
 \include{Chapter/zh-cn/collision-cn}

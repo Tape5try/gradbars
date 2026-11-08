@@ -1,0 +1,58 @@
+\section{Explicit column adapters and samples (v1.2.1)}
+This implements the former v1.5.0 plan in the requested v1.2.1 snapshot. All adapters are explicit; standalone type registrations do not automatically become native columns. Data are fictitious.
+\begin{demo}{A public standard frontend proxy}
+\begingroup
+\gradbarsdeclarecolumn{review-proxy}{frontend=bar,
+ select=true,rank=true,aggregate=true,
+ options={min=0,max=100,precision=0}}
+\begin{gradtable}[style=adapter-report,width=\linewidth]
+\gradcolumn[width=25mm]{project}{Project}
+\gradcolumn[type=review-proxy,mark=both,
+ aggregate=mean]{score}{Score}
+\gradrow{Atlas,80}\gradrow{Birch,0}\gradrow{Cedar,NA}
+\gradsummary{Mean}
+\end{gradtable}
+\endgroup
+\end{demo}
+Names and declarations follow TeX scope; visible duplicates and built-in names are errors. \key{frontend} supports bar, heat, bullet, number and box. Selection, rank and aggregation are separately admitted, false by default. All calculations use raw scalars.
+\subsection{Fixed single-line boxes}
+A \key{box} adapter also declares a registered scalar graphic, positive box width/height and nonnegative depth. Callback-only \key{\gradbarscolumnwidth}, \key{\gradbarscolumnheight} and \key{\gradbarscolumndepth} expose declared dimensions. The allocated drawing width must fit the box; measured overflow is an error. Set table \key{label width=0pt} to remove the reserved label slot.
+Measurement can call a callback repeatedly and discard results. Admitted table callbacks must not write files, increment counters, add labels or mutate global state. The wrapper preserves the text baseline and adds no Figure. Independent graphic callbacks keep their former contract. See the public-only \texttt{docs/libraries/gradbars-contrib-columns.sty}.
+\clearpage
+\subsection{Box plot plus every raw sample}
+\begin{demo}{One raw sample source; no binning or sampling}
+\begin{gradtable}[style=rug-report,width=\linewidth]
+\gradcolumn[width=25mm]{batch}{Batch}
+\gradcolumn[type=boxrug,scale=fixed,
+ options={min=0,max=20,height=6mm,label=none}]
+ {samples}{Box plot and raw rug}
+\gradrow{Atlas,{0,2,2,4,8,16,NA}}
+\gradrow{Birch,{0,0,0,NA}}
+\gradrow{Cedar,{2,3,4,5,6}}
+\gradrow{Dune,{NA,NA}}
+\end{gradtable}
+\end{demo}
+Standalone \key{\gradboxrug[options]{raw samples}} defaults to 5ex height. Every valid observation has a tick; repeated positions overlap without changing multiplicity. Type-7 quartiles, 1.5-IQR observed whiskers and outliers are unchanged. No jitter, sampling or binning occurs. The limit is 2048 raw positions including NA; precomputed summaries are rejected.
+Zero, one sample, constants and all-missing input retain existing statistics. Fixed/auto/named ranges and clipping never change the statistics. One Figure combines statistics with the full valid sample list, retaining repeats. Select \key{rug-report} or graphic \key{sample-rug} explicitly.
+\clearpage
+\subsection{Optional pgfplotstable cells}
+Explicitly load \key{\usegradbarslibrary{pgfplotstable}} in the preamble. It loads pgfplotstable; the default five-library list is unchanged. This manual opts in.
+\begin{demo}{Preserve headings; format body cells only}
+\begingroup
+\gradpgfplotstablecolumn[min=0,max=100]
+ {Score}{bar}{40mm}
+\gradpgfplotstablecolumn[precision=1,unit={\,ms}]
+ {Time}{number}{24mm}
+\pgfplotstabletypeset[col sep=comma,
+ columns/Project/.style={string type},
+ columns/Score/.append style={column name={\textbf{Score}}}]{
+Project,Score,Time
+Atlas,80,12.5
+Birch,0,0
+Cedar,40,N/A
+Dune,NA,20
+}
+\endgroup
+\end{demo}
+Direct cell command: \key{\gradpgfplotstablecell[options]{bar|heat|number}{width}{value}}. Defaults are text baseline and no label. Empty and NA/N/A/null are missing; \key{pgf missing} replaces the nonempty token list. Zero remains valid. Heat requires the heat library separately. Width includes labels; left/outside label slots and gaps are deducted first. Measured overflow is an error.
+The adapter does not inherit native CSV selection, grouping, ranks, summaries, automatic scales or full table tagging. The upstream reader retains its trusted TeX behavior rather than the literal-safe native CSV promise. See \texttt{docs/pgfplotstable.md} and bilingual standalone sources in \texttt{docs/examples/}.

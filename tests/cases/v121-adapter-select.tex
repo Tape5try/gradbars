@@ -1,0 +1,9 @@
+\documentclass{article}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+\usegradbarslibrary{reports,distribution}
+\gradbarsdeclarecolumn{proxy}{frontend=bar}
+\setlength{\parindent}{0pt}
+\begin{document}
+\gradbarsloadcsv{r}{v121-report.csv}\begin{gradtable}[data=r,sort=x,order=descending]\gradcolumn[type=proxy,source=Score]{x}{X}\end{gradtable}\par
+\end{document}

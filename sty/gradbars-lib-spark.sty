@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Internal implementation unless documented.
-\ProvidesPackage{gradbars-lib-spark}[2026/11/03 v1.2.0 gradbars lib-spark]
+\ProvidesPackage{gradbars-lib-spark}[2026/11/07 v1.2.2 gradbars lib-spark]
 \ExplSyntaxOn
 \seq_new:N \l__gradbars_series_seq
 \seq_new:N \l__gradbars_series_clean_seq
@@ -182,4 +182,159 @@
       \bool_if:NF\l__gradbars_series_any_bool
         {\tl_put_right:Nn\l__gradbars_alt_tl{~All~observations~missing;~target~only.}}}}
 \ExplSyntaxOff
+% v1.3 / v1.4: explicit fixed-scale compositions, one native picture each.
+\ExplSyntaxOn
+\bool_new:N\l__gradbars_spark_band_bool
+\bool_new:N\l__gradbars_spark_compare_bool
+\bool_new:N\l__gradbars_spark_card_bool
+\tl_new:N\l__gradbars_spark_band_low_tl
+\tl_new:N\l__gradbars_spark_band_high_tl
+\tl_new:N\l__gradbars_spark_first_tl
+\def\gradbars@panelratio{.4}
+\def\gradbars@panelgap{3mm}
+\dim_new:N\l__gradbars_compare_pad_dim
+\dim_new:N\l__gradbars_compare_left_dim
+\dim_new:N\l__gradbars_compare_right_dim
+\dim_new:N\l__gradbars_compare_offset_dim
+\pgfkeys{/gradbars,
+ compare~panel~ratio/.store~in=\gradbars@panelratio,
+ compare~panel~gap/.store~in=\gradbars@panelgap,
+ card~panel~ratio/.store~in=\gradbars@panelratio,card~panel~gap/.store~in=\gradbars@panelgap}
+\NewDocumentCommand\gradsparkband{O{} m m m}
+ {\group_begin:\bool_set_true:N\l__gradbars_spark_band_bool
+  \tl_set:Nn\l__gradbars_spark_band_low_tl{#3}
+  \tl_set:Nn\l__gradbars_spark_band_high_tl{#4}
+  \gradspark[#1]{#2}\group_end:}
+\NewDocumentCommand\gradsparkcompare{O{} m}
+ {\group_begin:\bool_set_true:N\l__gradbars_spark_compare_bool
+  \tl_if_blank:nTF{#2}{\gradbarsFail{Endpoint~trend~requires~a~nonempty~series}}
+   {\gradspark[#1]{#2}}\group_end:}
+\cs_new_protected:Npn\__gradbars_compare_panels:
+ {\dim_set:Nn\l__gradbars_compare_pad_dim{\gradbars@markersize+1pt}
+  \dim_set:Nn\l_tmpa_dim{\gradbars@width-\gradbars@panelgap-2\l__gradbars_compare_pad_dim}
+  \dim_set:Nn\l__gradbars_compare_left_dim
+   {\fp_to_dim:n{\gradbars@panelratio*\dim_to_fp:n{\l_tmpa_dim}}}
+  \dim_set:Nn\l__gradbars_compare_right_dim{\l_tmpa_dim-\l__gradbars_compare_left_dim}
+  \dim_set:Nn\l__gradbars_compare_offset_dim
+   {\l__gradbars_compare_pad_dim+\l__gradbars_compare_left_dim+\gradbars@panelgap}
+  \dim_compare:nNnF{\l__gradbars_compare_left_dim}>{2\l__gradbars_compare_pad_dim}
+   {\gradbarsFail{Endpoint~panel~too~narrow;~increase~width~or~adjust~panel~ratio/gap}}
+  \dim_compare:nNnF{\l__gradbars_compare_right_dim}>{2\l__gradbars_compare_pad_dim}
+   {\gradbarsFail{Trend~panel~too~narrow;~increase~width~or~adjust~panel~ratio/gap}}}
+\cs_new_eq:NN\__gradbars_validate_before_compositions:\gradbarsValidateSpark
+\cs_set_protected:Npn\gradbarsValidateSpark
+ {\__gradbars_validate_before_compositions:
+  \bool_if:nT{\l__gradbars_spark_band_bool || \l__gradbars_spark_compare_bool}
+   {\str_if_eq:eeF{\gradbars@sparkrange}{fixed}
+     {\gradbarsFail{Spark~composition~requires~spark~range=fixed~or~a~named~scale}}
+    \str_if_eq:eeF{\gradbars@sparktype}{line}
+     {\gradbarsFail{Spark~composition~requires~spark~type=line}}}
+  \bool_if:NT\l__gradbars_spark_band_bool
+   {\gradbarsCheckNumber{\l__gradbars_spark_band_low_tl}{reference~band~lower~bound}
+    \gradbarsCheckNumber{\l__gradbars_spark_band_high_tl}{reference~band~upper~bound}
+    \gradbarsCheckNumber{\gradbars@bandopacity}{reference~band~opacity}
+    \ifgradbars@valid
+     \fp_compare:nF{\gradbars@min<=\l__gradbars_spark_band_low_tl<\l__gradbars_spark_band_high_tl<=\gradbars@max}
+      {\gradbarsFail{Reference~band~must~increase~within~the~fixed~range}}
+     \fp_compare:nF{0<=\gradbars@bandopacity<=1}
+      {\gradbarsFail{Reference~band~opacity~must~lie~in~[0,1]}}\fi}
+  \bool_if:NT\l__gradbars_spark_compare_bool
+   {\tl_set:Nx\l__gradbars_spark_first_tl{\seq_item:Nn\l__gradbars_series_seq{1}}
+    \gradbarsCheckNumber{\gradbars@panelratio}{compare~panel~ratio}
+    \ifgradbars@valid
+     \fp_compare:nF{0<\gradbars@panelratio<1}
+      {\gradbarsFail{Compare~panel~ratio~must~lie~in~(0,1)}}\fi
+    \dim_compare:nNnT{\gradbars@panelgap}<{0pt}
+      {\gradbarsFail{Compare~panel~gap~must~be~nonnegative}}
+    \bool_if:NF\l__gradbars_spark_card_bool
+     {\str_case_e:nnF{\gradbars@comparelabel}{{values}{}{delta}{}}
+       {\gradbarsFail{Endpoint~trend~labels~support~values~or~delta}}}
+    \ifgradbars@valid\__gradbars_compare_panels:\fi}}
+\cs_new_eq:NN\__gradbars_track_before_compositions:\gradbarsDrawTrack
+\cs_set_protected:Npn\gradbarsDrawTrack
+ {\bool_if:NTF\l__gradbars_spark_compare_bool
+   {\__gradbars_compare_panels:
+    \bool_if:NTF\l__gradbars_spark_card_bool
+     {\path[fill=\gradbars@track,draw=none]
+       (\l__gradbars_compare_pad_dim,0)rectangle
+       (\dim_eval:n{\l__gradbars_compare_pad_dim+\l__gradbars_compare_left_dim},\gradbars@height);}
+     {\draw[draw=\gradbars@track,line~width=\gradbars@stemwidth]
+       (\l__gradbars_compare_pad_dim,.5*\gradbars@height)--
+       (\dim_eval:n{\l__gradbars_compare_pad_dim+\l__gradbars_compare_left_dim},.5*\gradbars@height);}
+    \path[fill=\gradbars@track,draw=none]
+      (\l__gradbars_compare_offset_dim,0)rectangle
+      (\dim_eval:n{\gradbars@width-\l__gradbars_compare_pad_dim},\gradbars@height);}
+   {\__gradbars_track_before_compositions:}}
+\cs_new_eq:NN\__gradbars_draw_before_compositions:\gradbarsDrawSpark
+\cs_set_protected:Npn\gradbarsDrawSpark
+ {\group_begin:
+  \bool_if:nT{\l__gradbars_spark_band_bool || \l__gradbars_spark_compare_bool}
+   {\ifgradbars@print\def\gradbars@left{black}\def\gradbars@sparkhigh{black}\def\gradbars@sparklow{black}\fi}
+  \bool_if:NT\l__gradbars_spark_band_bool
+   {\pgfmathsetlengthmacro\gradbars@sparkbandlow
+     {\fp_eval:n{(\l__gradbars_spark_band_low_tl-\gradbars@min)/(\gradbars@max-\gradbars@min)}*\gradbars@height}
+    \pgfmathsetlengthmacro\gradbars@sparkbandhigh
+     {\fp_eval:n{(\l__gradbars_spark_band_high_tl-\gradbars@min)/(\gradbars@max-\gradbars@min)}*\gradbars@height}
+    \ifgradbars@print
+     \path[fill=black!12,draw=black!60,dashed,line~width=.3pt]
+      (0,\gradbars@sparkbandlow)rectangle(\gradbars@width,\gradbars@sparkbandhigh);
+    \else
+     \path[fill=\gradbars@bandcolor,fill~opacity=\gradbars@bandopacity,draw=none]
+      (0,\gradbars@sparkbandlow)rectangle(\gradbars@width,\gradbars@sparkbandhigh);\fi}
+  \bool_if:NTF\l__gradbars_spark_compare_bool
+   {\begin{scope}[xshift=\l__gradbars_compare_pad_dim]
+     \group_begin:\cs_set:Npx\gradbars@width{\dim_use:N\l__gradbars_compare_left_dim}
+     \cs_set:Npx\gradbars@reference{\l__gradbars_spark_first_tl}
+     \str_if_eq:VnTF\l__gradbars_spark_first_tl{NA}
+      {\gradbars@referencemissingtrue}{\gradbars@referencemissingfalse}
+     \ifgradbars@missing\else
+      \pgfmathsetlengthmacro\gradbars@xend{\gradbarsPosition{\gradbars@value}*\gradbars@width}\fi
+     \bool_if:NTF\l__gradbars_spark_card_bool
+      {\gradbarsPrepareLayout
+       \ifgradbars@missing\else\gradbarsDrawBarBody\fi
+       \ifdim\gradbars@xzero>0pt
+        \draw[draw=gradbarsInk!65,line~width=.35pt](\gradbars@xzero,0)--(\gradbars@xzero,\gradbars@height);\fi}
+      {\gradbarsDrawDumbbell}
+     \group_end:\end{scope}
+    \begin{scope}[xshift=\l__gradbars_compare_offset_dim]
+     \group_begin:\cs_set:Npx\gradbars@width{\dim_use:N\l__gradbars_compare_right_dim}
+     \__gradbars_draw_before_compositions:\group_end:\end{scope}}
+   {\__gradbars_draw_before_compositions:}
+  \group_end:}
+\cs_new_protected:Npn\__gradbars_endpoint_label:n #1
+ {\str_if_eq:eeTF{#1}{NA}{\gradbars@missingtext}{\gradbarsFormatEndpoint{#1}}}
+\cs_new_eq:NN\__gradbars_label_before_compositions:\gradbars@labelcontent
+\cs_set_protected:Npn\gradbars@labelcontent
+ {\bool_lazy_and:nnTF{\l__gradbars_spark_compare_bool && !\l__gradbars_spark_card_bool}{\tl_if_empty_p:o{\gradbars@text}}
+   {\str_if_eq:eeTF{\gradbars@comparelabel}{delta}
+     {\str_if_eq:VnTF\l__gradbars_spark_first_tl{NA}{\gradbars@missingtext}
+       {\ifgradbars@missing\gradbars@missingtext\else
+         $\Delta$\,\group_begin:\def\gradbars@format{value}\gradbarsFormatEndpoint{\gradbars@sparklast-\l__gradbars_spark_first_tl}\group_end:\fi}}
+     {\__gradbars_endpoint_label:n{\l__gradbars_spark_first_tl}\,/\,
+      \__gradbars_endpoint_label:n{\gradbars@sparklast}}}
+   {\__gradbars_label_before_compositions:}}
+\cs_new_eq:NN\__gradbars_alt_before_compositions:\gradbarsBuildAlt
+\cs_set_protected:Npn\gradbarsBuildAlt
+ {\__gradbars_alt_before_compositions:
+  \bool_if:NT\l__gradbars_spark_band_bool
+   {\tl_put_right:Nx\l__gradbars_alt_tl
+     {~Fixed~reference~band~(not~observations~or~a~confidence~interval):~
+       \l__gradbars_spark_band_low_tl\c_space_tl to~\l__gradbars_spark_band_high_tl.}}
+  \bool_if:nT{\l__gradbars_spark_compare_bool && !\l__gradbars_spark_card_bool}
+   {\tl_put_right:Nn\l__gradbars_alt_tl{~Endpoint~panel:~first~position:~}
+    \gradbarsAltValue{\l__gradbars_spark_first_tl}
+    \tl_put_right:Nn\l__gradbars_alt_tl{;~last~position:~}\gradbarsAltValue{\gradbars@sparklast}
+    \tl_put_right:Nn\l__gradbars_alt_tl{;~change:~}
+    \str_if_eq:VnTF\l__gradbars_spark_first_tl{NA}
+     {\tl_put_right:Nn\l__gradbars_alt_tl{missing}}
+     {\ifgradbars@missing\tl_put_right:Nn\l__gradbars_alt_tl{missing}\else
+       \gradbarsAltValue{\fp_eval:n{\gradbars@sparklast-\l__gradbars_spark_first_tl}}\fi}
+    \tl_put_right:Nn\l__gradbars_alt_tl{.~Endpoint~and~trend~panels~share~the~same~value~range~and~unit.}}
+  \bool_if:NT\l__gradbars_spark_card_bool
+   {\tl_put_right:Nn\l__gradbars_alt_tl{~Current-value~bar:~final~position:~}
+    \gradbarsAltValue{\gradbars@sparklast}
+    \tl_put_right:Nn\l__gradbars_alt_tl
+     {.~Current-value~and~history~panels~share~one~metric,~value~range~and~unit;~missing~final~positions~never~fall~back.}}}
+\ExplSyntaxOff
+
 \endinput

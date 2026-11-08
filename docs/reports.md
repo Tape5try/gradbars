@@ -80,3 +80,14 @@ covers correlation Heat and metric bars; ablation dumbbells require the native
 backend or explicit fallback. The [complete example](examples/domain-reports.tex)
 contains all three report types. The [third-party starter](libraries/starter/README.md)
 shows how to package similar recipes using public interfaces.
+
+## Declared metrics in v1.2.1 / v1.2.1 显式指标
+
+The recipes above keep their existing defaults. New report-scoped declarations
+are separately opt-in: `\graddeclaremetric`, `\gradmetricuse`, `\gradmetricnumber`,
+`\gradmetricbind`, `\gradmetriccard` and `\gradmetriccardcolumn`.
+They freeze explicit semantic settings rather than guessing a unit or statistic.
+See [the complete bilingual contract](report-metrics.md) and the
+[English](examples/report-metrics.tex) / [中文](examples/report-metrics-cn.tex) examples.
+
+上方旧外观配方保持原默认值；新声明只作用于显式绑定的图形和列，不自动接管旧调用。

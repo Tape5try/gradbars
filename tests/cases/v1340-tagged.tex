@@ -1,0 +1,20 @@
+\DocumentMetadata{tagging=on,lang=en-US}
+\documentclass{article}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+\setlength{\parindent}{0pt}
+\gradscale{shared}{min=-10,max=100}
+\begin{document}
+\gradsparkband[scale group=shared]{0,NA,70}{20}{60}\par
+\gradsparkband[scale group=shared]{NA,NA}{20}{60}\par
+\gradsparkcompare[scale group=shared]{0,NA,70}\par
+\gradsparkcompare[scale group=shared]{NA,20,70}\par
+\gradsparkcompare[scale group=shared]{10,20,NA}\par
+\gradsparkcompare[scale group=shared]{NA,NA}\par
+\gradsparkcompare[scale group=shared,alt={Explicit endpoint trend.}]{10,20}\par
+\gradsparkcompare[scale group=shared,accessibility=artifact]{10,20}\par
+\gradsparkband[scale group=shared,accessibility=off]{10,20}{20}{60}\par
+\begin{tikzpicture}[alt={Outer composition picture.}]
+\gradsparkcompare[scale group=shared,label=none]{10,NA,20}
+\end{tikzpicture}
+\end{document}

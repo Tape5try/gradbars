@@ -1,0 +1,4 @@
+\documentclass{article}\usepackage{gradbars}\usegradbarslibrary{reports,legend}
+\gradlegenddefine{review}{min=0,max=100,unit={\,pt},better=higher,palette=accessible}
+\graddeclaremetric{metric}{title=Review,unit={\,pt},legend group=review}
+\begin{document}\gradmetricuse{metric}{80}\par\gradmetriccard{metric}{0,80}\par\gradlegenduse{review}\end{document}

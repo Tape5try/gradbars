@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Opt-in domain recipes, not statistical inference.
-\ProvidesPackage{gradbars-lib-reports}[2026/11/03 v1.2.0 Domain report presets]
+\ProvidesPackage{gradbars-lib-reports}[2026/11/07 v1.2.2 Domain report presets]
 \gradbarsstyle{report-correlation}{min=-1,max=1,heat palette=purple-teal,
  heat center=0,precision=2,width=14mm,height=3ex,overflow=error,value format=value}
 \gradbarsstyle{report-ablation}{min=0,max=100,width=40mm,height=3ex,
@@ -27,4 +27,197 @@
 \DeclareDocumentCommand\gradmetriccolumn{O{} m m}
  {\gradcolumn[type=bar,scale=column,include zero=true,mark=both,
    options={style=report-metric},#1]{#2}{#3}}
+% Report-scoped scalar declarations: no unit conversion or inferred statistics.
+\ExplSyntaxOn
+\prop_new:N\l__gradbars_metrics_prop
+\prop_new:N\l__gradbars_metric_meta_prop
+\prop_new:N\l__gradbars_metric_fields_prop
+\tl_new:N\l__gradbars_metric_options_tl
+\tl_new:N\l__gradbars_metric_assign_tl
+\tl_new:N\l__gradbars_metric_id_tl
+\tl_new:N\l__gradbars_metric_expected_tl
+\bool_new:N\l__gradbars_metric_active_bool
+\cs_new:Npn\__gradbars_metric_item:nn #1#2{\prop_item:Ne\l__gradbars_metric_meta_prop{#1/#2}}
+\keys_define:nn{gradbars/report-metric}
+ {title .code:n=\prop_put:Nnn\l__gradbars_metric_fields_prop{title}{#1},
+  role .choices:nn={scalar,score,count,duration,ratio}
+   {\prop_put:NnV\l__gradbars_metric_fields_prop{role}\l_keys_choice_tl},
+  better .choices:nn={higher,lower}
+   {\prop_put:NnV\l__gradbars_metric_fields_prop{better}\l_keys_choice_tl},
+  unit .code:n=\prop_put:Nnn\l__gradbars_metric_fields_prop{unit}{#1},
+  unit~code .code:n=\prop_put:Nnn\l__gradbars_metric_fields_prop{unit~code}{#1},
+  unit~text .code:n=\prop_put:Nnn\l__gradbars_metric_fields_prop{unit~text}{#1},
+  formatter .code:n=\prop_put:Nnn\l__gradbars_metric_fields_prop{formatter}{#1},
+  precision .code:n=\prop_put:Nnn\l__gradbars_metric_fields_prop{precision}{#1},
+  number~format .choices:nn={fixed,scientific,grouped}
+   {\prop_put:NnV\l__gradbars_metric_fields_prop{number~format}\l_keys_choice_tl},
+  percent~base .code:n=\prop_put:Nnn\l__gradbars_metric_fields_prop{percent~base}{#1},
+  value~format .choices:nn={value,percent}
+   {\prop_put:NnV\l__gradbars_metric_fields_prop{value~format}\l_keys_choice_tl},
+  min .code:n=\prop_put:Nnn\l__gradbars_metric_fields_prop{min}{#1},
+  max .code:n=\prop_put:Nnn\l__gradbars_metric_fields_prop{max}{#1},
+  scale~group .code:n=\prop_put:Nnn\l__gradbars_metric_fields_prop{scale~group}{#1},
+  legend~group .code:n=\prop_put:Nnn\l__gradbars_metric_fields_prop{legend~group}{#1},
+  aggregate .choices:nn={none,count,sum,mean,min,max}
+   {\prop_put:NnV\l__gradbars_metric_fields_prop{aggregate}\l_keys_choice_tl}}
+\DeclareDocumentCommand\graddeclaremetric{m m}
+ {\group_begin:\gradbars@validtrue\bool_set_false:N\l__gradbars_metric_active_bool
+  \__gradbars_name_valid:nTF{#1}{}{\gradbarsFail{Invalid~metric~ID:~#1}}
+  \prop_if_in:NnT\l__gradbars_metrics_prop{#1}{\gradbarsFail{Metric~already~defined:~#1}}
+  \prop_set_from_keyval:Nn\l__gradbars_metric_fields_prop
+   {title={},role=scalar,unit={},unit~code={},unit~text={},better=higher,formatter=builtin,
+    precision=1,number~format=fixed,value~format=value,percent~base={},min={},max={},scale~group={},legend~group={},aggregate=none}
+  \keys_set:nn{gradbars/report-metric}{#2}
+  \tl_if_blank:eT{\prop_item:Nn\l__gradbars_metric_fields_prop{title}}
+   {\gradbarsFail{Metric~requires~a~nonempty~title}}
+  \gradbarssetup{legend~group={},scale~group={},min=0,max=100,percent~base={},unit={},unit~code={},unit~text={}}
+  \tl_set:Nx\l_tmpa_tl{\prop_item:Nn\l__gradbars_metric_fields_prop{legend~group}}
+  \tl_if_empty:NF\l_tmpa_tl{\exp_args:NV\__gradbars_legend_apply:n\l_tmpa_tl}
+  \tl_set:Nx\l_tmpa_tl{\prop_item:Nn\l__gradbars_metric_fields_prop{scale~group}}
+  \tl_if_empty:NF\l_tmpa_tl
+   {\pgfkeys{/gradbars/scale~group/.expand~once=\l_tmpa_tl}\gradbarsResolveScaleGroup}
+  \clist_map_inline:nn{min,max}
+   {\tl_set:Nx\l_tmpa_tl{\prop_item:Nn\l__gradbars_metric_fields_prop{##1}}
+    \tl_if_empty:NF\l_tmpa_tl{\pgfkeys{/gradbars/##1/.expand~once=\l_tmpa_tl}}}
+  \gradbarsCheckNumber{\gradbars@min}{metric~min}\gradbarsCheckNumber{\gradbars@max}{metric~max}
+  \ifgradbars@valid
+   \fp_compare:nNnF{\gradbars@max}>{\gradbars@min}{\gradbarsFail{Metric~range~must~increase}}
+   \prop_put:Nnx\l__gradbars_metric_fields_prop{min}{\fp_eval:n{\gradbars@min}}
+   \prop_put:Nnx\l__gradbars_metric_fields_prop{max}{\fp_eval:n{\gradbars@max}}
+  \fi
+  \tl_clear:N\l__gradbars_metric_options_tl
+  \clist_map_inline:nn{legend~group,scale~group,min,max,unit,unit~code,unit~text,better,formatter,precision,number~format,value~format,percent~base}
+   {\prop_get:NnN\l__gradbars_metric_fields_prop{##1}\l_tmpa_tl
+    \tl_put_right:Nx\l__gradbars_metric_options_tl{##1={\exp_not:V\l_tmpa_tl},}}
+  \exp_args:NV\gradbarssetup\l__gradbars_metric_options_tl
+  \gradbarsResolveScaleGroup\gradbarsValidateFormatter
+  \tl_if_empty:oF{\gradbars@percentbase}{\gradbarsValidatePercentBase}
+  \tl_set:Nx\l_tmpa_tl{\gradbars@precision}
+  \regex_match:nVF{\A[0-6]\Z}\l_tmpa_tl{\gradbarsFail{Precision~must~be~an~integer~from~0~to~6}}
+  \str_if_eq:eeT{\gradbars@format}{percent}
+   {\ifgradbars@valid\fp_compare:nNnF{\gradbars@min}={0}{\gradbarsFail{Percent~metric~requires~min=0}}
+     \gradbarsValidatePercentBase\fi}
+  % Freeze resolved key values, including pgfkeys' whitespace normalization.
+  \clist_map_inline:nn{unit/unit,unit~code/unitcode,unit~text/unittext,better/better,formatter/formatter,
+    precision/precision,number~format/numberformat,value~format/format,percent~base/percentbase}
+   {\seq_set_split:Nnn\l_tmpa_seq{/}{##1}
+    \prop_put:Nex\l__gradbars_metric_fields_prop{\seq_item:Nn\l_tmpa_seq{1}}
+     {\exp_not:v{gradbars@\seq_item:Nn\l_tmpa_seq{2}}}}
+  \prop_put:Nnx\l__gradbars_metric_fields_prop{scale~group}{\exp_not:o{\gradbars@scalegroup}}
+  \prop_put:NnV\l__gradbars_metric_fields_prop{legend~group}\l__gradbars_legend_group_tl
+  \tl_clear:N\l__gradbars_metric_assign_tl
+  \prop_map_inline:Nn\l__gradbars_metric_fields_prop
+   {\tl_put_right:Nx\l__gradbars_metric_assign_tl
+     {\exp_not:N\prop_put:Nnn\exp_not:N\l__gradbars_metric_meta_prop{#1/##1}{\exp_not:n{##2}}}}
+  \ifgradbars@valid
+   \use:x{\group_end:\prop_put:Nnn\exp_not:N\l__gradbars_metrics_prop{#1}
+     {\exp_not:V\l__gradbars_metric_options_tl}\exp_not:V\l__gradbars_metric_assign_tl}
+  \else\group_end:\fi}
+\msg_new:nnn{gradbars}{metric-field}{Unknown~metric~or~field:~#1.}
+\DeclareExpandableDocumentCommand\gradmetricinfo{m m}
+ {\prop_if_in:NeTF\l__gradbars_metric_meta_prop{#1/#2}
+   {\__gradbars_metric_item:nn{#1}{#2}}
+   {\msg_expandable_error:nnn{gradbars}{metric-field}{#1/#2}}}
+\cs_new_protected:Npn\__gradbars_metric_check:
+ {\prop_get:NeN\l__gradbars_metric_meta_prop{\l__gradbars_metric_id_tl/scale~group}\l__gradbars_metric_expected_tl
+  \tl_set:No\l_tmpa_tl{\gradbars@scalegroup}
+  \tl_if_eq:NNF\l_tmpa_tl\l__gradbars_metric_expected_tl
+   {\gradbarsFail{Metric~semantic~setting~conflict:~scale~group}}
+  \prop_get:NeN\l__gradbars_metric_meta_prop{\l__gradbars_metric_id_tl/legend~group}\l__gradbars_metric_expected_tl
+  \tl_if_eq:NNF\l__gradbars_legend_group_tl\l__gradbars_metric_expected_tl
+   {\gradbarsFail{Metric~semantic~setting~conflict:~legend~group}}
+  \clist_map_inline:nn{min,max}
+   {\gradbarsCheckNumber{\use:c{gradbars@##1}}{metric~##1}
+    \ifgradbars@valid
+     \fp_compare:nNnF{\use:c{gradbars@##1}}={\__gradbars_metric_item:nn{\l__gradbars_metric_id_tl}{##1}}
+       {\gradbarsFail{Metric~semantic~setting~conflict:~##1}}\fi}
+  \clist_map_inline:nn{unit/unit,unit~code/unitcode,unit~text/unittext,better/better,formatter/formatter,
+    precision/precision,number~format/numberformat,value~format/format,percent~base/percentbase}
+   {\seq_set_split:Nnn\l_tmpa_seq{/}{##1}
+    \prop_get:NeN\l__gradbars_metric_meta_prop
+     {\l__gradbars_metric_id_tl/\seq_item:Nn\l_tmpa_seq{1}}\l__gradbars_metric_expected_tl
+    \tl_set:Nx\l_tmpa_tl{\exp_not:v{gradbars@\seq_item:Nn\l_tmpa_seq{2}}}
+    \tl_if_eq:NNF\l_tmpa_tl\l__gradbars_metric_expected_tl
+     {\gradbarsFail{Metric~semantic~setting~conflict:~\seq_item:Nn\l_tmpa_seq{1}}}}}
+\cs_new_eq:NN\__gradbars_resolve_before_metrics:\gradbarsResolveScaleGroup
+\cs_set_protected:Npn\gradbarsResolveScaleGroup
+ {\__gradbars_resolve_before_metrics:
+  \bool_if:NT\l__gradbars_metric_active_bool{\__gradbars_metric_check:}}
+\cs_new_protected:Npn\__gradbars_metric_setup:nn #1#2
+ {\bool_set_false:N\l__gradbars_metric_active_bool\gradbars@validtrue
+  \tl_set:Nn\l__gradbars_metric_id_tl{#1}
+  \prop_get:NnNTF\l__gradbars_metrics_prop{#1}\l__gradbars_metric_options_tl
+   {\exp_args:NV\gradbarssetup\l__gradbars_metric_options_tl\gradbarssetup{#2}
+    \bool_set_true:N\l__gradbars_metric_active_bool\gradbarsResolveScaleGroup}
+   {\gradbarsFail{Unknown~report~metric:~#1}}}
+\DeclareDocumentCommand\gradmetricuse{O{} m m}
+ {\group_begin:\gradbarssetup{style=report-metric}
+  \__gradbars_metric_setup:nn{#2}{#1}
+  \ifgradbars@valid\gradbar{#3}\fi\group_end:}
+\DeclareDocumentCommand\gradmetricnumber{O{} m m}
+ {\group_begin:\__gradbars_metric_setup:nn{#2}{#1}
+  \ifgradbars@valid
+   \tl_set:Nn\l_tmpa_tl{#3}\tl_trim_spaces:N\l_tmpa_tl
+   \tl_if_empty:NT\l_tmpa_tl{\tl_set:Nn\l_tmpa_tl{NA}}
+   {\gradbars@font\exp_args:NV\gradtableNumber\l_tmpa_tl}\fi\group_end:}
+\keys_define:nn{gradbars/table/column}{metric .tl_set:N=\l__gradtable_metric_tl}
+\cs_new_protected:Npn\__gradbars_bind_metric_column:n #1
+ {\tl_if_empty:NTF\l__gradtable_metric_tl
+   {\str_if_eq:VnT\l__gradtable_type_tl{metriccard}{\gradtableError{Metric~card~column~requires~metric~binding}}}
+   {\prop_get:NVNTF\l__gradbars_metrics_prop\l__gradtable_metric_tl\l__gradbars_metric_options_tl
+     {\str_case:VnF\l__gradtable_type_tl{{bar}{}{number}{}{heat}{}{bullet}{}{metriccard}{}}
+       {\gradtableError{Report~metric~requires~a~scalar~column~or~metriccard}}
+      \str_if_eq:VnF\l__gradtable_scale_tl{fixed}{\gradtableError{Report~metric~requires~scale=fixed}}
+      \str_if_eq:VnTF\l__gradtable_type_tl{metriccard}
+       {\str_if_eq:VnF\l__gradtable_aggregate_tl{none}
+         {\gradtableError{Metric~card~history~cannot~be~aggregated}}}
+       {\str_if_eq:eeF{\l__gradtable_aggregate_tl}{\__gradbars_metric_item:nn{\l__gradtable_metric_tl}{aggregate}}
+         {\gradtableError{Metric~aggregate~conflict}}}
+      \str_if_eq:eeF{\l__gradtable_formatter_tl}{\__gradbars_metric_item:nn{\l__gradtable_metric_tl}{formatter}}
+        {\gradtableError{Metric~formatter~conflict}}
+      \prop_put:NnV\l__gradtable_metrics_prop{#1}\l__gradtable_metric_tl
+      \tl_set:Nx\l__gradtable_options_tl
+        {\exp_not:V\l__gradbars_metric_options_tl,\exp_not:V\l__gradtable_options_tl}}
+     {\gradtableError{Unknown~report~metric:~\l__gradtable_metric_tl}}}}
+\DeclareDocumentCommand\gradmetricbind{O{} m m}
+ {\prop_if_in:NnTF\l__gradbars_metrics_prop{#2}
+   {\use:x{\exp_not:N\gradcolumn[type=bar,scale=fixed,metric={#2},
+      aggregate={\__gradbars_metric_item:nn{#2}{aggregate}},
+      formatter={\__gradbars_metric_item:nn{#2}{formatter}},\exp_not:n{#1}]
+      {\exp_not:n{#3}}{\exp_not:e{\__gradbars_metric_item:nn{#2}{title}}}}}
+   {\gradbarsFail{Unknown~report~metric:~#2}}}
+\DeclareDocumentCommand\gradmetriccardcolumn{O{} m m}
+ {\gradmetricbind[type=metriccard,aggregate=none,#1]{#2}{#3}}
+\cs_new_eq:NN\__gradtable_configure_before_metrics:\gradtableConfigure
+\cs_set_protected:Npn\gradtableConfigure #1
+ {\bool_set_false:N\l__gradbars_metric_active_bool
+  \__gradtable_configure_before_metrics:{#1}
+  \prop_get:NnNT\l__gradtable_metrics_prop{#1}\l__gradbars_metric_id_tl
+    {\bool_set_true:N\l__gradbars_metric_active_bool\__gradbars_metric_check:}}
+\cs_new_eq:NN\__gradbars_alt_before_metrics:\gradbarsBuildAlt
+\cs_set_protected:Npn\gradbarsBuildAlt
+ {\__gradbars_alt_before_metrics:
+  \bool_if:NT\l__gradbars_metric_active_bool
+   {\tl_put_right:Nx\l__gradbars_alt_tl
+     {~Report~metric:~\exp_not:e{\__gradbars_metric_item:nn{\l__gradbars_metric_id_tl}{title}};
+      ~role:~\__gradbars_metric_item:nn{\l__gradbars_metric_id_tl}{role};
+      ~better:~\__gradbars_metric_item:nn{\l__gradbars_metric_id_tl}{better}.}}}
+\gradtablestyle{metric-report}{style=research,theme=accessible,row~stretch=1.4,row~padding=2pt}
+\gradbarsstyle{metric-card}{theme=accessible,width=70mm,height=5ex,label=outside,precision=1}
+\cs_new_protected:Npn\__gradbars_metric_card_render:n #1
+ {\tl_if_blank:nTF{#1}{\gradbarsFail{Metric~card~requires~a~nonempty~history}}
+   {\bool_set_true:N\l__gradbars_spark_compare_bool
+    \bool_set_true:N\l__gradbars_spark_card_bool
+    \use:x{\exp_not:N\gradspark[height=\gradbars@height,spark~range=fixed]{\exp_not:n{#1}}}}}
+\DeclareDocumentCommand\gradmetriccard{O{} m m}
+ {\group_begin:\gradbarssetup{style=metric-card}
+  \__gradbars_metric_setup:nn{#2}{#1}
+  \ifgradbars@valid\__gradbars_metric_card_render:n{#3}\fi\group_end:}
+\cs_new_eq:NN\__gradtable_content_before_metric_card:\gradtableContent
+\cs_set_protected:Npn\gradtableContent #1
+ {\str_if_eq:VnTF\l__gradtable_type_tl{metriccard}
+   {\group_begin:\__gradbars_metric_card_render:n{#1}\group_end:}
+   {\__gradtable_content_before_metric_card:{#1}}}
+\ExplSyntaxOff
+
 \endinput

@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Versioned public scalar backend contract.
-\ProvidesPackage{gradbars-backend}[2026/11/03 v1.2.0 Public backend contract]
+\ProvidesPackage{gradbars-backend}[2026/11/07 v1.2.2 Public backend contract]
 \ExplSyntaxOn
 \cs_generate_variant:Nn\clist_if_in:nnTF{Vn}
 \cs_generate_variant:Nn\clist_if_in:nnF{Vn}
@@ -8,7 +8,7 @@
 \clist_const:Nn\c__gradbars_backend_features_clist
   {bar,heat,missing,signed,gradient,print,labels,units,clip,decorations,embedded,tagging,artifact}
 \clist_const:Nn\c__gradbars_backend_kinds_clist
-  {bar,heat,bar-area,signed-bar,stack,spark,spark-target,compare,dumbbell,range,bullet,boxplot,heat-legend,reference-legend,category-legend}
+  {bar,heat,bar-area,signed-bar,stack,spark,spark-target,spark-band,spark-compare,compare,dumbbell,range,bullet,boxplot,box-rug,metric-card,heat-legend,reference-legend,category-legend}
 \tl_new:N\l__gradbars_backend_tl
 \tl_new:N\l__gradbars_backend_fallback_tl
 \tl_new:N\l__gradbars_backend_native_tl
@@ -22,7 +22,7 @@
 \tl_set:Nn\l__gradbars_backend_tl{tikz}
 \tl_set:Nn\l__gradbars_backend_fallback_tl{error}
 \prop_gput:Nnn\g__gradbars_backends_prop{tikz}
- {bar,heat,bar-area,signed-bar,stack,spark,spark-target,compare,dumbbell,range,bullet,boxplot,heat-legend,reference-legend,category-legend,missing,signed,gradient,print,labels,units,clip,decorations,embedded,tagging,artifact}
+ {bar,heat,bar-area,signed-bar,stack,spark,spark-target,spark-band,spark-compare,compare,dumbbell,range,bullet,boxplot,box-rug,metric-card,heat-legend,reference-legend,category-legend,missing,signed,gradient,print,labels,units,clip,decorations,embedded,tagging,artifact}
 \pgfkeys{/gradbars,
  backend/.code={\prop_if_in:NnTF\g__gradbars_backends_prop{#1}
    {\tl_set:Nn\l__gradbars_backend_tl{#1}}
@@ -175,7 +175,10 @@
   \ifgradbars@stack\tl_set:Nn\l__gradbars_backend_kind_tl{stack}\fi
   \ifgradbars@spark\tl_set:Nn\l__gradbars_backend_kind_tl{spark}
     \bool_if:NT\l__gradbars_spark_target_bool
-      {\tl_set:Nn\l__gradbars_backend_kind_tl{spark-target}}\fi
+      {\tl_set:Nn\l__gradbars_backend_kind_tl{spark-target}}
+    \bool_if:NT\l__gradbars_spark_band_bool{\tl_set:Nn\l__gradbars_backend_kind_tl{spark-band}}
+    \bool_if:NT\l__gradbars_spark_compare_bool{\tl_set:Nn\l__gradbars_backend_kind_tl{spark-compare}}
+    \bool_if:NT\l__gradbars_spark_card_bool{\tl_set:Nn\l__gradbars_backend_kind_tl{metric-card}}\fi
   \ifgradbars@compare\tl_set:Nn\l__gradbars_backend_kind_tl{compare}
     \str_if_eq:eeT{\gradbars@shape}{dumbbell}{\tl_set:Nn\l__gradbars_backend_kind_tl{dumbbell}}\fi
   \ifgradbars@rangemode\tl_set:Nn\l__gradbars_backend_kind_tl{range}\fi

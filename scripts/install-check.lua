@@ -28,7 +28,7 @@ local function modules(dir)
   end
   local n=0
   for name in lfs.dir(dir) do if name:match('%.sty$') then n=n+1 end end
-  assert(n==22,'Expected all 22 extracted runtime modules in '..dir)
+  assert(n==23,'Expected all 23 extracted runtime modules in '..dir)
 end
 local function remove_sty()
   if not lfs.attributes('sty') then return end

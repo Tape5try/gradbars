@@ -3,6 +3,10 @@ local r=dofile('scripts/release.lua')
 local pdf=dofile('scripts/pdf-structure.lua')
 local expected=dofile('tests/cases/pdf-expected.lua')
 local lfs=require('lfs')
+local cache=lfs.currentdir()..'/build/pdf-check/tex-cache'
+r.write('build/pdf-check/tex-cache/.keep','')
+os.setenv('TEXMFVAR',cache)
+os.setenv('TEXMFCACHE',cache)
 local runtime=lfs.attributes('sty/gradbars.sty') and 'sty' or 'build/l3build/unpacked'
 for _,path in ipairs(r.walk(runtime)) do
  if path:match('%.sty$') then r.copy(path,'build/pdf-check/runtime/'..path:match('[^/]+$')) end

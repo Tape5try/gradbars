@@ -1,0 +1,29 @@
+\input regression-test.tex
+\documentclass{article}
+\usepackage{gradbars}
+\usegradbarslibrary{reports,distribution}
+\gradbarsdeclarecolumn{native-score}{frontend=bar,rank=true,aggregate=true}
+\graddeclaremetric{score}{title={Review score},role=score,min=0,max=100,aggregate=mean}
+\begin{document}
+\START
+\TYPE{metric=\gradmetricinfo{score}{title}; role=\gradmetricinfo{score}{role}; aggregate=\gradmetricinfo{score}{aggregate}}
+\TYPE{range=\gradmetricinfo{score}{min},\gradmetricinfo{score}{max}; better=\gradmetricinfo{score}{better}}
+\begingroup
+\graddeclaremetric{local}{title=Local}
+\TYPE{local title=\gradmetricinfo{local}{title}}
+\endgroup
+\ExplSyntaxOn
+\prop_if_in:NnTF\l__gradbars_metrics_prop{local}{\TYPE{metric~scope=leaked}}{\TYPE{metric~scope=local}}
+\prop_if_in:NnTF\l__gradbars_columns_prop{native-score}{\TYPE{adapter=registered}}{\TYPE{adapter=missing}}
+\cs_new_eq:NN\testOriginalDraw\__gradbars_distribution_draw:
+\cs_set_protected:Npn\__gradbars_distribution_draw:
+ {\xdef\rugStats{n=\gradstat{n};~missing=\gradstat{missing};~Q=\gradstat{q1},\gradstat{median},\gradstat{q3};~whiskers=\gradstat{low},\gradstat{high}}\testOriginalDraw}
+\ExplSyntaxOff
+\OMIT
+\setbox0=\hbox{\gradboxrug{0,2,2,4,8,16,NA}}
+\TIMO
+\TYPE{rug \rugStats}
+\gradcomputesummary{0,2,2,4,8,16,NA}{\TYPE{box n=\gradstat{n}; missing=\gradstat{missing}; Q=\gradstat{q1},\gradstat{median},\gradstat{q3}; whiskers=\gradstat{low},\gradstat{high}}}
+\gradbarsiflibraryloaded{pgfplotstable}{\TYPE{optional PGF=unexpected}}{\TYPE{optional PGF=not loaded}}
+\END
+\end{document}

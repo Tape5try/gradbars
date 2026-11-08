@@ -1,0 +1,7 @@
+Name,Group,High,Low,Tied
+Alpha,A,10,3,5
+Beta,A,10,7,5
+Gamma,A,8,NA,5
+Delta,B,-1,0,2
+Epsilon,B,-2,2,2
+Zeta,C,NA,NA,NA

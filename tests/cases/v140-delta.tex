@@ -1,0 +1,11 @@
+\documentclass{article}
+\usepackage{gradbars}
+\ExplSyntaxOn
+\gradbarsdeclareformatter{raw-delta}
+ {\fp_compare:nNnF{#1}={50}{\errmessage{Delta was converted to a percent}}#1}
+\ExplSyntaxOff
+\begin{document}
+\gradsparkcompare[spark range=fixed,min=0,max=200,
+ value format=percent,compare label=delta,
+ formatter=raw-delta]{25,50,75}
+\end{document}

@@ -93,3 +93,34 @@ for a real assistive-technology review.
 ## v1.2.0 readability and target trends
 
 See [the complete contract and bilingual examples](readability.md) for `legend layout=measured`, `legend duplicates=error`, `text contrast=area`, contrast fallback and `\gradsparktarget`. Defaults and older diagnostics remain unchanged; backend schema 1 remains scalar. New native-only kinds `bar-area` and `spark-target` require explicit TikZ fallback on third-party backends.
+
+## v1.3.0 / v1.4.0 compositions and hierarchy
+
+The fixed-band and endpoint/full-trend commands each produce one Figure with the
+complete ordered series and explicit range. The band is described as a fixed
+reference, not observations or a confidence interval; endpoint alternatives keep
+first/last NA and a missing change. Explicit alt, artifact/off and embedded TikZ
+follow the existing policy. Native trendcompare measurement must not duplicate
+Figure semantics. Actual PDF assertions are in `tests/trend-pdf.lua`.
+
+Two-level CSV grouping supplies visual parent/leaf headings and attached summary
+chains. It does not add automatic Table header inference or a complete Tagged
+PDF hierarchy contract. Native longtable pagination is verified from actual
+shipout pages by `tests/hierarchy-pages.lua`, independently of accessibility.
+
+## v1.2.1 adapter and composition semantics
+
+A raw `box-rug` Figure combines the unchanged box statistics and the full valid
+sample list, retaining duplicates. A `metric-card` Figure combines the complete
+positional history, final-position current value (no fallback at final NA),
+shared range/unit and declared metric metadata. Explicit alternatives, artifact,
+off and embedded-picture rules are unchanged. Both compositions create one Figure.
+Native proxy and fixed-box delegated graphics suspend tagging during discarded
+measurement; the fixed-box wrapper adds no extra Figure. Optional pgfplotstable
+body graphics retain their own Figure descriptions, number cells add none, and
+host headers are not drawn as data. Complete table tagging is not inherited by
+that external adapter. These verified boundaries do not claim full PDF/UA compliance.
+
+原始样本重数、历史缺失位置和末位当前缺失均保留；两种组合各生成一个 Figure。
+原生适配的试排暂停标记，固定盒包装不额外生成 Figure；外部 PGF 适配仅管正文图形，
+数字无 Figure、表头不绘制，不自动承诺整表 PDF/UA 结构。

@@ -1,5 +1,5 @@
 % Author: SuFan; MIT License. Stable version-1 public extension entry points.
-\ProvidesPackage{gradbars-api}[2026/11/03 v1.2.0 gradbars public interfaces]
+\ProvidesPackage{gradbars-api}[2026/11/07 v1.2.2 gradbars public interfaces]
 \ExplSyntaxOn
 \prop_new:N\g__gradbars_library_files_prop
 \prop_new:N\g__gradbars_library_dependencies_prop
@@ -197,4 +197,16 @@
 \@onlypreamble\usegradbarslibrary
 \@onlypreamble\gradbarsdeclarelibrary
 \ExplSyntaxOff
+
+\ProvideDocumentCommand\gradbarsdeclarecolumn{m m}{\__gradbars_unloaded:n{table}}
+\ProvideDocumentCommand\gradpgfplotstablecell{O{} m m m}{\__gradbars_unloaded:n{pgfplotstable}}
+\ProvideDocumentCommand\gradpgfplotstablecolumn{O{} m m m}{\__gradbars_unloaded:n{pgfplotstable}}
+\ProvideDocumentCommand\gradboxrug{O{} m}{\__gradbars_unloaded:n{distribution}}
+\ProvideDocumentCommand\graddeclaremetric{m m}{\__gradbars_unloaded:n{reports}}
+\ProvideDocumentCommand\gradmetricinfo{m m}{\__gradbars_unloaded:n{reports}}
+\ProvideDocumentCommand\gradmetricuse{O{} m m}{\__gradbars_unloaded:n{reports}}
+\ProvideDocumentCommand\gradmetricnumber{O{} m m}{\__gradbars_unloaded:n{reports}}
+\ProvideDocumentCommand\gradmetricbind{O{} m m}{\__gradbars_unloaded:n{reports}}
+\ProvideDocumentCommand\gradmetriccard{O{} m m}{\__gradbars_unloaded:n{reports}}
+\ProvideDocumentCommand\gradmetriccardcolumn{O{} m m}{\__gradbars_unloaded:n{reports}}
 \endinput

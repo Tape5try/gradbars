@@ -1,0 +1,14 @@
+\documentclass{article}
+\setlength{\parindent}{0pt}
+\usepackage[margin=15mm]{geometry}
+\usepackage{gradbars}
+
+\newcount\backendCalls
+\gradbarsdeclarebackend{scalar}{bar,labels,gradient}{\global\advance\backendCalls1\gradbarsbackenddefault}
+\begin{document}
+\gradbarsifbackendcapable{tikz}{spark-band}{}{\errmessage{Native band capability missing}}
+\gradbarsifbackendcapable{tikz}{spark-compare}{}{\errmessage{Native endpoint capability missing}}
+\gradsparkband[backend=scalar,backend fallback=tikz,spark range=fixed]{10,20}{20}{60}\par
+\gradsparkcompare[backend=scalar,backend fallback=tikz,spark range=fixed,width=60mm]{10,20}\par
+\ifnum\backendCalls=0\else\errmessage{Compound data reached scalar backend}\fi
+\end{document}

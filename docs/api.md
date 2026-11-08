@@ -639,6 +639,15 @@ Styles use the existing named style registry and may be redefined with
 `style=dashboard,theme=forest,rules=booktabs`. Existing preset=paper|report|mono
 remains supported. No statistical or scale defaults are changed by these styles.
 
+## v1.2.2 performance compatibility
+
+Group ranking computes best and second distinct values together. Public keys,
+ties, missing values, higher/lower directions, parent/leaf scopes and raw-value
+semantics are unchanged. There is no new runtime option or cross-call cache.
+组内最佳与次佳共用一次排名计算；已有参数、并列、缺失、方向及父组/叶组语义不变。
+No benchmark result is an API speed guarantee. See [reproduction and measurement
+limits](performance.md).
+
 ## CSV sorting and filtering (v0.0.5)
 
 ```latex
@@ -663,7 +672,8 @@ Selection runs in order: filter, stable sort, then limit. Ranking uses the displ
 rows; automatic ranges use the chosen scope before measurement and pagination.
 `sort`, `filter` and a positive `limit` require `data`. Their column ids must be
 declared; supported types are text, number, bar, bullet and heat. Pair, interval,
-stack and spark fields do not have an implicit scalar sorting/filtering rule.
+stack, spark, boxplot and trendcompare fields do not have an implicit scalar
+sorting/filtering rule.
 
 Numeric sorting uses raw decimal values, not formatted labels; equal values retain
 file order and missing values come last in both directions. Text sorting uses
@@ -860,7 +870,8 @@ Leading/trailing group-label spaces are trimmed. Empty text forms a real group
 headed by `group missing label={(ungrouped)}` (customizable); literal `NA` and
 configured text missing tokens remain distinct group names. No rows are dropped
 because of empty names. Automatic grouping requires CSV and cannot be combined
-with manual `\gradgroup`. Only one group level is supported.
+with manual `\gradgroup`. This legacy `group by` entry supports one level;
+see [two-level CSV grouping](hierarchical-tables.md) for the separate v1.4.0 entry.
 
 ### Group ranks and summaries
 
@@ -1126,3 +1137,57 @@ See [the complete contract and bilingual examples](readability.md) for `legend l
 ### New signatures in 1.2.0
 
 `\gradsparktarget[graphic options]{series}{target}` requires the spark library, an explicit fixed/named scale and line type. `target` is a separate within-range number. Ordinary bar `target` stays rejected. `legend layout=legacy|measured` and `legend duplicates=off|error` belong to the legend library; both work in shared definitions and layout overrides. Graphic and native-table `style=readable` are separate public presets, documented in [readability](readability.md).
+
+## v1.3.0 / v1.4.0 additions
+
+| Entry | Arguments/options | Contract |
+| --- | --- | --- |
+| `\gradbarsparsenumber[options]{input}{\output}` | `decimal=point|comma`, `grouping=none|point|comma|space` | Explicit rules, canonical numeric/NA result, ordinary local assignment; core helper |
+| CSV scalar column | `input decimal`, `input grouping` | Explicit number/bar/bullet/heat columns only; before selection/statistics |
+| `\gradsparkband[options]{series}{lower}{upper}` | spark library; fixed range or named scale; line only | Constant reference interval, ordered in-range bounds; not observations/CI |
+| `\gradsparkcompare[options]{series}` | spark library; fixed range or named scale; line only | First/last positions plus full trend, same range/unit, one Figure |
+| Endpoint panel keys | `compare panel ratio=.4`, `compare panel gap=3mm` | Ratio in (0,1), gap nonnegative; width includes panels, gap and outer marker allowance |
+| Native `type=trendcompare` | canonical sequence; `scale=fixed|column` | 4ex default height; full-series auto range; no scalar aggregate/rank/select/regional keys |
+| Native `group levels={parentID,leafID}` | exactly two distinct CSV text columns | Structured paths; separate from group by/manual groups |
+| `rank scope=parent|leaf` | new hierarchy only | Visible raw data ranks at selected level; default remains table |
+| `parent summary`, `leaf summary` | false by default | Independent enablement |
+| `parent summary scope`, `leaf summary scope` | visible by default; visible or data | Per-node aggregate scope; summary rows excluded from ranks/scales |
+| `parent summary label`, `leaf summary label` | Parent summary / Leaf summary | Explicit level titles |
+| Native styles | regional, hierarchical | Explicit layout presets; no inferred input locale or grouping |
+
+The existing strict scalar grammar above remains the default. The earlier
+single-level grouping section describes `group by`; the new `group levels`
+entry has its own limits and cannot be mixed with that interface.
+Complete rules and bilingual matrices/examples: [regional input](regional-input.md),
+[trend compositions](trend-compositions.md), [hierarchical tables](hierarchical-tables.md).
+
+## v1.2.1 explicit adapters and report metrics
+
+This snapshot includes the former v1.5.0/v1.6.0 plans under the maintainer's
+requested actual version number, preserving the previous local planned features.
+Install all 23 matching runtime modules; the default five libraries do not change.
+
+| API | Library | Arguments / scope |
+| --- | --- | --- |
+| `\gradbarsdeclarecolumn` | table | `{name}{typed adapter keys}`; locally scoped registry, built-in/duplicate checks |
+| `\gradbarscolumnwidth`, `\gradbarscolumnheight`, `\gradbarscolumndepth` | table | expandable declared dimensions, only inside admitted fixed-box callback |
+| `\gradpgfplotstablecell` | pgfplotstable | `[graphic keys]{bar|heat|number}{total width}{value}` |
+| `\gradpgfplotstablecolumn` | pgfplotstable | `[graphic keys]{column name}{kind}{total width}`; body postprocessing only |
+| `\gradboxrug` | distribution | `[graphic keys]{raw samples}`; at most 2048 positions including NA |
+| `\graddeclaremetric` | reports | `{ID}{typed declaration keys}`; scoped, visible duplicates rejected |
+| `\gradmetricinfo` | reports | expandable `{ID}{field}` metadata query |
+| `\gradmetricuse`, `\gradmetricnumber` | reports | `[graphic keys]{ID}{scalar}` |
+| `\gradmetricbind` | reports | `[typed native column keys]{metric ID}{column ID}`; scalar source binding |
+| `\gradmetriccard` | reports | `[graphic keys]{ID}{positional history}`; final position is current |
+| `\gradmetriccardcolumn` | reports | `[typed native column keys]{metric ID}{column ID}`; history binding |
+
+New native kinds are `boxrug` and `metriccard`; metriccard requires an explicit
+metric binding. New native backend kinds are `box-rug`, `metric-card` with explicit
+TikZ fallback for scalar backends, schema 1. No arbitrary layer system is exposed.
+
+Complete typed keys, defaults, width/baseline and callback admission rules:
+[column adapters](column-adapters.md), [pgfplotstable](pgfplotstable.md),
+[report metrics/compositions](report-metrics.md). Per-use layout can change;
+metric range/group identity, units, direction and format cannot conflict.
+Raw scalar capabilities and fixed-box content dimensions are explicitly declared.
+Histories and sample lists are not silently admitted to scalar statistics.

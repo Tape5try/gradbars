@@ -1,0 +1,65 @@
+\section{v1.3.0: declared numeric input and reference bands}
+Existing numeric entries keep their point-decimal syntax. The new helper uses
+explicit rules and assigns a canonical literal locally; every call resets its
+input defaults. The output is data, independent of the display formatter.
+\begin{demo}{A declared decimal comma}
+\gradbarsparsenumber[decimal=comma,grouping=point]
+ {1.234,5}{\purchaseAmount}
+\gradbar[max=2000,width=55mm,precision=1]{\purchaseAmount}
+\end{demo}
+\key{decimal=point|comma} and \key{grouping=none|point|comma|space} must differ.
+Grouped integers need a first group of 1--3 digits, then groups of exactly three;
+fractions and exponents are ungrouped. Space means ASCII space. Leading/trailing
+spaces are trimmed. Empty input and uppercase NA mean missing; zero is numeric.
+Scientific notation uses the declared decimal marker and an ungrouped exponent.
+The existing digit and magnitude bounds still apply; expressions, units, NaN
+and infinity remain errors. No ambiguous separator is guessed.
+\subsection{CSV input rules are column declarations}
+The file below contains quoted decimal-comma fields. Only explicit CSV scalar
+columns (number, bar, bullet, heat) accept input rules. Text and the loaded dataset
+remain literal; canonical values feed selection, scales, ranks and summaries.
+\begin{demo}{Library purchases; amount is a raw numeric total}
+\gradbarsloadcsv{purchases}{docs/data/regional-input.csv}
+\begin{center}
+\begin{gradtable}[data=purchases,style=regional]
+\gradcolumn[source=Item,width=26mm]{item}{Item}
+\gradcolumn[source=Amount,type=number,width=30mm,
+ input decimal=comma,input grouping=point,
+ aggregate=sum,options={precision=2}]{amount}{Amount}
+\gradsummary{Total}
+\end{gradtable}
+\end{center}
+\end{demo}
+Table \key{style=regional} sets accessible colors, spacing and decimal number
+alignment, without selecting an input locale. Display formatting is independent.
+\clearpage
+\subsection{A trend and a constant reference band}
+\key{\gradsparkband} takes a series, lower bound and upper bound. A fixed range
+or named scale and line type are mandatory. Bounds must increase within that
+range. \key{band color} and \key{band opacity} set the fill; opacity is in [0,1].
+\begin{demo}{Circulation rates; fixed reference interval 45--65 percent}
+\begingroup
+\gradscale{circulation}{min=0,max=100}
+\gradbarssetup{width=55mm,height=5ex,
+ precision=0,unit={\%},label width=12mm}
+\begin{tabular}{lc}
+Collection & Circulation; reference: 45--65\%\\
+\hline
+Literature & \gradsparkband[scale group=circulation]
+ {35,55,NA,60,68}{45}{65}\\
+Science & \gradsparkband[scale group=circulation]
+ {60,60,60,60,60}{45}{65}\\
+History & \gradsparkband[scale group=circulation]
+ {NA,NA,NA,NA,NA}{45}{65}\\
+\end{tabular}
+\endgroup
+\end{demo}
+The band is a supplied reference, not observations or a computed confidence
+interval. It never changes the range or fills missing positions. NA breaks the
+trend; all-missing series retain the band. Print mode uses gray with dashed
+boundaries. Automatic alternatives retain the series, range and reference in
+one Figure. Existing spark commands and their unsupported-option errors remain.
+Scalar custom backends need explicit TikZ fallback for \key{spark-band}.
+
+Standalone sources: \texttt{docs/examples/regional-input.tex} and its Chinese
+counterpart. Full input matrix: \texttt{docs/regional-input.md}.
